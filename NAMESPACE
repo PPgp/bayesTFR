@@ -1,0 +1,119 @@
+#exportPattern("^[[:alpha:]]+")
+useDynLib(bayesTFR)
+
+# export functions
+export(
+	run.tfr.mcmc,
+	continue.tfr.mcmc,
+	run.tfr.mcmc.extra,
+	tfr.predict,
+	tfr.predict.extra,
+	tfr.median.shift,
+	tfr.median.set,
+	get.tfr.shift,
+	tfr.median.adjust,
+	get.ar1.parameters,
+	convert.tfr.trajectories,
+	write.projection.summary,
+	get.tfr.mcmc,
+	has.tfr.mcmc,
+	tfr.mcmc,
+	tfr.mcmc.list,
+	get.mcmc.list,
+	get.thinned.tfr.mcmc,
+	get.tfr.prediction,
+	has.tfr.prediction,
+	get.tfr.convergence.all,
+	get.tfr.convergence,
+	has.mcmc.converged,
+	tfr.parameter.names.extended,
+	tfr.parameter.names.cs.extended,
+	tfr.parameter.names,
+	tfr.parameter.names.cs,
+	get.total.iterations,
+	get.stored.mcmc.length,
+	get.tfr.parameter.traces,
+	get.tfr.parameter.traces.cs,
+	get.tfr.trajectories,
+	coda.mcmc,
+	coda.mcmc.list,
+	get.cov.gammas,
+	get.country.object,
+	country.names,
+	DLcurve.plot.all,
+	DLcurve.plot,
+	tfr.trajectories.table,
+	tfr.trajectories.plot.all,
+	tfr.trajectories.plot,
+	tfr.partraces.plot,
+	tfr.partraces.cs.plot,
+	tfr.pardensity.plot,
+	tfr.pardensity.cs.plot,
+	get.tfr.map.parameters,
+	tfr.map.all,
+	tfr.map,
+	read.tfr.file,
+	tfr.gelman.diag,
+	tfr.plot.gelman,
+	tfr.raftery.diag,
+	tfr.diagnose,
+	get.median.from.prediction,
+	bdem.parameter.traces,
+	get.traj.ascii.header,
+	get.nr.countries,
+	get.nr.countries.est,
+	get.data.matrix,
+	get.countries.index,
+	get.data.imputed,
+	get.projection.summary.header,
+	get.UN.variant.names,
+	get.friendly.variant.names,
+	.get.gamma.pars,
+	.map.main.default,
+	bdem.map.gvis,
+	tfr.map.gvis,
+	get.mcmc.meta,
+	par.names.for.worldmap,
+	get.data.for.worldmap,
+	get.countries.table
+)
+
+# register S3 methods
+S3method(bdem.parameter.traces, bayesTFR.mcmc)
+
+S3method(get.mcmc.list, bayesTFR.mcmc.set)
+S3method(get.mcmc.list, bayesTFR.mcmc)
+S3method(get.mcmc.list, bayesTFR.prediction)
+S3method(get.mcmc.list, list)
+
+S3method(get.mcmc.meta, bayesTFR.mcmc.meta)
+S3method(get.mcmc.meta, bayesTFR.mcmc.set)
+S3method(get.mcmc.meta, bayesTFR.mcmc)
+S3method(get.mcmc.meta, bayesTFR.prediction)
+
+S3method(coda.mcmc, bayesTFR.mcmc)
+
+S3method(summary, bayesTFR.mcmc.set)
+S3method(summary, bayesTFR.mcmc)
+S3method(summary, bayesTFR.prediction)
+S3method(summary, bayesTFR.convergence)
+
+S3method(print, summary.bayesTFR.prediction)
+S3method(print, summary.bayesTFR.mcmc.set.meta)
+
+S3method(get.traj.ascii.header, bayesTFR.mcmc.meta)
+S3method(get.nr.countries, bayesTFR.mcmc.meta)
+S3method(get.nr.countries.est, bayesTFR.mcmc.meta)
+S3method(get.data.matrix, bayesTFR.mcmc.meta)
+S3method(get.countries.index, bayesTFR.mcmc.meta)
+S3method(get.data.imputed, bayesTFR.prediction)
+S3method(get.projection.summary.header, bayesTFR.prediction)
+S3method(get.UN.variant.names, bayesTFR.prediction)
+S3method(get.friendly.variant.names, bayesTFR.prediction)
+S3method(.get.gamma.pars, bayesTFR.prediction)
+S3method(.map.main.default, bayesTFR.prediction)
+S3method(bdem.map.gvis, bayesTFR.prediction)
+S3method(par.names.for.worldmap, bayesTFR.prediction)
+S3method(get.data.for.worldmap, bayesTFR.prediction)
+S3method(get.countries.table, bayesTFR.prediction)
+S3method(get.countries.table, bayesTFR.mcmc.set)

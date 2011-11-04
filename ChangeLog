@@ -1,0 +1,364 @@
+1.4-2 (10/13/2011)
+-----
+Minor changes in get.prediction.summary.data.
+
+Internal changes in the function for plotting world maps.
+
+New function called get.countries.table added.
+
+1.4-1 (07/15/2011)
+-----   
+Citation and reference to a JSS	article	added.
+	
+1.4-0 (05/06/2011)
+-----
+Official UN WPP 2010 data added to the package and the default for argument wpp.year set to 2010. 
+
+The rho and sigmaAR1 arguments of the tfr.predict function replaced by estimates based on the new data.
+
+Removed argument html.file from the function tfr.map.gvis, since the new version of the googleVis
+package (0.2.4) now creates html files automatically.
+
+Added item 'iter.incr' to the 'auto.conf' argument in run.tfr.mcmc, to distinguish between 
+the length of the initial simulation and the incrementals in case it did not converge.
+
+1.3-1 (03/15/2011)
+-----
+Test data and locations from WPP 2010 removed.
+
+1.3-0 (03/11/2011)
+-----
+Lines in tfr.trajectories.plot made thicker.
+
+Allowing plotting MCMC parameters into a world-map.
+
+Allowing plotting adjusted TFRs into a world-map.
+
+Map functions can plot observed TFRs as well (in addition to projections).
+
+tfr.map and tfr.map.gvis re-written in a way that they take more advantage of the common functionality.
+
+Bug in tfr.predict.extra fixed.
+
+Summary file for MCMC parameters is written also for adjusted predictions.
+
+1.2-6 (02/24/2011)
+-----
+Bugs in tfr.median.adjustDL and tfr.predict.extra fixed.
+
+1.2-5 (02/21/2011)
+-----
+Function tfr.median.adjustDL renamed to tfr.median.adjust. Added an argument forceAR1 for controlling
+if countries enter Phase III in the first projection period.
+
+In tfr.trajectories.plot added an argument adjusted.only. If FALSE, both the unadjusted and
+adjusted medians are plotted.
+
+In write.projection.summary added an argument adjusted. If TRUE, the summary is based on adjusted
+projections. File names have the suffix '_adjusted'. 
+
+New function for TFR maps, called tfr.map.gvis. Package googleVis added to suggested packages.
+
+Test data and locations for WPP 2010 added.
+
+1.2-4 (02/17/2011)
+-----
+Median adjustment of the DL predictions implemented (function tfr.median.adjustDL)
+
+1.2-3 (02/16/2011)
+-----
+In get.ar1.parameters: rounding removed; parameters are estimated only on countries that are included
+in the estimation of the world parameters.
+
+Bug in DLcurve.plot fixed causing plotting one line less than nr.curves.
+
+1.2-2 (02/16/2011)
+-----
+Condition for the AR1 process introduced not to fall below 0.5 (UN request).   
+
+Test data removed.
+
+m1<-run.tfr.mcmc(...) and m2<-get.tfr.mcmc(...) now return results that pass the test identical(m1,m2).
+
+1.2-1 (01/26/2011)
+-----
+Test data and locations for WPP 2010 added. 
+
+1.2-0 (01/19/2011)
+-----
+Function write.projection.summary now writes out a file with the model parameters.
+
+Many internal changes and small bug fixes.
+
+1.1-1 (11/17/2010)
+-----
+do.get.traces renamed to bdem.parameter.traces
+
+NAMESPACE modified.
+
+Bug fixed in the plotting traces function.
+
+Internal changes to allow bayesLife reusing package functionality.
+
+1.1-0 (10/14/2010)
+-----
+Functions tfr.median.set and tfr.median.shift for modifying the projection medians 
+(request of the UN population division).
+
+The UN2008.txt file replaced by one whith TFRs on 4 decimal places (provided by the UN). 
+Projection summary files are outputted also with 4 decimals.
+
+The projection_summary.csv contains also the historical data.
+
+New function: get.tfr.trajectories
+
+1.0-0 (10/04/2010)
+-----
+Convergence diagnostics functions re-designed.
+	
+The 'auto' functionality implemented (when iter='auto' in run.tfr.mcmc and continue.tfr.mcmc).
+
+New defaults for nr.chains (3) and iter (62000) in run.tfr.mcmc.
+	
+Argument thin added to tfr.predict.
+	
+The tfr.predict function can use a diagnostics object to automatically determine burnin and thin
+(argument use.diagnostics).
+
+tfr.predict uses (or creates) an object of thinned traces.
+	
+NAMESPACE created.
+
+0.8-0 (09/07/2010)
+-----
+Parameter 'delta' removed from the set of parameters that were analyzed on transfored scale.
+
+Function tfr.diagnose rewrote.
+
+0.7-0 (05/17/2010)
+-----
+Reverting the change from version 0.5-0: Parameter traces stored again in plain ASCII, 
+due to a bug in R 2.11.0 (function gzfile does not work with the append mode) 
+[This change is not reflected in the documentation yet.]
+
+A few internal changes that make some functions more general.
+
+0.6-2 (05/05/2010)
+-----
+Functions get.parameter.names and get.parameter.names.cs renamed to tfr.parameter.names and
+tfr.parameter.names.cs, respectively.
+
+New functions for plotting parameter density implemented, called tfr.pardensity.plot and
+tfr.pardensity.plot.cs.
+
+0.6-1 (04/30/2010)
+-----
+Bug in the fucntion tfr.predict.extra fixed.
+
+Arguments of the functions get.parameter.names and get.parameter.names.cs changed.
+
+Summary function for predictions got an extra argument 'compact' to allow for a smaller table.
+
+0.6-0 (03/29/2010)
+-----
+Default value for MCMC length changed to 102,000.
+
+New function for checking MCMC convergence: tfr.diagnose
+
+New class for convergence objects: bayesTFR.convergence, its getter and summary functions implemented.
+
+Prediction procedure now stores thinned traces (in predictions/thinned.mcmc) that correspond exactly 
+to the parameter samples used for making the trajectories. Various functions can now use those traces 
+instead of the unthinned ones in order to speed things up. 
+
+Loading MCMC traces made more memory efficient. 
+
+In prediction: checking if prediction directory already exists moved to the beginning of the function 
+(before traces are loaded, since that can take lots of time).
+
+
+0.5-0 (03/01/2010)
+-----
+Prediction directory is not dependent on the end year anymore. It is stored into a subdirectory called
+'predictions'. An argument 'replace.output' added to the tfr.predict function which controls if new 
+predictions should overwrite the old ones. 
+
+Parameter traces are now stored in a compressed format (with ending .gz).
+
+Function for generating maps for all projections added (called tfr.map.all).
+
+Function for displaying world maps added, called tfr.map. This functionality is dependent on the R packages
+rworldmap and fields which were added to the 'suggested packages'.
+
+All delta variables renamed to Triangle. sigma variables renamed to delta. This change was done in order 
+to be consistent with the notation in the reference paper. It affects names of output files - therefore 
+any existing simulations must be re-run.
+
+Added shape parameter for the prior Gamma distribution of sigma4.
+
+0.4-5 (02/18/2010)
+-----
+A bug fixed that caused country names from a user-specified TFR file to be NAs.
+
+0.4-4 (02/03/2010)
+-----
+my.tfr.file (passed to run.tfr.mcmc) can now contain the column 'include_code' with the following meaning: 
+-1: do not overwrite the include_code in the location file
+0: ignore
+1: include in projections but not estimation
+2: include in estimation and projections
+Except of the case of -1, these values overwrite the include_code in the location file. This option allows 
+to include and exclude countries from the  estimation without having to recompile the package.
+
+Non-standard quantiles were computed only on the set of displayed trajectories. Now they are computed on at least
+2000 trajectories or all, if the total number of trajectories is less than 2000.
+
+0.4-3 (01/24/2010)
+-----
+All input files were converted from semicolon-separated files to tab-separated files. This impacts also 
+the my.tfr.file format, which should be also tab-separated.
+
+Documentation: Patrick's suggestions and corrections put in. Better explanation of the my.tfr.file argument.
+
+A few test functions added into the 'test' directory (will be called automatically by the R checking procedure).
+
+Y-scaling bug (in tfr.trajectories.plot) fixed.
+
+A bug causing country names from my.tfr.file being NAs fixed.
+
+0.4-2 (01/16/2010)
+-----
+Country-specific prediction enabled (function tfr.predict.extra).
+
+Code cleaned-up after Leontine's review.
+
+Information added to the summary functions for both, mcmc and prediction.
+
+Documentation updated from 0.3-2 version.
+
+By default, the sigmaAR1 parameter is kept constant for all AR(1) projections. The argument allows to enter
+a series of sigmas for the series of projections. Thus, it does not need to be kept constant, if desired. 
+This change allowed to remove the 'sigma.end' argument.
+
+0.4-0 (01/02/2010)
+-----
+Ability of running MCMC and predictions for extra countries or regions (not included in the estimation) implemented.
+This feature required significant refactoring of the code. New function: run.tfr.mcmc.extra.
+
+AR(1) parameters can be computed on the fly.
+
+Prediction is now made also for countries that have not start fertility transition at the last observation point.
+
+0.3-2 (12/15/2009)
+-----
+Bug in the prediction function fixed that caused the first imputed value to be the same as the last observed value.
+
+Argument U.width added to the run function.
+
+0.3-1 (12/14/2009)
+-----
+Allowing argument my.tfr.file in run.tfr.mcmc. It is a file which can include user-specified TFRs for one or more 
+countries. Entries in tfr_matrix corresponding to those countries are replaced by the data in this file. It can also
+contain countries not included in the UN2008 file. In such a case, it is added to the tfr_matrix. A template file 
+is included in the 'data' directory (my_tfr_template.csv).
+
+Imputed data (when using the 'last.observed' feature) are now clearly marked in the TFR trajectories graphs.
+
+The structure of the proposal_cov_gammas_cii data set changed. A function for computing such object added.
+
+const_sd_dummie_Tc moved from mcmc object to mcmc$meta.
+
+alpha0 parameter changed to alpha0.p and has now three values instead of one.
+
+Need for data sets Uw_c and DLpar_ini eliminated. 
+
+lambda_c is now computed on the fly, therefore the data set lambda_c removed.
+
+Projection years in the summary function for a prediction changed to middle years of intervals.
+
+Additional output from tfr.raftery.diag.
+
+Minor change in coda.mcmc reflecting the thinning interval.
+
+0.2-4 (12/08/2009)
+-----
+Enabling different last years of observed data. The missing data are imputed using the medians from the BHM procedure. 
+The functionality can be switched on by adding a column 'last.observed' to UN2008.csv. This column is contained 
+in UN2008_with_last_obs.csv (in bayesTFR/data), so renaming that file to UN2008.csv would do the job 
+(note that the set of countries in UN2008_with_last_obs.csv is not identical to UN2008.csv). 
+
+The asymptotic sd in the AR(1) model is now set to 0.203 after a max of 4 projection periods.
+
+0.2-3 (11/30/2009)
+-----
+Bug in the function get.thinned.index fixed, which caused tfr.predict to fail for some values of the argument nr.traj.
+
+0.2-2 (11/10/2009)
+-----
+The convert.tfr.trajectories function also stores the trajectories in a UN-specific 'transposed' format.
+	
+Function convert.trajectories renamed to convert.tfr.trajectories.
+	
+Removed a condition that the minimum of tfr_matrix must be >=1 (which excluded Macao and Hong Kong)
+	
+Bug fixes in tfr.gelman.diag and tfr.raftery.diag functions.
+
+Trajectories now cannot result in NA values - if an implausible value is generated, it is re-sampled.
+	
+Prediction function tfr.predict accepts argument nr.traj which gives number of trajectories to be generated.
+	
+0.2-1
+-----
+All modifications due to the following changes in the method:
+
+1. Delta_c4 is estimated for each country
+2. Observed turnaround periods (shifts beteen DL and AR(1)) are given by lambda (the midpoint if there are two increases
+   below 2, see report). (Note that this is now put into the R_package as a data file, but we'll probably write code 
+   to estimate it within the package.)
+3. Predicted turnaround point is after the first increase after TFR gets below delta_c4
+4. Distortion in start year tau has a distribution with diffferent sd than in the other years, and non-zero mean.
+5. AR(1) parameters for prediction have been re-restimated based on new definition of turnaround point
+
+0.1-6
+-----
+Changes in function raftery.tfr.diag (additional output).
+	
+Argument mcmc.set in DLcurve.plot.all renamed to mcmc.list.
+
+Function for writing out prediction summary in a UN-specific format implemented (write.projection.summary).
+	
+Parameters on which transformation is performed renamed to alphat, deltat, gammat. Modifications in functions 
+that deal with them. Now they are handled in the same way as their not transformed counterparts.
+
+0.1-5
+-----
+
+Setting RNG seed enabled.
+	
+Functions for exporting trajectories from binary format to UN-specific ascii format. 
+Arguments to control the number of such trajectories added.
+	
+Modifications for enabling different last years of observed data (not finished yet).
+	
+Legend's color in trajectories plot fixed.
+
+More documentation.
+
+Bug in function country.names fixed.
+	
+0.1-4
+-----
+More documentaiton.	
+	
+For better disk usage, the variables 'eps_Tc', 'const_sd_dummie_Tc', and 'add_to_sd_Tc' are not stored into disk, 
+since they can be recomputed when needed.
+
+An option to plot/tabulate the half-child variant added.
+	
+Functions for plotting TFR trajectories and DL curves for ALL countries written (tfr.trajectories.plot.all, DLcurve.plot.all).
+
+Plotting functions for trajectories and DL curve accept additional graphical parameters.
+	
+Files with country-specific parameters and trajectories have now the country code as postfix, instead of country index.
+
+

@@ -1,0 +1,21 @@
+citHeader("To cite bayesTFR in publications use:")
+
+citEntry(entry = "Article",
+  title        = "{bayesTFR}: An {R} Package for Probabilistic Projections of the Total Fertility Rate",
+  author       = personList(as.person("Hana \\v{S}ev\\v{c}\\'{\\i}kov\\'{a}"),
+                   as.person("Leontine Alkema"),
+                   as.person("Adrian E. Raftery")),
+  journal      = "Journal of Statistical Software",
+  year         = "2011",
+  volume       = "43",
+  number       = "1",
+  pages        = "1--29",
+  url          = "http://www.jstatsoft.org/v43/i01/",
+
+  textVersion  =
+  paste("Hana Sevcikova, Leontine Alkema, Adrian E. Raftery (2011).",
+        "bayesTFR: An R Package for Probabilistic Projections of the Total Fertility Rate.",
+        "Journal of Statistical Software, 43(1), 1-29.",
+        "URL http://www.jstatsoft.org/v43/i01/.")
+)
+

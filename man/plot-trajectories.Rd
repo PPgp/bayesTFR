@@ -1,0 +1,65 @@
+\name{tfr.trajectories.plot}
+\Rdversion{1.1}
+\alias{tfr.trajectories.plot}
+\alias{tfr.trajectories.plot.all}
+\alias{tfr.trajectories.table}
+
+\title{
+Output of Posterior Distribution of TFR Trajectories}
+\description{
+The functions plot/tabulate the posterior distribution of TFR trajectories for a given country, or for all countries, including their median and given probability intervals. 
+}
+\usage{
+tfr.trajectories.plot(tfr.pred, country, pi = c(80, 95), 
+    half.child.variant = TRUE, nr.traj = NULL, 
+    adjusted.only = TRUE,
+    xlim = NULL, ylim = NULL, type = 'b', 
+    xlab = 'Year', ylab = 'TFR', main = NULL, \dots)
+	
+tfr.trajectories.plot.all(tfr.pred, 
+    output.dir = file.path(getwd(), 'TFRtrajectories'),
+    output.type = "png", verbose = FALSE, \dots)
+	
+tfr.trajectories.table(tfr.pred, country, pi = c(80, 95), 
+    half.child.variant = TRUE)
+}
+%- maybe also 'usage' for other objects documented here.
+\arguments{
+  \item{tfr.pred}{Object of class \code{\link{bayesTFR.prediction}}.}
+  \item{country}{Name or numerical code of a country.}
+  \item{pi}{Probability interval. It can be a single number or an array.}
+  \item{half.child.variant}{If \code{TRUE} the United Nations variant of \dQuote{\code{+/-0.5} child} (relative to the median) is shown.}
+  \item{nr.traj}{Number of trajectories to be plotted. If \code{NULL}, all trajectories are plotted, otherwise they are thinned evenly.}
+  \item{adjusted.only}{Logical. By default, if the projection median is adjusted using e.g. \code{\link{tfr.median.set}}, the function plots the adjusted median. If \code{adjusted.only=FALSE} the original (non-adjusted) median is plotted as well.}
+  \item{xlim, ylim, type, xlab, ylab, main}{Graphical parameters passed to the \code{plot} function.}
+  \item{\dots}{Additional graphical parameters. For \code{tfr.trajectories.plot.all}, \code{\dots} contains also arguments
+  		\code{pi}, \code{half.child.variant} and \code{nr.traj}.}
+  \item{output.dir}{Directory into which resulting graphs are stored.}
+  \item{output.type}{Type of the resulting files. It can be \dQuote{png}, \dQuote{pdf}, \dQuote{jpeg}, \dQuote{bmp}, \dQuote{tiff}, or \dQuote{postscript}.}
+  \item{verbose}{Logical switching log messages on and off.}
+}
+\details{
+\code{tfr.trajectories.plot} plots posterior distribution of TFR trajectories for a given country. \code{tfr.trajectories.table} gives the same output as a table. \code{tfr.trajectories.plot.all} creates a set of graphs (one per country) that are stored in \code{output.dir}. 
+
+The median and given probability intervals are computed using all available trajectories. Thus, \code{nr.traj} does not influence those values - it is used only to control the number of trajectories plotted.
+}
+
+\author{
+Hana Sevcikova, Leontine Alkema
+}
+
+\seealso{
+\code{\link{bayesTFR.prediction}}
+}
+\examples{
+\dontrun{
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+pred <- get.tfr.prediction(sim.dir)
+tfr.trajectories.plot(pred, country='Burkina Faso', pi=c(80, 95))
+tfr.trajectories.table(pred, country='Burkina Faso', pi=c(80, 95))
+}
+}
+% Add one or more standard keywords, see file 'KEYWORDS' in the
+% R documentation directory.
+\keyword{ hplot }
+%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
