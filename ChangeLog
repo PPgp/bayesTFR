@@ -1,3 +1,9 @@
+1.5-0 (11/17/2011)
+-----
+Performance improved in two ways:
+1. MCMCs are converted to environments (instead of being lists), so that they are not copied every time.
+2. A few functions implemented in C.
+
 1.4-2 (10/13/2011)
 -----
 Minor changes in get.prediction.summary.data.

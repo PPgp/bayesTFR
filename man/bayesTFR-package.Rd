@@ -15,8 +15,8 @@ using a Bayesian hierarchical model and the United Nations demographic time seri
 \details{
 \tabular{ll}{
 Package: \tab bayesTFR\cr
-Version: \tab 1.4-2\cr
-Date: \tab 2011-10-13\cr
+Version: \tab 1.5-0\cr
+Date: \tab 2011-11-17\cr
 Depends: \tab R (>= 2.9.0), mvtnorm, coda\cr
 Suggests: \tab rworldmap, fields, snowFT, googleVis \cr
 License: \tab GPL (>= 2)\cr
@@ -48,7 +48,7 @@ A number of functions analyzing results are included in the package:
 }
 
 For MCMC diagnostics, function \link{coda.mcmc.list} creates an object of type \dQuote{mcmc.list} that can be used with the \pkg{coda} package.  Furthermore, function \link{tfr.diagnose} analyzes the MCMCs using the Raftery diagnostics implemented in the \pkg{coda} package and gives information about parameters that did not converge. 
-#In case of having multiple chains, function \link{tfr.gelman.diag} computes the Gelman diagnostics for different burnins which can by plotted using \link{tfr.plot.gelman}.  
+%In case of having multiple chains, function \link{tfr.gelman.diag} computes the Gelman diagnostics for different burnins which can by plotted using \link{tfr.plot.gelman}.  
 
 Existing simulation results can be accessed using the \link{get.tfr.mcmc} function.  An existing prediction can be accessed via \link{get.tfr.prediction}. Existing convergence diagnostics can be accessed using the \link{get.tfr.convergence} and \link{get.tfr.convergence.all} functions.
 
