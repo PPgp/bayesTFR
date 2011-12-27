@@ -29,6 +29,39 @@ stop.if.country.not.DL <- function(country.obj, meta) {
     	stop('Country ', country.obj$name, ' not estimated because no decline observed.')
 }
 
+.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, nr.curves, predictive.distr=FALSE) {
+    dlc <- c()
+    U.var <- paste("U_c", country.code, sep = "")
+    d.var <- paste("d_c", country.code, sep = "")
+    Triangle_c4.var <- paste("Triangle_c4_c", country.code, sep = "")
+    gamma.vars <- paste("gamma_", 1:3, "_c", country.code, sep = "")
+    # Compute the quantiles on a sample of at least 2000.   
+    nr.curves.from.mc <- if (!is.null(nr.curves)) ceiling(max(nr.curves, 2000)/length(mcmc.list))
+    						else NULL
+    for (mcmc in mcmc.list) {
+    	th.burnin <- get.thinned.burnin(mcmc,burnin)
+    	thincurves.mc <- get.thinning.index(nr.points=nr.curves.from.mc, 
+            all.points=mcmc$length - th.burnin)
+        traces <- load.tfr.parameter.traces.cs(mcmc, country.code, 
+        						burnin=th.burnin, 
+								thinning.index=thincurves.mc$index)
+        theta <- (traces[, U.var] - traces[, Triangle_c4.var] ) * 
+            exp(traces[, gamma.vars, drop=FALSE])/apply(exp(traces[,gamma.vars, drop=FALSE]), 1, sum)
+        theta <- cbind(theta, traces[, Triangle_c4.var], traces[, d.var])
+        dl <- t(apply(theta, 1, DLcurve, tfr = x, p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2))
+        dlc <- rbind(dlc, dl)
+        if(predictive.distr) {
+			errors <- matrix(NA, nrow=dim(dl)[1], ncol=dim(dl)[2])
+			n <- ncol(errors)
+			for(i in 1:nrow(errors))
+				errors[i,] <- rep(0,n)
+				#errors[i,] <- rnorm(n, mean=0, sd=omegas[i]*loessSD)
+        	dlc <- rbind(dlc, dl+errors)
+        } else dlc <- rbind(dlc, dl)
+    }
+    return (dlc)
+}
+
 DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 10, 
     nr.curves = NULL, ylim = NULL, xlab = "TFR (reversed)", ylab = "TFR decrement", 
     main = NULL, ...
@@ -45,28 +78,8 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     country <- get.country.object(country, meta)
     stop.if.country.not.DL(country, meta)
     tfr_plot <- seq(0, tfr.max, 0.1)
-    dlc <- c()
-    U.var <- paste("U_c", country$code, sep = "")
-    d.var <- paste("d_c", country$code, sep = "")
-    Triangle_c4.var <- paste("Triangle_c4_c", country$code, sep = "")
-    gamma.vars <- paste("gamma_", 1:3, "_c", country$code, sep = "")
-    # Compute the quantiles on a sample of at least 2000.   
-    nr.curves.from.mc <- if (!is.null(nr.curves)) ceiling(max(nr.curves, 2000)/length(mcmc.list))
-    						else NULL
-    for (mcmc in mcmc.list) {
-    	th.burnin <- get.thinned.burnin(mcmc,burnin)
-    	thincurves.mc <- get.thinning.index(nr.points=nr.curves.from.mc, 
-            all.points=mcmc$length - th.burnin)
-        traces <- load.tfr.parameter.traces.cs(mcmc, country$code, 
-        						burnin=th.burnin, 
-								thinning.index=thincurves.mc$index)
-        theta <- (traces[, U.var] - traces[, Triangle_c4.var] ) * 
-            exp(traces[, gamma.vars, drop=FALSE])/apply(exp(traces[,gamma.vars, drop=FALSE]), 1, sum)
-        theta <- cbind(theta, traces[, Triangle_c4.var], 
-            traces[, d.var])
-        dlc <- rbind(dlc, t(apply(theta, 1, DLcurve, tfr = tfr_plot, 
-            p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2)))
-    }
+    dlc <- .get.dlcurves(tfr_plot, mcmc.list, country$code, country$index, burnin, nr.curves, 
+    						predictive.distr=predictive.distr)
     miny <- min(dlc)
     maxy <- max(dlc)
     decr <- -diff(meta$tfr_matrix[1:meta$T_end, country$index])

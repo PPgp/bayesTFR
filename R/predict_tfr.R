@@ -34,8 +34,8 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 		use.burnin <- rep(NA, ldiag)
 		for(idiag in 1:ldiag) {
 			if (has.mcmc.converged(diag.list[[idiag]])) {
-				use.nr.traj[idiag] <- diag$use.nr.traj
-				use.burnin[idiag] <- diag$burnin
+				use.nr.traj[idiag] <- diag.list[[idiag]]$use.nr.traj
+				use.burnin[idiag] <- diag.list[[idiag]]$burnin
 			}
 		}
 		if(all(is.na(use.nr.traj)))

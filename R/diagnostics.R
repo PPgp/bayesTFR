@@ -222,7 +222,7 @@ tfr.raftery.diag <- function(mcmc=NULL,
 			country.obj <- get.country.object(country, mcmc.set$meta)
 			c.index <- country.obj$index
 		} else {
-			c.index <- 1:get.nr.countries.est(mcmc.set$meta)
+			c.index <- get.countries.index(mcmc.set$meta)
 			if(country.sampling.prop < 1) 
 				c.index <- sort(sample(c.index, size=round(length(c.index)*country.sampling.prop,0)))
 		}
