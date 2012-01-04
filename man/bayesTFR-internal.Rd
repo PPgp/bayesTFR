@@ -115,6 +115,7 @@
 \alias{store.mcmc}
 \alias{store.traj.ascii}
 \alias{thinindep}
+\alias{tfr.get.dlcurves}
 \alias{tfr.info}
 \alias{tfr.mcmc.sampling}
 \alias{tfr.mcmc.sampling.extra}

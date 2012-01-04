@@ -30,8 +30,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 		diag.list <- get.tfr.convergence.all(mcmc.set$meta$output.dir)
 		ldiag <- length(diag.list)
 		if (ldiag == 0) stop('There is no diagnostics available. Use manual settings of "nr.traj" or "thin".')
-		use.nr.traj <- rep(NA, ldiag)
-		use.burnin <- rep(NA, ldiag)
+		use.nr.traj <- use.burnin <- rep(NA, ldiag)
 		for(idiag in 1:ldiag) {
 			if (has.mcmc.converged(diag.list[[idiag]])) {
 				use.nr.traj[idiag] <- diag.list[[idiag]]$use.nr.traj
@@ -43,8 +42,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 		# Try to select those that suggest nr.traj >= 2000 (take the minimum of those)
 		traj.is.notna <- !is.na(use.nr.traj)
 		larger2T <- traj.is.notna & use.nr.traj>=2000
-		nr.traj.idx <- if(sum(larger2T)>0) which.min(use.nr.traj[larger2T])
-						else which.max(use.nr.traj[traj.is.notna])
+		nr.traj.idx <- if(sum(larger2T)>0) (1:ldiag)[larger2T][which.min(use.nr.traj[larger2T])] else (1:ldiag)[traj.is.notna][which.max(use.nr.traj[traj.is.notna])]
 		nr.traj <- use.nr.traj[nr.traj.idx]
 		burnin <- use.burnin[nr.traj.idx]
 		if(verbose)

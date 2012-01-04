@@ -57,6 +57,8 @@ export(
 	tfr.plot.gelman,
 	tfr.raftery.diag,
 	tfr.diagnose,
+	tfr.get.dlcurves,
+	tfr.GoF.dl,
 	get.median.from.prediction,
 	bdem.parameter.traces,
 	get.traj.ascii.header,

@@ -1,3 +1,9 @@
+1.5-1
+-----
+Function tfr.GoF.dl added to compute goodness of fit.
+
+Argument 'predictive.distr' addedto the DLcurve.plot function to plot the double logistic curves including the error term.
+
 1.5-0 (11/17/2011)
 -----
 Performance improved in two ways:

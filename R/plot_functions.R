@@ -29,7 +29,7 @@ stop.if.country.not.DL <- function(country.obj, meta) {
     	stop('Country ', country.obj$name, ' not estimated because no decline observed.')
 }
 
-.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, nr.curves, predictive.distr=FALSE) {
+tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, nr.curves, predictive.distr=FALSE) {
     dlc <- c()
     U.var <- paste("U_c", country.code, sep = "")
     d.var <- paste("d_c", country.code, sep = "")
@@ -49,21 +49,30 @@ stop.if.country.not.DL <- function(country.obj, meta) {
             exp(traces[, gamma.vars, drop=FALSE])/apply(exp(traces[,gamma.vars, drop=FALSE]), 1, sum)
         theta <- cbind(theta, traces[, Triangle_c4.var], traces[, d.var])
         dl <- t(apply(theta, 1, DLcurve, tfr = x, p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2))
-        dlc <- rbind(dlc, dl)
+        if(length(x) == 1) dl <- t(dl)
         if(predictive.distr) {
 			errors <- matrix(NA, nrow=dim(dl)[1], ncol=dim(dl)[2])
+			wp.traces <- load.tfr.parameter.traces(mcmc, 
+        						burnin=th.burnin, 
+								thinning.index=thincurves.mc$index,
+								par.names=c('sigma0', 'S_sd', 'a_sd', 'b_sd'))
+  			#sigma_eps <- pmax(sigma_eps, mcmc$meta$sigma0.min)
 			n <- ncol(errors)
-			for(i in 1:nrow(errors))
-				errors[i,] <- rep(0,n)
-				#errors[i,] <- rnorm(n, mean=0, sd=omegas[i]*loessSD)
+			for(i in 1:nrow(errors)) {
+				sigma_eps <- pmax(wp.traces[i,'sigma0'] + (x - wp.traces[i,'S_sd'])*
+  						ifelse(x > wp.traces[i,'S_sd'], -wp.traces[i,'a_sd'], wp.traces[i,'b_sd']),
+  						mcmc$meta$sigma0.min)
+				errors[i,] <- rnorm(n, mean=0, sd=sigma_eps)
+			}
         	dlc <- rbind(dlc, dl+errors)
         } else dlc <- rbind(dlc, dl)
     }
+    
     return (dlc)
 }
 
 DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 10, 
-    nr.curves = NULL, ylim = NULL, xlab = "TFR (reversed)", ylab = "TFR decrement", 
+    nr.curves = NULL, predictive.distr=FALSE, ylim = NULL, xlab = "TFR (reversed)", ylab = "TFR decrement", 
     main = NULL, ...
     ) 
 {	
@@ -78,7 +87,7 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     country <- get.country.object(country, meta)
     stop.if.country.not.DL(country, meta)
     tfr_plot <- seq(0, tfr.max, 0.1)
-    dlc <- .get.dlcurves(tfr_plot, mcmc.list, country$code, country$index, burnin, nr.curves, 
+    dlc <- tfr.get.dlcurves(tfr_plot, mcmc.list, country$code, country$index, burnin, nr.curves, 
     						predictive.distr=predictive.distr)
     miny <- min(dlc)
     maxy <- max(dlc)
@@ -245,13 +254,13 @@ tfr.trajectories.plot.all <- function(tfr.pred,
 		cat('\nTrajectory plots stored into', output.dir, '\n')
 }
 
-get.half.child.variant <- function(median) {
+get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 	l <- length(median)
-	increment <- c(0, 0.25, 0.4, 0.5)
+	lincr <- length(increment)
 	upper <- lower <- c()
 	for (i in 1:l) {
-		upper <- c(upper, median[i]+increment[min(i,4)])
-		lower <- c(lower, median[i]-increment[min(i,4)])
+		upper <- c(upper, median[i]+increment[min(i,lincr)])
+		lower <- c(lower, median[i]-increment[min(i,lincr)])
 	}
 	return(rbind(lower, upper))	
 }

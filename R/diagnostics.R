@@ -537,3 +537,65 @@ thinindep <- function(x,q){
 	}
 return(k)
 }
+
+tfr.GoF.dl <- function(sim.dir, pi=c(80,90,95), burnin=2000, verbose=TRUE) {
+	if(has.tfr.prediction(sim.dir=sim.dir)) {
+		pred <- get.tfr.prediction(sim.dir=sim.dir)
+		mcmc.set <- pred$mcmc.set
+		burnin = 0 # because the prediction mcmc.set is already burned and collapsed
+	} else mcmc.set <- get.tfr.mcmc(sim.dir)
+	return(.doGoF.dl(mcmc.set, pi=pi, burnin=burnin, verbose=verbose))
+}
+
+tfr.DLisDecrement <- function() {
+	return(TRUE)
+}
+
+.doGoF.dl <- function(mcmc.set, pi=c(80,90,95), type='tfr', burnin=0, verbose=TRUE) {
+	meta <- mcmc.set$meta
+	countries.index <- get.countries.index(meta)
+	data <- get.data.matrix(meta)
+	T.total <- nrow(data)
+	al.low <- (1 - pi/100)/2
+	al.high <- 1 - al.low
+	total.GoF <- rep(0, length(pi))
+	time.GoF <- matrix(0, nrow=length(pi), ncol=T.total-1)
+	country.GoF <- matrix(0, nrow=length(pi), ncol=max(countries.index))
+	counter <- matrix(0, ncol=max(countries.index), nrow=T.total-1)
+	if(verbose) cat('\nAssessing goodness of fit for country ')
+	for(icountry in countries.index) {
+		if(verbose) cat(icountry, ', ')
+		country.code <- meta$regions$country_code[icountry]
+		observed <- -1 * do.call(paste(type,'.DLisDecrement', sep=''), list()) * diff(data[1:T.total, icountry])
+		x <- data[1:(T.total - 1), icountry]
+		valid.time <- which(!is.na(observed))
+		if(length(valid.time) == 0) next
+		x <- x[valid.time]
+		observed <- observed[valid.time]
+		dlc <- do.call(paste(type,'.get.dlcurves', sep=''), 
+					list(x, mcmc.set$mcmc.list, country.code, icountry, burnin=burnin, 
+							nr.curves=2000, predictive.distr=TRUE))
+		counter[valid.time,icountry] <- counter[valid.time,icountry] + 1
+		for (i in 1:length(pi)) {
+        	dlpi <- apply(dlc, 2, quantile, c(al.low[i], al.high[i]))
+        	country.GoF[i,icountry] <- sum(observed >= dlpi[1,] & observed <= dlpi[2,])
+        	total.GoF[i] <- total.GoF[i] + country.GoF[i,icountry]
+        	for(itime in 1:length(valid.time)) {
+        		time.GoF[i,valid.time[itime]] <- time.GoF[i,valid.time[itime]] + (observed[itime] >= dlpi[1,itime] & observed[itime] <= dlpi[2,itime])
+        	}
+        }
+	}
+	if(verbose) cat('\n')	
+	total.GoF <- total.GoF/sum(counter)
+	pi.names <- paste(pi, '%', sep='')
+	names(total.GoF) <- pi.names
+	rowsum.counter <- rowSums(counter)
+	for(row in 1:nrow(time.GoF)) time.GoF[row,] <- time.GoF[row,]/rowsum.counter
+	dimnames(time.GoF) <- list(pi.names, rownames(data)[2:T.total])
+	colsum.counter <- colSums(counter)
+	for(row in 1:nrow(country.GoF)) country.GoF[row,] <- country.GoF[row,]/colsum.counter
+	dimnames(country.GoF) <- list(pi.names, meta$regions$country_code[1:max(countries.index)])
+	country.GoF[is.nan(country.GoF)] <- NA
+	if(verbose) cat('Done.\n')
+	return(list(total=total.GoF, time=time.GoF, country=country.GoF))
+}
