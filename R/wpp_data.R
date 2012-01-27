@@ -132,8 +132,16 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
 	#cols.endy <- as.integer(substr(names.tfr.data[num.columns], 7,10))
 	cols.endy <- as.integer(substr(names.tfr.data[num.columns], 6,9))
 	start.index <- (1:ncol.tfr)[(cols.starty <= start.year) & (cols.endy > start.year)]
+	if(length(start.index) <= 0) {
+		if(cols.starty[1] > start.year)	start.index <- 1
+		else if(cols.endy[length(cols.endy)] <= start.year) return(NULL)
+	}
 	start.col <- names.tfr.data[num.columns][start.index[1]]
 	present.index <- (1:ncol.tfr)[(cols.endy >= present.year) & (cols.starty <= present.year)]
+	if(length(present.index) <= 0) {
+		if(cols.endy[length(cols.endy)] < present.year) present.index <- length(cols.endy)
+		else if(cols.starty[1] > present.year) return(NULL)
+	}
 	present.col <- names.tfr.data[num.columns][present.index[1]]
 	proj.start.col <- names.tfr.data[num.columns][present.index[1]+1]
 

@@ -167,16 +167,23 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 	return(rbind(cbind(tfr, matrix(NA, nrow=nrow(tfr), ncol=ncol(pred.table)-1)), pred.table))
 }
 
-get.trajectories <- function(tfr.pred, country, nr.traj=NULL, adjusted=TRUE) {
-	traj.file <- file.path(tfr.pred$output.directory, paste('traj_country', country, '.rda', sep=''))
-	if (file.exists(traj.file)) {
-		load(traj.file)
+get.typical.trajectory.index <- function(trajectories) {
+	med <- apply(trajectories, 1, median)
+	sumerrors <- apply(abs(trajectories - med), 2, sum)
+	sorterrors <- order(sumerrors)
+	return(sorterrors[round(length(sorterrors)/2, 0)])
+}
+
+get.trajectories <- function(tfr.pred, country, nr.traj=NULL, adjusted=TRUE, base.name='traj', typical.trajectory=FALSE) {
+	traj.file <- file.path(tfr.pred$output.directory, paste(base.name, '_country', country, '.rda', sep=''))
+	if (!file.exists(traj.file)) return(list(trajectories=NULL))
+	load(traj.file)
+	if(typical.trajectory) {
+		traj.idx <- get.typical.trajectory.index(trajectories)
+	} else {
 		thintraj <- get.thinning.index(nr.traj, dim(trajectories)[2]) 
 		if (thintraj$nr.points == 0) return(list(trajectories=NULL))
 		traj.idx <- thintraj$index
-	} else {
-		trajectories <- NULL
-		traj.idx <- NULL
 	}
 	if(!is.null(trajectories)) {
 		if(adjusted) {
@@ -267,12 +274,19 @@ get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 
 tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95), 
 								  half.child.variant=TRUE, nr.traj=NULL,
-								  adjusted.only = TRUE,
+								  adjusted.only = TRUE, typical.trajectory=FALSE,
 								  xlim=NULL, ylim=NULL, type='b', 
-								  xlab='Year', ylab='TFR', main=NULL, ...
+								  xlab='Year', ylab='TFR', main=NULL, lwd=c(2,2,2,2,2,1), 
+								  show.legend=TRUE, ...
 								  ) {
+	# lwd is a vector of 6 line widths for: 
+	#	1. observed data, 2. imputed missing data, 3. median, 4. quantiles, 5. +- 0.5 child, 6. trajectories
 	if (missing(country)) {
 		stop('Argument "country" must be given.')
+	}
+	if(length(lwd) < 6) {
+		lwd <- rep(lwd, 6)
+		lwd[6] <- 1
 	}
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	tfr_observed <- tfr.pred$mcmc.set$meta$tfr_matrix_observed
@@ -288,77 +302,78 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 	if (lpart2 > 0) 
 		y1.part2 <- tfr_matrix_reconstructed[(T_end_c[country$index]+1):nrow(tfr_matrix_reconstructed),country$index]
 
-	trajectories <- get.trajectories(tfr.pred, country$code, nr.traj)
+	trajectories <- get.trajectories(tfr.pred, country$code, nr.traj, typical.trajectory=typical.trajectory)
 	if(is.null(xlim)) xlim <- c(min(x1,x2), max(x1,x2))
 	if(is.null(ylim)) ylim <- c(0, max(trajectories$trajectories, y1.part1, y1.part2, na.rm=TRUE))
 	if(is.null(main)) main <- country$name
 	# plot historical data: observed
 	plot(x1[1:lpart1], y1.part1, type=type, xlim=xlim, ylim=ylim, ylab=ylab, xlab=xlab, main=main, 
-					panel.first = grid(), lwd=2, ...
+					panel.first = grid(), lwd=lwd[1], ...
 					)
 	if(lpart2 > 0) { # imputed values
-		lines(x1[(lpart1+1): length(x1)], y1.part2, pch=2, type='b', col='green', lwd=2)
-		lines(x1[lpart1:(lpart1+1)], c(y1.part1[lpart1], y1.part2[1]), col='green', lwd=2) # connection between the two parts
+		lines(x1[(lpart1+1): length(x1)], y1.part2, pch=2, type='b', col='green', lwd=lwd[2])
+		lines(x1[lpart1:(lpart1+1)], c(y1.part1[lpart1], y1.part2[1]), col='green', lwd=lwd[2]) # connection between the two parts
 	}
 	
 	# plot trajectories
 	if(!is.null(trajectories$trajectories)) { 
 		for (i in 1:length(trajectories$index)) {
-			lines(x2, trajectories$trajectories[,trajectories$index[i]], type='l', col='gray')
+			lines(x2, trajectories$trajectories[,trajectories$index[i]], type='l', col='gray', lwd=lwd[6])
 		}
 	}
 	# plot median
 	tfr.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
-	lines(x2, tfr.median, type='l', col='red', lwd=2) 
+	lines(x2, tfr.median, type='l', col='red', lwd=lwd[3]) 
 	# plot given CIs
 	lty <- 2:(length(pi)+1)
 	for (i in 1:length(pi)) {
 		cqp <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i])
 		if (!is.null(cqp)) {
-			lines(x2, cqp[1,], type='l', col='red', lty=lty[i], lwd=2)
-			lines(x2, cqp[2,], type='l', col='red', lty=lty[i], lwd=2)
+			lines(x2, cqp[1,], type='l', col='red', lty=lty[i], lwd=lwd[4])
+			lines(x2, cqp[2,], type='l', col='red', lty=lty[i], lwd=lwd[4])
 		}
 	}
 	legend <- c()
 	col <- c()
-	lwd <- c()
+	lwds <- c()
 	lty <- c(1, lty)
 	if(!adjusted.only) { # plot unadjusted median
 		bhm.median <- get.median.from.prediction(tfr.pred, country$index, country$code, adjusted=FALSE)
-		lines(x2, bhm.median, type='l', col='black', lwd=2)
+		lines(x2, bhm.median, type='l', col='black', lwd=lwd[3])
 		legend <- c(legend, 'BHM median')
 		col <- c(col, 'black')
-		lwd <- c(lwd, 2)
+		lwds <- c(lwds, lwd[3])
 		lty <- c(1, lty)
 	}
 	median.legend <- if(adjusted.only) 'median' else 'adj. median'
 	legend <- c(legend, median.legend, paste('PI', pi))
 	col <- c(col, rep('red', length(pi)+1))
-	lwd <- c(lwd, rep(2, length(pi)+1))
+	lwds <- c(lwds, c(lwd[3], rep(lwd[4], length(pi))))
 	if (half.child.variant) {
 		lty <- c(lty, max(lty)+1)
 		llty <- length(lty)
 		up.low <- get.half.child.variant(median=tfr.median)
-		lines(x2, up.low[1,], type='l', col='blue', lty=lty[llty], lwd=2)
-		lines(x2, up.low[2,], type='l', col='blue', lty=lty[llty], lwd=2)
+		lines(x2, up.low[1,], type='l', col='blue', lty=lty[llty], lwd=lwd[5])
+		lines(x2, up.low[2,], type='l', col='blue', lty=lty[llty], lwd=lwd[5])
 		legend <- c(legend, '+/- 0.5 child')
 		col <- c(col, 'blue')
-		lwd <- c(lwd, 2)
+		lwds <- c(lwds, lwd[5])
 	}
 
 	legend <- c(legend, 'observed TFR')
 	col <- c(col, 'black')
 	lty <- c(lty, 1)
 	pch <- c(rep(-1, length(legend)-1), 1)
-	lwd <- c(lwd, 2)
+	lwds <- c(lwds, lwd[1])
 	if(lpart2 > 0) {
 		legend <- c(legend, 'imputed TFR')
 		col <- c(col, 'green')
 		lty <- c(lty, 1)
 		pch <- c(pch, 2)
-		lwd <- c(lwd, 2)
+		lwds <- c(lwds, lwd[2])
 	}
-	legend('bottomleft', legend=legend, lty=lty, bty='n', col=col, pch=pch, lwd=lwd)
+	if(show.legend)
+		legend('bottomleft', legend=legend, lty=lty, bty='n', col=col, pch=pch, lwd=lwds)
 	#abline(h=1, lty=3)
 	#abline(h=1.5, lty=3)
 	#abline(h=2.1, lty=3)
