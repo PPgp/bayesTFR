@@ -84,7 +84,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	store.bayesTFR.meta.object(meta, meta$output.dir)
 
 	
-	thin.index <- if(thin > mcthin) unique(round(seq(thin, total.iter, by=thin/mcthin))) else 1:total.iter
+	thin.index <- if(thin > mcthin) unique(round(seq(1, total.iter, by=thin/mcthin))) else 1:total.iter
 	nr.points <- length(thin.index)
 	
 	#create one collapsed mcmc

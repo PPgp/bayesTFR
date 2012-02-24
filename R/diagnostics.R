@@ -561,12 +561,15 @@ tfr.DLisDecrement <- function() {
 	total.GoF <- rep(0, length(pi))
 	time.GoF <- matrix(0, nrow=length(pi), ncol=T.total-1)
 	country.GoF <- matrix(0, nrow=length(pi), ncol=max(countries.index))
+	total.mse <- 0
+	time.mse <- rep(0, T.total-1)
+	country.mse <- rep(0, max(countries.index))
 	counter <- matrix(0, ncol=max(countries.index), nrow=T.total-1)
 	if(verbose) cat('\nAssessing goodness of fit for country ')
 	for(icountry in countries.index) {
 		if(verbose) cat(icountry, ', ')
 		country.code <- meta$regions$country_code[icountry]
-		observed <- -1 * do.call(paste(type,'.DLisDecrement', sep=''), list()) * diff(data[1:T.total, icountry])
+		observed <- diff(data[1:T.total, icountry]) * if(do.call(paste(type,'.DLisDecrement', sep=''), list())) -1 else 1 
 		x <- data[1:(T.total - 1), icountry]
 		valid.time <- which(!is.na(observed))
 		if(length(valid.time) == 0) next
@@ -584,18 +587,36 @@ tfr.DLisDecrement <- function() {
         		time.GoF[i,valid.time[itime]] <- time.GoF[i,valid.time[itime]] + (observed[itime] >= dlpi[1,itime] & observed[itime] <= dlpi[2,itime])
         	}
         }
+        dlmean <- apply(dlc, 2, mean)
+        country.mse[icountry] <- sum((observed-dlmean)^2)
+        total.mse <- total.mse + country.mse[icountry]
+        for(itime in 1:length(valid.time))
+        	time.mse[valid.time[itime]] <- time.mse[valid.time[itime]] + (observed[itime] - dlmean[itime])^2
+        
 	}
 	if(verbose) cat('\n')	
 	total.GoF <- total.GoF/sum(counter)
+	total.mse <- total.mse/sum(counter)
 	pi.names <- paste(pi, '%', sep='')
 	names(total.GoF) <- pi.names
+	names(total.mse) <- 'MSE'
 	rowsum.counter <- rowSums(counter)
-	for(row in 1:nrow(time.GoF)) time.GoF[row,] <- time.GoF[row,]/rowsum.counter
+	for(row in 1:nrow(time.GoF)) {
+		time.GoF[row,] <- time.GoF[row,]/rowsum.counter
+	}
+	time.mse <- time.mse/rowsum.counter
 	dimnames(time.GoF) <- list(pi.names, rownames(data)[2:T.total])
+	names(time.mse) <- rownames(data)[2:T.total]
 	colsum.counter <- colSums(counter)
-	for(row in 1:nrow(country.GoF)) country.GoF[row,] <- country.GoF[row,]/colsum.counter
+	for(row in 1:nrow(country.GoF)) {
+		country.GoF[row,] <- country.GoF[row,]/colsum.counter
+	}
+	country.mse <- country.mse/colsum.counter
 	dimnames(country.GoF) <- list(pi.names, meta$regions$country_code[1:max(countries.index)])
+	names(country.mse) <- meta$regions$country_code[1:max(countries.index)]
 	country.GoF[is.nan(country.GoF)] <- NA
+	country.mse[is.nan(country.mse)] <- NA
 	if(verbose) cat('Done.\n')
-	return(list(total=total.GoF, time=time.GoF, country=country.GoF))
+	return(list(total.gof=total.GoF, time.gof=time.GoF, country.gof=country.GoF,
+				total.mse=total.mse, time.mse=time.mse, country.mse=country.mse))
 }
