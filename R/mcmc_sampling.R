@@ -47,9 +47,8 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE) {
     a_delta <- nu_deltaD/2
     prod_delta0 <- mcmc$meta$nu.delta0*mcmc$meta$delta0^2 
     
-    mcenv <- new.env() # Create an environment for the mcmc stuff in order to avoid 
-					   # copying of the mcmc list 
-	for (item in names(mcmc)) mcenv[[item]] <- mcmc[[item]]
+    mcenv <- as.environment(mcmc) # Create an environment for the mcmc stuff in order to avoid 
+					   			  # copying of the mcmc list 
     
     mcenv$thin <- thin
     ones <- matrix(1, ncol=nr_DL, nrow=3)
@@ -177,16 +176,18 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE) {
             store.mcmc(mcenv, append=TRUE, flush.buffer=flush.buffer, verbose=verbose)
          }
 	}       # end simu loop MCMC
+	.cleanup.mcmc(mcenv)
 	resmc <- as.list(mcenv)
 	class(resmc) <- class(mcmc)
-	mcmc <- .cleanup.mcmc(resmc)
-    return(mcmc)
+    return(resmc)
 }
 
 .cleanup.mcmc <- function(mcmc) {
-	for(item in names(mcmc)) {
-		if (item != 'meta' && is.element(item, mcmc$dontsave)) mcmc[[item]] <- NULL
+	if(is.environment(mcmc)) {
+		rm(list=mcmc$dontsave[mcmc$dontsave != 'meta'], envir=mcmc)
+		return(NULL)
 	}
+	for(rmitem in mcmc$dontsave[mcmc$dontsave != 'meta']) mcmc[[rmitem]] <- NULL
 	return(mcmc)
 }
 
@@ -229,9 +230,8 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
     	hyperparameters[[par]] <- hyperparameters[[par]][sampled.index,]
     }
 	mcmc.orig <- mcmc
-	mcenv <- new.env() # Create an environment for the mcmc stuff in order to avoid 
-					   # copying of the mcmc list 
-	for (item in names(mcmc)) mcenv[[item]] <- mcmc[[item]]
+	mcenv <- as.environment(mcmc) # Create an environment for the mcmc stuff in order to avoid 
+					              # copying of the mcmc list 
 
 	updated.var.names <- c('gamma_ci', 'd_c', 'Triangle_c4', 'U_c')
 	idx.tau_c.id.notearly <- matrix(c(mcmc$meta$tau_c[id_notearly], id_notearly), ncol=2)

@@ -1,5 +1,11 @@
-1.5-1
+1.5-1 (03/29/2012)
 -----
+Example data reduced from three chains of 50 iterations each to two chains of 30 iterations each in order to make the package smaller.
+
+Rename coda.mcmc.list to coda.list.mcmc in order not to intervene with the S3 method coda.mcmc.
+
+Arguments typical.trajectory, col, lwd, show.legend added to tfr.trajectories.plot.
+
 Function tfr.GoF.dl added to compute goodness of fit.
 
 Argument 'predictive.distr' addedto the DLcurve.plot function to plot the double logistic curves including the error term.

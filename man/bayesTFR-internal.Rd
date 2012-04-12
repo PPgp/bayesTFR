@@ -119,6 +119,8 @@
 \alias{tfr.info}
 \alias{tfr.mcmc.sampling}
 \alias{tfr.mcmc.sampling.extra}
+\alias{tfr.set.identical}
+\alias{tfr.identical}
 \alias{write.table.into.file.cdep}
 \alias{write.table.into.file.cindep}
 \alias{write.values.into.file.cdep}

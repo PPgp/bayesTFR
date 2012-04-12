@@ -35,7 +35,7 @@ tfr.gelman.diag <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		if(verbose) 
 			cat('\n\tDiagnose country independent parameters.')
 		for (par.name in par.names) {
-			coda.mct0 <- coda.mcmc.list(mct0, rm.const.pars=TRUE, low.memory=TRUE, 
+			coda.mct0 <- coda.list.mcmc(mct0, rm.const.pars=TRUE, low.memory=TRUE, 
 								par.names=par.name, par.names.cs=NULL, burnin=t0, start=1, end=end)
 			npars <- ncol(coda.mct0[[1]])
 			if (!is.null(npars)) {
@@ -60,7 +60,7 @@ tfr.gelman.diag <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 			if(verbose)
 				cat(par.name, ', ')
 			for (country in mct0$meta$id_DL) {
-				coda.mct0 <- coda.mcmc.list(mct0, rm.const.pars=TRUE, low.memory=TRUE, 
+				coda.mct0 <- coda.list.mcmc(mct0, rm.const.pars=TRUE, low.memory=TRUE, 
 									par.names=NULL, par.names.cs=par.name, 
 									country=get.country.object(country, mct0$meta)$code,
 									burnin=t0, start=1, end=end)
@@ -193,7 +193,7 @@ tfr.raftery.diag <- function(mcmc=NULL,
 	}
 	result.025 <- result.975 <- burnin.025 <- burnin.975 <- rd.025<- thin.ind.025 <- thin.ind.975 <- NULL
 	if (!is.null(par.names)) {
-		coda.mc <- coda.mcmc.list(mcmc.set, country=country, rm.const.pars=TRUE, low.memory=TRUE,
+		coda.mc <- coda.list.mcmc(mcmc.set, country=country, rm.const.pars=TRUE, low.memory=TRUE,
 						par.names=par.names, par.names.cs=NULL, burnin=burnin, ...
 						)
 		if(verbose) cat('\t\tProcessing raftery.diag(..., r=0.0125, q=0.025) for country-independent parameters\n')
@@ -230,7 +230,7 @@ tfr.raftery.diag <- function(mcmc=NULL,
 			cat('\t\tProcessing raftery.diag for country ')
 		for(country.idx in c.index) {
 			country.obj <- get.country.object(country.idx, mcmc.set$meta, index=TRUE)
-			coda.mc.cs <- coda.mcmc.list(mcmc.set, country=country.obj$code, 
+			coda.mc.cs <- coda.list.mcmc(mcmc.set, country=country.obj$code, 
 									rm.const.pars=TRUE, low.memory=TRUE,
 									par.names = NULL,
 									par.names.cs=par.names.cs, burnin=burnin, ...

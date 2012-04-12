@@ -15,7 +15,7 @@ tfr.pardensity.plot(mcmc.list = NULL,
     burnin = NULL, dev.ncol=5, low.memory = TRUE, ...)
     
 tfr.pardensity.cs.plot(country, mcmc.list=NULL, 
-    sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+    sim.dir=file.path(getwd(), "bayesTFR.output"), 
     chain.ids=NULL, par.names=tfr.parameter.names.cs(trans=TRUE), 
     burnin=NULL, dev.ncol=3, low.memory=TRUE, ...)
 }
@@ -48,9 +48,9 @@ Hana Sevcikova
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 tfr.pardensity.plot(sim.dir=sim.dir)
-tfr.pardensity.cs.plot(country='Ireland', sim.dir=sim.dir, bw=0.2)
+tfr.pardensity.cs.plot(country="Ireland", sim.dir=sim.dir, bw=0.2)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

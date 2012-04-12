@@ -10,14 +10,12 @@ Functions for plotting the MCMC parameter traces.
 }
 \usage{
 tfr.partraces.plot(mcmc.list = NULL, 
-    sim.dir = file.path(getwd(), "bayesTFR.output"), 
-    chain.ids = NULL, 
+    sim.dir = file.path(getwd(), "bayesTFR.output"), chain.ids = NULL, 
     par.names = tfr.parameter.names(trans = TRUE), 
     nr.points = NULL, dev.ncol=5, low.memory = TRUE, \dots)
 	
 tfr.partraces.cs.plot(country, mcmc.list = NULL, 
-    sim.dir = file.path(getwd(), "bayesTFR.output"), 
-    chain.ids = NULL, 
+    sim.dir = file.path(getwd(), "bayesTFR.output"), chain.ids = NULL, 
     par.names = tfr.parameter.names.cs(trans = TRUE), 
     nr.points = NULL, dev.ncol=3, low.memory = TRUE, \dots)
 }
@@ -42,13 +40,13 @@ Hana Sevcikova
 }
 
 \seealso{
-\code{\link{coda.mcmc.list}} for retrieving the raw values of traces.
+\code{\link{coda.list.mcmc}} for retrieving the raw values of traces.
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 tfr.partraces.plot(sim.dir=sim.dir)
-tfr.partraces.cs.plot(country='Netherlands', sim.dir=sim.dir)
+tfr.partraces.cs.plot(country="Netherlands", sim.dir=sim.dir)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

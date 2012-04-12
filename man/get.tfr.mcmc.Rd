@@ -12,8 +12,7 @@ The function \code{get.tfr.mcmc} retrieves results of an MCMC simulation and cre
 }
 \usage{
 get.tfr.mcmc(sim.dir = file.path(getwd(), "bayesTFR.output"), 
-    chain.ids = NULL, low.memory = TRUE, 
-    burnin = 0, verbose = FALSE)
+    chain.ids = NULL, low.memory = TRUE, burnin = 0, verbose = FALSE)
 
 has.tfr.mcmc(sim.dir)
 
@@ -45,7 +44,7 @@ Hana Sevcikova
 \code{\link{bayesTFR.mcmc.set}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
 summary(m)
 

@@ -12,8 +12,7 @@ Accessing Country Information
 Function \code{get.country.object} returns an object containing country name, code and index. Functions \code{get.countries.table} return a data frame containing codes and names of all countries.
 }
 \usage{
-get.country.object(country, meta = NULL, country.table = NULL, 
-    index = FALSE)
+get.country.object(country, meta = NULL, country.table = NULL, index = FALSE)
 \method{get.countries.table}{bayesTFR.mcmc.set}(object, \dots)
 \method{get.countries.table}{bayesTFR.prediction}(object, \dots)
 }
@@ -50,7 +49,7 @@ Hana Sevcikova
 \code{\link{country.names}}, \code{\link{UN2008}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
 # all four calls should give the same answer
 get.country.object('China', m$meta)

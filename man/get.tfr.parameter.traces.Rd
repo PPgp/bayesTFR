@@ -38,18 +38,18 @@ Hana Sevcikova
 
 
 \seealso{
-\code{\link{coda.mcmc.list}} for another way of retrieving parameter traces. 
+\code{\link{coda.list.mcmc}} for another way of retrieving parameter traces. 
 }
 
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
 tfr.values <- get.tfr.parameter.traces(m$mcmc.list, burnin=10, par.names="sigma0")
 \dontrun{
 hist(tfr.values, main=colnames(tfr.values))
 }
 tfr.values.cs <- get.tfr.parameter.traces.cs(m$mcmc.list, 
-                    get.country.object('Canada', meta=m$meta),
+                    get.country.object("Canada", meta=m$meta),
                     burnin=10, par.names="Triangle_c4")
 \dontrun{
 hist(tfr.values.cs, main=colnames(tfr.values.cs))

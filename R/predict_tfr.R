@@ -572,7 +572,7 @@ get.tfr.periods <- function(meta) {
 	return (paste(mid.years-3, mid.years+2, sep='-'))
 }
 
-do.convert.trajectories <- function(pred, n, output.dir, verbose=FALSE) {
+do.convert.trajectories <- function(pred, n, output.dir, countries=NULL, verbose=FALSE) {
 	# Converts all trajectory rda files into UN ascii, selecting n trajectories by equal spacing.
 	if(n==0) return(NULL)
 	nr.simu <- pred$nr.traj
@@ -610,16 +610,17 @@ do.convert.trajectories <- function(pred, n, output.dir, verbose=FALSE) {
 	country.codes <- country.names <- c()
 	result.wide <- c()
 	header <- get.traj.ascii.header(pred$mcmc.set$meta)
-	for (country in 1:get.nr.countries(pred$mcmc.set$meta)) {
-		country.obj <- get.country.object(country, pred$mcmc.set$meta, index=TRUE)
+	convert.countries <- if(is.null(countries)) pred$mcmc.set$meta$regions$country_code else countries
+	for (country in convert.countries) {
+		country.obj <- get.country.object(country, pred$mcmc.set$meta)
 		if(verbose) cat('Converting trajectories for', country.obj$name, '(code', country.obj$code, ')\n')
 		trajectories <- get.trajectories(pred, country.obj$code)$trajectories
 		if (is.null(trajectories)) {
 			warning('No trajectories for ', country.obj$name, ' (code ', country.obj$code, ')')
 		} else {
+			append <- length(country.codes) > 0
 			country.codes <- c(country.codes, country.obj$code)
-			country.names <- c(country.names, country.obj$name)
-			append <- country > 1
+			country.names <- c(country.names, country.obj$name)			
 			result <- store.traj.ascii(trajectories, n, output.dir, country.obj$code, 
 							pred$mcmc.set$meta, index=index, append=append)
 			if(!append) {
@@ -706,7 +707,7 @@ do.write.parameters.summary <- function(pred, output.dir, revision=14, adjusted=
 								get.median.from.prediction(pred, country.obj$index, 
 												country.obj$code, adjusted=adjusted)[-1])
 		sink(con, type='message')
-		s <- summary(coda.mcmc.list(pred$mcmc.set, country=country.obj$code, 
+		s <- summary(coda.list.mcmc(pred$mcmc.set, country=country.obj$code, 
 					par.names=NULL, par.names.cs=tfr.parameter.names.cs(trans=FALSE), 
 					thin=1, burnin=0))
 		sink(type='message')

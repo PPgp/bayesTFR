@@ -75,7 +75,7 @@ Hana Sevcikova, Leontine Alkema
 \code{\link{run.tfr.mcmc}}, \code{\link{get.tfr.mcmc}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
 summary(m, meta.only = TRUE)
 names(m$meta)

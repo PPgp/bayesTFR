@@ -14,8 +14,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
     sim.dir = file.path(getwd(), "bayesTFR.output"), 
     replace.output = FALSE, nr.traj = NULL, thin = NULL,
     burnin = 2000, use.diagnostics = FALSE,
-    save.as.ascii = 1000, output.dir = NULL,  
-    low.memory = TRUE, 
+    save.as.ascii = 1000, output.dir = NULL, low.memory = TRUE, 
     mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016,
     seed = NULL, verbose = TRUE)
 }
@@ -64,8 +63,7 @@ The resulting prediction object is saved into \file{\{output.dir\}/predictions}.
 	}
 	
 \references{
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, T. Buettner: 
-Probabilistic projections of the total fertility rate for all countries. Working Paper nr. 97, Center for Statistics and the Social Sciences, University of Washington. \url{http://www.csss.washington.edu/Papers}
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. (A Working Paper version at \url{http://www.csss.washington.edu/Papers} [nr. 97])
 }
 \author{
 Hana Sevcikova, Leontine Alkema
@@ -84,7 +82,7 @@ Hana Sevcikova, Leontine Alkema
 \dontrun{
 m <- run.tfr.mcmc(nr.chains=1, iter=10, verbose=TRUE)
 pred <- tfr.predict(m, burnin=0, verbose=TRUE)
-summary(pred, country='Iceland')
+summary(pred, country="Iceland")
 }
 }
 

@@ -183,15 +183,15 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 	ncountries.est <- get.nr.countries.est(meta)
 	replaced.processed <- intersect(tfrs$replaced, country.codes.processed)
 	idx.replaced.processed <- is.element(country.codes.processed, replaced.processed)
-	replaced.processed.est <- country.codes.processed[idx.replaced.processed[1:ncountries.est]]
+	replaced.processed.est <- country.codes.processed[1:ncountries.est][idx.replaced.processed[1:ncountries.est]]
 	
 	added.processed <- intersect(tfrs$added, country.codes.processed)
 	idx.added.processed <- is.element(country.codes.processed, added.processed)
-	added.processed.est <- country.codes.processed[idx.added.processed[1:ncountries.est]]
+	added.processed.est <- country.codes.processed[1:ncountries.est][idx.added.processed[1:ncountries.est]]
 	
 	countries.processed <- intersect(countries, country.codes.processed)
 	idx.countries.processed <- is.element(country.codes.processed, countries.processed)
-	countries.processed.est <- country.codes.processed[idx.countries.processed[1:ncountries.est]]
+	countries.processed.est <- country.codes.processed[1:ncountries.est][idx.countries.processed[1:ncountries.est]]
 
 	if(length(replaced.processed.est)+length(added.processed.est)+length(countries.processed.est)> 0) {
 		cat('\nCountries', paste(c(replaced.processed.est, added.processed.est, 

@@ -1,6 +1,6 @@
-\name{coda.mcmc.list}
+\name{coda.list.mcmc}
 \Rdversion{1.1}
-\alias{coda.mcmc.list}
+\alias{coda.list.mcmc}
 \alias{coda.mcmc}
 \alias{coda.mcmc.bayesTFR.mcmc}
 
@@ -11,7 +11,7 @@ Convertion to coda's Objects
 The functions convert MCMC traces (simulated using \code{\link{run.tfr.mcmc}}) into objects that can be used with the \pkg{coda} package.
 }
 \usage{
-coda.mcmc.list(mcmc = NULL, country = NULL, chain.ids = NULL, 
+coda.list.mcmc(mcmc = NULL, country = NULL, chain.ids = NULL, 
     sim.dir = file.path(getwd(), "bayesTFR.output"), 
     par.names = tfr.parameter.names(), 
     par.names.cs = tfr.parameter.names.cs(), 
@@ -24,7 +24,7 @@ coda.mcmc.list(mcmc = NULL, country = NULL, chain.ids = NULL,
     burnin = 0, thin = 1, \dots)
 }
 \arguments{
-\item{mcmc}{In \code{coda.mcmc}, it is an object of class \code{\link{bayesTFR.mcmc}}. In \code{coda.mcmc.list}, it is either a list of \code{\link{bayesTFR.mcmc}} objects, or an object of class \code{\link{bayesTFR.mcmc.set}} or \code{\link{bayesTFR.prediction}}. If it is \code{NULL}, the MCMCs are loaded from \code{sim.dir}. Either \code{mcmc.list} or \code{sim.dir} must be given.}
+\item{mcmc}{In \code{coda.mcmc}, it is an object of class \code{\link{bayesTFR.mcmc}}. In \code{coda.list.mcmc}, it is either a list of \code{\link{bayesTFR.mcmc}} objects, or an object of class \code{\link{bayesTFR.mcmc.set}} or \code{\link{bayesTFR.prediction}}. If it is \code{NULL}, the MCMCs are loaded from \code{sim.dir}. Either \code{mcmc} or \code{sim.dir} must be given.}
 \item{country}{Country name or code. It is used in connection with the \code{par.names.cs} argument (see below). 
 }
   \item{chain.ids}{
@@ -57,7 +57,7 @@ Additional arguments passed to the \pkg{coda}'s \code{\link[coda]{mcmc}} functio
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-The function \code{coda.mcmc.list} returns an object of class \dQuote{mcmc.list}. The function \code{coda.mcmc} returns an object of class \dQuote{mcmc}, both defined in the \pkg{coda} package.
+The function \code{coda.list.mcmc} returns an object of class \dQuote{mcmc.list}. The function \code{coda.mcmc} returns an object of class \dQuote{mcmc}, both defined in the \pkg{coda} package.
 }
 
 \author{

@@ -12,9 +12,11 @@ The functions plot/tabulate the posterior distribution of TFR trajectories for a
 \usage{
 tfr.trajectories.plot(tfr.pred, country, pi = c(80, 95), 
     half.child.variant = TRUE, nr.traj = NULL, 
-    adjusted.only = TRUE,
-    xlim = NULL, ylim = NULL, type = 'b', 
-    xlab = 'Year', ylab = 'TFR', main = NULL, \dots)
+    adjusted.only = TRUE, typical.trajectory = FALSE, 
+    xlim = NULL, ylim = NULL, type = 'b', xlab = 'Year', ylab = 'TFR', 
+    main = NULL, lwd = c(2, 2, 2, 2, 2, 1), 
+    col=c('black', 'green', 'red', 'red', 'blue', 'gray'),
+    show.legend = TRUE, \dots)
 	
 tfr.trajectories.plot.all(tfr.pred, 
     output.dir = file.path(getwd(), 'TFRtrajectories'),
@@ -31,9 +33,11 @@ tfr.trajectories.table(tfr.pred, country, pi = c(80, 95),
   \item{half.child.variant}{If \code{TRUE} the United Nations variant of \dQuote{\code{+/-0.5} child} (relative to the median) is shown.}
   \item{nr.traj}{Number of trajectories to be plotted. If \code{NULL}, all trajectories are plotted, otherwise they are thinned evenly.}
   \item{adjusted.only}{Logical. By default, if the projection median is adjusted using e.g. \code{\link{tfr.median.set}}, the function plots the adjusted median. If \code{adjusted.only=FALSE} the original (non-adjusted) median is plotted as well.}
+  \item{typical.trajectory}{Logical. If \code{TRUE} one trajectory is shown that has the smallest distance to the median.}
   \item{xlim, ylim, type, xlab, ylab, main}{Graphical parameters passed to the \code{plot} function.}
-  \item{\dots}{Additional graphical parameters. For \code{tfr.trajectories.plot.all}, \code{\dots} contains also arguments
-  		\code{pi}, \code{half.child.variant} and \code{nr.traj}.}
+    \item{lwd, col}{Vector of six elements giving the line width and color for: 1. observed data, 2. imputed missing data, 3. median, 4. quantiles, 5. half-child variant, 6. trajectories.}
+  \item{show.legend}{Logical controlling whether the legend should be drawn.}
+  \item{\dots}{Additional graphical parameters. In addition, for \code{tfr.trajectories.plot.all}, \code{\dots} contains any of the arguments of \code{tfr.trajectories.plot}.}
   \item{output.dir}{Directory into which resulting graphs are stored.}
   \item{output.type}{Type of the resulting files. It can be \dQuote{png}, \dQuote{pdf}, \dQuote{jpeg}, \dQuote{bmp}, \dQuote{tiff}, or \dQuote{postscript}.}
   \item{verbose}{Logical switching log messages on and off.}
@@ -53,10 +57,10 @@ Hana Sevcikova, Leontine Alkema
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 pred <- get.tfr.prediction(sim.dir)
-tfr.trajectories.plot(pred, country='Burkina Faso', pi=c(80, 95))
-tfr.trajectories.table(pred, country='Burkina Faso', pi=c(80, 95))
+tfr.trajectories.plot(pred, country="Burkina Faso", pi=c(80, 95))
+tfr.trajectories.table(pred, country="Burkina Faso", pi=c(80, 95))
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

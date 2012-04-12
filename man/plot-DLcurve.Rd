@@ -11,12 +11,12 @@ The functions plot the posterior distribution of the double logistic function us
 }
 \usage{
 DLcurve.plot(mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 10, 
-    nr.curves = NULL, predictive.distr=FALSE, ylim=NULL, 
-    xlab='TFR (reversed)', ylab='TFR decrement', main=NULL, \dots)
+    nr.curves = NULL, predictive.distr = FALSE, ylim = NULL, 
+    xlab = 'TFR (reversed)', ylab = 'TFR decrement', main = NULL, \dots)
 	
-DLcurve.plot.all(mcmc.list=NULL, sim.dir=NULL, 
-    output.dir=file.path(getwd(), 'DLcurves'),
-    output.type="png", burnin=NULL, verbose=FALSE, \dots)
+DLcurve.plot.all(mcmc.list = NULL, sim.dir = NULL, 
+    output.dir = file.path(getwd(), 'DLcurves'),
+    output.type = "png", burnin = NULL, verbose = FALSE, \dots)
 }
 \arguments{
   \item{mcmc.list}{List of \code{\link{bayesTFR.mcmc}} objects, an object of class \code{\link{bayesTFR.mcmc.set}} or of class \code{\link{bayesTFR.prediction}}. In case of \code{DLcurve.plot.all} if it si \code{NULL}, it is loaded from \code{sim.dir}.}
@@ -43,9 +43,9 @@ Hana Sevcikova, Leontine Alkema
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 mcmc.set <- get.tfr.mcmc(sim.dir=sim.dir)
-DLcurve.plot(country='Burkina Faso', mcmc.set, burnin=25)
+DLcurve.plot(country="Burkina Faso", mcmc.set, burnin=15)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

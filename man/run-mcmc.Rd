@@ -42,8 +42,8 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     verbose = FALSE, ...)
 		
 continue.tfr.mcmc(iter, chain.ids=NULL, 
-    output.dir=file.path(getwd(), 'bayesTFR.output'), 
-    parallel=FALSE, nr.nodes=NULL, auto.conf = NULL,
+    output.dir=file.path(getwd(), "bayesTFR.output"), 
+    parallel = FALSE, nr.nodes = NULL, auto.conf = NULL,
     verbose=FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -57,7 +57,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{present.year}{End year for using historical data.}
   \item{wpp.year}{Year for which WPP data is available (see also \link{UN2010}).}
   \item{my.tfr.file}{File name containing user-specified TFR time series for one or more countries. It can include a subset of countries contained in the UN WPP file, as well as a set of new countries. In the former case,
-  	the function replaces the corresponding country data from the UN WPP file by values in this file. Only columns are replaced that match column names of the WPP file, and in addition, columns \sQuote{last.observed} and \sQuote{include_code} are used, if present. Countries are matched using the column \sQuote{country_code} (see also \link{UN2008}). In addition, in order the countries to be included in the simulation, in both cases (whether they are included in the UN TFR file or not), they must be contained in the UN table of locations and the \sQuote{include_code} in that table must be set to 2 (see \link{WPP2010_LOCATIONS}). If the column \sQuote{include_code} is present in \code{my.tfr.file}, its value overwrites the corresponding include code in the location file, unless is -1.  See also Details below.}
+  	the function replaces the corresponding country data from the UN WPP file by values in this file. Only columns are replaced that match column names of the WPP file, and in addition, columns \sQuote{last.observed} and \sQuote{include_code} are used, if present. Countries are matched using the column \sQuote{country_code} (see also \link{UN2010}). In addition, in order the countries to be included in the simulation, in both cases (whether they are included in the UN TFR file or not), they must be contained in the UN table of locations and the \sQuote{include_code} in that table must be set to 2 (see \link{WPP2010_LOCATIONS}). If the column \sQuote{include_code} is present in \code{my.tfr.file}, its value overwrites the corresponding include code in the location file, unless is -1.  See also Details below.}
   \item{buffer.size}{Buffer size (in number of iterations) for keeping data in the memory. The smaller the \code{buffer.size} the more often will the process access the hard disk and thus, the slower the run. On the other hand, the smaller the \code{buffer.size} the less data will be lost in case of failure.}
   \item{U.c.low, U.up}{Lower and upper bound of the parameter \eqn{U_c}, the start level of the fertility transition. The lower bound is set for each country as the maximum of \code{U.c.low} and the minimum of historical TFR for that country.}
   \item{U.width}{Width for slice sampling used when updating the \eqn{U_c} parameter.}
@@ -117,8 +117,7 @@ For simulation of the hyperparameters of the Bayesian hierarchical model, all co
 	\item{mcmc.list}{A list of objects of class \code{\link{bayesTFR.mcmc}}, one for each MCMC.}
 }
 \references{
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T.: 
-Probabilistic projections of the total fertility rate for all countries. Working Paper nr. 97, Center for Statistics and the Social Sciences, University of Washington. \url{http://www.csss.washington.edu/Papers}
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. (A Working Paper version at \url{http://www.csss.washington.edu/Papers} [nr. 97])
 }
 \author{
 	Hana Sevcikova, Leontine Alkema

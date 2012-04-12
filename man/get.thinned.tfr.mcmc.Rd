@@ -8,14 +8,14 @@ Creating and Accessing Thinned MCMCs
 }
 \description{
 The function \code{get.thinned.tfr.mcmc} accesses 
-a thinned and burned version of the given MCMC set. \code{create.thinned.tfr.mcmc} creates such set.
+a thinned and burned version of the given MCMC set. \code{create.thinned.tfr.mcmc} creates such a set.
 }
 
 \usage{
 get.thinned.tfr.mcmc(mcmc.set, thin = 1, burnin = 0)
 
 create.thinned.tfr.mcmc(mcmc.set, thin = 1, burnin = 0, 
-	output.dir = NULL, verbose = TRUE)
+    output.dir = NULL, verbose = TRUE)
 }
 \arguments{
   \item{mcmc.set}{Object of class \code{\link{bayesTFR.mcmc.set}}.}
@@ -42,12 +42,12 @@ Hana Sevcikova
 \code{\link{bayesTFR.mcmc.set}}, \code{\link{tfr.predict}}, \code{\link{tfr.diagnose}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
 # MCMC created when generating predictions using:
-# tfr.predict(m, burnin=30)
-mb <- get.thinned.tfr.mcmc(m, thin=1, burnin=30)
-summary(mb, meta.only=TRUE) # length 60 = 3chains x (50-30)iters.
+# tfr.predict(m, burnin=15)
+mb <- get.thinned.tfr.mcmc(m, thin=1, burnin=15)
+summary(mb, meta.only=TRUE) # length 30 = 2chains x (30-15)iters.
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

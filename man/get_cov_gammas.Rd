@@ -7,8 +7,7 @@
 From a given MCMC, obtain a covariance matrix of the \eqn{\gamma_{ci}}{gamma_ci} (\eqn{i=1,2,3}) parameters for each country \eqn{c}.
 }
 \usage{
-get.cov.gammas(mcmc.set = NULL, sim.dir = NULL, burnin = 200, 
-    chain.id = 1)
+get.cov.gammas(mcmc.set = NULL, sim.dir = NULL, burnin = 200, chain.id = 1)
 }
 \arguments{
   \item{mcmc.set}{Object of class \code{bayesTFR.mcmc.set}. If it is \code{NULL}, the \code{sim.dir} is used to load existing simulation results.}
@@ -35,10 +34,9 @@ Leontine Alkema, Hana Sevcikova
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 cov.gammas <- get.cov.gammas(sim.dir=sim.dir, burnin=0)
-m <- run.tfr.mcmc(nr.chains=1, iter=10, proposal_cov_gammas=cov.gammas, 
-    verbose=TRUE)
+m <- run.tfr.mcmc(nr.chains=1, iter=10, proposal_cov_gammas=cov.gammas, verbose=TRUE)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

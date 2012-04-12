@@ -90,15 +90,15 @@ Hana Sevcikova, Adrian Raftery
 %}
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 pred <- get.tfr.prediction(sim.dir=sim.dir)
 # Uses heat colors and seven categories by default
 tfr.map(pred)
 # Uses more colors with more suitable categorization
 params <- get.tfr.map.parameters(pred)
-do.call('tfr.map', params)
+do.call("tfr.map", params)
 # Another projection year on the same scale
-do.call('tfr.map', c(list(projection.year=2043), params))
+do.call("tfr.map", c(list(projection.year=2043), params))
 
 # Using Google Vizualization tool
 tfr.map.gvis(pred)

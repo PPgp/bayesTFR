@@ -599,7 +599,7 @@ coda.mcmc.bayesTFR.mcmc <- function(mcmc, country=NULL, par.names=tfr.parameter.
 }
 	
 	
-coda.mcmc.list <- function(mcmc=NULL, country=NULL, chain.ids=NULL,
+coda.list.mcmc <- function(mcmc=NULL, country=NULL, chain.ids=NULL,
 							sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 							par.names=tfr.parameter.names(), 
 							par.names.cs=tfr.parameter.names.cs(), 
@@ -769,7 +769,7 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 		}
 		country <- country.obj$code
 	}
-	summary(coda.mcmc.list(object, country=country, par.names=par.names,
+	summary(coda.list.mcmc(object, country=country, par.names=par.names,
 							par.names.cs=par.names.cs, thin=thin, burnin=burnin), ...)
 }
 
@@ -956,6 +956,24 @@ burn.and.thin <- function(mcmc, burnin=0, thin=1) {
 }
 
 no.traces.loaded <- function(mcmc) return((length(mcmc$traces) == 1) && mcmc$traces == 0)
+
+tfr.set.identical <- function(mcmc.set1, mcmc.set2) {
+	# Test if two bayesTFR sets are identical
+	same <- setequal(names(mcmc.set1), names(mcmc.set2)) && identical(mcmc.set1$meta, mcmc.set2$meta) && length(mcmc.set1$mcmc.list) == length(mcmc.set2$mcmc.list)
+	if(!same) return(same)
+	for(i in 1:length(mcmc.set1$mcmc.list)) {
+		same <- same && tfr.identical(mcmc.set1$mcmc.list[[i]], mcmc.set2$mcmc.list[[i]])
+	}
+	return(same)
+}
+
+tfr.identical <- function(mcmc1, mcmc2) {
+	# Test if two mcmcs are identical	
+	same <- setequal(names(mcmc1), names(mcmc2))
+	for(item in names(mcmc1)) 
+		same <- same && identical(mcmc1[[item]], mcmc2[[item]])
+	return(same)
+}
 
 get.tfr.trajectories <- function(tfr.pred, country) {
 	country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)

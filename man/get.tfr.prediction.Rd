@@ -37,9 +37,9 @@ Hana Sevcikova
 \code{\link{bayesTFR.prediction}}, \code{\link{tfr.predict}}, \code{\link{summary.bayesTFR.prediction}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 pred <- get.tfr.prediction(sim.dir=sim.dir)
-summary(pred, country='Canada')
+summary(pred, country="Canada")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

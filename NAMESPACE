@@ -36,7 +36,7 @@ export(
 	get.tfr.parameter.traces.cs,
 	get.tfr.trajectories,
 	coda.mcmc,
-	coda.mcmc.list,
+	coda.list.mcmc,
 	get.cov.gammas,
 	get.country.object,
 	country.names,

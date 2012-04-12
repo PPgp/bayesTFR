@@ -7,7 +7,7 @@ Goodness of Fit of the Double Logistic Function
 The function computes the ratio of observed data fitted within the given probability intervals of the predictive posterior distribution of the double logistic function. 
 }
 \usage{
-    tfr.GoF.dl(sim.dir, pi = c(80, 90, 95), burnin=2000, verbose=TRUE)
+tfr.GoF.dl(sim.dir, pi = c(80, 90, 95), burnin = 2000, verbose = TRUE)
 }
 
 \arguments{
@@ -40,7 +40,7 @@ To see the fit visually per country, use \code{\link{DLcurve.plot}(\dots, predic
 \code{\link{DLcurve.plot}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 tfr <- get.tfr.mcmc(sim.dir)
 # Note that this simulation is a toy example and thus has not converged.
 tfr.GoF.dl(sim.dir)

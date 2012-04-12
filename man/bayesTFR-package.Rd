@@ -15,8 +15,8 @@ using a Bayesian hierarchical model and the United Nations demographic time seri
 \details{
 \tabular{ll}{
 Package: \tab bayesTFR\cr
-Version: \tab 1.5-0\cr
-Date: \tab 2011-11-17\cr
+Version: \tab 1.5-1\cr
+Date: \tab 2012-03-29\cr
 Depends: \tab R (>= 2.9.0), mvtnorm, coda\cr
 Suggests: \tab rworldmap, fields, snowFT, googleVis \cr
 License: \tab GPL (>= 2)\cr
@@ -47,20 +47,20 @@ A number of functions analyzing results are included in the package:
 \item \link{summary.bayesTFR.prediction}: Summary function for the prediction results.
 }
 
-For MCMC diagnostics, function \link{coda.mcmc.list} creates an object of type \dQuote{mcmc.list} that can be used with the \pkg{coda} package.  Furthermore, function \link{tfr.diagnose} analyzes the MCMCs using the Raftery diagnostics implemented in the \pkg{coda} package and gives information about parameters that did not converge. 
+For MCMC diagnostics, function \link{coda.list.mcmc} creates an object of type \dQuote{mcmc.list} that can be used with the \pkg{coda} package.  Furthermore, function \link{tfr.diagnose} analyzes the MCMCs using the Raftery diagnostics implemented in the \pkg{coda} package and gives information about parameters that did not converge. 
 %In case of having multiple chains, function \link{tfr.gelman.diag} computes the Gelman diagnostics for different burnins which can by plotted using \link{tfr.plot.gelman}.  
 
 Existing simulation results can be accessed using the \link{get.tfr.mcmc} function.  An existing prediction can be accessed via \link{get.tfr.prediction}. Existing convergence diagnostics can be accessed using the \link{get.tfr.convergence} and \link{get.tfr.convergence.all} functions.
 
-There are two important datasets used as an input into the MCMC simulations, provided by the United Nations Population Division:
+There are a few important datasets used as an input into the MCMC simulations, provided by the United Nations Population Division:
 \itemize{
-\item \link{UN2008}: Contains the historical data of total fertility rates as available for WPP 2008.
-\item \link{WPP2008_LOCATIONS}: Location dataset (for WPP 2008) used as a filter and look-up table.
+\item \link{UN2008}, \link{UN2010}: Contains the historical data of total fertility rates as available for WPP 2008 and WPP 2010.
+\item \link{WPP2008_LOCATIONS}, \link{WPP2010_LOCATIONS}: Location dataset (for WPP 2008 and WPP 2010) used as a filter and look-up table.
 }
 }
 
 \note{
-There is a directory \code{ex-data} shipped with the package which contains results from an example simulation, containing three chains with 50 iterations each.  The Example section below shows how these results were created.  These data are used in Example sections throughout the manual.  The user can either reproduce the data in her/his local directory, or use the ones from the package.   
+There is a directory \code{ex-data} shipped with the package which contains results from an example simulation, containing two chains with 30 iterations each.  The Example section below shows how these results were created.  These data are used in Example sections throughout the manual.  The user can either reproduce the data in her/his local directory, or use the ones from the package.   
 }
 
 \author{
@@ -74,8 +74,7 @@ Hana Sevcikova, Leontine Alkema, Adrian E. Raftery (2011). bayesTFR: An
   Journal of Statistical Software, 43(1), 1-29.
   \url{http://www.jstatsoft.org/v43/i01/}.
 
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T.: 
-Probabilistic projections of the total fertility rate for all countries. Working Paper nr. 97, Center for Statistics and the Social Sciences, University of Washington. \url{http://www.csss.washington.edu/Papers}
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. (A Working Paper version at \url{http://www.csss.washington.edu/Papers} [nr. 97])
 }
 
 \keyword{ package }
@@ -86,8 +85,8 @@ Probabilistic projections of the total fertility rate for all countries. Working
 \examples{
 \dontrun{
 # This command produces output data such as in the directory ex-data
-m <- run.tfr.mcmc(nr.chains=3, iter=50, seed=1, verbose=TRUE)
-pred <- tfr.predict(m, burnin=30, verbose=TRUE)
+m <- run.tfr.mcmc(nr.chains=2, iter=30, seed=1, verbose=TRUE)
+pred <- tfr.predict(m, burnin=15, verbose=TRUE)
 summary(pred, country='Ghana')
 }
 }

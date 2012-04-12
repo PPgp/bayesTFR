@@ -41,16 +41,16 @@ Hana Sevcikova
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
-pred.dir <- file.path(getwd(), 'exampleTFRpred')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+pred.dir <- file.path(getwd(), "exampleTFRpred")
 
-# stores 10 trajectories out of 75 (3x(50-25)) into 
+# stores 10 trajectories out of 30 (2x(30-15)) into 
 # exampleTFRpred/predictions/ascii_trajectories.csv
 tfr.predict(sim.dir=sim.dir, output.dir=pred.dir, 
-            burnin=25, save.as.ascii=10, verbose=TRUE)
+            burnin=15, save.as.ascii=10, verbose=TRUE)
             
-# stores all 75 trajectories into the current directory
-convert.tfr.trajectories(dir=pred.dir, n='all', output.dir='.', verbose=TRUE)
+# stores all 30 trajectories into the current directory
+convert.tfr.trajectories(dir=pred.dir, n="all", output.dir=".", verbose=TRUE)
 
 # Note: If the output.dir argument in tfr.predict is omitted, 
 # call convert.tfr.trajectories with dir=sim.dir 

@@ -57,9 +57,9 @@ Hana Sevcikova
 \code{\link{bayesTFR.mcmc.set}}, \code{\link[coda]{summary.mcmc}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
-summary(m, country='Czech Republic', burnin=20)
+summary(m, country="Czech Republic", burnin=15)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

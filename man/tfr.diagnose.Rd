@@ -11,7 +11,7 @@ Convergence Diagnostics of TFR Markov Chain Monte Carlo
 Function \code{tfr.diagnose} runs convergence diagnostics of existing TFR MCMCs, using the \code{raftery.diag} function from the \pkg{coda} package. \code{has.mcmc.converged} checks if the existing diagnostics converged.
 }
 \usage{
-tfr.diagnose(sim.dir, thin=80, burnin = 2000, express = FALSE, 
+tfr.diagnose(sim.dir, thin = 80, burnin = 2000, express = FALSE, 
     country.sampling.prop = NULL, keep.thin.mcmc=FALSE, verbose = TRUE)
     
 has.mcmc.converged(diag)
@@ -28,7 +28,7 @@ has.mcmc.converged(diag)
 }
 \details{
 The function invokes the \code{\link{tfr.raftery.diag}} function separately for country-independent parameters and for country-specific parameters. It results in two possible states: red, i.e. it did not converge, and green, i.e. it converged.
-The resulting object is stored in \file{\{sim.dir\}/diagnostics/bayesTFR.convergence_\{thin\}_\{burnin\}.rda} and can be accessed using the function \code{\link{get.tfr.convergence}}.
+The resulting object is stored in \cr \file{\{sim.dir\}/diagnostics/bayesTFR.convergence_\{thin\}_\{burnin\}.rda} and can be accessed using the function \code{\link{get.tfr.convergence}}.
 }
 \value{
 	\code{has.mcmc.converged} returns a logical value determining if there is convergence or not.
