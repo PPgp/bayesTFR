@@ -134,6 +134,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 	# sigmaAR1 can be a vector. The last element will be repeated up to nr.projections
 
 	nr_project <- ceiling((end.year - mcmc.set$meta$present.year)/5)
+
 #	if (verbose)
 		cat('\nPrediction from', mcmc.set$meta$present.year, 
 			'(excl.) until', end.year, '(i.e.', nr_project, 'projections)\n\n')
@@ -218,9 +219,22 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 	cs.par.values_hier <- get.tfr.parameter.traces(load.mcmc.set$mcmc.list, 
 										c(alpha.vars, delta.vars, other.vars), burnin=0)
 
+	country.counter <- 0
+	gui.options <- list(bDem.TFRpred.ncountries.total=length(prediction.countries))
 	#########################################
 	for (country in prediction.countries){
 	#########################################
+		if(getOption('bDem.TFRpred', default=FALSE)) {
+			# This is to unblock the GUI, if the run is invoked from bayesDem
+			# and pass info about its status
+			# In such a case the gtk libraries are already loaded
+			country.counter <- country.counter + 1
+			gui.options$bDem.TFRpred.ncountries.done <- country.counter
+			options(gui.options)
+			while(do.call('gtkEventsPending', list()))
+				do.call('gtkMainIteration', list())
+		}
+
 		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
 		if (verbose) {			
  			cat('TFR projection for country', country, country.obj$name, 

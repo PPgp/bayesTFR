@@ -26,7 +26,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
 					 	save.all.parameters = FALSE, 
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
-						verbose=FALSE, ...) {
+						verbose=FALSE, verbose.iter = 10, ...) {
 
 	if(file.exists(output.dir)) {
 		if(length(list.files(output.dir)) > 0 & !replace.output)
@@ -119,7 +119,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 						initfun=init.nodes, meta=bayesTFR.mcmc.meta, 
 						thin=thin, iter=iter, S.ini=S.ini, a.ini=a.ini,
                         b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
-                        gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, ...)
+                        gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, verbose.iter=verbose.iter, ...)
 	} else { # run chains sequentially
 		chain.set <- list()
 		for (chain in 1:nr.chains) {
@@ -127,7 +127,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	iter=iter, S.ini=S.ini, a.ini=a.ini, b.ini=b.ini, 
 					 	sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini, 
 					 	gamma.ini=gamma.ini, save.all.parameters=save.all.parameters,
-					 	verbose=verbose)
+					 	verbose=verbose, verbose.iter=verbose.iter)
 		}
 	}
 	names(chain.set) <- 1:nr.chains
@@ -142,7 +142,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 			for(loop in 2:auto.conf$max.loops) {
 				if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
 				mcmc.set <- continue.tfr.mcmc(iter=auto.conf$iter.incr, output.dir=output.dir, nr.nodes=nr.nodes,
-										  parallel=parallel, verbose=verbose)
+										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
 				diag <- try(tfr.diagnose(sim.dir=output.dir, keep.thin.mcmc=TRUE, 
 							thin=auto.conf$thin, burnin=auto.conf$burnin,
 							verbose=verbose))
@@ -158,7 +158,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, 
 							S.ini, a.ini, b.ini, sigma0.ini, Triangle_c4.ini, const.ini, gamma.ini=1,
 							save.all.parameters=FALSE,
-							verbose=FALSE) {
+							verbose=FALSE, verbose.iter=10) {
 								
 	cat('\n\nChain nr.', chain.id, '\n')
     if (verbose) {
@@ -187,12 +187,12 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100,
 	
 	if (verbose) 
 		cat('Start sampling -', mcmc$iter, 'iterations in total.\n')
-	mcmc <- tfr.mcmc.sampling(mcmc, thin=thin, verbose=verbose)
+	mcmc <- tfr.mcmc.sampling(mcmc, thin=thin, verbose=verbose, verbose.iter=verbose.iter)
 	return(mcmc)
 	}
 	
 continue.tfr.mcmc <- function(iter, chain.ids=NULL, output.dir=file.path(getwd(), 'bayesTFR.output'), 
-								parallel=FALSE, nr.nodes=NULL, auto.conf = NULL, verbose=FALSE, ...) {
+								parallel=FALSE, nr.nodes=NULL, auto.conf = NULL, verbose=FALSE, verbose.iter=10, ...) {
 	mcmc.set <- get.tfr.mcmc(output.dir)
 
 	auto.run <- FALSE
@@ -213,13 +213,13 @@ continue.tfr.mcmc <- function(iter, chain.ids=NULL, output.dir=file.path(getwd()
 		require(snowFT)
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
 		chain.list <- performParallel(nr.nodes, chain.ids, mcmc.continue.chain, 
-						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, iter=iter, verbose=verbose, ...)
+						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, iter=iter, verbose=verbose, verbose.iter=verbose.iter, ...)
 		for (i in 1:length(chain.ids))
 			mcmc.set$mcmc.list[[chain.ids[i]]] <- chain.list[[i]]
 	} else { # run chains sequentially
 		for (chain.id in chain.ids) {
 			mcmc.set$mcmc.list[[chain.id]] <- mcmc.continue.chain(chain.id, mcmc.set$mcmc.list, 
-												iter=iter, verbose=verbose)
+												iter=iter, verbose=verbose, verbose.iter=verbose.iter)
 		}
 	}
 	cat('\n')
@@ -231,7 +231,7 @@ continue.tfr.mcmc <- function(iter, chain.ids=NULL, output.dir=file.path(getwd()
 			for(loop in 2:auto.conf$max.loops) {
 				if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
 				mcmc.set <- continue.tfr.mcmc(iter=auto.conf$iter.incr, output.dir=output.dir, nr.nodes=nr.nodes,
-										  parallel=parallel, verbose=verbose)
+										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
 				diag <- try(tfr.diagnose(sim.dir=output.dir, keep.thin.mcmc=TRUE, 
 							thin=auto.conf$thin, burnin=auto.conf$burnin,
 							verbose=verbose))
@@ -241,7 +241,7 @@ continue.tfr.mcmc <- function(iter, chain.ids=NULL, output.dir=file.path(getwd()
 	invisible(mcmc.set)
 }
 	
-mcmc.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE) {
+mcmc.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbose.iter=10) {
 	cat('\n\nChain nr.', chain.id, '\n')
 	if (verbose)
 		cat('************\n')
@@ -250,14 +250,14 @@ mcmc.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE) {
 	if (verbose) 
 		cat('Continue sampling -', iter, 'additional iterations,', mcmc$iter, 'iterations in total.\n')
 
-	mcmc <- tfr.mcmc.sampling(mcmc, thin=mcmc$thin, start.iter=mcmc$finished.iter+1, verbose=verbose)
+	mcmc <- tfr.mcmc.sampling(mcmc, thin=mcmc$thin, start.iter=mcmc$finished.iter+1, verbose=verbose, verbose.iter=verbose.iter)
 	return(mcmc)
 }
 
 run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								countries = NULL, my.tfr.file = NULL, iter = NULL,
 								thin=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
-								verbose=FALSE, ...) {
+								verbose=FALSE, verbose.iter=100, ...) {
 									
 	mcmc.set <- get.tfr.mcmc(sim.dir)
 	Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, 
@@ -295,14 +295,14 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
 		chain.list <- performParallel(nr.nodes, chain.ids, mcmc.run.chain.extra, 
 						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, countries=Eini$index_DL, 
-						posterior.sample=post.idx, iter=iter, burnin=burnin, verbose=verbose, ...)
+						posterior.sample=post.idx, iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, ...)
 		for (i in 1:length(chain.ids))
 			mcmc.set$mcmc.list[[chain.ids[i]]] <- chain.list[[i]]
 	} else { # run chains sequentially
 		for (chain.id in chain.ids) {
 			mcmc.set$mcmc.list[[chain.id]] <- mcmc.run.chain.extra(chain.id, mcmc.set$mcmc.list, 
 												countries=Eini$index_DL, posterior.sample=post.idx, iter=iter,  
-												burnin=burnin, verbose=verbose)
+												burnin=burnin, verbose=verbose, verbose.iter=verbose.iter)
 		}
 	}
 	store.bayesTFR.meta.object(meta, meta$output.dir)
@@ -312,7 +312,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 }
 	
 mcmc.run.chain.extra <- function(chain.id, mcmc.list, countries, posterior.sample, 
-												iter=NULL, burnin=2000, verbose=FALSE) {
+												iter=NULL, burnin=2000, verbose=FALSE, verbose.iter=100) {
 	cat('\n\nChain nr.', chain.id, '\n')
 	if (verbose)
 		cat('************\n')
@@ -323,7 +323,7 @@ mcmc.run.chain.extra <- function(chain.id, mcmc.list, countries, posterior.sampl
 
 	mcmc <- tfr.mcmc.sampling.extra(mcmc, mcmc.list=mcmc.list, countries=countries, 
 									posterior.sample=posterior.sample, 
-									iter=iter, burnin=burnin, verbose=verbose)
+									iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter)
 	return(mcmc)
 }
 
