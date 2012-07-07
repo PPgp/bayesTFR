@@ -184,23 +184,29 @@ tfr.raftery.diag <- function(mcmc=NULL,
 		}
 		return(FALSE)
 	}
-	
 	if(verbose) cat('\nComputing Raftery Diagnostics ... this can take a while ...\n')
 	if (is.null(mcmc)) {
 		mcmc.set <- get.tfr.mcmc(sim.dir=sim.dir, low.memory=TRUE)
 	} else {
 		mcmc.set <- mcmc
 	}
+	gui.option.name <- paste('bDem', strsplit(class(mcmc.set), '.', fixed=TRUE)[[1]][1], 'diagnose', sep='.')
+	gui.option.name.status <- paste(gui.option.name, 'status', sep='.')
+	gui.options <- list()
 	result.025 <- result.975 <- burnin.025 <- burnin.975 <- rd.025<- thin.ind.025 <- thin.ind.975 <- NULL
 	if (!is.null(par.names)) {
 		coda.mc <- coda.list.mcmc(mcmc.set, country=country, rm.const.pars=TRUE, low.memory=TRUE,
 						par.names=par.names, par.names.cs=NULL, burnin=burnin, ...
 						)
+		gui.options[[gui.option.name.status]] <- 'processing country-independent pars (q=0.025)'
+		unblock.gtk(gui.option.name, gui.options)
 		if(verbose) cat('\t\tProcessing raftery.diag(..., r=0.0125, q=0.025) for country-independent parameters\n')
 		rd.025 <- raftery.diag(coda.mc, r=0.0125, q=0.025)
 		if(is.error(rd.025)) return()
 		thin.ind.025 <- diag.thin.indep(coda.mc, q=0.025)
 		colnames(thin.ind.025) <- rownames(rd.025[[1]]$resmatrix)
+		gui.options[[gui.option.name.status]] <- 'processing country-independent pars (q=0.975)'
+		unblock.gtk(gui.option.name, gui.options)
 		if(verbose) cat('\t\tProcessing raftery.diag(..., r=0.0125, q=0.975) for country-independent parameters\n')
 		rd.975 <- raftery.diag(coda.mc, r=0.0125, q=0.975)
 		if(is.error(rd.975)) return()
@@ -228,7 +234,17 @@ tfr.raftery.diag <- function(mcmc=NULL,
 		}
 		if(verbose) 
 			cat('\t\tProcessing raftery.diag for country ')
+		country.counter <- 0
+		status.for.gui <- paste('out of', length(c.index), 'countries.')
 		for(country.idx in c.index) {
+			if(getOption(gui.option.name, default=FALSE)) {
+				# This is to unblock the GUI, if the run is invoked from bayesDem
+				# and pass info about its status
+				# In such a case the gtk libraries are already loaded
+				country.counter <- country.counter + 1
+				gui.options[[gui.option.name.status]] <- paste('finished', country.counter, status.for.gui)
+				unblock.gtk(gui.option.name, gui.options)
+			}
 			country.obj <- get.country.object(country.idx, mcmc.set$meta, index=TRUE)
 			coda.mc.cs <- coda.list.mcmc(mcmc.set, country=country.obj$code, 
 									rm.const.pars=TRUE, low.memory=TRUE,

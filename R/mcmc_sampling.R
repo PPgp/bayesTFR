@@ -84,12 +84,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     for (simu in start.iter:nr_simu) {
     	if(verbose.iter > 0 && (simu %% verbose.iter == 0))
         	cat('\nIteration:', simu, '--', date())
-		if(getOption('bDem.TFRmcmc', default=FALSE)) {
-			# This is to unblock the GUI, if the run is invoked from bayesDem
-			# In such a case the gtk libraries are already loaded
-			while(do.call('gtkEventsPending', list()))
-				do.call('gtkMainIteration', list())
-		}
+        unblock.gtk('bDem.TFRmcmc')
         #################################################################
         ## a_sd, b_sd, f_sd and sigma0
         #################################################################
@@ -196,6 +191,15 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
 	return(mcmc)
 }
 
+unblock.gtk <- function(option, options.list=NULL) {
+	if(!getOption(option, default=FALSE)) return()
+	if(!is.null(options.list)) options(options.list)
+	# This is to unblock the GUI, if the run is invoked from bayesDem
+	# In such a case the gtk libraries are already loaded
+	while(do.call('gtkEventsPending', list()))
+		do.call('gtkMainIteration', list())
+
+}
 
 tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample,
 											 iter=NULL, burnin=2000, verbose=FALSE, verbose.iter=100) {
@@ -246,12 +250,7 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
     for (simu in 1:nr_simu) {
         if(verbose.iter > 0 && (simu %% verbose.iter == 0))
 			cat('\nIteration:', simu, '--', date())
-		if(getOption('bDem.TFRmcmcExtra', default=FALSE)) {
-			# This is to unblock the GUI, if the run is invoked from bayesDem
-			# In such a case the gtk libraries are already loaded
-			while(do.call('gtkEventsPending', list()))
-				do.call('gtkMainIteration', list())
-		}
+			unblock.gtk('bDem.TFRmcmcExtra')
         # set hyperparameters for this iteration
         for (par in hyperparameter.names) {
         	if(is.null(dim(hyperparameters[[par]]))) {

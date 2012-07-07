@@ -182,6 +182,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 		thinned.mcmc <- get.thinned.tfr.mcmc(mcmc.set, thin=thin, burnin=burnin)
 		has.thinned.mcmc <- !is.null(thinned.mcmc) && thinned.mcmc$meta$parent.iter == total.iter
 	}
+	unblock.gtk('bDem.TFRpred')
 	load.mcmc.set <- if(has.thinned.mcmc && !force.creating.thinned.mcmc) thinned.mcmc
 					 else create.thinned.tfr.mcmc(mcmc.set, thin=thin, burnin=burnin, 
 					 							output.dir=output.dir, verbose=verbose)
@@ -220,7 +221,8 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 										c(alpha.vars, delta.vars, other.vars), burnin=0)
 
 	country.counter <- 0
-	gui.options <- list(bDem.TFRpred.ncountries.total=length(prediction.countries))
+	status.for.gui <- paste('out of', length(prediction.countries), 'countries.')
+	gui.options <- list()
 	#########################################
 	for (country in prediction.countries){
 	#########################################
@@ -229,10 +231,8 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 			# and pass info about its status
 			# In such a case the gtk libraries are already loaded
 			country.counter <- country.counter + 1
-			gui.options$bDem.TFRpred.ncountries.done <- country.counter
-			options(gui.options)
-			while(do.call('gtkEventsPending', list()))
-				do.call('gtkMainIteration', list())
+			gui.options$bDem.TFRpred.status <- paste('finished', country.counter, status.for.gui)
+			unblock.gtk('bDem.TFRpred', gui.options)
 		}
 
 		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
