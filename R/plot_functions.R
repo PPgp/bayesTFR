@@ -6,22 +6,8 @@ DLcurve.plot.all <- function (mcmc.list = NULL, sim.dir = NULL,
 	if(is.null(mcmc.list)) mcmc.list <- get.tfr.mcmc(sim.dir=sim.dir, verbose=verbose, burnin=burnin)
 	mcmc.list <- get.mcmc.list(mcmc.list)
 	meta <- mcmc.list[[1]]$meta
-	dl.countries <- meta$id_DL
-	postfix <- output.type
-	if(output.type=='postscript') postfix <- 'ps'
-
-    for (country in dl.countries) {
-        country.obj <- get.country.object(country, meta, index=TRUE)
-        if (verbose) 
-            cat("Creating DL graph for", country.obj$name, '(', country.obj$code, ')\n')
-        do.call(output.type, list(file.path(output.dir, 
-										paste('DLplot_c', country.obj$code, '.', postfix, sep=''))))
-        DLcurve.plot(mcmc.list = mcmc.list, country = country.obj$code, 
-            burnin = burnin, ...)
-        dev.off()
-    }
-    if (verbose) 
-        cat("\nDL plots stored into", output.dir, "\n")
+	.do.plot.all.country.loop( meta$id_DL, meta, output.dir, DLcurve.plot, output.type=output.type, 
+		file.prefix='DLplot', plot.type='DL graph', verbose=verbose, mcmc.list = mcmc.list, burnin = burnin, ...)
 }
 
 stop.if.country.not.DL <- function(country.obj, meta) {
@@ -241,25 +227,40 @@ get.traj.quantiles <- function(tfr.pred, country.index, country.code, trajectori
 	
 tfr.trajectories.plot.all <- function(tfr.pred, 
 									output.dir=file.path(getwd(), 'TFRtrajectories'),
-									output.type="png", verbose=FALSE, ...) {
+									output.type="png", main=NULL, verbose=FALSE, ...) {
 	# plots TFR trajectories for all countries
+	.do.plot.all(tfr.pred$mcmc.set$meta, output.dir, tfr.trajectories.plot, output.type=output.type, 
+						verbose=verbose, tfr.pred=tfr.pred, ...)
+}
+
+.do.plot.all.country.loop <- function(country.names, meta, output.dir, func, output.type="png", 
+						file.prefix='TFRplot', plot.type='TFR graph', country.table=NULL,
+						main=NULL, verbose=FALSE, ...) {					
 	if(!file.exists(output.dir)) dir.create(output.dir, recursive=TRUE)
-	all.countries <- country.names(tfr.pred$mcmc.set$meta)
 	postfix <- output.type
 	if(output.type=='postscript') postfix <- 'ps'
-	for (country in all.countries) {
-		country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
+	main.arg <- main
+	for (country in country.names) {
+		country.obj <- if(!is.null(meta)) get.country.object(country, meta)
+						else get.country.object(country, country.table=country.table)
 		if(verbose)
-			cat('Creating TFR graph for', country, '(', country.obj$code, ')\n')
-
+			cat('Creating', plot.type, 'for', country, '(', country.obj$code, ')\n')
+		if(!is.null(main) && grepl('XXX', main, fixed=TRUE))
+			main.arg <- gsub('XXX', as.character(country.obj$name), main, fixed=TRUE)
 		do.call(output.type, list(file.path(output.dir, 
-										paste('TFRplot_c', country.obj$code, '.', postfix, sep=''))))
-		tfr.trajectories.plot(tfr.pred, country=country.obj$code, ...)
+										paste(file.prefix,'_c', country.obj$code, '.', postfix, sep=''))))
+		do.call(func, list(country=country.obj$code, main=main.arg, ...))
 		dev.off()
 	}
 	if(verbose)
-		cat('\nTrajectory plots stored into', output.dir, '\n')
+		cat('\nPlots stored into', output.dir, '\n')	
 }
+
+.do.plot.all <- function(meta, ...) {
+	# processes plotting function func for all countries
+	.do.plot.all.country.loop(country.names(meta), meta, ...)				
+}
+
 
 get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 	l <- length(median)
@@ -758,11 +759,11 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, projec
 }
 
 tfr.map <- function(pred, quantile=0.5, projection.year=NULL, par.name=NULL, adjusted=FALSE, 
-					projection.index=1,  device='dev.new', main=NULL, device.args=NULL, ...
+					projection.index=1,  device='dev.new', main=NULL, device.args=NULL, data.args=NULL, ...
 				) {
 	require(rworldmap)
-	data.period <- get.data.for.worldmap(pred, quantile, projection.year=projection.year, 
-									par.name=par.name, adjusted=adjusted, projection.index=projection.index)
+	data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, projection.year=projection.year, 
+									par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
 	data <- data.period$data
 	period <- data.period$period
 	tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
