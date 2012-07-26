@@ -335,6 +335,24 @@ test.TFRtrajectories <- function() {
 	test.ok(test.name)
 }
 
+test.plot.all <- function() {
+	test.name <- 'plotting TFR trajectories and DL curves for all countries'
+	start.test(test.name)
+	sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+	pred <- get.tfr.prediction(sim.dir=sim.dir)
+	mc <- get.tfr.mcmc(sim.dir)
+	dir <- tempdir()
+	tfr.trajectories.plot.all(pred, output.dir=dir, main='XXX trajs')
+	trajf <- length(list.files(dir, pattern='png$', full.names=FALSE))
+	DLcurve.plot.all(mc, output.dir=dir, main='DL XXX', output.type='jpeg')
+	dlf <- length(list.files(dir, pattern='jpeg$', full.names=FALSE))
+	unlink(dir, recursive=TRUE)
+	stopifnot(trajf == get.nr.countries(mc$meta))
+	stopifnot(dlf == length(mc$meta$id_DL))
+	test.ok(test.name)
+}
+
+
 test.plot.density <- function() {
 	test.name <- 'plotting parameter density'
 	start.test(test.name)
@@ -356,7 +374,7 @@ test.plot.map <- function() {
 	sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
 	pred <- get.tfr.prediction(sim.dir=sim.dir)
 	filename <- tempfile()
-	tfr.map(pred, projection.year=2043, device='png', device.args=list(filename=filename))
+	tfr.map(pred, year=2043, device='png', device.args=list(filename=filename))
 	dev.off()
 	size <- file.info(filename)['size']
 	unlink(filename)
@@ -365,7 +383,7 @@ test.plot.map <- function() {
 	
 	test.name <- 'creating parameter maps'
 	filename <- tempfile()
-	tfr.map(pred, projection.year=1985, device='png', par.name='gamma_2', device.args=list(filename=filename))
+	tfr.map(pred, year=1985, device='png', par.name='gamma_2', device.args=list(filename=filename))
 	dev.off()
 	size <- file.info(filename)['size']
 	unlink(filename)

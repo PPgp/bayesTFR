@@ -6,7 +6,7 @@ DLcurve.plot.all <- function (mcmc.list = NULL, sim.dir = NULL,
 	if(is.null(mcmc.list)) mcmc.list <- get.tfr.mcmc(sim.dir=sim.dir, verbose=verbose, burnin=burnin)
 	mcmc.list <- get.mcmc.list(mcmc.list)
 	meta <- mcmc.list[[1]]$meta
-	.do.plot.all.country.loop( meta$id_DL, meta, output.dir, DLcurve.plot, output.type=output.type, 
+	.do.plot.all.country.loop(as.character(country.names(meta))[meta$id_DL], meta, output.dir, DLcurve.plot, output.type=output.type, 
 		file.prefix='DLplot', plot.type='DL graph', verbose=verbose, mcmc.list = mcmc.list, burnin = burnin, ...)
 }
 
@@ -652,7 +652,7 @@ bdem.map.all <- function(pred, output.dir, type='tfr', output.type='png', range=
 	for (year in all.years) {
 		output.args[[filename.arg]] <- file.path(output.dir, 
 										paste(file.prefix, year, '.', postfix, sep=''))
-		do.call(paste(type, '.map', sep=''), c(list(projection.year=year, device=output.type, 
+		do.call(paste(type, '.map', sep=''), c(list(year=year, device=output.type, 
 							device.args=output.args), map.pars))
 		dev.off()
 	}
@@ -677,7 +677,7 @@ par.names.for.worldmap.bayesTFR.prediction <- function(pred, ...) {
 
 "get.data.for.worldmap" <- function(pred, ...) UseMethod ("get.data.for.worldmap")
 
-get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, projection.year=NULL, par.name=NULL, 
+get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=NULL, par.name=NULL, 
 									adjusted=FALSE, projection.index=1, pi=NULL, ...) {
 	meta <- pred$mcmc.set$meta
 	quantiles <- quantile
@@ -722,12 +722,12 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, projec
 		period <- paste('Parameter', par.name, 'for')
 	} else { # data are TFRs
 		projection <- TRUE
-		if(!is.null(projection.year)) {
-			ind.proj <- bayesTFR:::get.predORest.year.index(pred, projection.year)
+		if(!is.null(year)) {
+			ind.proj <- bayesTFR:::get.predORest.year.index(pred, year)
 			projection.index <- ind.proj['index']
 			projection <- ind.proj['is.projection']
 			if(is.null(projection.index)) 
-				if(is.null(projection.index)) stop('Projection year ', projection.year, ' not found.')
+				if(is.null(projection.index)) stop('Projection year ', year, ' not found.')
 		}
 		if(projection) {
 			if(!all(is.element(as.character(quantiles), dimnames(pred$quantiles)[[2]])))
@@ -758,18 +758,18 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, projec
 	return(list(period=period, data=res, country.codes=codes, lower=low, upper=up))
 }
 
-tfr.map <- function(pred, quantile=0.5, projection.year=NULL, par.name=NULL, adjusted=FALSE, 
+tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE, 
 					projection.index=1,  device='dev.new', main=NULL, device.args=NULL, data.args=NULL, ...
 				) {
 	require(rworldmap)
-	data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, projection.year=projection.year, 
+	data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=year, 
 									par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
 	data <- data.period$data
 	period <- data.period$period
 	tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
 	mtfr <- joinCountryData2Map(tfr, joinCode='UN', nameJoinColumn='un')
 	if(is.null(main)) {
-		main <- paste(period, .map.main.default(pred), quantile)
+		main <- paste(period, .map.main.default(pred, data.period), quantile)
 	}
 	if (device != 'dev.cur')
 		do.call('mapDevice', c(list(device=device), device.args))
@@ -778,27 +778,26 @@ tfr.map <- function(pred, quantile=0.5, projection.year=NULL, par.name=NULL, adj
 	do.call(addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all'))
 }
 
-tfr.map.gvis <- function(pred, projection.year=NULL, quantile=0.5, pi=80, par.name=NULL, 
-							  adjusted=FALSE)
-	bdem.map.gvis(pred, projection.year=projection.year, 
-						quantile=quantile, pi=pi, par.name=par.name, adjusted=adjusted)
+tfr.map.gvis <- function(pred, year=NULL, quantile=0.5, pi=80, par.name=NULL, 
+							  adjusted=FALSE, ...)
+	bdem.map.gvis(pred, year=year, 
+						quantile=quantile, pi=pi, par.name=par.name, adjusted=adjusted, ...)
 
 
 "bdem.map.gvis" <- function(pred, ...) UseMethod ("bdem.map.gvis")
 
-bdem.map.gvis.bayesTFR.prediction <- function(pred, projection.year=NULL, quantile=0.5, pi=80, 
+bdem.map.gvis.bayesTFR.prediction <- function(pred, year=NULL, quantile=0.5, pi=80, 
 										par.name=NULL, html.file=NULL, adjusted=FALSE, ...) {
-	.do.gvis.bdem.map('TFR', 'BHM for Total Fertility Rate<br>', pred, projection.year=projection.year, 
-						quantile=quantile, pi=pi, par.name=par.name, adjusted=adjusted)
+	.do.gvis.bdem.map('TFR', 'BHM for Total Fertility Rate<br>', pred, year=year, 
+						quantile=quantile, pi=pi, par.name=par.name, adjusted=adjusted, ...)
 }
 
-.do.gvis.bdem.map <- function(what, title, pred, projection.year=NULL, quantile=0.5, pi=80, 
-									par.name=NULL, adjusted=FALSE) {
+.do.gvis.bdem.map <- function(what, title, pred, year=NULL, quantile=0.5, pi=80, 
+									par.name=NULL, adjusted=FALSE, ...) {
 	require(googleVis)
 	data(iso3166)
-	meta <- pred$mcmc.set$meta
-	data.period <- get.data.for.worldmap(pred, quantile, projection.year=projection.year, 
-									par.name=par.name, projection.index=1, adjusted=adjusted, pi=pi)
+	data.period <- get.data.for.worldmap(pred, quantile, year=year, 
+									par.name=par.name, projection.index=1, adjusted=adjusted, pi=pi, ...)
 	mapdata <- data.period$data
 	period <- data.period$period
 	lower <- data.period$lower
@@ -806,9 +805,12 @@ bdem.map.gvis.bayesTFR.prediction <- function(pred, projection.year=NULL, quanti
  	un <- data.period$country.codes
 	unmatch <- match(un, iso3166[,'uncode'])
 	unidx <- which(!is.na(unmatch))
+	countries.table <- get.countries.table(pred)
+	ct.idx <- sapply(un[unidx], function(x, y) which(y==x), countries.table$code)
+	country.names <- countries.table$name[ct.idx]
 	#remove problematic characters
-	names <- iconv(meta$regions$country_name[unidx], "latin1", "ASCII", "?") 
-	data <- data.frame(un=un[unidx], name=names, 
+	country.names <- iconv(country.names, "latin1", "ASCII", "?") 
+	data <- data.frame(un=un[unidx], name=country.names, 
 						iso=iso3166[,'charcode'][unmatch][unidx])
 	if(!is.null(par.name)) what <- par.name
 	data[[what]] <- mapdata[unidx]
@@ -832,7 +834,7 @@ bdem.map.gvis.bayesTFR.prediction <- function(pred, projection.year=NULL, quanti
 				colors=paste('[', paste(col, collapse=', '), ']')))
 
     #geo$html$caption <- paste(title, 'in', period,'<br>\n')
-    geo$html$caption <- paste(title, period, .map.main.default(pred), quantile)
+    geo$html$caption <- paste(title, period, .map.main.default(pred, data.period), quantile)
     bdem.data <- data[,c('un', 'iso', 'name', what, lower.name, upper.name)]
 	gvis.table <- gvisTable(bdem.data, 
 							options=list(width=600, height=600, page='disable', pageSize=198))

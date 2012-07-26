@@ -1,3 +1,13 @@
+1.6-0
+-----
+Argument 'projection.year' in all map functions changed to 'year'.
+
+A wildcard 'XXX' can be passed in the 'main' argument of all the *.all plotting functions. It is replaced by the corresponding country name.
+
+Argument 'verbose.iter' added to run.tfr.mcmc.
+
+Argument 'data.args' added to tfr.map.
+
 1.5-1 (03/29/2012)
 -----
 Example data reduced from three chains of 50 iterations each to two chains of 30 iterations each in order to make the package smaller.

@@ -39,12 +39,12 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     save.all.parameters = FALSE, 
     auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, 
         nr.chains=3, thin=80, burnin=2000),
-    verbose = FALSE, ...)
+    verbose = FALSE, verbose.iter = 10, ...)
 		
 continue.tfr.mcmc(iter, chain.ids=NULL, 
     output.dir=file.path(getwd(), "bayesTFR.output"), 
     parallel = FALSE, nr.nodes = NULL, auto.conf = NULL,
-    verbose=FALSE, ...)
+    verbose=FALSE, verbose.iter = 10, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -100,6 +100,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{save.all.parameters}{If \code{TRUE}, the distortion terms \eqn{\epsilon_{c,t}}{eps_ct} for all \eqn{t} are stored on disk, otherwise not.}
   \item{auto.conf}{List containing a configuration for an \sQuote{automatic} run (see description of argument \code{iter}). Item \code{iter} gives the number of iterations in the first chunk of the MCMC simulation; item \code{iter.incr} gives the number of iterations in the following chunks; \code{nr.chains} gives the number of chains in all chunks of the MCMC simulation; items \code{thin} and \code{burnin} are used in the convergence diagnostics following each chunk; \code{max.loops} controls the maximum number of chunks. All items must be integer values. This argument is only used if the function argument \code{iter} is set to \sQuote{auto}.}
   \item{verbose}{Logical switching log messages on and off.}
+  \item{verbose.iter}{Integer determining how often (in number of iterations) log messages are outputted during the estimation.}
   \item{\dots}{Additional parameters to be passed to the function \code{\link[snowFT]{performParallel}}, if \code{parallel} is \code{TRUE}.}
   \item{chain.ids}{Array of chain identifiers that should be resumed. If it is \code{NULL}, all existing chains in \code{output.dir} are resumed.}
   }

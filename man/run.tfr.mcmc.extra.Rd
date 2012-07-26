@@ -12,7 +12,7 @@ Run MCMC for extra countries, areas or regions. It uses the posterior distributi
 run.tfr.mcmc.extra(sim.dir = file.path(getwd(), "bayesTFR.output"), 
     countries = NULL, my.tfr.file = NULL, 
     iter = NULL, thin = 1, burnin = 2000,
-    parallel = FALSE, nr.nodes = NULL,  verbose = FALSE, ...)
+    parallel = FALSE, nr.nodes = NULL,  verbose = FALSE, verbose.iter = 100, ...)
 }
 \arguments{
   \item{sim.dir}{
@@ -41,6 +41,7 @@ Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes fo
   \item{verbose}{
 Logical switching log messages on and off.
 }
+\item{verbose.iter}{Integer determining how often (in number of iterations) log messages are outputted during the estimation.}
 \item{\dots}{Additional parameters to be passed to the function \code{\link[snowFT]{performParallel}}, if \code{parallel} is \code{TRUE}.}
 }
 \details{

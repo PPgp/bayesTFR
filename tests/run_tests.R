@@ -15,6 +15,7 @@ test.plot.map()
 
 # disable the following tests when submitting to CRAN
 # to speed-up the checking procedure
-#test.imputation()
-#test.thinned.simulation()
-#test.run.mcmc.simulation.auto()
+test.imputation()
+test.thinned.simulation()
+test.run.mcmc.simulation.auto()
+test.plot.all()
