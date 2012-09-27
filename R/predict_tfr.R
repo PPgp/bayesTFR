@@ -307,10 +307,10 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
                           Triangle_c4_s, d_s) 
 	}
 
-		missing <- is.na(tfr_matrix_reconstructed[,country])
-		nmissing <- sum(missing)
-		this.nr_project <- nr_project + nmissing
 		this.T_end <- mcmc.set$meta$T_end_c[country]
+		nmissing <- ltfr_matrix - this.T_end
+		this.nr_project <- nr_project + nmissing
+		
 		
 		#### projections might start before 1975 ...
 		dummie_c1975 = rep(0, this.nr_project)

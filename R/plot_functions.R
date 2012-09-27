@@ -113,28 +113,20 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
         lty = c(1, lty), bty = "n", col = "red")
 }
 
-
-tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.variant=TRUE) {
-	if (missing(country)) {
-		stop('Argument "country" must be given.')
-	}
-	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
+.get.trajectories.table <- function(tfr.pred, country, data.matrix, pi, pred.median, cqp, half.child.variant=FALSE) {
 	l <- tfr.pred$nr.projections
-	data.matrix <- get.data.imputed(tfr.pred)
 	x1 <- as.integer(rownames(data.matrix))
 	x2 <- seq(max(x1)+5, by=5, length=l)
 	tfr <- as.matrix(data.matrix[,country$index], ncol=1)
 	rownames(tfr) <- x1
 	pred.table <- matrix(NA, ncol=2*length(pi)+1, nrow=l)
-	pred.table[,1] <- get.median.from.prediction(tfr.pred, country$index, country$code)[2:(l+1)]
+	pred.table[,1] <- pred.median[2:(l+1)]
 	colnames(pred.table) <- c('median', rep(NA,ncol(pred.table)-1))
-	trajectories <- get.trajectories(tfr.pred, country$code)
 	idx <- 2
 	for (i in 1:length(pi)) {
-		cqp <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i])
 		al <- (1-pi[i]/100)/2
-		if (!is.null(cqp)) {
-			pred.table[,idx:(idx+1)] <- t(cqp[,2:(l+1)])
+		if (!is.null(cqp[[i]])) {
+			pred.table[,idx:(idx+1)] <- t(cqp[[i]][,2:(l+1)])
 		} else{
 			pred.table[,idx:(idx+1)] <- matrix(NA, nrow=l, ncol=2)
 		}
@@ -151,6 +143,20 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 		colnames(pred.table)[(ncol(pred.table)-1):ncol(pred.table)] <- c('-0.5child', '+0.5child')
 	}
 	return(rbind(cbind(tfr, matrix(NA, nrow=nrow(tfr), ncol=ncol(pred.table)-1)), pred.table))
+}
+
+tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.variant=TRUE) {
+	if (missing(country)) {
+		stop('Argument "country" must be given.')
+	}
+	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
+	data.matrix <- get.data.imputed(tfr.pred)
+	pred.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
+	trajectories <- get.trajectories(tfr.pred, country$code)
+	cqp <- list()
+	for (i in 1:length(pi))
+		cqp[[i]] <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i])
+	return(.get.trajectories.table(tfr.pred, country, data.matrix, pi, pred.median, cqp, half.child.variant))
 }
 
 get.typical.trajectory.index <- function(trajectories) {

@@ -50,7 +50,7 @@ get_eps_T_all <- function (mcmc) {
 find.lambda.for.one.country <- function(tfr, T_end) {
 	lambda <- T_end
 	if ( sum(tfr<2, na.rm=TRUE)>2 ){
-		period = 3
+		period <- .get.T.start.end(tfr)[1]+2
 		while (period<=T_end){
 			if (( (tfr[period] - tfr[period-1]) >0 )& 
                     ( (tfr[period-1] - tfr[period-2]) >0) & 
@@ -76,6 +76,12 @@ get.lambda <- function(tfr_matrix, T_end_c){
 	return(lambda_c)
 }
 
+.get.T.start.end <- function(tfr) {
+	# Return first index after NAs at the beginning of the time series
+	isna.tfr <- is.na(tfr)
+	start <- if(sum(isna.tfr) > 0 && isna.tfr[1]) which(diff(cumsum(isna.tfr))==0)[1]+1 else 1
+	return(c(start, sum(!isna.tfr) + T.start - 1))
+} 
 
 find.tau.and.DLcountries = function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5.5, 
 												max.diff.local.and.global.max.for.start.at.loc = 0.5) 
@@ -89,18 +95,22 @@ find.tau.and.DLcountries = function(tfr_matrix, min.TFRlevel.for.start.after.195
     decr_matrix = -tfr_matrix[-1, ] + tfr_matrix[-T_end, ]
     tau_c = rep(NA, nr_countries)
     for (country in 1:nr_countries) {
-    	T_end_c[country] = sum(!is.na(tfr_matrix[,country]))
-    	local_max_indices = rep(NA, T_end_c[country])
-        does_tfr_decrease = ifelse(diff(tfr_matrix[1:T_end_c[country],country]) < 0, 1, 0)
+    	# ignoring NAs at the beginning
+    	T.start.end <- .get.T.start(tfr_matrix[,country])
+    	T.start <- T.start.end[1]
+    	T_end_c[country] = T.start.end[2]
+    	lT <- T_end_c[country] - T.start + 1
+    	local_max_indices = rep(NA, lT)
+        does_tfr_decrease = ifelse(diff(tfr_matrix[T.start:T_end_c[country],country]) < 0, 1, 0)
         local_max_indices[1] = does_tfr_decrease[1]
    		# in middle only a local max if increase is followed by decrease
-        local_max_indices[-c(1, T_end_c[country])] = diff(does_tfr_decrease)
+        local_max_indices[-c(1, lT)] = diff(does_tfr_decrease)
    		# at end local max if preceded by an increase 
-        local_max_indices[T_end_c[country]] = 1 - does_tfr_decrease[T_end_c[country] - 1]
+        local_max_indices[lT] = 1 - does_tfr_decrease[lT - 1]
  		value_global_max = max(tfr_matrix[, country], na.rm = TRUE)
- 		max_index = max(seq(1, T_end_c[country]) * (local_max_indices >
-            0) * (ifelse(tfr_matrix[1:T_end_c[country], country] >
-            value_global_max - max.diff.local.and.global.max.for.start.at.loc, 1, 0)))
+ 		max_index = max(seq(T.start, T_end_c[country]) * (local_max_indices > 0) * 
+ 						ifelse(tfr_matrix[T.start:T_end_c[country], country] >
+            				value_global_max - max.diff.local.and.global.max.for.start.at.loc, 1, 0))
         tau_c[country] = max_index
         if ((tfr_matrix[tau_c[country], country] < min.TFRlevel.for.start.after.1950)) {
             tau_c[country] = -1

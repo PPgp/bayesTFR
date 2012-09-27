@@ -1,5 +1,9 @@
 1.6-0
 -----
+Function tfr.GoF.dl renamed to tfr.dl.coverage. Its MSE output changed to RMSE and it's computed relative to the median.
+
+Missing values can be used at the beginning of historical TFR time series. 
+
 Argument 'projection.year' in all map functions changed to 'year'.
 
 A wildcard 'XXX' can be passed in the 'main' argument of all the *.all plotting functions. It is replaced by the corresponding country name.

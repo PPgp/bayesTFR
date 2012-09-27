@@ -554,7 +554,7 @@ thinindep <- function(x,q){
 return(k)
 }
 
-tfr.GoF.dl <- function(sim.dir, pi=c(80,90,95), burnin=2000, verbose=TRUE) {
+tfr.dl.coverage <- function(sim.dir, pi=c(80,90,95), burnin=2000, verbose=TRUE) {
 	if(has.tfr.prediction(sim.dir=sim.dir)) {
 		pred <- get.tfr.prediction(sim.dir=sim.dir)
 		mcmc.set <- pred$mcmc.set
@@ -603,11 +603,11 @@ tfr.DLisDecrement <- function() {
         		time.GoF[i,valid.time[itime]] <- time.GoF[i,valid.time[itime]] + (observed[itime] >= dlpi[1,itime] & observed[itime] <= dlpi[2,itime])
         	}
         }
-        dlmean <- apply(dlc, 2, mean)
-        country.mse[icountry] <- sum((observed-dlmean)^2)
+        dlmedian <- apply(dlc, 2, median)
+        country.mse[icountry] <- sum((observed-dlmedian)^2)
         total.mse <- total.mse + country.mse[icountry]
         for(itime in 1:length(valid.time))
-        	time.mse[valid.time[itime]] <- time.mse[valid.time[itime]] + (observed[itime] - dlmean[itime])^2
+        	time.mse[valid.time[itime]] <- time.mse[valid.time[itime]] + (observed[itime] - dlmedian[itime])^2
         
 	}
 	if(verbose) cat('\n')	
@@ -615,7 +615,7 @@ tfr.DLisDecrement <- function() {
 	total.mse <- total.mse/sum(counter)
 	pi.names <- paste(pi, '%', sep='')
 	names(total.GoF) <- pi.names
-	names(total.mse) <- 'MSE'
+	names(total.mse) <- 'RMSE'
 	rowsum.counter <- rowSums(counter)
 	for(row in 1:nrow(time.GoF)) {
 		time.GoF[row,] <- time.GoF[row,]/rowsum.counter
@@ -633,6 +633,6 @@ tfr.DLisDecrement <- function() {
 	country.GoF[is.nan(country.GoF)] <- NA
 	country.mse[is.nan(country.mse)] <- NA
 	if(verbose) cat('Done.\n')
-	return(list(total.gof=total.GoF, time.gof=time.GoF, country.gof=country.GoF,
-				total.mse=total.mse, time.mse=time.mse, country.mse=country.mse))
+	return(list(total.coverage=total.GoF, time.coverage=time.GoF, country.coverage=country.GoF,
+				total.rmse=sqrt(total.mse), time.rmse=sqrt(time.mse), country.rmse=sqrt(country.mse), n=counter))
 }

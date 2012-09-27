@@ -58,7 +58,7 @@ export(
 	tfr.raftery.diag,
 	tfr.diagnose,
 	tfr.get.dlcurves,
-	tfr.GoF.dl,
+	tfr.dl.coverage,
 	get.median.from.prediction,
 	bdem.parameter.traces,
 	get.traj.ascii.header,
