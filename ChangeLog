@@ -1,6 +1,6 @@
 1.6-0
 -----
-Function tfr.GoF.dl renamed to tfr.dl.coverage. Its MSE output changed to RMSE and it's computed relative to the median.
+Function tfr.GoF.dl renamed to tfr.dl.coverage. Its MSE output changed to RMSE. Added MAE and cumm.CDF.
 
 Missing values can be used at the beginning of historical TFR time series. 
 
