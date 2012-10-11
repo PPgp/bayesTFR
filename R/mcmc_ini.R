@@ -80,7 +80,7 @@ get.lambda <- function(tfr_matrix, T_end_c){
 	# Return first index after NAs at the beginning of the time series
 	isna.tfr <- is.na(tfr)
 	start <- if(sum(isna.tfr) > 0 && isna.tfr[1]) which(diff(cumsum(isna.tfr))==0)[1]+1 else 1
-	return(c(start, sum(!isna.tfr) + T.start - 1))
+	return(c(start, sum(!isna.tfr) + start - 1))
 } 
 
 find.tau.and.DLcountries = function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5.5, 
@@ -96,7 +96,7 @@ find.tau.and.DLcountries = function(tfr_matrix, min.TFRlevel.for.start.after.195
     tau_c = rep(NA, nr_countries)
     for (country in 1:nr_countries) {
     	# ignoring NAs at the beginning
-    	T.start.end <- .get.T.start(tfr_matrix[,country])
+    	T.start.end <- .get.T.start.end(tfr_matrix[,country])
     	T.start <- T.start.end[1]
     	T_end_c[country] = T.start.end[2]
     	lT <- T_end_c[country] - T.start + 1

@@ -15,8 +15,8 @@ using a Bayesian hierarchical model and the United Nations demographic time seri
 \details{
 \tabular{ll}{
 Package: \tab bayesTFR\cr
-Version: \tab 1.5-1\cr
-Date: \tab 2012-03-29\cr
+Version: \tab 1.6-0\cr
+Date: \tab 2012-10-11\cr
 Depends: \tab R (>= 2.9.0), mvtnorm, coda\cr
 Suggests: \tab rworldmap, fields, snowFT, googleVis \cr
 License: \tab GPL (>= 2)\cr

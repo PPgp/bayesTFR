@@ -1,4 +1,4 @@
-1.6-0
+1.6-0 (10/11/2012)
 -----
 Function tfr.GoF.dl renamed to tfr.dl.coverage. Its MSE output changed to RMSE. Added MAE and cumm.CDF.
 
