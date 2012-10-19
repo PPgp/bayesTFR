@@ -34,15 +34,28 @@ get_eps_T = function (DLpar, country, tfr_matrix, start, lambda, p1, p2)
     return(eps_T)
 }
 
+get.dl.index <- function(country, meta) {
+	index <- meta$start_c[country] : meta$lambda_c[country]
+	if(is.null(meta$suppl.data) || meta$has.suppl.data[country]) return(index)
+	return(index + mcmc$meta$suppl.data$T_end)
+}
+
+get.eps.T <- function (DLpar, country, meta) 
+{
+    tfr <- get.observed.tfr(country, meta)[meta$start_c[country]:meta$lambda_c[country]]
+    ldl <- length(tfr)-1
+    dl <- DLcurve(DLpar, tfr[1:ldl], meta$dl.p1, meta$dl.p2)
+    return(tfr[2:(ldl+1)] - tfr[1:ldl] + dl)
+}
+
 get_eps_T_all <- function (mcmc) {
-	eps_Tc <- matrix(NA, mcmc$meta$T_end-1, mcmc$meta$nr_countries)
+	suppl.T <- if(!is.null(mcmc$meta$suppl.data)) mcmc$meta$suppl.data$T_end else 0
+	eps_Tc <- matrix(NA, mcmc$meta$T_end-1 + suppl.T, mcmc$meta$nr_countries)
     for (country in mcmc$meta$id_DL){
     	theta <- c((mcmc$U_c[country]-mcmc$Triangle_c4[country])*exp(mcmc$gamma_ci[country,])/                                     
                                 sum(exp(mcmc$gamma_ci[country,])), mcmc$Triangle_c4[country], mcmc$d_c[country])
-        eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country] <- 
-                                        get_eps_T(theta, country, mcmc$meta$tfr_matrix, 
-                                                          mcmc$meta$start_c[country], 
-                                                          mcmc$meta$lambda_c[country], mcmc$meta$dl.p1, mcmc$meta$dl.p2)
+        index <- get.dl.index(country, meta)
+        eps_Tc[index, country] <- get.eps.T(theta, country, mcmc$meta)
         }
     return(eps_Tc)
 }
@@ -66,15 +79,7 @@ find.lambda.for.one.country <- function(tfr, T_end) {
 	return(lambda)
 }
 
-get.lambda <- function(tfr_matrix, T_end_c){
-	# find lambda_c's based on definition
-	# tfr increased twice, below 2
-    nr_countries = length(tfr_matrix[1,])
-    lambda_c <- T_end_c
-    for (country in 1:nr_countries)
-    	lambda_c[country] <- find.lambda.for.one.country(tfr_matrix[, country], T_end_c[country])
-	return(lambda_c)
-}
+
 
 .get.T.start.end <- function(tfr) {
 	# Return first index after NAs at the beginning of the time series
@@ -83,58 +88,96 @@ get.lambda <- function(tfr_matrix, T_end_c){
 	return(c(start, sum(!isna.tfr) + start - 1))
 } 
 
-find.tau.and.DLcountries = function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5.5, 
-												max.diff.local.and.global.max.for.start.at.loc = 0.5) 
+get.observed.tfr <- function(country.index, meta, matrix.name='tfr_matrix')
+	return(get.observed.with.supplemental(country.index, meta[[matrix.name]], meta$suppl.data[[matrix.name]]))
+
+get.observed.with.supplemental <- function(country.index, matrix, suppl.data, matrix.name='tfr_matrix') {
+	data <- matrix[,country.index]
+	if(!is.null(suppl.data[[matrix.name]])) {
+    	supp.c.idx <- suppl.data$index.from.all.countries[country.index]
+    	if(!is.na(supp.c.idx)) data <- c(suppl.data[[matrix.name]][,supp.c.idx], data)
+    }
+	return(data)
+}
+
+find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5.5, 
+												max.diff.local.and.global.max.for.start.at.loc = 0.5, suppl.data=NULL) 
 # gets tau_c and puts NAs before tau_c
-# gets ids of DL (where decline has been observed), excl countries with min <1 (macao and HK)
+# gets ids of DL (where decline has been observed)
 # and divides those into early and not early
+# find lambda_c's based on definition tfr increased twice, below 2
 {
-    T_end <- length(tfr_matrix[, 1])
+    T_end <- dim(tfr_matrix)[1]
     nr_countries <- dim(tfr_matrix)[2]
-    T_end_c <- rep(T_end, nr_countries)
-    decr_matrix = -tfr_matrix[-1, ] + tfr_matrix[-T_end, ]
+    T_end_c <- lambda_c <- T_end_c.raw <- lambda_c.raw <-rep(T_end, nr_countries)
+    has.suppl <- rep(FALSE, nr_countries)
+    T.suppl <- if(is.null(suppl.data)) 0 else dim(suppl.data$tfr_matrix)[1]
     tau_c = rep(NA, nr_countries)
+    tau_c.raw = rep(NA, nr_countries)
     for (country in 1:nr_countries) {
+    	data <- get.observed.with.supplemental(country, tfr_matrix, suppl.data)
+    	if(length(data) > T_end) has.suppl[country] <- TRUE
     	# ignoring NAs at the beginning
-    	T.start.end <- .get.T.start.end(tfr_matrix[,country])
+    	T.start.end <- .get.T.start.end(data)
     	T.start <- T.start.end[1]
     	T_end_c[country] = T.start.end[2]
+    	if(!has.suppl[country]) T_end_c.raw[country] <- T_end_c[country] + T.suppl
     	lT <- T_end_c[country] - T.start + 1
     	local_max_indices = rep(NA, lT)
-        does_tfr_decrease = ifelse(diff(tfr_matrix[T.start:T_end_c[country],country]) < 0, 1, 0)
+        does_tfr_decrease = ifelse(diff(data[T.start:T_end_c[country]]) < 0, 1, 0)
         local_max_indices[1] = does_tfr_decrease[1]
    		# in middle only a local max if increase is followed by decrease
         local_max_indices[-c(1, lT)] = diff(does_tfr_decrease)
    		# at end local max if preceded by an increase 
         local_max_indices[lT] = 1 - does_tfr_decrease[lT - 1]
- 		value_global_max = max(tfr_matrix[, country], na.rm = TRUE)
+ 		value_global_max = max(data, na.rm = TRUE)
  		max_index = max(seq(T.start, T_end_c[country]) * (local_max_indices > 0) * 
- 						ifelse(tfr_matrix[T.start:T_end_c[country], country] >
+ 						ifelse(data[T.start:T_end_c[country]] >
             				value_global_max - max.diff.local.and.global.max.for.start.at.loc, 1, 0))
         tau_c[country] = max_index
-        if ((tfr_matrix[tau_c[country], country] < min.TFRlevel.for.start.after.1950)) {
-            tau_c[country] = -1
+        if ((data[tau_c[country]] < min.TFRlevel.for.start.after.1950)) {
+            tau_c[country] <- -1
         }
         if (tau_c[country] > 1) {
-            tfr_matrix[1:(tau_c[country] - 1), country] = NA
+        	if(has.suppl[country]) {
+        		suppl.data$tfr_matrix[1:min(tau_c[country] - 1, T.suppl),suppl.data$index.from.all.countries[country]] <- NA
+        		if(tau_c[country] > T.suppl + 1) tfr_matrix[1:(tau_c[country] - T.suppl - 1), country] <- NA
+        	} else 
+            	tfr_matrix[1:(tau_c[country] - 1), country] <- NA
         }
+        if(tau_c[country] > 0 && !has.suppl[country]) tau_c.raw[country] <- tau_c[country] + T.suppl
+        lambda_c[country] <- find.lambda.for.one.country(data, T_end_c[country])
+        if (lambda_c[country] < T_end_c[country]) { # set NA all values between lambda_c and T_c_end
+        	if(has.suppl[country]) {
+         		if(lambda_c[country] < T.suppl) {
+         			suppl.data$tfr_matrix[(lambda_c[country] + 1):min(T.suppl, T_end_c[country]),
+         										suppl.data$index.from.all.countries[country]] <- NA
+         			if(T_end_c[country] > T.suppl)
+         				tfr.matrix[1:T_end_c[country],country] <- NA
+         		} else tfr.matrix[(lambda_c[country] - T.suppl + 1):T_end_c[country],country] <- NA
+            } else tfr.matrix[(lambda_c[country] + 1):T_end_c[country],country] <- NA
+        }
+        if(!has.suppl[country]) lambda_c.raw[country] <- lambda_c[country] + T.suppl
+
     }
 
-    id_Tistau = seq(1, nr_countries)[tau_c == T_end_c]
+    id_Tistau <- seq(1, nr_countries)[tau_c == T_end_c]
         # not needed in fit
-    id_DL = seq(1, nr_countries)[(tau_c != T_end_c)
+    id_DL <- seq(1, nr_countries)[(tau_c != T_end_c)
     #& (apply(tfr_matrix, 2, min, na.rm = TRUE) >1) # excludes Macao and Hong Kong
                 ]
         # for par in BHM
-   id_early = seq(1, nr_countries)[(tau_c == -1)
+   id_early <- seq(1, nr_countries)[(tau_c == -1)
     #& (apply(tfr_matrix, 2, min, na.rm = TRUE) >1)
     			]
     # needed for which U_c's to update, this is updated in mcmc
    id_notearly = seq(1, nr_countries)[(tau_c != -1)  & (tau_c != T_end_c)
     #& (apply(tfr_matrix, 2, min, na.rm = TRUE) >1)
     			]
-    return(list(tau_c = tau_c, id_Tistau = id_Tistau, id_DL = id_DL, id_early = id_early,
-        		id_notearly = id_notearly, tfr_matrix = tfr_matrix, T_end_c=T_end_c
+    return(list(tau_c = tau_c, tau_c.raw = tau_c.raw, id_Tistau = id_Tistau, id_DL = id_DL, id_early = id_early,
+        		id_notearly = id_notearly, tfr_matrix = tfr_matrix, T_end_c=T_end_c, T_end_c.raw=T_end_c.raw,
+        		lambda_c=lambda_c, lambda_c.raw=lambda_c.raw,
+        		has.suppl.data=has.suppl, suppl.matrix=suppl.data$tfr_matrix
          ))
 }
 
@@ -153,7 +196,8 @@ mcmc.meta.ini <- function(...,
 	mcmc.input$start.year <- start.year
 	mcmc.input$present.year <- present.year
 	mcmc.input$wpp.year <- wpp.year
-	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, 						wpp.year=wpp.year, my.tfr.file = my.tfr.file, verbose=verbose)
+	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
+										my.tfr.file = my.tfr.file, verbose=verbose)
 
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions, my.tfr.file=my.tfr.file, 
 						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose)
@@ -163,27 +207,28 @@ mcmc.meta.ini <- function(...,
 	
 do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_gammas = NULL, 
 						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE) {
-	results_tau <- find.tau.and.DLcountries(tfr.with.regions$tfr_matrix)
+	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
 	tfr_matrix_observed <- tfr.with.regions$tfr_matrix
 	updated.tfr.matrix <- results_tau$tfr_matrix
-    
-    lambda_c = get.lambda(tfr_matrix_observed, results_tau$T_end_c)
+	suppl.data <- tfr.with.regions$suppl.data
+	if(!is.null(suppl.data)) {
+		suppl.data$tfr_matrix_all <- tfr.with.regions$suppl.data$tfr_matrix
+		suppl.data$tfr_matrix <- results_tau$suppl.matrix
+		suppl.data$T_end <- dim(suppl.data$tfr_matrix)[1]
+	}
+    lambda_c = results_tau$lambda_c
     nr_countries = length(lambda_c)
     nr_countries_estimation <- tfr.with.regions$nr_countries_estimation
-    
-    for (country in 1:nr_countries) {
-        if (lambda_c[country] < results_tau$T_end_c[country]) {
-            updated.tfr.matrix[(lambda_c[country] + 1):results_tau$T_end_c[country],country] = NA
-        }
-    }
-                                               
+                                                   
     # uniform prior for U_c, make lower bound country specific
     tfr_min_c <- apply(updated.tfr.matrix, 2, min, na.rm = TRUE)
     lower_U_c <- ifelse(tfr_min_c > meta$U.c.low.base, tfr_min_c, meta$U.c.low.base)
     # start_c is the max of tau and 1
     start_c = results_tau$tau_c
     start_c[results_tau$id_early] = 1
+    start_c.raw = results_tau$tau_c.raw
+    start_c.raw[results_tau$id_early] = 1
 	
 	T_end <- dim(tfr.with.regions$tfr_matrix)[1]
 	const_sd_dummie_Tc <- matrix(0, T_end-1, nr_countries)
@@ -228,9 +273,10 @@ do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_g
 			tfr_matrix_all=tfr.with.regions$tfr_matrix_all,
 			tfr_matrix_observed=tfr_matrix_observed,
             tau_c = results_tau$tau_c, lambda_c = lambda_c,
+            tau_c.raw = results_tau$tau_c.raw, lambda_c.raw = results_tau$lambda_c.raw,
             const_sd_dummie_Tc=const_sd_dummie_Tc,
             proposal_cov_gammas_cii = prop_cov_gammas,
-            start_c = start_c,
+            start_c = start_c, start_c.raw = start_c.raw,
             id_Tistau = results_tau$id_Tistau, 
             id_DL = results_tau$id_DL, 
             id_early = results_tau$id_early,
@@ -239,8 +285,10 @@ do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_g
 			U.c.low=lower_U_c,
             nr_countries=nr_countries,
             nr_countries_estimation=nr_countries_estimation,
-            T_end=T_end, T_end_c=results_tau$T_end_c,
-            regions=tfr.with.regions$regions))
+            T_end=T_end, T_end_c=results_tau$T_end_c, T_end_c.raw=results_tau$T_end_c.raw,
+            regions=tfr.with.regions$regions
+            suppl.data=suppl.data, has.suppl.data=results_tau$has.suppl.data
+            ))
 
 }
 
@@ -264,7 +312,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
     # U_c, the starting levels of the decline
     U_c <- runif(nr_countries, mcmc.meta$U.c.low, mcmc.meta$U.up)
     for (country in mcmc.meta$id_notearly){
-		U_c[country] = mcmc.meta$tfr_matrix[mcmc.meta$tau_c[country],country ]
+		U_c[country] = get.observed.tfr(country, mcmc.meta)[mcmc.meta$tau_c[country]]
 	}
 	
 	##############################################

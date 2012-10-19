@@ -47,6 +47,8 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     a_delta <- nu_deltaD/2
     prod_delta0 <- mcmc$meta$nu.delta0*mcmc$meta$delta0^2 
     
+    suppl.T <- if(!is.null(mcmc$meta$suppl.data)) mcmc$meta$suppl.data$T_end else 0
+    
     mcenv <- as.environment(mcmc) # Create an environment for the mcmc stuff in order to avoid 
 					   			  # copying of the mcmc list 
     
@@ -64,20 +66,23 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
   	# sd_Tc with sigma0 and sd_tau_eps
     # the non-constant variance is sum of sigma0 and add_to_sd_Tc
     # matrix with each column one country
-    mcenv$add_to_sd_Tc <- matrix(NA, mcenv$meta$T_end-1, nr_countries_all)
+    mcenv$add_to_sd_Tc <- matrix(NA, mcenv$meta$T_end-1+suppl.T, nr_countries_all)
     for (country in 1:nr_countries_all){
     	# could exclude 1:(tau_c-1) here
-        mcenv$add_to_sd_Tc[,country] <-  
-                      (mcenv$meta$tfr_matrix[-mcenv$meta$T_end_c[country],country] - mcenv$S_sd)*
-                       ifelse(mcenv$meta$tfr_matrix[-mcenv$meta$T_end_c[country],country] > mcenv$S_sd, 
-                                                -mcenv$a_sd, mcenv$b_sd)
+    	index1 <- mcenv$meta$start_c.raw[country] : mcenv$meta$lambda_c.raw[country]
+    	index2 <- get.dl.index(country, mcenv$meta)
+    	lidx1 <- length(index1)
+    	lidx2 <- length(index2)
+    	this.data <- get.observed.tfr(country, mcenv$meta)[index2[-lidx2]]
+        mcenv$add_to_sd_Tc[index1[-lidx1],country] <- (this.data - mcenv$S_sd)*
+                       ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
 	}
 	
-  	mcenv$mean_eps_Tc = matrix(0, mcenv$meta$T_end -1, nr_countries_all)
-    idx.tau_c.id.notearly.all <- matrix(c(mcenv$meta$tau_c[id_notearly_all], id_notearly_all), ncol=2)
+  	mcenv$mean_eps_Tc = matrix(0, mcenv$meta$T_end -1+suppl.T, nr_countries_all)
+    idx.tau_c.id.notearly.all <- matrix(c(mcenv$meta$tau_c.raw[id_notearly_all], id_notearly_all), ncol=2)
 	mcenv$mean_eps_Tc[idx.tau_c.id.notearly.all] <- mcenv$mean_eps_tau
 	
-	idx.tau_c.id.notearly <- matrix(c(mcenv$meta$tau_c[id_notearly], id_notearly), ncol=2)
+	idx.tau_c.id.notearly <- matrix(c(mcenv$meta$tau_c.raw[id_notearly], id_notearly), ncol=2)
     ################################################################### 
     # Start MCMC
 	############

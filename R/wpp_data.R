@@ -10,8 +10,9 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2010, m
 	########################################
 	# set data and match with areas
 	########################################
-	tfr_data <- read.UNtfr(wpp.year=wpp.year, my.tfr.file=my.tfr.file, 
-								present.year=present.year, verbose=verbose)$data
+	un.object <- read.UNtfr(wpp.year=wpp.year, my.tfr.file=my.tfr.file, 
+								present.year=present.year, verbose=verbose)
+	tfr_data <- un.object$data
 	# not just countries, includes areas etc as well
 	# get region and area data
 	locations <- read.UNlocations(tfr_data, wpp.year=wpp.year, verbose=verbose)
@@ -30,11 +31,29 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2010, m
 												start.year=start.year, 
 												present.year=present.year,
 												verbose=verbose)
-												
+	TFRmatrixsuppl.regions <- .get.suppl.matrix.and.regions(un.object, TFRmatrix.regions, loc_data, 
+									start.year, present.year)
+	if(!is.null(un.object$suppl.data.object) && verbose) 
+		cat('Dimension of the supplemental TFR matrix:', dim(TFRmatrixsuppl.regions$obs_matrix), '\n')
+									
 	return(list(tfr_matrix=TFRmatrix.regions$tfr_matrix, 
 				tfr_matrix_all=TFRmatrix.regions$tfr_matrix_all, 
 				regions=TFRmatrix.regions$regions, 
-				nr_countries_estimation=nr_countries_estimation))
+				nr_countries_estimation=nr_countries_estimation
+				suppl.data=.get.suppl.data.list(TFRmatrixsuppl.regions)
+				))
+}
+
+.get.suppl.data.list <- function(matrix.regions, matrix.name='tfr_matrix'){
+	suppl.data <- list(regions=NULL, index.to.all.countries=NULL, index.from.all.countries=NULL)
+	suppl.data[[matrix.name]] <- NULL 
+	if(!is.null(matrix.regions)) {
+		suppl.data[[matrix.name]] <- matrix.regions$obs_matrix
+		suppl.data$regions <- matrix.regions$regions
+		suppl.data$index.to.all.countries <- matrix.regions$all.countries.index
+		suppl.data$index.from.all.countries <- matrix.regions$index.from.all.countries
+	}
+	return(suppl.data)
 }
 
 read.tfr.file <- function(file) return(read.delim(file=file, comment.char='#', check.names=FALSE))
@@ -90,8 +109,12 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 
 read.UNtfr <- function(wpp.year, my.tfr.file=NULL, ...) {
 	un.file.name <- file.path(.find.package("bayesTFR"), "data", paste('UN', wpp.year, '.txt', sep=''))
-	result <- do.read.un.file(un.file.name, wpp.year, my.file=my.tfr.file, ...)
-	return(list(data=result$data, replaced=result$replaced, added=result$added))
+	un.suppl.file.name <- file.path(.find.package("bayesTFR"), "data", paste('UN', wpp.year, '_supplemental.txt', sep=''))
+	data <- do.read.un.file(un.file.name, wpp.year, my.file=my.tfr.file, ...)
+	suppl.data<- NULL
+	if(file.exists(un.suppl.file.name)) 
+		suppl.data <- do.read.un.file(un.suppl.file.name, wpp.year, ...)
+	return(list(data.object=data, suppl.data.object=suppl.data))
 }
 
 read.UNlocations <- function(data, wpp.year, package="bayesTFR", verbose=FALSE) {
@@ -176,6 +199,32 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 	return(list(tfr_matrix=result$obs_matrix, tfr_matrix_all=result$obs_matrix_all, regions=result$regions))
 }
 
+
+.get.suppl.matrix.and.regions <- function(un.object, matrix.regions, loc_data, start.year, present.year) {
+	matrixsuppl.regions <- NULL
+	if(is.null(un.object$suppl.data.object)) return(NULL)
+	suppl.data <- un.object$suppl.data.object$data
+	include <- which(is.element(suppl.data[,'country_code'], matrix.regions$regions$country_code))
+	if(length(include) > 0)
+		matrixsuppl.regions <- get.observed.time.matrix.and.regions(
+							suppl.data[include,], loc_data, 
+							start.year=start.year, 
+							present.year=present.year)
+	if(!is.null(matrixsuppl.regions)) {
+		matrixsuppl.regions$all.countries.index <- c()
+		index.from.all <- rep(NA, length(matrix.regions$regions$country_code))
+		for(i in 1:length(suppl.data[include,'country_code'])) {
+			incl.idx <- which(is.element(matrix.regions$regions$country_code,
+												suppl.data[include,'country_code'][i]))
+			matrixsuppl.regions$all.countries.index <- c(matrixsuppl.regions$all.countries.index, incl.idx)
+			index.from.all[incl.idx] <- i
+		}
+		matrixsuppl.regions$index.from.all.countries <- index.from.all
+	}			
+	return(matrixsuppl.regions)
+}
+
+
 .extra.matrix.regions <- function(data, countries, meta, package="bayesTFR", verbose=FALSE) {
 	tfrs <- data
 	country.codes.processed <- meta$regions$country_code
@@ -220,7 +269,15 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 
 set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, verbose=FALSE) {
 	#'countries' is a vector of country or region codes 
-	tfrs <- read.UNtfr(wpp.year=meta$wpp.year, my.tfr.file=my.tfr.file, 
+	un.object <- read.UNtfr(wpp.year=meta$wpp.year, my.tfr.file=my.tfr.file, 
 							present.year=meta$present.year, verbose=verbose)
-	return(.extra.matrix.regions(tfrs, countries, meta, verbose=verbose))
+	data <- un.object$data.object
+	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, verbose=verbose)
+	if(!is.null(extra.wpp)) {
+		locations <- read.UNlocations(data$data, wpp.year=meta$wpp.year, verbose=verbose)
+		suppl.wpp <- .get.suppl.matrix.and.regions(un.object, extra.wpp, locations$loc_data, 
+									meta$start.year, meta$present.year)
+		extra.wpp$suppl.data <- .get.suppl.data.list(suppl.wpp)
+	}							
+	return(extra.wpp)
 }
