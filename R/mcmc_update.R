@@ -22,7 +22,7 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
         interval <- c(max(var.value - v*var.width, var.low),
                                   min(var.value + (1-v)*var.width,var.up))
 
-        add_to_sd_Tc_prop <- matrix(NA, mcmc$meta$T_end-1, mcmc$meta$nr_countries)
+        add_to_sd_Tc_prop <- matrix(NA, nrow(mcmc$add_to_sd_Tc), ncol(mcmc$add_to_sd_Tc))
         while (TRUE){
                 var_prop <- runif(1,interval[1], interval[2])
                 abS.values[[what]] <- var_prop
