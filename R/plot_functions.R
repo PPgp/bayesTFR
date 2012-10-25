@@ -77,7 +77,8 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     						predictive.distr=predictive.distr)
     miny <- min(dlc)
     maxy <- max(dlc)
-    decr <- -diff(meta$tfr_matrix[1:meta$T_end, country$index])
+    obs.data <- get.observed.tfr(country$index, meta)[1:meta$T_end_c[country$index]]
+    decr <- -diff(obs.data)
     thincurves <- get.thinning.index(nr.curves, dim(dlc)[1])
     ltype <- "l"
     if (thincurves$nr.points == 0) {
@@ -107,8 +108,7 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
         lines(dlpi[2, ] ~ tfr_plot, col = "red", lty = lty[i], 
             lwd = 2)
     }
-    points(decr ~ meta$tfr_matrix[1:(meta$T_end - 
-        1), country$index], pch = 19)
+    points(decr ~ obs.data[-length(obs.data)], pch = 19)
     legend("topright", legend = c("median", paste("PI", pi)), 
         lty = c(1, lty), bty = "n", col = "red")
 }

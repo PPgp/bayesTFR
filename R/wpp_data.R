@@ -12,7 +12,7 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2010, m
 	########################################
 	un.object <- read.UNtfr(wpp.year=wpp.year, my.tfr.file=my.tfr.file, 
 								present.year=present.year, verbose=verbose)
-	tfr_data <- un.object$data
+	tfr_data <- un.object$data.object$data
 	# not just countries, includes areas etc as well
 	# get region and area data
 	locations <- read.UNlocations(tfr_data, wpp.year=wpp.year, verbose=verbose)
@@ -39,7 +39,7 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2010, m
 	return(list(tfr_matrix=TFRmatrix.regions$tfr_matrix, 
 				tfr_matrix_all=TFRmatrix.regions$tfr_matrix_all, 
 				regions=TFRmatrix.regions$regions, 
-				nr_countries_estimation=nr_countries_estimation
+				nr_countries_estimation=nr_countries_estimation,
 				suppl.data=.get.suppl.data.list(TFRmatrixsuppl.regions)
 				))
 }
