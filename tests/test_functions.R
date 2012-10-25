@@ -458,4 +458,45 @@ test.median.adjust <- function() {
 
 	unlink(pred.dir)
 }
+
+test.estimate.mcmc.with.suppl.data <- function() {
+	sim.dir <- tempfile()
+   	# run MCMC
+    test.name <- 'estimating MCMC using supplemental data'
+    start.test(test.name)
+    m <- run.tfr.mcmc(nr.chains=1, iter=30, thin=1, output.dir=sim.dir, start.year=1750, seed=1)
+    stopifnot(length(m$meta$suppl.data$regions$country_code) == 103)
+	stopifnot(all(dim(m$meta$suppl.data$tfr_matrix) == c(40, 103)))
+    test.ok(test.name)
+        
+	# continue MCMC
+	test.name <- 'continuing MCMC with supplemental data'
+	start.test(test.name)
+	m <- continue.tfr.mcmc(iter=10, output.dir=sim.dir)
+	stopifnot(m$mcmc.list[[1]]$finished.iter == 40)
+	stopifnot(get.total.iterations(m$mcmc.list, 0) == 40)
+	stopifnot(!is.element(900, m$meta$regions$country_code)) # 'World' should not be included
+	test.ok(test.name)
+        
+	# run MCMC for an aggregation
+	test.name <- 'estimating MCMC for extra areas with supplemental data'
+	start.test(test.name)
+	data.dir <- file.path(.find.package("bayesTFR"), 'data')
+	m <- run.tfr.mcmc.extra(sim.dir=sim.dir, 
+                            my.tfr.file=file.path(data.dir, 'my_tfr_template.txt'), burnin=0, verbose=TRUE)
+	stopifnot(is.element(900, m$meta$regions$country_code)) # 'World' should be included
+	stopifnot(is.element(900, m$meta$suppl.data$regions$country_code))
+	test.ok(test.name)
+        
+        # # run prediction
+        # test.name <- 'running projections for simulation with supplemental data'
+        # start.test(test.name)
+        # pred <- e0.predict(m, burnin=10, verbose=FALSE, save.as.ascii=0)
+        # spred <- summary(pred)
+        # stopifnot(spred$nr.traj == 30)
+        # stopifnot(!is.element(903, pred$mcmc.set$regions$country_code))
+        # npred <- dim(pred$e0.matrix.reconstructed)[2]
+        # test.ok(test.name)
+        unlink(sim.dir, recursive=TRUE)
+}
 	

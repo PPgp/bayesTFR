@@ -17,7 +17,7 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
         ##############################################################
 
         z <- log_cond_abf_sd(mcmc$add_to_sd_Tc, mcmc$const_sd, mcmc$sigma0, eps_Tc_temp, 
-                                                mcmc$meta$const_sd_dummie_Tc, mcmc$meta$sigma0.min) - rexp(1)
+                                                mcmc$const_sd_dummie_Tc, mcmc$meta$sigma0.min) - rexp(1)
         v <- runif(1)   
         interval <- c(max(var.value - v*var.width, var.low),
                                   min(var.value + (1-v)*var.width,var.up))
@@ -27,13 +27,13 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
                 var_prop <- runif(1,interval[1], interval[2])
                 abS.values[[what]] <- var_prop
                 for (country in 1:mcmc$meta$nr_countries){
-                        add_to_sd_Tc_prop[,country] <-  
-                                (mcmc$meta$tfr_matrix[-mcmc$meta$T_end_c[country],country] - abS.values$S)*
-                                ifelse(mcmc$meta$tfr_matrix[-mcmc$meta$T_end_c[country],country] > abS.values$S, 
+                		data <- get.observed.tfr(country, mcmc$meta)
+                        add_to_sd_Tc_prop[,country] <- (data[-mcmc$meta$T_end_c[country]] - abS.values$S)*
+                                ifelse(data[-mcmc$meta$T_end_c[country]] > abS.values$S, 
                                 -abS.values$a, abS.values$b)
                 }       
                 if (log_cond_abf_sd(add_to_sd_Tc_prop, mcmc$const_sd, mcmc$sigma0, eps_Tc_temp, 
-                                         mcmc$meta$const_sd_dummie_Tc, mcmc$meta$sigma0.min) >= z) {
+                                         mcmc$const_sd_dummie_Tc, mcmc$meta$sigma0.min) >= z) {
                         mcmc[[var.name]] <- var_prop
                         mcmc$add_to_sd_Tc <- add_to_sd_Tc_prop
                         return()
@@ -59,7 +59,7 @@ mcmc.update.sigma0const <- function(what, log.like.func, eps_Tc_temp, mcmc) {
         var.width <- mcmc$meta[[paste(what, 'width', sep='.')]]
         
         z <- eval(call(log.like.func, mcmc$add_to_sd_Tc, var.values[['const']], var.values[['sigma0']], 
-                                                eps_Tc_temp, mcmc$meta$const_sd_dummie_Tc, mcmc$meta$sigma0.min)) - rexp(1)
+                                                eps_Tc_temp, mcmc$const_sd_dummie_Tc, mcmc$meta$sigma0.min)) - rexp(1)
         v <- runif(1)
         interval <- c(max(var.value - v*var.width, var.low),
                                   min(var.value + (1-v)*var.width,var.up))
@@ -68,7 +68,7 @@ mcmc.update.sigma0const <- function(what, log.like.func, eps_Tc_temp, mcmc) {
                 var_prop <- runif(1,interval[1], interval[2])
                 var.values[[what]] <- var_prop
                 if (eval(call(log.like.func, mcmc$add_to_sd_Tc, var.values[['const']], var.values[['sigma0']], 
-                                 eps_Tc_temp, mcmc$meta$const_sd_dummie_Tc, mcmc$meta$sigma0.min)) >= z) {
+                                 eps_Tc_temp, mcmc$const_sd_dummie_Tc, mcmc$meta$sigma0.min)) >= z) {
                         mcmc[[var.name]] <- var_prop
                         return()
                 } else {
@@ -105,7 +105,7 @@ mcmc.update.abSsigma0const <- function(mcmc, id.not.early.index) {
     mcmc.update.abS('S', eps_Tc_temp, mcmc)
     mcmc.update.sigma0const('sigma0', 'log_cond_sigma0', eps_Tc_temp, mcmc)
     mcmc.update.sigma0const('const', 'log_cond_const_sd', eps_Tc_temp, mcmc)
-    mcmc$sd_Tc <- ifelse(mcmc$meta$const_sd_dummie_Tc==1, mcmc$const_sd, 1)*
+    mcmc$sd_Tc <- ifelse(mcmc$const_sd_dummie_Tc==1, mcmc$const_sd, 1)*
             ifelse((mcmc$sigma0 + mcmc$add_to_sd_Tc)>0, mcmc$sigma0 + mcmc$add_to_sd_Tc, 
             mcmc$meta$sigma0.min)
 }
@@ -145,8 +145,7 @@ mcmc.update.Triangle_c4 <- function(country, mcmc) {
                                                 sum(exp(mcmc$gamma_ci[country,])), 
                                                                 Triangle_c4_prop, 
                                                 mcmc$d_c[country])
-                  eps_T_prop <- get_eps_T(theta_prop,country, mcmc$meta$tfr_matrix, mcmc$meta$start_c[country],
-                                                 mcmc$meta$lambda_c[country], mcmc$meta$dl.p1, mcmc$meta$dl.p2)
+                  eps_T_prop <- get.eps.T(theta_prop,country, mcmc$meta)
                   if (.C("log_cond_Triangle_c4_trans", Triangle_c4_trans_prop, eps_T_prop,
                 			mcmc$sd_Tc[epsT.idx,country],
                 			mcmc$mean_eps_Tc[epsT.idx,country], lepsT.idx, mcmc$Triangle4, mcmc$delta4,
@@ -184,8 +183,7 @@ mcmc.update.gamma <- function(country, mcmc) {
     pci_prob <- exp(gamma_prop)/sum(exp(gamma_prop))
     theta_prop <- c(pci_prob*(mcmc$U_c[country] - mcmc$Triangle_c4[country]), 
                     mcmc$Triangle_c4[country], mcmc$d_c[country]) 
-    eps_T_prop <- get_eps_T(theta_prop, country, mcmc$meta$tfr_matrix,mcmc$meta$start_c[country],
-                            mcmc$meta$lambda_c[country],mcmc$meta$dl.p1, mcmc$meta$dl.p2)
+    eps_T_prop <- get.eps.T(theta_prop, country, mcmc$meta)
     idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
     prob_accept <- exp(log_like_gammas(gamma_prop,eps_T_prop,
                                        mcmc$sd_Tc[idx, country], mcmc$mean_eps_Tc[idx, country], 
@@ -225,9 +223,7 @@ mcmc.update.d <- function(country, mcmc) {
         while (TRUE){
                 d_trans_prop <- runif(1,interval[1], interval[2])
                 d_prop <- (mcmc$meta$d.up*exp(d_trans_prop) +mcmc$meta$d.low)/(1+exp(d_trans_prop))
-                eps_T_prop <- get_eps_T(c(theta_prop[-5], d_prop),country, mcmc$meta$tfr_matrix, 
-                                 mcmc$meta$start_c[country], mcmc$meta$lambda_c[country], 
-                                 mcmc$meta$dl.p1, mcmc$meta$dl.p2)
+                eps_T_prop <- get.eps.T(c(theta_prop[-5], d_prop),country, mcmc$meta)
                 if (log_cond_d_trans(d_trans_prop,eps_T_prop, 
                           mcmc$sd_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country],
                           mcmc$mean_eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country],
@@ -267,8 +263,7 @@ mcmc.update.U <- function(country, mcmc) {
                 # keep proportions the same, just update the deltas
                 theta_prop[1:3] <- theta_current[1:3]/(mcmc$U_c[country] - 
                                                         mcmc$Triangle_c4[country])*(U_prop - mcmc$Triangle_c4[country])
-                eps_T_prop <- get_eps_T(theta_prop, country, mcmc$meta$tfr_matrix, mcmc$meta$start_c[country],mcmc$meta$lambda_c[country], 
-                                                                mcmc$meta$dl.p1, mcmc$meta$dl.p2)
+                eps_T_prop <- get.eps.T(theta_prop, country, mcmc$meta)
                 if (log_cond_U(eps_T_prop, mcmc$sd_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1),country],
                                                 mcmc$mean_eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1),country])
                                  >= z) {
