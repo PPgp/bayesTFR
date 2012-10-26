@@ -2,17 +2,21 @@
 \Rdversion{1.1}
 \alias{UN2008}
 \alias{UN2010}
+\alias{UN2010_supplemental}
 \alias{my_tfr_template}
 \docType{data}
 \title{
 United Nations Time Series of the Total Fertility Rate
 }
 \description{
-Data set containing the United Nations time series of the total fertility rate for all countries of the world as available in 2008 and 2010.  It is stored in a TAB-separated ASCII files \dQuote{UN2008.txt} and \dQuote{UN2010.txt}.
+Data set containing the United Nations time series of the total fertility rate for all countries of the world as available in 2008 and 2010.  It is stored in a TAB-separated ASCII files \dQuote{UN2008.txt} and \dQuote{UN2010.txt}. File \dQuote{UN2010_supplemental.txt} contains a subset of countries for which data prior 1950 are available.
 }
 \usage{
 data(UN2010)
+
 data(UN2008)
+
+data(UN2010_supplemental)
 }
 
 \format{

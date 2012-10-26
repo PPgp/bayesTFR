@@ -215,7 +215,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 	if(!is.null(matrixsuppl.regions)) {
 		# remove rows where all tfr entries are NA
 		matrixsuppl.regions$obs_matrix <- matrixsuppl.regions$obs_matrix[,!matrixsuppl.regions$all.na, drop=FALSE]
-		matrixsuppl.regions$obs_matrix_all <- matrixsuppl.regions$obs_matrix_all[,!matrixsuppl.regions$all.na]
+		matrixsuppl.regions$obs_matrix_all <- matrixsuppl.regions$obs_matrix_all[,!matrixsuppl.regions$all.na, drop=FALSE]
 		for(name in c(names(matrixsuppl.regions$regions))) 
 			matrixsuppl.regions$regions[[name]] <-  matrixsuppl.regions$regions[[name]][!matrixsuppl.regions$all.na]
 		if(ncol(matrixsuppl.regions$obs_matrix) > 0) {
@@ -231,6 +231,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 		} else {
 			matrixsuppl.regions$regions <- NULL
 			matrixsuppl.regions$obs_matrix <- NULL
+			matrixsuppl.regions$obs_matrix_all <- NULL
 		}
 	}			
 	return(matrixsuppl.regions)

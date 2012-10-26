@@ -31,6 +31,7 @@
 \alias{get.data.for.worldmap}
 \alias{get.data.for.worldmap.bayesTFR.prediction}
 \alias{get.data.imputed}
+\alias{get.data.imputed.for.country}
 \alias{get.data.matrix}
 \alias{get.friendly.variant.names}
 \alias{get.full.par.names}

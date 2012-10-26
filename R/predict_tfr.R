@@ -483,9 +483,9 @@ get.ar1.countries.index <- function(meta) {
 get.ar1.data <- function(meta) {
 	tfr_prev <- tfr_now <- NULL
     for (country in get.ar1.countries.index(meta)){  
-		tfr = meta$tfr_matrix_all[,country]
-		tfr_prev = c(tfr_prev, c(meta$tfr_matrix_all[meta$lambda_c[country]:(meta$T_end_c[country]-1),country] ))
-		tfr_now = c(tfr_now, c(meta$tfr_matrix_all[(meta$lambda_c[country]+1):meta$T_end_c[country],country] ))
+		tfr <- get.observed.tfr(country, meta, 'tfr_matrix_all')
+		tfr_prev <- c(tfr_prev, tfr[meta$lambda_c[country]:(meta$T_end_c[country]-1)])
+		tfr_now <- c(tfr_now, tfr[(meta$lambda_c[country]+1):meta$T_end_c[country]] )
 	}
 	return(list(tfr_prev=tfr_prev, tfr_now=tfr_now, countries=get.ar1.countries(meta)))
 }

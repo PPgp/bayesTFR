@@ -6,11 +6,11 @@ test.load.UNtfr <- function(wpp.year=2008) {
 	test.name <- 'loading UN TFR file'
 	start.test(test.name)
 	tfr <- bayesTFR:::read.UNtfr(wpp.year)
-	stopifnot(length(dim(tfr$data))==2)
-	stopifnot(dim(tfr$data)[1] > 150)
-	stopifnot(is.element('last.observed', colnames(tfr$data)))
-	stopifnot(length(tfr$replaced) == 0)
-	stopifnot(length(tfr$added) == 0)
+	stopifnot(length(dim(tfr$data.object$data))==2)
+	stopifnot(dim(tfr$data.object$data)[1] > 150)
+	stopifnot(is.element('last.observed', colnames(tfr$data.object$data)))
+	stopifnot(length(tfr$data.object$replaced) == 0)
+	stopifnot(length(tfr$data.object$added) == 0)
 	test.ok(test.name)
 }
 
@@ -18,7 +18,7 @@ test.load.UNlocations <- function(wpp.year=2008) {
 	test.name <- 'loading WPP location file'
 	start.test(test.name)
 	tfr <- bayesTFR:::read.UNtfr(wpp.year)
-	locs <- bayesTFR:::read.UNlocations(tfr$data, wpp.year)
+	locs <- bayesTFR:::read.UNlocations(tfr$data.object$data, wpp.year)
 	stopifnot(length(dim(locs$loc_data)) == 2)
 	stopifnot(all(is.element(c('country_code', 'include_code'), colnames(locs$loc_data))))
 	stopifnot(dim(locs$loc_data)[1] > 200)
@@ -30,8 +30,8 @@ test.create.tfr.matrix <- function(wpp.year=2008) {
 	test.name <- 'creating TFR matrix'
 	start.test(test.name)
 	tfr <- bayesTFR:::read.UNtfr(wpp.year)
-	locs <- bayesTFR:::read.UNlocations(tfr$data, wpp.year)
-	tfr.and.regions <- bayesTFR:::get.TFRmatrix.and.regions(tfr$data, locs$loc_data, 
+	locs <- bayesTFR:::read.UNlocations(tfr$data.object$data, wpp.year)
+	tfr.and.regions <- bayesTFR:::get.TFRmatrix.and.regions(tfr$data.object$data, locs$loc_data, 
 												present.year=2009)
 	tfr.matrix <- tfr.and.regions$tfr_matrix
 	stopifnot(dim(tfr.matrix)[1] == 12)
@@ -491,7 +491,7 @@ test.estimate.mcmc.with.suppl.data <- function() {
 	# run prediction
 	test.name <- 'running projections for simulation with supplemental data'
 	start.test(test.name)
-	pred <- tfr.predict(m, burnin=10, verbose=FALSE, save.as.ascii=0)
+	pred <- tfr.predict(m, burnin=10, verbose=FALSE, save.as.ascii=0, rho=NULL, sigmaAR1=NULL)
 	spred <- summary(pred)
 	stopifnot(spred$nr.traj == 30)
 	stopifnot(!is.element(903, pred$mcmc.set$regions$country_code))
