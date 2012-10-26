@@ -275,8 +275,8 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 			add_to_sd_Tc_extra[1:(mcenv$meta$T_end_c[country]-1),icountry] <- (
 						this.data - mcenv$S_sd)*ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
 		}
-		mcenv$mean_eps_Tc <- matrix(0, mcenv$meta$T_end -1, nr_countries_all)
-        mcenv$sd_Tc <- matrix(NA, mcenv$meta$T_end -1, nr_countries_all)
+		mcenv$mean_eps_Tc <- matrix(0, mcenv$meta$T_end -1 + suppl.T, nr_countries_all)
+        mcenv$sd_Tc <- matrix(NA, mcenv$meta$T_end -1 + suppl.T, nr_countries_all)
        	mcenv$sd_Tc[,countries] <- ifelse(const_sd_dummie_Tc_extra==1, 
          						mcenv$const_sd, 1)*
             			   ifelse((mcenv$sigma0 + add_to_sd_Tc_extra)>0, mcenv$sigma0 + add_to_sd_Tc_extra, 

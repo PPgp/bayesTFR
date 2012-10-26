@@ -113,11 +113,12 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
         lty = c(1, lty), bty = "n", col = "red")
 }
 
-.get.trajectories.table <- function(tfr.pred, country, data.matrix, pi, pred.median, cqp, half.child.variant=FALSE) {
+.get.trajectories.table <- function(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant=FALSE) {
 	l <- tfr.pred$nr.projections
-	x1 <- as.integer(rownames(data.matrix))
+	obs.data <- obs.data[!is.na(obs.data)]
+	x1 <- as.integer(names(obs.data))
 	x2 <- seq(max(x1)+5, by=5, length=l)
-	tfr <- as.matrix(data.matrix[,country$index], ncol=1)
+	tfr <- as.matrix(obs.data, ncol=1)
 	rownames(tfr) <- x1
 	pred.table <- matrix(NA, ncol=2*length(pi)+1, nrow=l)
 	pred.table[,1] <- pred.median[2:(l+1)]
@@ -150,13 +151,13 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 		stop('Argument "country" must be given.')
 	}
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
-	data.matrix <- get.data.imputed(tfr.pred)
+	obs.data <- get.data.imputed.for.country(tfr.pred, country$index)
 	pred.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
 	trajectories <- get.trajectories(tfr.pred, country$code)
 	cqp <- list()
 	for (i in 1:length(pi))
 		cqp[[i]] <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i])
-	return(.get.trajectories.table(tfr.pred, country, data.matrix, pi, pred.median, cqp, half.child.variant))
+	return(.get.trajectories.table(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant))
 }
 
 get.typical.trajectory.index <- function(trajectories) {
@@ -302,18 +303,20 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 		col[(lcol+1):6] <- c('black', 'green', 'red', 'red', 'blue', 'gray')[(lcol+1):6]
 	}
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
-	tfr_observed <- tfr.pred$mcmc.set$meta$tfr_matrix_observed
+	tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
+
 	T_end_c <- tfr.pred$mcmc.set$meta$T_end_c
 	tfr_matrix_reconstructed <- get.tfr.reconstructed(tfr.pred$tfr_matrix_reconstructed, tfr.pred$mcmc.set$meta)
-	x1 <- as.integer(rownames(tfr_matrix_reconstructed))
+	suppl.T <- length(tfr_observed) - tfr.pred$mcmc.set$meta$T_end
+	x1 <- as.integer(names(tfr_observed))
 	x2 <- as.numeric(dimnames(tfr.pred$quantiles)[[3]])
 	#x2 <- seq(max(x1), by=5, length=tfr.pred$nr.projections+1)
 	lpart1 <- T_end_c[country$index]
-	y1.part1 <- tfr_observed[1:T_end_c[country$index],country$index]
+	y1.part1 <- tfr_observed[1:T_end_c[country$index]]
 	y1.part2 <- NULL
-	lpart2 <- tfr.pred$mcmc.set$meta$T_end - T_end_c[country$index]
+	lpart2 <- tfr.pred$mcmc.set$meta$T_end - T_end_c[country$index] + suppl.T
 	if (lpart2 > 0) 
-		y1.part2 <- tfr_matrix_reconstructed[(T_end_c[country$index]+1):nrow(tfr_matrix_reconstructed),country$index]
+		y1.part2 <- tfr_matrix_reconstructed[(T_end_c[country$index]+1-suppl.T):nrow(tfr_matrix_reconstructed),country$index]
 
 	trajectories <- get.trajectories(tfr.pred, country$code, nr.traj, typical.trajectory=typical.trajectory)
 	if(is.null(xlim)) xlim <- c(min(x1,x2), max(x1,x2))
