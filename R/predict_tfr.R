@@ -134,7 +134,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 	# sigmaAR1 can be a vector. The last element will be repeated up to nr.projections
 
 	nr_project <- ceiling((end.year - mcmc.set$meta$present.year)/5)
-
+	suppl.T <- if(!is.null(mcmc.set$meta$suppl.data$regions)) mcmc.set$meta$suppl.data$T_end else 0
 #	if (verbose)
 		cat('\nPrediction from', mcmc.set$meta$present.year, 
 			'(excl.) until', end.year, '(i.e.', nr_project, 'projections)\n\n')
@@ -198,6 +198,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 	nr_countries <- mcmc.set$meta$nr_countries
 	tfr_matrix_reconstructed <- get.tfr.reconstructed(mcmc.set$meta$tfr_matrix_observed, mcmc.set$meta)
 	ltfr_matrix <- dim(tfr_matrix_reconstructed)[1]
+	ltfr_matrix.all <- ltfr_matrix + suppl.T
 	
 	#quantiles.to.keep <- c(0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975)
 	#keep these defaults for checking the out-of-sample projections
@@ -219,7 +220,11 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 	other.vars <- c('chi', 'psi', 'Triangle4', 'delta4')
 	cs.par.values_hier <- get.tfr.parameter.traces(load.mcmc.set$mcmc.list, 
 										c(alpha.vars, delta.vars, other.vars), burnin=0)
-
+										
+	const_sd_dummie_Tc <- matrix(0, mcmc.set$meta$T_end+suppl.T, nr_countries)
+	mid.years <- as.integer(c(if(suppl.T > 0) rownames(mcmc.set$meta$suppl.data$tfr_matrix) else c(), rownames(tfr_matrix_reconstructed)))
+	const_sd_dummie_Tc[mid.years < 1975,] <- 1
+	
 	country.counter <- 0
 	status.for.gui <- paste('out of', length(prediction.countries), 'countries.')
 	gui.options <- list()
@@ -306,18 +311,17 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
                           (cs.par.values[,U.var] - Triangle_c4_s)*pc_si[,3],
                           Triangle_c4_s, d_s) 
 	}
-
+		all.tfr <- get.observed.tfr(country, mcmc.set$meta, 'tfr_matrix_all')
 		this.T_end <- mcmc.set$meta$T_end_c[country]
-		nmissing <- ltfr_matrix - this.T_end
+		nmissing <- ltfr_matrix.all - this.T_end
 		this.nr_project <- nr_project + nmissing
-		
-		
+			
 		#### projections might start before 1975 ...
 		dummie_c1975 = rep(0, this.nr_project)
 		# if this.T_end is before 1975, need to add const_sd to sd of distortion terms
-		if (sum(mcmc.set$meta$mcmc$const_sd_dummie_Tc[this.T_end:mcmc.set$meta$T_end,country]) !=0){
+		if (sum(const_sd_dummie_Tc[this.T_end:(mcmc.set$meta$T_end+suppl.T),country]) !=0){
  			# gives number of add. periods with const
- 			dummie_c1975[1:sum(mcmc.set$meta$mcmc$const_sd_dummie_Tc[this.T_end:mcmc.set$meta$T_end,country])] = 1
+ 			dummie_c1975[1:sum(const_sd_dummie_Tc[this.T_end:(mcmc.set$meta$T_end+suppl.T),country])] <- 1
 		}
                 
 		nr_obs_in_phaseIII = (this.T_end - mcmc.set$meta$lambda_c[country])
@@ -327,12 +331,10 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 		# the projections
 		f_ps <- matrix(NA, this.nr_project+1,nr_simu)
 		# fs also includes last estimate!
-		f_ps[1,] <- tfr_matrix_reconstructed[this.T_end,country]
+		f_ps[1,] <- all.tfr[this.T_end]
 		if(adjust.true) {
-			D11 <- (mcmc.set$meta$tfr_matrix_all[this.T_end-1,country] - 
- 		  			mcmc.set$meta$tfr_matrix_all[this.T_end,country])
- 		  	E11 <- (mcmc.set$meta$tfr_matrix_all[this.T_end-1,country] - 
- 		  			(mu + rho*(mcmc.set$meta$tfr_matrix_all[this.T_end-1,country]-mu)))
+			D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
+ 		  	E11 <- (all.tfr[this.T_end-1] - (mu + rho*(all.tfr[this.T_end-1]-mu)))
  		  	S11pIII <- D11 - E11
  		}
  		S11 <- 0
@@ -343,15 +345,13 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 			else
   				repl_stop <- ifelse(
   					(mcmc.set$meta$lambda_c[country] != this.T_end) || 
-                	((min(mcmc.set$meta$tfr_matrix_all[, country], na.rm=TRUE) <= cs.par.values[s, Triangle_c4.var]) && 
-                 	(mcmc.set$meta$tfr_matrix_all[this.T_end, country] > mcmc.set$meta$tfr_matrix_all[this.T_end-1, country])),
-                	TRUE, FALSE)
+                	((min(all.tfr, na.rm=TRUE) <= cs.par.values[s, Triangle_c4.var]) && 
+                 	(all.tfr[this.T_end] > all.tfr[this.T_end-1])), TRUE, FALSE)
 
 			if(adjust.true) {
 			 	if(!repl_stop) {
 					# country in Phase II
-            		d11 <- DLcurve(theta_si[s,], mcmc.set$meta$tfr_matrix_all[this.T_end-1,country], 
-            				mcmc.set$meta$dl.p1, mcmc.set$meta$dl.p2)
+            		d11 <- DLcurve(theta_si[s,], all.tfr[this.T_end-1], mcmc.set$meta$dl.p1, mcmc.set$meta$dl.p2)
 		  			S11 <- D11 - d11
 		  		} else {
 					# country already in Phase III in last obs. period
@@ -425,7 +425,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 		if (nmissing > 0) {
 			f_ps_future <- f_ps[(nmissing+1):nrow(f_ps),]
 			f_ps_future[1,] <- quantile(f_ps_future[1,], 0.5, na.rm = TRUE)
-			tfr_matrix_reconstructed[(this.T_end+1):ltfr_matrix,country] <- apply(matrix(f_ps[2:(nmissing+1),], nrow=nmissing), 
+			tfr_matrix_reconstructed[(this.T_end-suppl.T+1):ltfr_matrix,country] <- apply(matrix(f_ps[2:(nmissing+1),], nrow=nmissing), 
 												1, quantile, 0.5, na.rm = TRUE)
 		} else {
 			f_ps_future <- f_ps
@@ -955,3 +955,9 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 
 get.data.imputed.bayesTFR.prediction <- function(pred, ...)
 	return(get.tfr.reconstructed(pred$tfr_matrix_reconstructed, pred$mcmc.set$meta))
+	
+"get.data.imputed.for.country" <- function(pred, country.index, ...) UseMethod("get.data.imputed.for.country")
+
+get.data.imputed.for.country.bayesTFR.prediction <- function(pred, country.index, ...)
+	return(get.observed.with.supplemental(country.index, pred$tfr_matrix_reconstructed, pred$mcmc.set$meta$suppl.data, 'tfr_matrix_all'))
+	

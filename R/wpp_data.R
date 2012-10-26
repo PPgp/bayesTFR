@@ -113,7 +113,7 @@ read.UNtfr <- function(wpp.year, my.tfr.file=NULL, ...) {
 	data <- do.read.un.file(un.file.name, wpp.year, my.file=my.tfr.file, ...)
 	suppl.data<- NULL
 	if(file.exists(un.suppl.file.name)) 
-		suppl.data <- do.read.un.file(un.suppl.file.name, wpp.year, ...)
+		suppl.data <- do.read.un.file(un.suppl.file.name, wpp.year, my.file=my.tfr.file, ...)
 	return(list(data.object=data, suppl.data.object=suppl.data))
 }
 
@@ -178,6 +178,7 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
 	tfr_matrix_all <- tfr_matrix
 
 	reg_name <- reg_code <- area_name <- area_code <- NULL
+	all.na <- rep(NA, nr_countries)
 	for (i in 1:nr_countries){
 		loc_index <- which.max(loc_data$country_code == tfr_data$country_code[i])
  		reg_name <- c(reg_name, paste(loc_data$reg_name[loc_index]))
@@ -186,10 +187,11 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
  		area_code <- c(area_code, loc_data$area_code[loc_index])
 		# set NAs for entries that are not observed data (after last.observed) 
 		tfr_matrix[(tfr_data[i,'last.observed'] < mid.years), i] <- NA
+		all.na[i] <- all(is.na(tfr_matrix[,i]))
 	}
 	regions <- list(name=reg_name, code=reg_code, area_name=area_name, area_code=area_code,
 				country_name=tfr_data$country, country_code=tfr_data$country_code)
-	return(list(obs_matrix=tfr_matrix, obs_matrix_all=tfr_matrix_all, regions=regions))
+	return(list(obs_matrix=tfr_matrix, obs_matrix_all=tfr_matrix_all, regions=regions, all.na=all.na))
 }
 
 get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
@@ -211,15 +213,25 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 							start.year=start.year, 
 							present.year=present.year)
 	if(!is.null(matrixsuppl.regions)) {
-		matrixsuppl.regions$all.countries.index <- c()
-		index.from.all <- rep(NA, length(matrix.regions$regions$country_code))
-		for(i in 1:length(suppl.data[include,'country_code'])) {
-			incl.idx <- which(is.element(matrix.regions$regions$country_code,
-												suppl.data[include,'country_code'][i]))
-			matrixsuppl.regions$all.countries.index <- c(matrixsuppl.regions$all.countries.index, incl.idx)
-			index.from.all[incl.idx] <- i
+		# remove rows where all tfr entries are NA
+		matrixsuppl.regions$obs_matrix <- matrixsuppl.regions$obs_matrix[,!matrixsuppl.regions$all.na, drop=FALSE]
+		matrixsuppl.regions$obs_matrix_all <- matrixsuppl.regions$obs_matrix_all[,!matrixsuppl.regions$all.na]
+		for(name in c(names(matrixsuppl.regions$regions))) 
+			matrixsuppl.regions$regions[[name]] <-  matrixsuppl.regions$regions[[name]][!matrixsuppl.regions$all.na]
+		if(ncol(matrixsuppl.regions$obs_matrix) > 0) {
+			matrixsuppl.regions$all.countries.index <- c()
+			index.from.all <- rep(NA, length(matrix.regions$regions$country_code))
+			for(i in 1:length(matrixsuppl.regions$regions$country_code)) {
+				incl.idx <- which(is.element(matrix.regions$regions$country_code,
+												matrixsuppl.regions$regions$country_code[i]))
+				matrixsuppl.regions$all.countries.index <- c(matrixsuppl.regions$all.countries.index, incl.idx)
+				index.from.all[incl.idx] <- i
+			}
+			matrixsuppl.regions$index.from.all.countries <- index.from.all
+		} else {
+			matrixsuppl.regions$regions <- NULL
+			matrixsuppl.regions$obs_matrix <- NULL
 		}
-		matrixsuppl.regions$index.from.all.countries <- index.from.all
 	}			
 	return(matrixsuppl.regions)
 }

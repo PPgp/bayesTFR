@@ -488,15 +488,15 @@ test.estimate.mcmc.with.suppl.data <- function() {
 	stopifnot(is.element(900, m$meta$suppl.data$regions$country_code))
 	test.ok(test.name)
         
-        # # run prediction
-        # test.name <- 'running projections for simulation with supplemental data'
-        # start.test(test.name)
-        # pred <- e0.predict(m, burnin=10, verbose=FALSE, save.as.ascii=0)
-        # spred <- summary(pred)
-        # stopifnot(spred$nr.traj == 30)
-        # stopifnot(!is.element(903, pred$mcmc.set$regions$country_code))
-        # npred <- dim(pred$e0.matrix.reconstructed)[2]
-        # test.ok(test.name)
-        unlink(sim.dir, recursive=TRUE)
+	# run prediction
+	test.name <- 'running projections for simulation with supplemental data'
+	start.test(test.name)
+	pred <- tfr.predict(m, burnin=10, verbose=FALSE, save.as.ascii=0)
+	spred <- summary(pred)
+	stopifnot(spred$nr.traj == 30)
+	stopifnot(!is.element(903, pred$mcmc.set$regions$country_code))
+	npred <- dim(pred$tfr_matrix_reconstructed)[2]
+	test.ok(test.name)
+	unlink(sim.dir, recursive=TRUE)
 }
 	

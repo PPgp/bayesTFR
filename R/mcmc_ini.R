@@ -87,14 +87,16 @@ find.lambda.for.one.country <- function(tfr, T_end) {
 	return(c(start, sum(!isna.tfr) + start - 1))
 } 
 
-get.observed.tfr <- function(country.index, meta, matrix.name='tfr_matrix')
-	return(get.observed.with.supplemental(country.index, meta[[matrix.name]], meta$suppl.data))
+get.observed.tfr <- function(country.index, meta, matrix.name='tfr_matrix', matrix.name.suppl=matrix.name)
+	return(get.observed.with.supplemental(country.index, meta[[matrix.name]], meta$suppl.data, matrix.name.suppl))
 
 get.observed.with.supplemental <- function(country.index, matrix, suppl.data, matrix.name='tfr_matrix') {
 	data <- matrix[,country.index]
 	if(!is.null(suppl.data[[matrix.name]])) {
     	supp.c.idx <- suppl.data$index.from.all.countries[country.index]
-    	data <- c(if(!is.na(supp.c.idx)) suppl.data[[matrix.name]][,supp.c.idx] else rep(NA, nrow(suppl.data[[matrix.name]])), data)
+    	if(is.na(supp.c.idx)) {sdata <- rep(NA, nrow(suppl.data[[matrix.name]])); names(sdata) <- rownames(suppl.data[[matrix.name]])}
+    	else sdata <- suppl.data[[matrix.name]][,supp.c.idx]
+    	data <- c(sdata, data)
     }
 	return(data)
 }
@@ -134,6 +136,7 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
             				value_global_max - max.diff.local.and.global.max.for.start.at.loc, 1, 0))
         tau_c[country] <- max_index
         start_c[country] <- tau_c[country]
+
         if ((data[tau_c[country]] < min.TFRlevel.for.start.after.1950)) {
         	tau_c[country] <- -1
         	start_c[country] <- which(!is.na(data))[1] # first data point that is not NA
@@ -142,7 +145,7 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
         	suppl.data$tfr_matrix[1:min(tau_c[country] - 1, T.suppl),suppl.data$index.from.all.countries[country]] <- NA
         if(tau_c[country] > T.suppl + 1)
             tfr_matrix[1:(tau_c[country] - 1 - T.suppl), country] <- NA
-            
+
         lambda_c[country] <- find.lambda.for.one.country(data, T_end_c[country])
         if (lambda_c[country] < T_end_c[country]) { # set NA all values between lambda_c and T_c_end
          	if(lambda_c[country] < T.suppl) {
@@ -207,6 +210,7 @@ do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_g
 		suppl.data$tfr_matrix_all <- tfr.with.regions$suppl.data$tfr_matrix
 		suppl.data$tfr_matrix <- results_tau$suppl.matrix
 		suppl.data$T_end <- dim(suppl.data$tfr_matrix)[1]
+		suppl.data$nr_countries <- dim(suppl.data$tfr_matrix)[2]
 	}
     lambda_c = results_tau$lambda_c
     nr_countries = length(lambda_c)
@@ -392,11 +396,23 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	tfr.with.regions <- set.wpp.extra(meta, countries=countries, 
 									  my.tfr.file = my.tfr.file, verbose=verbose)
 	if(is.null(tfr.with.regions)) return(list(meta=meta, index=c()))
+	has.mock.suppl <- FALSE
+	if(is.null(tfr.with.regions$suppl.data$regions) && !is.null(meta$suppl.data$regions)) {
+		# create mock suppl.data in order to get the right data indices
+		nrc <- length(tfr.with.regions$regions$code)
+		mock.suppl <- list(regions=tfr.with.regions$regions, 
+							tfr_matrix=matrix(NA, nrow=nrow(meta$suppl.data$tfr_matrix), ncol=nrc,
+												dimnames=list(rownames(meta$suppl.data$tfr_matrix), NULL)),
+							index.to.all.countries=1:nrc,
+							index.from.all.countries=1:nrc)
+		tfr.with.regions$suppl.data <- mock.suppl
+		has.mock.suppl <- TRUE
+	}
 	Emeta <- do.meta.ini(meta, tfr.with.regions=tfr.with.regions, 
 								my.tfr.file=my.tfr.file, 
 								use.average.gammas.cov=TRUE, burnin=burnin,
 						 		verbose=verbose)
-						 		
+			 		
 	# join the new meta with the existing one
 	is.old <- tfr.with.regions$is_processed
 	is.new <- !tfr.with.regions$is_processed
@@ -437,16 +453,21 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 			if (length(not.incl) > 0)
 				meta[[name]] <- meta[[name]][-not.incl]
 		}
+		remove.from.old <- !is.element(idx.old, Emeta[[name]])
+		if(any(remove.from.old)) {
+			idx <- which(is.element(meta[[name]], id.replace[remove.from.old]))
+			meta[[name]] <- meta[[name]][-idx]
+		}
 		new.meta[[name]] <- meta[[name]]
 		idx2 <- !is.inold
 		if(any(idx2))
 			new.meta[[name]] <- c(new.meta[[name]], idx.new.wo.old[Emeta[[name]][idx2]] + meta$nr_countries)
 	}
 	new.meta[['regions']] <- update.regions(meta$regions, Emeta$regions, id.replace, is.new, is.old)
-	if(!is.null(Emeta$suppl.data$regions)) {
+	if(!is.null(Emeta$suppl.data$regions) && !has.mock.suppl) {
 		suppl.id.replace <- meta$suppl.data$index.from.all.countries[id.replace]
 		suppl.id.replace <- suppl.id.replace[!is.na(suppl.id.replace)]
-		suppl.is.old <- which(is.old)[which(is.element(id.replace, suppl.id.replace))]
+		suppl.is.old <- which(is.old)[which(is.element(meta$suppl.data$index.from.all.countries[id.replace], suppl.id.replace))]
 		suppl.old <- Emeta$suppl.data$index.from.all.countries[suppl.is.old]
 		suppl.is.new <- which(is.new & !is.na(Emeta$suppl.data$index.from.all.countries))
 		suppl.new <- Emeta$suppl.data$index.from.all.countries[suppl.is.new]
@@ -459,14 +480,17 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 		new.meta$suppl.data$regions <- update.regions(meta$suppl.data$regions, Emeta$suppl.data$regions, 
 												suppl.id.replace, suppl.new, suppl.old)
 		n.new <- ncol(new.meta$suppl.data$tfr_matrix) - ncol(meta$suppl.data$tfr_matrix)
+		new.meta$suppl.data$nr_countries <- ncol(new.meta$suppl.data$tfr_matrix)
+		new.meta$suppl.data$T_end <- nrow(new.meta$suppl.data$tfr_matrix)
+		new.meta$suppl.data$index.from.all.countries <- meta$suppl.data$index.from.all.countries
+		new.meta$suppl.data$index.to.all.countries <- meta$suppl.data$index.to.all.countries
 		if (n.new > 0) {
-			new.meta$suppl.data$nr_countries <- ncol(new.meta$suppl.data$tfr_matrix)
-			new.meta$suppl.data$index.from.all.countries <- c(meta$suppl.data$index.from.all.countries, rep(NA, sum(is.new)))
-			new.meta$suppl.data$index.from.all.countries[meta$nr.countries + suppl.is.new] <- seq(meta$suppl.data$nr_countries + 1, 
+			new.meta$suppl.data$index.from.all.countries <- c(new.meta$suppl.data$index.from.all.countries, rep(NA, sum(is.new)))
+			new.meta$suppl.data$index.from.all.countries[meta$nr_countries + suppl.is.new] <- seq(meta$suppl.data$nr_countries + 1, 
 												length=n.new)
-			new.meta$suppl.data$index.to.all.countries <- c(meta$suppl.data$index.to.all.countries, 
+			new.meta$suppl.data$index.to.all.countries <- c(new.meta$suppl.data$index.to.all.countries, 
 											seq(meta$nr_countries+1, new.meta$nr_countries)[suppl.is.new])
-		}
+		} 
 	}
 	index <- id.replace
 	if (new.meta$nr_countries > meta$nr_countries) 
@@ -493,7 +517,7 @@ mcmc.ini.extra <- function(mcmc, countries, index.replace=NULL) {
 	if(nr.countries.extra > nreplace)
 		U_c <- c(U_c, Uc[(nreplace+1):nr.countries.extra])
     for (country in mcmc$meta$id_notearly[is.element(mcmc$meta$id_notearly, countries)]){
-		U_c[country] = mcmc$meta$tfr_matrix[mcmc$meta$tau_c[country],country ]
+		U_c[country] = get.observed.tfr(country, mcmc$meta)[mcmc$meta$tau_c[country]]
 	}
 	mcmc.update <- list(U_c=U_c, d_c=c(mcmc$d_c, rep(mcmc$d.ini, nr.countries.extra-nreplace)), 
 						gamma_ci=rbind(mcmc$gamma_ci, 
