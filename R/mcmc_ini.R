@@ -101,8 +101,9 @@ get.observed.with.supplemental <- function(country.index, matrix, suppl.data, ma
 	return(data)
 }
 
-find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5.5, 
-												max.diff.local.and.global.max.for.start.at.loc = 0.5, suppl.data=NULL) 
+find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5, #5.5, 
+												max.diff.local.and.global.max.for.start.at.loc = 0.53, #0.5, 
+												suppl.data=NULL) 
 # gets tau_c and puts NAs before tau_c
 # gets ids of DL (where decline has been observed)
 # and divides those into early and not early
@@ -137,7 +138,7 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
         tau_c[country] <- max_index
         start_c[country] <- tau_c[country]
 
-        if ((data[tau_c[country]] < min.TFRlevel.for.start.after.1950)) {
+        if (as.integer(names(data)[T.start]) > 1855 && (data[tau_c[country]] < min.TFRlevel.for.start.after.1950)) {
         	tau_c[country] <- -1
         	start_c[country] <- which(!is.na(data))[1] # first data point that is not NA
         }
