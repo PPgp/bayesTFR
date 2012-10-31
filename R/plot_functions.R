@@ -286,7 +286,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 								  xlim=NULL, ylim=NULL, type='b', 
 								  xlab='Year', ylab='TFR', main=NULL, lwd=c(2,2,2,2,2,1), 
 								  col=c('black', 'green', 'red', 'red', 'blue', 'gray'),
-								  show.legend=TRUE, ...
+								  show.legend=TRUE, add=FALSE, ...
 								  ) {
 	# lwd/col is a vector of 6 line widths/colors for: 
 	#	1. observed data, 2. imputed missing data, 3. median, 4. quantiles, 5. +- 0.5 child, 6. trajectories
@@ -304,28 +304,27 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 	}
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
-
 	T_end_c <- tfr.pred$mcmc.set$meta$T_end_c
 	tfr_matrix_reconstructed <- get.tfr.reconstructed(tfr.pred$tfr_matrix_reconstructed, tfr.pred$mcmc.set$meta)
 	suppl.T <- length(tfr_observed) - tfr.pred$mcmc.set$meta$T_end
-	x1 <- as.integer(names(tfr_observed))
-	x2 <- as.numeric(dimnames(tfr.pred$quantiles)[[3]])
-	#x2 <- seq(max(x1), by=5, length=tfr.pred$nr.projections+1)
-	lpart1 <- T_end_c[country$index]
 	y1.part1 <- tfr_observed[1:T_end_c[country$index]]
+	y1.part1 <- y1.part1[!is.na(y1.part1)]
+	lpart1 <- length(y1.part1)
 	y1.part2 <- NULL
 	lpart2 <- tfr.pred$mcmc.set$meta$T_end - T_end_c[country$index] + suppl.T
 	if (lpart2 > 0) 
 		y1.part2 <- tfr_matrix_reconstructed[(T_end_c[country$index]+1-suppl.T):nrow(tfr_matrix_reconstructed),country$index]
-
+	x1 <- as.integer(c(names(y1.part1), names(y1.part2)))
+	x2 <- as.numeric(dimnames(tfr.pred$quantiles)[[3]])	
 	trajectories <- get.trajectories(tfr.pred, country$code, nr.traj, typical.trajectory=typical.trajectory)
-	if(is.null(xlim)) xlim <- c(min(x1,x2), max(x1,x2))
-	if(is.null(ylim)) ylim <- c(0, max(trajectories$trajectories, y1.part1, y1.part2, na.rm=TRUE))
-	if(is.null(main)) main <- country$name
 	# plot historical data: observed
-	plot(x1[1:lpart1], y1.part1, type=type, xlim=xlim, ylim=ylim, ylab=ylab, xlab=xlab, main=main, 
-					panel.first = grid(), lwd=lwd[1], col=col[1], ...
-					)
+	if (!add) {
+		if(is.null(xlim)) xlim <- c(min(x1,x2), max(x1,x2))
+		if(is.null(ylim)) ylim <- c(0, max(trajectories$trajectories, y1.part1, y1.part2, na.rm=TRUE))
+		if(is.null(main)) main <- country$name
+		plot(x1[1:lpart1], y1.part1, type=type, xlim=xlim, ylim=ylim, ylab=ylab, xlab=xlab, main=main, 
+					panel.first = grid(), lwd=lwd[1], col=col[1], ...)
+	} else points(x1[1:lpart1], y1.part1, type=type, lwd=lwd[1], col=col[1], ...)
 	if(lpart2 > 0) { # imputed values
 		lines(x1[(lpart1+1): length(x1)], y1.part2, pch=2, type='b', col=col[2], lwd=lwd[2])
 		lines(x1[lpart1:(lpart1+1)], c(y1.part1[lpart1], y1.part2[1]), col=col[2], lwd=lwd[2]) # connection between the two parts
@@ -375,24 +374,21 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 		cols <- c(cols, col[5])
 		lwds <- c(lwds, lwd[5])
 	}
-
-	legend <- c(legend, 'observed TFR')
-	cols <- c(cols, col[1])
-	lty <- c(lty, 1)
-	pch <- c(rep(-1, length(legend)-1), 1)
-	lwds <- c(lwds, lwd[1])
-	if(lpart2 > 0) {
-		legend <- c(legend, 'imputed TFR')
-		cols <- c(cols, col[2])
+	if(show.legend) {
+		legend <- c(legend, 'observed TFR')
+		cols <- c(cols, col[1])
 		lty <- c(lty, 1)
-		pch <- c(pch, 2)
-		lwds <- c(lwds, lwd[2])
-	}
-	if(show.legend)
+		pch <- c(rep(-1, length(legend)-1), 1)
+		lwds <- c(lwds, lwd[1])
+		if(lpart2 > 0) {
+			legend <- c(legend, 'imputed TFR')
+			cols <- c(cols, col[2])
+			lty <- c(lty, 1)
+			pch <- c(pch, 2)
+			lwds <- c(lwds, lwd[2])
+		}
 		legend('bottomleft', legend=legend, lty=lty, bty='n', col=cols, pch=pch, lwd=lwds)
-	#abline(h=1, lty=3)
-	#abline(h=1.5, lty=3)
-	#abline(h=2.1, lty=3)
+	}
 }
 
 extract.plot.args <- function(...) {
