@@ -79,6 +79,7 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     maxy <- max(dlc)
     obs.data <- get.observed.tfr(country$index, meta)[1:meta$T_end_c[country$index]]
     decr <- -diff(obs.data)
+    maxy <- max(maxy, decr, na.rm=TRUE)
     thincurves <- get.thinning.index(nr.curves, dim(dlc)[1])
     ltype <- "l"
     if (thincurves$nr.points == 0) {
