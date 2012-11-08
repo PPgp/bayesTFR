@@ -102,7 +102,8 @@ get.observed.with.supplemental <- function(country.index, matrix, suppl.data, ma
 }
 
 find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5, #5.5, 
-												max.diff.local.and.global.max.for.start.at.loc = 0.53, #0.5, 
+												max.diff.local.and.global.max.for.start.at.loc = 0.53, #0.5,
+												delta.for.local.max = 0.001,
 												suppl.data=NULL) 
 # gets tau_c and puts NAs before tau_c
 # gets ids of DL (where decline has been observed)
@@ -125,16 +126,21 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
     	#if(!has.suppl[country]) T_end_c.raw[country] <- T_end_c[country] + T.suppl
     	lT <- T_end_c[country] - T.start + 1
     	local_max_indices = rep(NA, lT)
-        does_tfr_decrease = ifelse(diff(data[T.start:T_end_c[country]]) < 0, 1, 0)
+    	d <- diff(data[T.start:T_end_c[country]])
+        does_tfr_decrease = ifelse(d < delta.for.local.max, 1, 0)
         local_max_indices[1] = does_tfr_decrease[1]
    		# in middle only a local max if increase is followed by decrease
         local_max_indices[-c(1, lT)] = diff(does_tfr_decrease)
    		# at end local max if preceded by an increase 
         local_max_indices[lT] = 1 - does_tfr_decrease[lT - 1]
  		value_global_max = max(data, na.rm = TRUE)
- 		max_index = max(seq(T.start, T_end_c[country]) * (local_max_indices > 0) * 
+ 		max_index <- max(seq(T.start, T_end_c[country]) * (local_max_indices > 0) * 
  						ifelse(data[T.start:T_end_c[country]] >
             				value_global_max - max.diff.local.and.global.max.for.start.at.loc, 1, 0))
+        # move the point to the right if there are more recent points with the same values
+        is.same <- c(0, ifelse(abs(d) < delta.for.local.max, 1, 0))
+        cs.same <- cumsum(is.same[(max_index-T.start+1):(lT-1)])
+        max_index <- max_index + cs.same[min(which(diff(cs.same)==0))] 
         tau_c[country] <- max_index
         start_c[country] <- tau_c[country]
 
