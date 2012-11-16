@@ -141,7 +141,7 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
 	colnames(pred.table)[2:ncol(pred.table)] <- cn[order(cn)]
 	if(half.child.variant) {
 		up.low <- get.half.child.variant(median=c(0, pred.table[,1]))
-		pred.table <- cbind(pred.table, t(up.low[2:1,2:ncol(up.low)]))
+		pred.table <- cbind(pred.table, t(up.low[,2:ncol(up.low)]))
 		colnames(pred.table)[(ncol(pred.table)-1):ncol(pred.table)] <- c('-0.5child', '+0.5child')
 	}
 	return(rbind(cbind(tfr, matrix(NA, nrow=nrow(tfr), ncol=ncol(pred.table)-1)), pred.table))

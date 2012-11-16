@@ -14,6 +14,24 @@ test.load.UNtfr <- function(wpp.year=2008) {
 	test.ok(test.name)
 }
 
+test.load.UNtfr.and.my.tfr.file <- function() {
+	# read the UN TFR input file
+	test.name <- 'loading UN TFR file and my_tfr_file'
+	start.test(test.name)
+	my.tfr.file <- file.path(.find.package("bayesTFR"), 'data', 'my_tfr_template.txt')
+	tfr <- bayesTFR:::read.UNtfr(2010, my.tfr.file=my.tfr.file)
+	stopifnot(length(dim(tfr$data.object$data))==2)
+	stopifnot(length(dim(tfr$suppl.data.object$data))==2)
+	stopifnot(dim(tfr$data.object$data)[1] == 232)
+	stopifnot(dim(tfr$suppl.data.object$data)[1] == 104)
+	stopifnot(is.element('last.observed', colnames(tfr$data.object$data)))
+	stopifnot(length(tfr$data.object$replaced) == 1)
+	stopifnot(length(tfr$data.object$added) == 0)
+	stopifnot(length(tfr$suppl.data.object$replaced) == 0)
+	stopifnot(length(tfr$suppl.data.object$added) == 1)
+	test.ok(test.name)
+}
+
 test.load.UNlocations <- function(wpp.year=2008) {
 	test.name <- 'loading WPP location file'
 	start.test(test.name)

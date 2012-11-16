@@ -69,7 +69,7 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 	replaced <- c()
 	added <- c()
 	my.tfr.file <- my.file
-	# read user-defined TFRs and replaced the UN data with it
+	# read user-defined TFRs and replace the UN data with it
 	if(!is.null(my.tfr.file)) {
 		cat('Reading file ', my.tfr.file, '.\n')
 		my.tfr_data <- read.tfr.file(file=my.tfr.file)
@@ -94,15 +94,17 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 					added <- c(added, codes[icode])
 				} else replaced <- c(replaced, codes[icode])
 				# overwrite the UN data
-				tfr_data[idx,cols.wo.name] <- my.tfr_data[icode,cols.wo.name]
+				colsnotna <- which(!is.na(my.tfr_data[icode,cols.wo.name]))
+				tfr_data[idx,cols.wo.name[colsnotna]] <- my.tfr_data[icode,cols.wo.name[colsnotna]]
 			}
 		}
-		if(length(replaced) > 0) { 
-			cat('\tValues in', paste(cols.to.use, collapse=', '), 'replaced for countries', 
+		if(length(replaced) > 0) 
+			cat('\tValues in', paste(cols.to.use, collapse=', '), '(possibly partially) replaced for countries', 
 						paste(replaced, collapse=', '), '.\n') 
-		} else { 
-			cat('\tNo country matched the UN TFR file.\n') 
-		}
+		if(length(added) > 0) 
+			cat('\tCountries', paste(added, collapse=', '), 'added to the UN data.\n')
+		if(length(replaced) == 0 && length(added) == 0)
+			cat('\tNo country matched the UN file.\n')
 	}
 	return(list(data=tfr_data, replaced=replaced, added=added))
 }
