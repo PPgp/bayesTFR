@@ -140,7 +140,7 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
         # move the point to the right if there are more recent points with the same values
         is.same <- c(0, ifelse(abs(d) < delta.for.local.max, 1, 0))
         cs.same <- cumsum(is.same[(max_index-T.start+1):(lT-1)])
-        max_index <- max_index + cs.same[min(which(diff(cs.same)==0))] 
+        max_index <- max_index + if(length(cs.same)==1) cs.same==0 else cs.same[min(which(diff(cs.same)==0))] 
         tau_c[country] <- max_index
         start_c[country] <- tau_c[country]
 
