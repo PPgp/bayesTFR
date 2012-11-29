@@ -63,7 +63,7 @@ test.run.mcmc.simulation <- function() {
 	# run MCMC
 	test.name <- 'running MCMC'
 	start.test(test.name)
-	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir)
+	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, start.year=1950)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
 	stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir)))

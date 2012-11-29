@@ -287,9 +287,9 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 		Triangle_c4_s <- ( mcmc.set$meta$Triangle_c4.up*exp(Triangle4_tr_s) + mcmc.set$meta$Triangle_c4.low)/(1+exp(Triangle4_tr_s))
 
 		# need U and Triangle_c4 in cs... later in loop for start of phase III and prior on f_t
-		cs.par.values = rep(mcmc.set$meta$tfr_matrix_observed[mcmc.set$meta$tau_c[country],country], nr_simu)
-		Triangle_c4.var = 'Triangle_c4'
-		U.var = 'U'
+		cs.par.values = rep(get.observed.tfr(country, mcmc.set$meta, 'tfr_matrix_all')[mcmc.set$meta$tau_c[country]], nr_simu)
+		Triangle_c4.var <- 'Triangle_c4'
+		U.var <- 'U'
 		cs.par.values = cbind(cs.par.values, Triangle_c4_s)
 		colnames(cs.par.values) = c(U.var, Triangle_c4.var)
 

@@ -15,7 +15,7 @@ Runs (or continues running) MCMCs for simulating the total fertility rate of all
 run.tfr.mcmc(nr.chains = 3, iter = 62000, 
     output.dir = file.path(getwd(), "bayesTFR.output"), 
     thin = 1, replace.output = FALSE, 
-    start.year = 1950, present.year = 2010, wpp.year = 2010, 
+    start.year = 1750, present.year = 2010, wpp.year = 2010, 
     my.tfr.file = NULL, buffer.size = 100, 
     U.c.low = 5.5, U.up = 8.8, U.width = 3,
     mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2, 

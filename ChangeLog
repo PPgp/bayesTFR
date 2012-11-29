@@ -1,3 +1,13 @@
+2.0-0 (11/30/2012)
+-----
+Added supplemental historical time series for some countries going back to 1750. 
+
+Added functionality of using historical data prior to 1950 for a subset of countries.
+
+Default of the argument start.year in run.tfr.mcmc changed to 1750.
+
+Methodology of finding start of the fertility transition changed.
+
 1.6-0 (10/11/2012)
 -----
 Function tfr.GoF.dl renamed to tfr.dl.coverage. Its MSE output changed to RMSE. Added MAE and cumm.CDF.
