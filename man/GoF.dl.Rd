@@ -44,12 +44,14 @@ To see the fit visually per country, use \code{\link{DLcurve.plot}(\dots, predic
 \code{\link{DLcurve.plot}}
 }
 \examples{
+\dontrun{
 sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 tfr <- get.tfr.mcmc(sim.dir)
 # Note that this simulation is a toy example and thus has not converged.
 gof <- tfr.dl.coverage(sim.dir)
 gof$time.coverage
 DLcurve.plot(tfr, country=608, predictive.distr=TRUE, pi=c(80, 90, 95))
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

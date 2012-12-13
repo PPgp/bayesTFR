@@ -40,11 +40,13 @@ mcmc.set <- get.tfr.mcmc(sim.dir=sim.dir)
 get.total.iterations(mcmc.set$mcmc.list) # 60=2x30
 get.total.iterations(mcmc.set$mcmc.list, burnin=10) # 40=2x(30-10)
 
+\dontrun{
 sim.dir <- tempfile()
 m <- run.tfr.mcmc(iter=10, nr.chains=2, output.dir=sim.dir, thin=5, verbose=TRUE)
 get.total.iterations(m$mcmc.list) # 20=2x10
 get.stored.mcmc.length(m$mcmc.list) # 6=2x3
 unlink(sim.dir, recursive=TRUE)
+}
 }
 
 \keyword{ manip }
