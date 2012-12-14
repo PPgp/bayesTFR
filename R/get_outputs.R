@@ -24,7 +24,9 @@ get.tfr.mcmc <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), chain.id
 	for (imc.d in chain.ids) {
 		if (verbose)
 			cat('Loading chain', imc.d, 'from disk. ')
-		load(file=file.path(sim.dir, mc.dirs.short[counter], 'bayesTFR.mcmc.rda'))
+		bayesTFR.mcmc <- local({
+			load(file=file.path(sim.dir, mc.dirs.short[counter], 'bayesTFR.mcmc.rda'))
+			bayesTFR.mcmc})
 		mc <- c(bayesTFR.mcmc, list(meta=bayesTFR.mcmc.meta))
 		class(mc) <- class(bayesTFR.mcmc)
 		if (!low.memory) { # load full mcmc traces
@@ -95,6 +97,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	thinned.mcmc$traces <- 0
 	thinned.mcmc$length <- nr.points
 	thinned.mcmc$finished.iter <- nr.points
+	thinned.mcmc$compression.type <- meta$compression.type
 	
 	outdir.thin.mcmc <- file.path(meta$output.dir, 'mc1')
 	if(!file.exists(outdir.thin.mcmc)) dir.create(outdir.thin.mcmc)
@@ -105,7 +108,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	for (par in tfr.parameter.names(trans=FALSE)) {
 		values <- get.tfr.parameter.traces(mcmc.set$mcmc.list, par, burnin,
 											thinning.index=thin.index)
-		write.values.into.file.cindep(par, values, outdir.thin.mcmc)
+		write.values.into.file.cindep(par, values, outdir.thin.mcmc, compression.type=thinned.mcmc$compression.type)
 	}
 	if(verbose) cat('done.\nStoring country-specific parameters ...')
 	par.names.cs <- tfr.parameter.names.cs(trans=FALSE)
@@ -114,7 +117,8 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 		for (par in par.names.cs) {
 			values <- get.tfr.parameter.traces.cs(mcmc.set$mcmc.list, country.obj, par, 
 											burnin=burnin, thinning.index=thin.index)
-			write.values.into.file.cdep(par, values, outdir.thin.mcmc, country.code=country.obj$code)
+			write.values.into.file.cdep(par, values, outdir.thin.mcmc, country.code=country.obj$code,
+										compression.type=thinned.mcmc$compression.type)
 		}
 	}
 	if (mcmc.set$meta$nr_countries > mcmc.set$meta$nr_countries_estimation) {
@@ -137,7 +141,8 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 			if (length(selected.simu$index) < nr.points)
 				selected.simu$index <- sample(selected.simu$index, nr.points, replace=TRUE)
 			values <- values[selected.simu$index,]
-			write.values.into.file.cdep(par, values, dir, country.code=country.obj$code)
+			write.values.into.file.cdep(par, values, dir, country.code=country.obj$code, 
+								compression.type=mcmc.set$meta$compression.type)
 		}
 	}
 	if(verbose) cat('done.\n')
@@ -147,7 +152,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	# Updating meta object when extra countries are added
 	keep.meta <- thin.mcmc.set$meta
 	thin.meta <- new.mcmc.set$meta
-	for(item in c('output.dir', 'is.thinned', 'parent.iter', 'nr.chains'))
+	for(item in c('output.dir', 'is.thinned', 'parent.iter', 'nr.chains', 'compression.type'))
 		thin.meta[[item]] <- keep.meta[[item]]
 	thin.meta$parent.meta <- new.mcmc.set$meta
 	for (ichain in 1:length(thin.mcmc.set$mcmc.list)) {
@@ -230,7 +235,9 @@ get.tfr.convergence <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 					' and thin=', thin, ' does not exist.')
 		return(NULL)
 	}
-	load(file.name)
+	bayesTFR.convergence <- local({
+								load(file.name)
+								bayesTFR.convergence})
 	return(bayesTFR.convergence)
 }
 
@@ -268,6 +275,7 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 	values <- c()
  	valnames <- c()
  	loaded.files <- c()
+ 	compr.settings <- .get.compression.settings(mcmc$compression.type)
  	for(name in par.names) {
  		nextit <- FALSE
  		if(ltran.names > 0) 
@@ -297,16 +305,20 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
  		} else {name.to.load <- name}
  		if (any(name.to.load == valnames)) next # name already loaded
  		#file.name <- paste(name.to.load, file.postfix, '.txt.bz2',sep='')
- 		file.name <- paste(name.to.load, file.postfix, '.txt',sep='')
+ 		file.name <- paste(name.to.load, file.postfix, '.txt', compr.settings[2], sep='') 		
  		if (any(file.name == loaded.files)) next
  		#con <- bzfile(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name), open="rb")
- 		con <- file(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name), open="r")
- 		#raw.con <- textConnection(readLines(con))
+ 		#con <- file(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name), open="r")
+ 		con <- do.call(compr.settings[1], list(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name), 
+ 								open=paste("r", compr.settings[3], sep='')))
+ 		if(compr.settings[3]=='b')  # binary connection
+ 			raw.con <- textConnection(readLines(con))
+ 		else raw.con <- con
  		#close(con)
-		#vals <- as.matrix(read.table(file = raw.con))
-		#close(raw.con)
-		vals <- as.matrix(read.table(file = con))
-		close(con)
+		vals <- as.matrix(read.table(file = raw.con))
+		close(raw.con)
+		#vals <- as.matrix(read.table(file = con))
+		if(compr.settings[3]=='b') close(con)
 		loaded.files <- c(loaded.files, file.name)
 		if (dim(vals)[2] > 1) { #2d parameters get postfix
 			valnames <- c(valnames, paste(name.to.load, '_', 1:dim(vals)[2], par.names.postfix, sep=''))

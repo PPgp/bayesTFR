@@ -24,7 +24,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	sigma0.ini=NULL, Triangle_c4.ini=NULL, const.ini=NULL, gamma.ini=1, 
 					 	proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
-					 	save.all.parameters = FALSE, 
+					 	save.all.parameters = FALSE, compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
 						verbose=FALSE, verbose.iter = 10, ...) {
 
@@ -98,7 +98,8 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	alpha0.p = alpha0.p, delta0=delta0, nu.delta0=nu.delta0,
 					 	dl.p1=dl.p1, dl.p2=dl.p2, 
 					 	proposal_cov_gammas = proposal_cov_gammas,
-					 	buffer.size=buffer.size, auto.conf=auto.conf, verbose=verbose)
+					 	buffer.size=buffer.size, compression.type=compression.type, 
+					 	auto.conf=auto.conf, verbose=verbose)
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
 			
 	# propagate initial values for all chains if needed

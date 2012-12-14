@@ -36,7 +36,7 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     Triangle_c4.ini = NULL, const.ini = NULL, gamma.ini = 1, 
     proposal_cov_gammas = NULL,
     seed = NULL, parallel = FALSE, nr.nodes = nr.chains, 
-    save.all.parameters = FALSE, 
+    save.all.parameters = FALSE, compression.type='None',
     auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, 
         nr.chains=3, thin=80, burnin=2000),
     verbose = FALSE, verbose.iter = 10, ...)
@@ -98,6 +98,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{parallel}{Logical determining if the simulation should run multiple chains in parallel. If it is \code{TRUE}, the package \pkg{\link[snowFT]{snowFT}} is required.}
   \item{nr.nodes}{Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes for running the simulation in parallel. By default it equals to the number of chains.}
   \item{save.all.parameters}{If \code{TRUE}, the distortion terms \eqn{\epsilon_{c,t}}{eps_ct} for all \eqn{t} are stored on disk, otherwise not.}
+  \item{compression.type}{One of 'None', 'gz', 'xz', 'bz', determining type of a compression of the MCMC files.}
   \item{auto.conf}{List containing a configuration for an \sQuote{automatic} run (see description of argument \code{iter}). Item \code{iter} gives the number of iterations in the first chunk of the MCMC simulation; item \code{iter.incr} gives the number of iterations in the following chunks; \code{nr.chains} gives the number of chains in all chunks of the MCMC simulation; items \code{thin} and \code{burnin} are used in the convergence diagnostics following each chunk; \code{max.loops} controls the maximum number of chunks. All items must be integer values. This argument is only used if the function argument \code{iter} is set to \sQuote{auto}.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{verbose.iter}{Integer determining how often (in number of iterations) log messages are outputted during the estimation.}

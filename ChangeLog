@@ -1,3 +1,9 @@
+2.1-0 (12/14/2012)
+-----
+Added support of xz, gz, and bz compression for MCMC storage.
+
+Example data reduced to one chain.
+
 2.0-1 (12/03/2012)
 -----
 Disabled a few examples and tests for run-time reasons.

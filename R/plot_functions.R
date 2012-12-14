@@ -801,7 +801,6 @@ bdem.map.gvis.bayesTFR.prediction <- function(pred, year=NULL, quantile=0.5, pi=
 .do.gvis.bdem.map <- function(what, title, pred, year=NULL, quantile=0.5, pi=80, 
 									par.name=NULL, adjusted=FALSE, ...) {
 	require(googleVis)
-	data(iso3166)
 	data.period <- get.data.for.worldmap(pred, quantile, year=year, 
 									par.name=par.name, projection.index=1, adjusted=adjusted, pi=pi, ...)
 	mapdata <- data.period$data
@@ -809,23 +808,25 @@ bdem.map.gvis.bayesTFR.prediction <- function(pred, year=NULL, quantile=0.5, pi=
 	lower <- data.period$lower
 	upper <- data.period$upper
  	un <- data.period$country.codes
-	unmatch <- match(un, iso3166[,'uncode'])
-	unidx <- which(!is.na(unmatch))
-	countries.table <- get.countries.table(pred)
+ 	countries.table <- get.countries.table(pred)
+ 	if(!is.null(par.name)) what <- par.name
+ 	e <- new.env()
+	data('iso3166', envir=e)
+	unmatch <- match(un, e$iso3166$uncode)
+	unidx <- which(!is.na(unmatch))	
 	ct.idx <- sapply(un[unidx], function(x, y) which(y==x), countries.table$code)
 	country.names <- countries.table$name[ct.idx]
 	#remove problematic characters
 	country.names <- iconv(country.names, "latin1", "ASCII", "?") 
 	data <- data.frame(un=un[unidx], name=country.names, 
-						iso=iso3166[,'charcode'][unmatch][unidx])
-	if(!is.null(par.name)) what <- par.name
+						iso=e$iso3166$charcode[unmatch][unidx])	
 	data[[what]] <- mapdata[unidx]
 	if(!is.null(lower)) { # confidence intervals defined
 		lower.name <- paste('lower_', pi, sep='')
 		upper.name <- paste('upper_', pi, sep='')
 		data[[lower.name]] <- round(lower[unidx], 2)
 		data[[upper.name]] <- round(upper[unidx], 2)
-		data$pi <- paste(iso3166[,'charcode'][unmatch][unidx], ': ', pi, '% CI (', data[[lower.name]], ', ', 
+		data$pi <- paste(e$iso3166$charcode[unmatch][unidx], ': ', pi, '% CI (', data[[lower.name]], ', ', 
 				data[[upper.name]], ')', sep='')
 		hovervar <- 'pi'
 	} else { # no confidence intervals

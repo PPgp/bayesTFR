@@ -5,7 +5,6 @@ test.load.UNtfr()
 test.load.UNtfr.and.my.tfr.file()
 test.load.UNlocations()
 test.create.tfr.matrix()
-test.run.mcmc.simulation()
 test.estimate.mcmc.with.suppl.data()
 test.existing.simulation()
 test.DLcurve()
@@ -17,7 +16,10 @@ test.plot.map()
 
 # disable the following tests when submitting to CRAN
 # to speed-up the checking procedure
+test.run.mcmc.simulation()
+test.run.mcmc.simulation(compression='xz')
 test.imputation()
 test.thinned.simulation()
+test.thinned.simulation(compression='bz')
 test.run.mcmc.simulation.auto()
 test.plot.all()

@@ -232,16 +232,18 @@ do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_g
 		if (all(is.na(cov.to.average))) {
 			warning('Covariance of gamma is NA for all countries. Average from default covariance will be used.', 
 						immediate.=TRUE)
-			data(proposal_cov_gammas_cii)
-			cov.to.average <- proposal_cov_gammas_cii$values
+			e <- new.env()
+			data('proposal_cov_gammas_cii', envir=e)
+			cov.to.average <- e$proposal_cov_gammas_cii$values
 		}
 	} else {
 		# get default proposal_cov_gammas_cii and match with country codes of this run
-    	data(proposal_cov_gammas_cii)
+		e <- new.env()
+    	data('proposal_cov_gammas_cii', envir=e)
     	current.country.codes <- tfr.with.regions$regions$country_code
-    	matched.index <- match(proposal_cov_gammas_cii$country_codes, current.country.codes)
+    	matched.index <- match(e$proposal_cov_gammas_cii$country_codes, current.country.codes)
     	is.notNA <- !is.na(matched.index)
-    	prop_cov_gammas[matched.index[is.notNA],,] <- proposal_cov_gammas_cii$values[is.notNA,,]
+    	prop_cov_gammas[matched.index[is.notNA],,] <- e$proposal_cov_gammas_cii$values[is.notNA,,]
     
 		if (!is.null(proposal_cov_gammas)) { #user-specified, overwrites defaults for given countries
 			matched.index <- match(proposal_cov_gammas$country_codes, current.country.codes)
@@ -369,6 +371,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
                         output.dir=paste('mc', chain.id, sep=''),
                         traces=0, traces.burnin=0, 
                         rng.state = .Random.seed,
+                        compression.type=mcmc.meta$compression.type,
                         dontsave=dontsave.pars
                         ),
                    class='bayesTFR.mcmc')

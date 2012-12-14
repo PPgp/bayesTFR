@@ -57,13 +57,13 @@ test.create.tfr.matrix <- function(wpp.year=2008) {
 	test.ok(test.name)
 }
 
-test.run.mcmc.simulation <- function() {
+test.run.mcmc.simulation <- function(compression='None') {
 	sim.dir <- tempfile()
 
 	# run MCMC
 	test.name <- 'running MCMC'
 	start.test(test.name)
-	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, start.year=1950)
+	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, start.year=1950, compression.type=compression)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
 	stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir)))
@@ -150,12 +150,12 @@ test.run.mcmc.simulation <- function() {
 	unlink(sim.dir, recursive=TRUE)
 }
 
-test.thinned.simulation <- function() {
+test.thinned.simulation <- function(compression='None') {
 	sim.dir <- tempfile()
 	# run MCMC
 	test.name <- 'running thinned MCMC'
 	start.test(test.name)
-	m <- run.tfr.mcmc(iter=10, nr.chains=2, output.dir=sim.dir, thin=2)
+	m <- run.tfr.mcmc(iter=10, nr.chains=2, output.dir=sim.dir, thin=2, compression.type=compression)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 10)
 	stopifnot(m$mcmc.list[[1]]$length == 6)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 20)
@@ -311,9 +311,9 @@ test.existing.simulation <- function() {
 	test.name <- 'retrieving MCMC results'
 	start.test(test.name)
 	sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
-	m <- get.tfr.mcmc(sim.dir, low.memory=FALSE, burnin=25, chain.ids=c(2))
+	m <- get.tfr.mcmc(sim.dir, low.memory=FALSE, burnin=25, chain.ids=1)
 	stopifnot(length(m$mcmc.list)==1)
-	stopifnot(dim(m$mcmc.list[[1]]$traces)[1]==5)
+	stopifnot(dim(m$mcmc.list[[1]]$traces)[1]==35)
 	test.ok(test.name)
 }
 
@@ -429,12 +429,15 @@ test.get.parameter.traces <- function() {
 	stopifnot(nrow(traces)==3)
 	m.check <- get.tfr.mcmc(sim.dir, low.memory=FALSE, burnin=15)
 	stopifnot(traces[1,'chi']==m.check$mcmc.list[[1]]$traces[4,'chi'])
-	stopifnot(all(traces[c(2,3),'chi']==m.check$mcmc.list[[2]]$traces[c(10,14),'chi']))
+	#stopifnot(all(traces[c(2,3),'chi']==m.check$mcmc.list[[2]]$traces[c(10,14),'chi'])) # in case of two chains
+	stopifnot(all(traces[c(2,3),'chi']==m.check$mcmc.list[[1]]$traces[c(25,29),'chi']))
 	
-	traces <- get.tfr.parameter.traces(m$mcmc.list, burnin=15, thin=8)
+	m.check <- get.tfr.mcmc(sim.dir, low.memory=FALSE, burnin=30)
+	traces <- get.tfr.parameter.traces(m$mcmc.list, burnin=30, thin=8)
 	stopifnot(nrow(traces)==4)
 	stopifnot(traces[2,'psi']==m.check$mcmc.list[[1]]$traces[9,'psi'])
-	stopifnot(traces[4,'psi']==m.check$mcmc.list[[2]]$traces[10,'psi'])
+	#stopifnot(traces[4,'psi']==m.check$mcmc.list[[2]]$traces[10,'psi'])
+	stopifnot(traces[4,'psi']==m.check$mcmc.list[[1]]$traces[25,'psi'])
 	test.ok(test.name)
 }
 

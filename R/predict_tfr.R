@@ -759,8 +759,9 @@ get.friendly.variant.names.bayesTFR.prediction <- function(pred, ...)
 
 do.write.projection.summary <- function(pred, output.dir, revision=14, adjusted=FALSE) {
 	cat('Creating summary files ...\n')
-	data(UN_time)
-	data(UN_variants)
+	e <- new.env()
+	data('UN_time', envir=e)
+	data('UN_variants', envir=e)
 	nr.proj <- pred$nr.projections+1
 	tfr <- get.data.imputed(pred)
 	ltfr <- dim(tfr)[1] - 1
@@ -769,7 +770,7 @@ do.write.projection.summary <- function(pred, output.dir, revision=14, adjusted=
 	pred.period <- get.prediction.periods(pred$mcmc.set$meta, nr.proj)
 	header1 <- list(country.name='country_name',  country.code='country_code', variant='variant')
 	un.time.idx <- c()
-	un.time.label <- as.character(UN_time[,'TLabel'])
+	un.time.label <- as.character(e$UN_time$TLabel)
 	l.un.time.label <- length(un.time.label)
 	for (i in 1:ltfr) 
 		un.time.idx <- c(un.time.idx, which(un.time.label==tfr.years[i])[1])
@@ -803,9 +804,9 @@ do.write.projection.summary <- function(pred, output.dir, revision=14, adjusted=
 		result1 <- rbind(result1, this.result1)
 		for(ivar in 1:nr.var) {
 			result2 <- rbind(result2, cbind(revision=rep(revision, nr.proj.all), 
-								   variant=rep(UN_variants[UN_variants[,'Vshort']==UN.variant.names[ivar],'VarID'], nr.proj.all),
+								   variant=rep(e$UN_variants[e$UN_variants$Vshort==UN.variant.names[ivar],'VarID'], nr.proj.all),
 								   country=rep(country.obj$code, nr.proj.all),
-								   year=UN_time[un.time.idx,'TimeID'],
+								   year=e$UN_time[un.time.idx,'TimeID'],
 								   tfr=c(this.tfr, proj.result[ivar,])))
 		}
 	}

@@ -42,12 +42,14 @@ Hana Sevcikova
 \code{\link{bayesTFR.mcmc.set}}, \code{\link{tfr.predict}}, \code{\link{tfr.diagnose}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
-m <- get.tfr.mcmc(sim.dir)
-# MCMC created when generating predictions using:
-# tfr.predict(m, burnin=15)
+\dontrun{
+sim.dir <- tempfile()
+m <- run.tfr.mcmc(nr.chains=2, iter=30, seed=1, output.dir=sim.dir, verbose=TRUE)
+tfr.predict(m, burnin=15) # creates thinned MCMCs
 mb <- get.thinned.tfr.mcmc(m, thin=1, burnin=15)
 summary(mb, meta.only=TRUE) # length 30 = 2chains x (30-15)iters.
+unlink(sim.dir, recursive=TRUE)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

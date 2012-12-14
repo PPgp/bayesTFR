@@ -15,9 +15,9 @@ using a Bayesian hierarchical model and the United Nations demographic time seri
 \details{
 \tabular{ll}{
 Package: \tab bayesTFR\cr
-Version: \tab 2.0-1\cr
-Date: \tab 2012-12-03\cr
-Depends: \tab R (>= 2.9.0), mvtnorm, coda\cr
+Version: \tab 2.1-0\cr
+Date: \tab 2012-12-14\cr
+Depends: \tab R (>= 2.14.2), mvtnorm, coda\cr
 Suggests: \tab rworldmap, fields, snowFT, googleVis \cr
 License: \tab GPL (>= 2)\cr
 URL: \tab \url{http://bayespop.csss.washington.edu}\cr
@@ -60,7 +60,7 @@ There are a few important datasets used as an input into the MCMC simulations, p
 }
 
 \note{
-There is a directory \code{ex-data} shipped with the package which contains results from an example simulation, containing two chains with 30 iterations each.  The Example section below shows how these results were created.  These data are used in Example sections throughout the manual.  The user can either reproduce the data in her/his local directory, or use the ones from the package.   
+There is a directory \code{ex-data} shipped with the package which contains results from an example simulation, containing one chain with 60 iterations.  The Example section below shows how these results were created.  These data are used in Example sections throughout the manual.  The user can either reproduce the data in her/his local directory, or use the ones from the package.   
 }
 
 \author{
@@ -85,8 +85,11 @@ L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., H
 \examples{
 \dontrun{
 # This command produces output data such as in the directory ex-data
-m <- run.tfr.mcmc(nr.chains=2, iter=30, seed=1, verbose=TRUE)
-pred <- tfr.predict(m, burnin=15, verbose=TRUE)
+m <- run.tfr.mcmc(nr.chains=1, iter=60, seed=1, verbose=TRUE)
+pred <- tfr.predict(m, burnin=30, verbose=TRUE)
 summary(pred, country='Ghana')
 }
 }
+% to reproduce the example included in the package exactly:
+% m <- run.tfr.mcmc(nr.chains=1, iter=60, seed=1, verbose=TRUE, compression.type='bz', start.year=1950)
+% pred <- tfr.predict(m, burnin=30, verbose=TRUE, save.as.ascii=0)
