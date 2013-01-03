@@ -47,40 +47,40 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	}
 	
 	if (verbose) {
-		cat('\nStarting bayesian prediction of TFR.\n')
-		cat('======================================\n')
+		cat('\nStarting Bayesian Hierarchical Model for TFR - Phase II.\n')
+		cat('========================================================\n')
 		cat('Initialize simulation -', nr.chains, 'chain(s) in total.\n')
-		}
-		
+	}
+	if(!is.null(seed)) set.seed(seed)
+	
 	# starting values (length of 1 or nr.chains)
-	if (missing(S.ini) | is.null(S.ini)) 
+	if (missing(S.ini) || is.null(S.ini)) 
 		S.ini <- ifelse(rep(nr.chains==1, nr.chains), 
 					 		(S.low+S.up)/2, seq(S.low, to=S.up, length=nr.chains))
-	if (missing(a.ini) | is.null(a.ini)) 
+	if (missing(a.ini) || is.null(a.ini)) 
 		a.ini <- ifelse(rep(nr.chains==1, nr.chains), 
 					 		(a.low+a.up)/2, seq(a.low, to=a.up, length=nr.chains))
-	if (missing(b.ini) | is.null(b.ini)) 
+	if (missing(b.ini) || is.null(b.ini)) 
 		b.ini <- ifelse(rep(nr.chains==1, nr.chains), 
 					 		(b.low+b.up)/2, seq(b.low, to=b.up, length=nr.chains))
-	if (missing(sigma0.ini) | is.null(sigma0.ini)) 
+	if (missing(sigma0.ini) || is.null(sigma0.ini)) 
 		sigma0.ini <- ifelse(rep(nr.chains==1, nr.chains), 
 					 		(sigma0.low+sigma0.up)/2, 
 					 		seq(sigma0.low, to=sigma0.up, length=nr.chains))
-	if (missing(Triangle_c4.ini) | is.null(Triangle_c4.ini)) 
+	if (missing(Triangle_c4.ini) || is.null(Triangle_c4.ini)) 
 		Triangle_c4.ini <- ifelse(rep(nr.chains==1, nr.chains), 
 					 		(Triangle_c4.low+Triangle_c4.up)/2, 
 					 		seq(Triangle_c4.low+0.0001, to=Triangle_c4.up-0.0001, length=nr.chains))
-	if (missing(const.ini) | is.null(const.ini))  
+	if (missing(const.ini) || is.null(const.ini))  
 		const.ini <- ifelse(rep(nr.chains==1, nr.chains), 
 					 		(const.low+const.up)/2, 
 					 		seq(const.low, to=const.up, length=nr.chains))
 					 		
-	if(!is.null(seed)) set.seed(seed)
 	bayesTFR.mcmc.meta <- mcmc.meta.ini(
 						nr.chains=nr.chains,
 						start.year=start.year, present.year=present.year, 
 						wpp.year=wpp.year, my.tfr.file = my.tfr.file,
-						output.dir=output.dir,
+						output.dir=output.dir, phase=2,
 					 	U.c.low=U.c.low, U.up=U.up, U.width=U.width,
 					 	mean.eps.tau0=mean.eps.tau0, sd.eps.tau0 = sd.eps.tau0, nu.tau0 = nu.tau0,                                            
         				Triangle4.0 = Triangle4.0,  
@@ -190,7 +190,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100,
 		cat('Start sampling -', mcmc$iter, 'iterations in total.\n')
 	mcmc <- tfr.mcmc.sampling(mcmc, thin=thin, verbose=verbose, verbose.iter=verbose.iter)
 	return(mcmc)
-	}
+}
 	
 continue.tfr.mcmc <- function(iter, chain.ids=NULL, output.dir=file.path(getwd(), 'bayesTFR.output'), 
 								parallel=FALSE, nr.nodes=NULL, auto.conf = NULL, verbose=FALSE, verbose.iter=10, ...) {

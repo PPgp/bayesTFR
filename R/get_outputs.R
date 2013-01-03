@@ -9,7 +9,7 @@ get.tfr.mcmc <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), chain.id
 		return(NULL)
 	}
 	load(file=mcmc.file.path)
-	bayesTFR.mcmc.meta$output.dir <- sim.dir
+	bayesTFR.mcmc.meta$output.dir <- normalizePath(sim.dir)
 	if (is.null(chain.ids)) {
 		mc.dirs.short <- list.files(sim.dir, pattern='^mc[0-9]+', full.names=FALSE)
 		chain.ids <- as.integer(substring(mc.dirs.short, 3))
@@ -255,11 +255,16 @@ get.burned.tfr.traces <- function(mcmc, par.names, burnin=0, thinning.index=NULL
 "bdem.parameter.traces" <- function(mcmc, ...) UseMethod("bdem.parameter.traces")
 
 bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
+	tran.names <- totran.names <- all.standard.names <- c()
 	# Load traces from the disk
-	all.standard.names <- c(tfr.parameter.names(), get.trans.parameter.names(), 
+	if(is.null(mcmc$meta$phase) || mcmc$meta$phase == 2) {
+		all.standard.names <- c(tfr.parameter.names(), get.trans.parameter.names(), 
 							tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE))
-	tran.names <- c(get.trans.parameter.names(), get.trans.parameter.names(cs=TRUE))
-	totran.names <- c(get.totrans.parameter.names(), get.totrans.parameter.names(cs=TRUE))
+		tran.names <- c(get.trans.parameter.names(), get.trans.parameter.names(cs=TRUE))
+		totran.names <- c(get.totrans.parameter.names(), get.totrans.parameter.names(cs=TRUE))
+	} else {
+		if(mcmc$meta$phase == 3) all.standard.names <- c(tfr3.parameter.names(), tfr3.parameter.names.cs())
+	}
 	return(.do.get.traces(mcmc, par.names=par.names, ..., 
 							all.standard.names=all.standard.names,
 							tran.names=tran.names, totran.names=totran.names))
@@ -441,6 +446,9 @@ tfr.parameter.names.cs <- function(country.code=NULL, trans=NULL) {
 		return(par.names)
 	return(paste(par.names, '_c', country.code, sep=''))
 }
+
+tfr3.parameter.names <- function() return(c('mu', 'rho', 'sigma.mu', 'sigma.rho', 'sigma.eps'))
+tfr3.parameter.names.cs <- function(country.code=NULL) return(paste(c('mu', 'rho'), '.c', country.code,sep=''))
 
 get.total.iterations <- function(mcmc.list, burnin=0) {
 	# Return total number of iterations sum-up over chains after discarding burnin in each chain

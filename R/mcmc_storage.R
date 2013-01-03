@@ -128,6 +128,98 @@ store.mcmc <- local({
 
 })
 
+store.mcmc3 <- local({
+	# Writes parameter values into ascii files - one file per parameter and country (if country-specific)
+	##########################
+	par.names <- tfr3.parameter.names()
+	par.cs.names <- tfr3.parameter.names.cs()
+	
+	default.buffer.size <- 10
+	buffer3 <- buffer3.cs <- NULL
+		
+	buffers.insert <- function(mcmc, countries=NULL) {
+		counter3 <<- counter3 + 1
+		if (is.null(countries)) {
+			for (par in par.names) buffer3[[par]][counter3,] <<- mcmc[[par]]
+			country.index <- 1: mcmc$meta$nr.countries
+		} else country.index <- countries
+		for (par in par.cs.names) {			
+			for (country in country.index)
+				buffer3.cs[[par]][[country]][counter3,] <<- if(is.null(dim(mcmc[[par]]))) mcmc[[par]][country] 
+                								          else mcmc[[par]][,country]
+		}
+	}
+		
+	buffers.ini <- function(mcmc, size, countries=NULL) {
+		buffer3 <<- list()
+		if (is.null(countries)) {
+			for (par in par.names) 
+				buffer3[[par]] <<- matrix(NA, ncol=length(mcmc[[par]]), nrow=size)
+			country.index <- 1:mcmc$meta$nr.countries
+		} else country.index <- countries
+		buffer3.cs <<-list()
+		for (par in par.cs.names) {
+			buffer3.cs[[par]] <<- list()
+			for (country in country.index){
+				v <- if(is.null(dim(mcmc[[par]]))) mcmc[[par]][country] else mcmc[[par]][,country]
+				buffer3.cs[[par]][[country]] <<- matrix(NA, ncol=length(v), nrow=size)
+			}
+		}
+		counter3 <<- 0
+	}
+	
+	do.flush.buffers <- function(mcmc, append=FALSE, countries=NULL, verbose=FALSE) {
+		if (verbose)
+			cat("Flushing results into disk.\n")
+		output.dir <- file.path(mcmc$meta$output.dir, mcmc$output.dir)
+		if(!file.exists(output.dir)) 
+			dir.create(output.dir)
+		open <- if(append) 'a' else 'w'
+		if (is.null(countries)) {
+			for(par in par.names) { # write country-independent parameters
+				if (is.null(buffer3[[par]])) next
+				values <- if (counter3 == 1) t(buffer3[[par]][1:counter3,])
+				 			else buffer3[[par]][1:counter3,]
+				write.values.into.file.cindep(par, values, output.dir, mode=open, 
+												compression.type=mcmc$compression.type)
+			}
+			country.index <- 1:mcmc$meta$nr.countries	
+		} else country.index <- countries
+
+		for (par in par.cs.names) { # write country-specific parameters
+			if (is.null(buffer3.cs[[par]])) next
+			for (country in country.index){
+				values <- if (counter3 == 1) t(buffer3.cs[[par]][[country]][1:counter3,])
+							else buffer3.cs[[par]][[country]][1:counter3,]
+				write.values.into.file.cdep(par, values, output.dir, 
+						get.country.object(country, meta=mcmc$meta, index=TRUE)$code, mode=open, 
+											compression.type=mcmc$compression.type)
+			}
+		}
+		resmc <- as.list(mcmc)
+		class(resmc) <- 'bayesTFR.mcmc'
+		store.bayesTFR.object(resmc, output.dir)
+	}
+	
+	store <- function(mcmc, append=FALSE, flush.buffer=FALSE, countries=NULL, verbose=FALSE) {
+		# If countries is not NULL, only country-specific parameters 
+		# for those countries (given as index) are stored
+		buffer.size <- mcmc$meta$buffer.size
+		if (is.null(buffer.size)) buffer.size <- default.buffer.size
+		if (is.null(buffer3)) buffers.ini(mcmc, buffer.size, countries=countries)
+		buffers.insert(mcmc, countries=countries)
+		flushed <- FALSE
+		if (flush.buffer || (counter3 >= buffer.size)) {
+			do.flush.buffers(mcmc, append=append, countries=countries, verbose=verbose)
+			buffer3 <<- buffer3.cs <<- NULL
+			flushed <- TRUE
+		}
+		return(flushed)
+	}
+
+})
+
+
 .get.compression.settings <- function(compression.type='None') {
 	if(is.null(compression.type)) compression.type <- 'None'
 	return(switch(compression.type,
@@ -147,7 +239,6 @@ do.write.values.into.file <- function(filename, data, mode, compression.type='No
 }
 
 write.values.into.file.cindep <- function(par, data, output.dir, mode='w', compression.type='None') {
-	#do.write.values.into.file(file.path(output.dir, paste(par,'txt', 'bz2', sep='.')), data, mode=mode)
 	do.write.values.into.file(file.path(output.dir, paste(par,'txt', sep='.')), data, mode=mode, 
 									compression.type=compression.type)
 }
@@ -158,7 +249,6 @@ write.table.into.file.cindep <- function(data, ...) {
 }
 
 write.values.into.file.cdep <- function(par, data, output.dir, country.code, mode='w', compression.type='None') {
-	#do.write.values.into.file(file.path(output.dir, paste(par,"_country", country.code, ".txt.bz2",sep = "")), data, mode=mode)
 	do.write.values.into.file(file.path(output.dir, paste(par,"_country", country.code, ".txt",sep = "")), 
 									data, mode=mode, compression.type=compression.type)
 }
@@ -170,9 +260,9 @@ write.table.into.file.cdep <- function(data, ...) {
 
 store.bayesTFR.object <- function(mcmc, output.dir) {
 	bayesTFR.mcmc <- mcmc
-	for (item in bayesTFR.mcmc$dontsave) { # don't save meta and some other data
+	for (item in bayesTFR.mcmc$dontsave)  # don't save meta and some other data
 		bayesTFR.mcmc[[item]] <- NULL
-	}
+	bayesTFR.mcmc$meta <- NULL
 	save(bayesTFR.mcmc, file=file.path(output.dir, 'bayesTFR.mcmc.rda'))
 }
 

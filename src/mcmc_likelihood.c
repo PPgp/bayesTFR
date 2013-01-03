@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-double test_rnorm(double *mu, double *sigma, double *t){
+/*double test_rnorm(double *mu, double *sigma, double *t){
 	double m, s;
 	m = *mu;
 	s = *sigma;
@@ -16,7 +16,7 @@ double test_rnorm(double *mu, double *sigma, double *t){
 	GetRNGstate();
 
 	PutRNGstate();
-}
+}*/
 
 double sum(double *x, int dim) {
 	double s;
@@ -61,3 +61,36 @@ void doDLcurve(double *DLpar, double *tfr, double *p1, double *p2, int *dim_tfr,
     	}
     }
 }
+
+void dnormtrunc(double *x, double *mu, double *sigma, 
+		double low, double high, int dim_out, double *out){
+	int i;
+	for (i=0; i< dim_out; i++) {
+		if(x[i] < low || x[i] > high) out[i] = 0;
+		else 
+  		out[i] = dnorm(x[i],mu[i],sigma[i], 0)/(pnorm(high,mu[i],sigma[i],1,0)-pnorm(low,mu[i],sigma[i],1,0));
+  	}
+	return;
+}
+
+
+
+void dologdensityAR1(double *x, double *mu, double *sigma, 
+			double *sigma_eps, double *rho_c, double *tfr, int *ltfr, double *low, double *high, double *logdens) {
+	double dens[*ltfr-1], dnt[1];
+	double s;
+	int i;
+
+	s = 0;
+	for (i=0; i< (*ltfr - 1); i++){
+		dens[i] = dnorm(tfr[i+1], *x + (*rho_c * (tfr[i]- *x)), *sigma_eps, 0);
+		/*Rprintf("\n%f, %f %f %f", dens[i], dct[i], dl[i], loess_sd[i]);*/
+		if(dens[i] < 1e-100) dens[i] = 1e-100;
+		s = s+ log(dens[i]);
+	}
+	dnormtrunc(x, mu, sigma, *low, *high, 1, dnt);
+	logdens[0] = s + log(dnt[0]);
+	/*Rprintf("\ns=%f dnt=%f res = %f", s, dnt[0], logdens[0]);*/
+	return;
+}
+
