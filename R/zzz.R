@@ -1,7 +1,7 @@
-.First.lib <- function (lib, pkg) {
-    library.dynam("bayesTFR", pkg, lib)
+.onLoad <- function (lib, pkg) {
+	library.dynam("bayesTFR", pkg, lib)
 }
 
-.Last.lib <- function (libpath) {
+.onUnload <- function (libpath) {
   library.dynam.unload("bayesTFR", libpath)
 }
