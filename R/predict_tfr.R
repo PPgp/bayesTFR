@@ -1,7 +1,8 @@
 tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						sim.dir=file.path(getwd(), 'bayesTFR.output'),
 						replace.output=FALSE,
-						nr.traj = NULL, thin = NULL, burnin=2000, use.diagnostics=FALSE,
+						nr.traj = NULL, thin = NULL, burnin=2000, burnin3=5000,
+						use.diagnostics=FALSE,
 						save.as.ascii=1000, output.dir = NULL,
 						low.memory=TRUE,
 						# parameters for the AR1 stuff
@@ -14,15 +15,20 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 	} else {		
 		mcmc.set <- get.tfr.mcmc(sim.dir, low.memory=low.memory, verbose=verbose)
 	}
-	if (is.null(rho) || is.na(rho) || is.null(sigmaAR1) || is.na(sigmaAR1)) {
-		res <- get.ar1.parameters(mu = mu, mcmc.set$meta)
-		if (is.null(rho) || is.na(rho)) 
-			rho <- res$rho
-		if(is.null(sigmaAR1) || is.na(sigmaAR1))
-			sigmaAR1 <- res$sigmaAR1
+	has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
+	if(!has.phase3) {
+		if (is.null(rho) || is.na(rho) || is.null(sigmaAR1) || is.na(sigmaAR1)) {
+			res <- get.ar1.parameters(mu = mu, mcmc.set$meta)
+			if (is.null(rho) || is.na(rho)) 
+				rho <- res$rho
+			if(is.null(sigmaAR1) || is.na(sigmaAR1))
+				sigmaAR1 <- res$sigmaAR1
+		}
 	}
-	if(verbose)
-		cat('\nAR(1) parameters used: mu=', mu, ', rho=', rho, ', sigma=', sigmaAR1, '\n')
+	if(verbose) {
+		if(has.phase3) cat('\nAR(1) simulated using phase III MCMCs.\n')
+		else cat('\nAR(1) parameters for all countries: mu=', mu, ', rho=', rho, ', sigma=', sigmaAR1, '\n')
+	}
 	if(!is.null(seed)) set.seed(seed)
 	
 	# Get argument settings from existing convergence diagnostics
@@ -49,7 +55,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 			cat('\nUsing convergence settings: nr.traj=', nr.traj, ', burnin=', burnin, '\n')
 	}
 	invisible(make.tfr.prediction(mcmc.set, end.year=end.year, replace.output=replace.output,  
-					nr.traj=nr.traj, burnin=burnin, thin=thin,
+					nr.traj=nr.traj, burnin=burnin, thin=thin, burnin3=burnin3,
 					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1,
 					save.as.ascii=save.as.ascii,
 					output.dir=output.dir, verbose=verbose))			
@@ -123,7 +129,7 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 
 
 make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
-								nr.traj = NULL, burnin=0, thin = NULL, 
+								nr.traj = NULL, burnin=0, thin = NULL, burnin3=0,
 								mu=2.1, rho=0.9057, sigmaAR1 = 0.0922, countries = NULL,
 								adj.factor1=NA, adj.factor2=0, forceAR1=FALSE,
 							    save.as.ascii=1000, output.dir = NULL, write.summary.files=TRUE, 
@@ -225,6 +231,16 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 	mid.years <- as.integer(c(if(suppl.T > 0) rownames(mcmc.set$meta$suppl.data$tfr_matrix) else c(), rownames(tfr_matrix_reconstructed)))
 	const_sd_dummie_Tc[mid.years < 1975,] <- 1
 	
+	has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
+	if(has.phase3) {
+		mcmc3 <- get.tfr3.mcmc(mcmc.set$meta$output.dir)
+		total.iter <- get.stored.mcmc.length(mcmc3$mcmc.list, burnin3)
+		thinning.index <- unique(round(seq(1, total.iter, length=nr_simu)))
+		if(length(thinning.index) < nr_simu) stop('Length of MCMCs for phase 2 and 3 cannot be matched with these settings. Check arguments burnin, burnin3, nr.traj and thin.')
+		m3.par.values <- get.tfr3.parameter.traces(mcmc3$mcmc.list, par.names=c('mu', 'rho', 'sigma.eps'), 
+								thinning.index=thinning.index, burnin=burnin3)
+		if(dim(m3.par.values)[1] != nr_simu) stop('Mismatch in length of MCMCs for phase 2 and 3.')				
+	} 
 	country.counter <- 0
 	status.for.gui <- paste('out of', length(prediction.countries), 'countries.')
 	gui.options <- list()
@@ -332,11 +348,10 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 		f_ps <- matrix(NA, this.nr_project+1,nr_simu)
 		# fs also includes last estimate!
 		f_ps[1,] <- all.tfr[this.T_end]
-		if(adjust.true) {
-			D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
- 		  	E11 <- (all.tfr[this.T_end-1] - (mu + rho*(all.tfr[this.T_end-1]-mu)))
- 		  	S11pIII <- D11 - E11
- 		}
+		if(has.phase3 && is.element(country, mcmc3$meta$id_phase3)) 
+			m3.par.values.cs <- get.tfr3.parameter.traces.cs(mcmc3$mcmc.list, country=country.obj,
+										par.names=c('mu.c', 'rho.c'), burnin=burnin3, thinning.index=thinning.index)
+		if(adjust.true) D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
  		S11 <- 0
 
 		for (s in 1:nr_simu){
@@ -355,7 +370,19 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 		  			S11 <- D11 - d11
 		  		} else {
 					# country already in Phase III in last obs. period
-		  			S11 <- S11pIII
+					if(has.phase3) {
+						if (is.element(country, mcmc3$meta$id_phase3)) {
+							mu.c <- m3.par.values.cs[s,1]
+							rho.c <- m3.par.values.cs[s,2]
+						} else {
+							mu.c <- m3.par.values[s,'mu']
+							rho.c <- m3.par.values[s,'rho']
+						}
+					} else {
+						mu.c <- mu
+						rho.c <- rho
+					}
+		  			S11 <- D11 - (all.tfr[this.T_end-1] - (mu.c + rho.c*(all.tfr[this.T_end-1]-mu.c)))
 		  		}
 		  	}
 	       	# vector W with the weight for the first two periods:
@@ -399,23 +426,37 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 				if(adjust.true && year == 2){
 					# if a country with adjustment enters Phase III in second proj. step (corresponds to year ==3)
 					# then the adjustment needs to be changed, based on observed diff in last proj step and AR(1) decrement
-		  			S11 <- ( f_ps[year-1,s] - f_ps[year,s]) - ( f_ps[year-1,s] - (mu + rho*( f_ps[year-1,s]-mu)))
+		  			S11 <- ( f_ps[year-1,s] - f_ps[year,s]) - ( f_ps[year-1,s] - (mu.c + rho.c*( f_ps[year-1,s]-mu.c)))
 			 	}
 			 	year = year + 1
  			} # end while loop, continue if repl_stop ==TRUE and year<nr_project+2
- 			
+ 			# Phase III
  			if (repl_stop && year <(this.nr_project+2)){
- 				# use sigma_t
+ 				if(has.phase3) {
+ 					if (is.element(country, mcmc3$meta$id_phase3)) {
+						mu.c <- m3.par.values.cs[s,1]
+						rho.c <- m3.par.values.cs[s,2]
+					} else {
+						mu.c <- m3.par.values[s,'mu']
+						rho.c <- m3.par.values[s,'rho']
+					}
+					sigma.eps <- rep(m3.par.values[s,'sigma.eps'], length(sigma_t))
+				} else { # AR(1) without mcmcs
+					mu.c <- mu
+					rho.c <- rho
+					sigma.eps <- sigma_t
+				}
                 index_sigma <- 0
  				for (period in year:(this.nr_project+1)){
  					index_sigma <- index_sigma + 1
  					while (TRUE){
-						f_ps[period,s] <- (mu + rho*
-								(f_ps[period-1,s] - mu) + 
-								rnorm(1, 0, sigma_t[index_sigma]) - W[period-1]*S11)
-						if (f_ps[period, s] > 0.5 )   break
+						f_ps[period,s] <- (mu.c + rho.c*
+								(f_ps[period-1,s] - mu.c) + 
+								rnorm(1, 0, sigma.eps[index_sigma]) - W[period-1]*S11)
+						if (f_ps[period, s] > 0.0 )   break
 					}
 				}
+				#if(has.phase3 && is.element(country, mcmc3$meta$id_phase3)) stop('') 
  			}# end AR(1) loop
 		} # end simu loop
 		#isnotNA <- apply(1-(f_ps<0), 2, prod) 

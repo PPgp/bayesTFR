@@ -2,20 +2,22 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=5000,
 						thin=1, replace.output=FALSE,
 						# meta parameters
 						my.tfr.file = NULL, buffer.size=100,
-						mu.prior.range=c(0, 2.1), 
-						 rho.prior.range=c(0,1),
+						use.extra.countries=FALSE,
+						mu.prior.range=c(0.00001, 2.1), 
+						 rho.prior.range=c(0.00001,0.999999),
 						 sigma.mu.prior.range=c(0,0.318),
 						 sigma.rho.prior.range=c(0,0.289),
+						 sigma.eps.prior.range=c(0.00001, 0.5),
 						# starting values (length of 1 or nr.chains)
 						mu.ini = NULL, mu.ini.range=mu.prior.range, 
 						rho.ini=NULL, rho.ini.range=rho.prior.range, 
 						sigma.mu.ini=NULL, sigma.mu.ini.range=sigma.mu.prior.range,
 						sigma.rho.ini=NULL, sigma.rho.ini.range=sigma.rho.prior.range,
-						sigma.eps.ini=0.01,
+						sigma.eps.ini=NULL, sigma.eps.ini.range=sigma.eps.prior.range,
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
 					 	compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=5000, iter.incr=2000, nr.chains=3, thin=5, burnin=500),
-						verbose=FALSE, verbose.iter = 100, ...) {
+						verbose=FALSE, verbose.iter = 1000, ...) {
 	get.init.values <- function(range)
 		ifelse(rep(nr.chains==1, nr.chains), sum(range)/2, seq(range[1], to=range[2], length=nr.chains))
 
@@ -45,29 +47,33 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=5000,
 	
 	# starting values
 	#==============================
-	for(varname in c('mu.ini', 'rho.ini', 'sigma.mu.ini', 'sigma.rho.ini')) {
+	for(varname in c('mu.ini', 'rho.ini', 'sigma.mu.ini', 'sigma.rho.ini', 'sigma.eps.ini')) {
 		if(is.null(get(varname)))
 			assign(varname, get.init.values(get(paste(varname, '.range', sep=''))))
 	}
+	c.index <- 1: (if(use.extra.countries) get.nr.countries(mc$meta) else get.nr.countries.est(mc$meta))
 	bayesTFR.mcmc.meta <- structure(list(nr.chains=nr.chains,
 								my.tfr.file=my.tfr.file, output.dir=output.dir,
-								phase=3, id_phase3 = which(mc$meta$lambda_c < mc$meta$T_end_c),
-								nr.countries=sum(mc$meta$lambda_c < mc$meta$T_end_c),
+								phase=3, id_phase3 = which(mc$meta$lambda_c[c.index] < mc$meta$T_end_c[c.index]),
+								nr.countries=sum(mc$meta$lambda_c[c.index] < mc$meta$T_end_c[c.index]),
 								mu.prior.range=mu.prior.range, rho.prior.range=rho.prior.range,
 						 		sigma.mu.prior.range=sigma.mu.prior.range, 
 						 		sigma.rho.prior.range=sigma.rho.prior.range,
+						 		sigma.eps.prior.range=sigma.eps.prior.range,
 								mu.ini = mu.ini, mu.ini.range=mu.ini.range, 
 								rho.ini=rho.ini, rho.ini.range=rho.ini.range, 
 								sigma.mu.ini=sigma.mu.ini, sigma.mu.ini.range=sigma.mu.ini.range,
 								sigma.rho.ini=sigma.rho.ini, sigma.rho.ini.range=sigma.rho.ini.range,
-								sigma.eps.ini=sigma.eps.ini,
+								sigma.eps.ini=sigma.eps.ini, sigma.eps.ini.range=sigma.eps.ini.range,
 								compression.type=compression.type, buffer.size=buffer.size, auto.conf=auto.conf
-								))	
+								), class='bayesTFR.mcmc.meta')	
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
-	bayesTFR.mcmc.meta$parent <- mc$meta
+	meta <- bayesTFR.mcmc.meta
+	meta$parent <- mc$meta
+	meta$regions <- mc$meta$regions
 	# propagate initial values for all chains if needed
     starting.values <- list()
-    for (var in c('mu.ini', 'rho.ini', 'sigma.mu.ini', 'sigma.rho.ini', 'iter')) {
+    for (var in c('mu.ini', 'rho.ini', 'sigma.mu.ini', 'sigma.rho.ini', 'sigma.eps.ini', 'iter')) {
     	if (length(get(var)) < nr.chains) 
             assign(var, rep(get(var), nr.chains)[1:nr.chains])
         if (var != 'iter') starting.values[[var]] <- get(var)
@@ -76,20 +82,20 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=5000,
 	if (parallel) { # run chains in parallel
 		require(snowFT)
 		chain.set <- performParallel(nr.nodes, 1:nr.chains, mcmc3.run.chain, 
-                                     initfun=init.nodes, meta=bayesTFR.mcmc.meta, 
+                                     initfun=init.nodes, meta=meta, 
                                      thin=thin, iter=iter, 
                                      starting.values=starting.values,                                     
                                      verbose=verbose, verbose.iter=verbose.iter, ...)
 	} else { # run chains sequentially
 		chain.set <- list()
 		for (chain in 1:nr.chains) {
-			chain.set[[chain]] <- mcmc3.run.chain(chain, bayesTFR.mcmc.meta, thin=thin, 
+			chain.set[[chain]] <- mcmc3.run.chain(chain, meta, thin=thin, 
                                                 iter=iter, starting.values=starting.values, 
                                                 verbose=verbose, verbose.iter=verbose.iter)
 		}
 	}
 	names(chain.set) <- 1:nr.chains
-	mcmc.set <- structure(list(meta=bayesTFR.mcmc.meta, mcmc.list=chain.set), class='bayesTFR.mcmc.set')
+	mcmc.set <- structure(list(meta=meta, mcmc.list=chain.set), class='bayesTFR.mcmc.set')
     cat('\nResults stored in', sim.dir,'\n')
     
     # if(auto.run) {
@@ -134,7 +140,7 @@ mcmc3.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NU
 	
 	if (verbose) 
 		cat('Start sampling -', mcmc$iter, 'iterations in total.\n')
-	mcmc <- tfr.mcmc3.sampling(mcmc, thin=thin, verbose=verbose, verbose.iter=verbose.iter)
+	mcmc <- tfr3.mcmc.sampling(mcmc, thin=thin, verbose=verbose, verbose.iter=verbose.iter)
 	return(mcmc)
 }
 
@@ -162,3 +168,65 @@ mcmc3.ini <- function(chain.id, mcmc.meta, iter=100, thin=1, starting.values=NUL
     return(mcmc) 
 }
 
+continue.tfr3.mcmc <- function(iter, chain.ids=NULL, output.dir=file.path(getwd(), 'bayesTFR.output'), 
+								parallel=FALSE, nr.nodes=NULL, auto.conf = NULL, verbose=FALSE, verbose.iter=1000, ...) {
+	mcmc.set <- get.tfr3.mcmc(output.dir)
+
+	auto.run <- FALSE
+	if(iter == 'auto') { # defaults for auto-run (includes convergence diagnostics)
+		default.auto.conf <- mcmc.set$meta$auto.conf
+		if(is.null(auto.conf)) auto.conf <- list()
+		for (par in names(default.auto.conf))
+			if(is.null(auto.conf[[par]])) auto.conf[[par]] <- default.auto.conf[[par]]
+		iter <- auto.conf$iter.incr
+		auto.run <- TRUE
+		fiter <- sapply(mcmc.set$mcmc.list, function(x) x$finished.iter)
+		if (!all(fiter== fiter[1])) stop('All chains must be of the same length if the "auto" option is used.')
+	}
+	if (is.null(chain.ids) || auto.run) {
+		chain.ids <- names(mcmc.set$mcmc.list)
+	}
+	if (parallel) { # run chains in parallel
+		require(snowFT)
+		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
+		chain.list <- performParallel(nr.nodes, chain.ids, mcmc3.continue.chain, 
+						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, iter=iter, verbose=verbose, verbose.iter=verbose.iter, ...)
+		for (i in 1:length(chain.ids))
+			mcmc.set$mcmc.list[[chain.ids[i]]] <- chain.list[[i]]
+	} else { # run chains sequentially
+		for (chain.id in chain.ids) {
+			mcmc.set$mcmc.list[[chain.id]] <- mcmc3.continue.chain(chain.id, mcmc.set$mcmc.list, 
+												iter=iter, verbose=verbose, verbose.iter=verbose.iter)
+		}
+	}
+	cat('\n')
+	# if(auto.run) {
+		# diag <- try(tfr.diagnose(sim.dir=output.dir, keep.thin.mcmc=TRUE, 
+						# thin=auto.conf$thin, burnin=auto.conf$burnin,
+						# verbose=verbose))
+		# if(auto.conf$max.loops>1) {
+			# for(loop in 2:auto.conf$max.loops) {
+				# if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
+				# mcmc.set <- continue.tfr.mcmc(iter=auto.conf$iter.incr, output.dir=output.dir, nr.nodes=nr.nodes,
+										  # parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
+				# diag <- try(tfr.diagnose(sim.dir=output.dir, keep.thin.mcmc=TRUE, 
+							# thin=auto.conf$thin, burnin=auto.conf$burnin,
+							# verbose=verbose))
+			# }
+		# }
+	# }
+	invisible(mcmc.set)
+}
+	
+mcmc3.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbose.iter=10) {
+	cat('\n\nChain nr.', chain.id, '\n')
+	if (verbose)
+		cat('************\n')
+	mcmc <- mcmc.list[[chain.id]]
+	mcmc$iter <- mcmc$finished.iter + iter
+	if (verbose) 
+		cat('Continue sampling -', iter, 'additional iterations,', mcmc$iter, 'iterations in total.\n')
+
+	mcmc <- tfr3.mcmc.sampling(mcmc, thin=mcmc$thin, start.iter=mcmc$finished.iter+1, verbose=verbose, verbose.iter=verbose.iter)
+	return(mcmc)
+}

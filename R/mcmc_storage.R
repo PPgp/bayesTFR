@@ -192,7 +192,7 @@ store.mcmc3 <- local({
 				values <- if (counter3 == 1) t(buffer3.cs[[par]][[country]][1:counter3,])
 							else buffer3.cs[[par]][[country]][1:counter3,]
 				write.values.into.file.cdep(par, values, output.dir, 
-						get.country.object(country, meta=mcmc$meta, index=TRUE)$code, mode=open, 
+						get.country.object(mcmc$meta$id_phase3[country], meta=mcmc$meta$parent, index=TRUE)$code, mode=open, 
 											compression.type=mcmc$compression.type)
 			}
 		}

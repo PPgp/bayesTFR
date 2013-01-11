@@ -525,6 +525,25 @@ tfr.partraces.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(get
 		country=country.obj$code, par.names=par.names, dev.ncol=dev.ncol, ...)
 }
 
+tfr3.partraces.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+									chain.ids=NULL, par.names=tfr3.parameter.names(), 
+									nr.points=NULL, dev.ncol=3, low.memory=TRUE, ...) {
+	if (is.null(mcmc.list))
+		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
+	tfr.partraces.plot(mcmc.list, sim.dir=NULL, chain.ids=chain.ids, par.names=par.names, 
+						nr.points=nr.points, dev.ncol=dev.ncol, ...)
+}
+
+tfr3.partraces.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'),
+									chain.ids=NULL, par.names=tfr3.parameter.names.cs(), 
+									nr.points=NULL, dev.ncol=3, low.memory=TRUE, ...) {
+
+	if (is.null(mcmc.list))
+		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
+	tfr.partraces.cs.plot(country=country, mcmc.list=mcmc.list, sim.dir=NULL, chain.ids=chain.ids, par.names=par.names, 
+								nr.points=nr.points, dev.ncol=dev.ncol, ...)
+}
+		
 do.plot.tfr.pardensity <- function(mcmc.list, func, par.names, par.names.ext, main.postfix='', 
 								func.args=NULL, chain.ids=NULL, burnin=NULL, dev.ncol=5, ...) {
 	if(class(mcmc.list) == 'bayesTFR.prediction') {
@@ -568,7 +587,7 @@ tfr.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'baye
 		mcmc.list <- get.tfr.mcmc(sim.dir, low.memory=low.memory)
 	par.names.ext <- get.full.par.names(par.names, tfr.parameter.names.extended())
 	if(length(par.names.ext) <= 0)
-		stop('Parameter names are not valid country-specific parameters.\nUse function tfr.parameter.names(...) or valid parameter names.')
+		stop('Parameter names are not valid parameters.\nUse function tfr.parameter.names(...) or valid parameter names.')
 	do.plot.tfr.pardensity(mcmc.list, 'get.tfr.parameter.traces', chain.ids=chain.ids, par.names=par.names,
 							par.names.ext=par.names.ext,
 							burnin=burnin, dev.ncol=dev.ncol, ...)
@@ -588,6 +607,35 @@ tfr.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(ge
 											tfr.parameter.names.cs.extended(country.obj$code))
 	if(length(par.names.ext) <= 0)
 		stop('Parameter names are not valid country-specific parameters.\nUse function tfr.parameter.names.cs(...) or valid parameter names.')
+	do.plot.tfr.pardensity(mcmc.list, 'get.tfr.parameter.traces.cs', chain.ids=chain.ids, par.names=par.names,
+							par.names.ext=par.names.ext,
+							main.postfix=paste('(',country.obj$name,')', sep=''),
+							func.args=list(country.obj=country.obj),
+							burnin=burnin, dev.ncol=dev.ncol, ...)
+}
+
+tfr3.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+									chain.ids=NULL, par.names=tfr3.parameter.names(), 
+									burnin=NULL, dev.ncol=5, low.memory=TRUE, ...) {
+	if (is.null(mcmc.list))
+		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
+	do.plot.tfr.pardensity(mcmc.list, 'get.tfr.parameter.traces', chain.ids=chain.ids, par.names=par.names,
+							par.names.ext=par.names,
+							burnin=burnin, dev.ncol=dev.ncol, ...)
+}
+
+tfr3.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+									chain.ids=NULL, par.names=tfr3.parameter.names.cs(), 
+									burnin=NULL, dev.ncol=2, low.memory=TRUE, ...) {
+	if (is.null(mcmc.list))
+		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
+	mcmc.l <- get.mcmc.list(mcmc.list)
+	country.obj <- get.country.object(country, mcmc.l[[1]]$meta)
+	if (is.null(country.obj$name))
+		stop('Country ', country, ' not found.')
+	par.names.ext <- get.full.par.names.cs(par.names, paste(par.names, '_c', country.obj$code, sep=''))
+	if(length(par.names.ext) <= 0)
+		stop('Parameter names are not valid country-specific parameters.\nUse function tfr3.parameter.names.cs(...) or valid parameter names.')
 	do.plot.tfr.pardensity(mcmc.list, 'get.tfr.parameter.traces.cs', chain.ids=chain.ids, par.names=par.names,
 							par.names.ext=par.names.ext,
 							main.postfix=paste('(',country.obj$name,')', sep=''),
