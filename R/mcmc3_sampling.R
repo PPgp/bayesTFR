@@ -3,7 +3,7 @@
 #########################################################
 
 tfr3.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose.iter=10) {
-
+	library(msm)
 	if (!is.null(mcmc$rng.state)) .Random.seed <- mcmc$rng.state
 	meta <- mcmc$meta
     niter <- mcmc$iter
@@ -16,7 +16,6 @@ tfr3.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbos
 		ardata[[country]] <- data[meta$parent$lambda_c[countries.index[country]]:meta$parent$T_end_c[countries.index[country]]]
 		Ts[country] <- length(ardata[[country]])
     }
-    #save(ardata, file='ardata.rda')
     par.c <- par.range <- par.sig <- par.sig.range <- list()
     for(par in c('mu', 'rho')) {
     	par.c[[par]] <- paste(par, 'c', sep='.')
@@ -33,13 +32,13 @@ tfr3.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbos
         	cat('\nIteration:', iter, '--', date())
         unblock.gtk('bDem.TFRmcmc')
 
+		# world parameters mu, rho, sigma.mu, sigma.rho
 		for(par in c('mu', 'rho')) {
 			sum.par <- sum(mcmc[[par.c[[par]]]])
 			par.mean <- sum.par/nr.countries
 			par.sd <- mcmc[[par.sig[[par]]]]/sqrt(nr.countries)
-			mcmc[[par]] <- rnorm.trunc(mean=par.mean, sd=par.sd, low=meta[[par.range[[par]]]][1], high=meta[[par.range[[par]]]][2])
+			mcmc[[par]] <- rtnorm(1, mean=par.mean, sd=par.sd, lower=meta[[par.range[[par]]]][1], upper=meta[[par.range[[par]]]][2])
 			S <- sum((mcmc[[par.c[[par]]]]-mcmc[[par]])^2)
-			#stop('')
 			mcmc[[par.sig[[par]]]] <- 1/sqrt(rgamma.ltrunc((nr.countries-1)/2, S/2, low=1/meta[[par.sig.range[[par]]]][2]^2))
 			#mcmc[[par.sig]] <- slice.sampling(mcmc[[par.sig]], logdensity.sigma.mu.rho, 0.5, 
 			#					par=mcmc[[par]], par.c=mcmc[[par.c]], 
@@ -48,36 +47,41 @@ tfr3.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbos
 		sigma.eps.sq <- mcmc$sigma.eps^2
 		sigma.mu.sq <- mcmc$sigma.mu^2
 		sigma.mu.sq.inv <- 1/sigma.mu.sq
+		mu.over.sigma.sq <- mcmc$mu/sigma.mu.sq
 		sigma.rho.sq <- mcmc$sigma.rho^2
 		sigma.rho.sq.inv <- 1/sigma.rho.sq
+		rho.over.sigma.sq <- mcmc$rho/sigma.rho.sq
 		S.eps <- STn <- 0
+		one.minus.rho <- 1-mcmc$rho.c
+		one.minus.rho.sq <- one.minus.rho^2
+		W <- one.minus.rho.sq/sigma.eps.sq
+		# country-specific parameters
 		for(country in 1:nr.countries) {
-			one.minus.rho <- 1-mcmc$rho.c[country]
-			one.minus.rho.sq <- one.minus.rho^2
+			f.ct <- ardata[[country]][2:Ts[country]]
+			f.ctm1 <- ardata[[country]][1:(Ts[country]-1)]
 			# mu.c
-			s <- sum((ardata[[country]][2:Ts[country]] - mcmc$rho.c[country]*ardata[[country]][1:(Ts[country]-1)])/one.minus.rho)
-			term1 <- one.minus.rho.sq/sigma.eps.sq
-			nom <- term1 * s + sigma.mu.sq.inv * mcmc$mu
-			denom <- (Ts[country]-1) * term1 + sigma.mu.sq.inv
-			mcmc$mu.c[country] <- rnorm.ltrunc(mean=nom/denom, sd=1/sqrt(denom), low=0)	
+			s <- sum((f.ct - mcmc$rho.c[country]*f.ctm1)/one.minus.rho[country])
+			nomin <- W[country] * s + mu.over.sigma.sq
+			denom <- (Ts[country]-1) * W[country] + sigma.mu.sq.inv
+			mcmc$mu.c[country] <- rtnorm(1, mean=nomin/denom, sd=1/sqrt(denom), lower=0)	
+
 			# rho.c
-			d1 <- ardata[[country]][1:(Ts[country]-1)]- mcmc$mu.c[country]
-			#A <- sum(d1)^2
-			#r <- sum(d1*(ardata[[country]][2:Ts[country]]- mcmc$mu.c[country]))
-			#term1 <- A/sigma.eps.sq
-			#denom <- term1 + sigma.rho.sq.inv
-			#nom <- term1*r + sigma.rho.sq.inv*mcmc$rho
-			#mcmc$rho.c[country] <- rnorm.trunc(mean=nom/denom, sd=1/sqrt(denom), low=0, high=0.999999)
+			d1 <- f.ctm1 - mcmc$mu.c[country]
+			a <- sum(d1^2)/sigma.eps.sq
+			b <- sum(d1*(f.ct - mcmc$mu.c[country]))/sigma.eps.sq
+			nomin <- b + rho.over.sigma.sq
+			denom <- a + sigma.rho.sq.inv
+			mcmc$rho.c[country] <- rtnorm(1, mean=nomin/denom, sd=1/sqrt(denom), lower=0, upper=1-.Machine$double.xmin)
 
 			# mcmc$mu.c[country] <- slice.sampling(mcmc$mu.c[country],
 							# logdensity.mu.rho.c, 1, mean=mcmc$mu, sd=mcmc$sigma.mu, sigma.eps=mcmc$sigma.eps, 
 							# rho.c=mcmc$rho.c[country], data=ardata[[country]], low=0, up=999999
 							# )
-			mcmc$rho.c[country] <- slice.sampling(mcmc$rho.c[country],
-							 logdensity.rho.c, 0.3, rho=mcmc$rho, sigma.rho=mcmc$sigma.rho, sigma.eps=mcmc$sigma.eps, 
-							 mu.c=mcmc$mu.c[country], data=ardata[[country]], low=0, up=1, Ts=Ts[country]
-							 )
-			S.eps <- S.eps + sum((ardata[[country]][2:Ts[country]] - mcmc$mu.c[country] - mcmc$rho.c[country]*d1)^2)
+			#mcmc$rho.c[country] <- slice.sampling(mcmc$rho.c[country],
+			#				 logdensity.rho.c, 1, rho=mcmc$rho, sigma.rho=mcmc$sigma.rho, sigma.eps=mcmc$sigma.eps, 
+			#				 mu.c=mcmc$mu.c[country], data=ardata[[country]], low=0, up=1, Ts=Ts[country]
+			#				 )
+			S.eps <- S.eps + sum((f.ct - mcmc$mu.c[country] - mcmc$rho.c[country]*d1)^2)
 			STn <- STn + Ts[country]-1
 		}
 		# mcmc$sigma.eps <- slice.sampling(mcmc$sigma.eps, logdensity.sigma.eps, 0.3, 
@@ -196,3 +200,4 @@ rgamma.ltrunc<-function(shape,rate,low){
   }
   return(temp)
 }
+
