@@ -73,24 +73,3 @@ void dnormtrunc(double *x, double *mu, double *sigma,
 	return;
 }
 
-
-
-void dologdensityAR1(double *x, double *mu, double *sigma, 
-			double *sigma_eps, double *rho_c, double *tfr, int *ltfr, double *low, double *high, double *logdens) {
-	double dens[*ltfr-1], dnt[1];
-	double s;
-	int i;
-
-	s = 0;
-	for (i=0; i< (*ltfr - 1); i++){
-		dens[i] = dnorm(tfr[i+1], *x + (*rho_c * (tfr[i]- *x)), *sigma_eps, 0);
-		/*Rprintf("\n%f, %f %f %f", dens[i], dct[i], dl[i], loess_sd[i]);*/
-		if(dens[i] < 1e-100) dens[i] = 1e-100;
-		s = s+ log(dens[i]);
-	}
-	dnormtrunc(x, mu, sigma, *low, *high, 1, dnt);
-	logdens[0] = s + log(dnt[0]);
-	/*Rprintf("\ns=%f dnt=%f res = %f", s, dnt[0], logdens[0]);*/
-	return;
-}
-
