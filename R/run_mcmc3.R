@@ -18,8 +18,12 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=5000,
 					 	compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=5000, iter.incr=2000, nr.chains=3, thin=5, burnin=500),
 						verbose=FALSE, verbose.iter = 1000, ...) {
-	get.init.values <- function(range)
-		ifelse(rep(nr.chains==1, nr.chains), sum(range)/2, seq(range[1], to=range[2], length=nr.chains))
+	get.init.values <- function(range) {
+		ifelse(rep(nr.chains==1, nr.chains), sum(range)/2, 
+				#seq(range[1], to=range[2], length=nr.chains)
+				runif(nr.chains, range[1], range[2])
+				)
+	}
 
 	mc <- get.tfr.mcmc(sim.dir)
 	output.dir <- file.path(sim.dir, 'phaseIII')
