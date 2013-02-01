@@ -537,11 +537,15 @@ tfr3.partraces.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'baye
 tfr3.partraces.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 									chain.ids=NULL, par.names=tfr3.parameter.names.cs(), 
 									nr.points=NULL, dev.ncol=3, low.memory=TRUE, ...) {
-
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
-	tfr.partraces.cs.plot(country=country, mcmc.list=mcmc.list, sim.dir=NULL, chain.ids=chain.ids, par.names=par.names, 
-								nr.points=nr.points, dev.ncol=dev.ncol, ...)
+	mcmc.list <- get.mcmc.list(mcmc.list)
+	country.obj <- get.country.object(country, mcmc.list[[1]]$meta)
+	if (is.null(country.obj$name))
+		stop('Country ', country, ' not found.')
+	do.plot.tfr.partraces(mcmc.list, 'load.tfr.parameter.traces.cs', 
+		main.postfix=paste('(',country.obj$name,')', sep=''), chain.ids=chain.ids, nr.points=nr.points, 
+		country=country.obj$code, par.names=par.names, dev.ncol=dev.ncol, ...)
 }
 		
 do.plot.tfr.pardensity <- function(mcmc.list, func, par.names, par.names.ext, main.postfix='', 

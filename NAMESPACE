@@ -69,6 +69,7 @@ export(
 	tfr.plot.gelman,
 	tfr.raftery.diag,
 	tfr.diagnose,
+	tfr3.diagnose,
 	tfr.get.dlcurves,
 	tfr.dl.coverage,
 	get.median.from.prediction,
