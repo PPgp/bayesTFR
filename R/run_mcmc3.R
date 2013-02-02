@@ -1,5 +1,5 @@
-run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=5000,
-						thin=1, replace.output=FALSE,
+run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
+						thin=10, replace.output=FALSE,
 						# meta parameters
 						my.tfr.file = NULL, buffer.size=100,
 						use.extra.countries=FALSE,
@@ -16,7 +16,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=5000,
 						sigma.eps.ini=NULL, sigma.eps.ini.range=sigma.eps.prior.range,
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
 					 	compression.type='None',
-					 	auto.conf = list(max.loops=5, iter=5000, iter.incr=2000, nr.chains=3, thin=5, burnin=500),
+					 	auto.conf = list(max.loops=5, iter=50000, iter.incr=20000, nr.chains=3, thin=60, burnin=10000),
 						verbose=FALSE, verbose.iter = 1000, ...) {
 	get.init.values <- function(range) {
 		ifelse(rep(nr.chains==1, nr.chains), sum(range)/2, 
@@ -102,21 +102,21 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=5000,
 	mcmc.set <- structure(list(meta=meta, mcmc.list=chain.set), class='bayesTFR.mcmc.set')
     cat('\nResults stored in', sim.dir,'\n')
     
-    # if(auto.run) {
-		# diag <- try(tfr.diagnose(sim.dir=output.dir, keep.thin.mcmc=TRUE, 
-						# thin=auto.conf$thin, burnin=auto.conf$burnin,
-						# verbose=verbose))
-		# if(auto.conf$max.loops>1) {
-			# for(loop in 2:auto.conf$max.loops) {
-				# if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
-				# mcmc.set <- continue.e0.mcmc(iter=auto.conf$iter.incr, output.dir=output.dir, nr.nodes=nr.nodes,
-										  # parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
-				# diag <- try(e0.diagnose(sim.dir=output.dir, keep.thin.mcmc=TRUE, 
-							# thin=auto.conf$thin, burnin=auto.conf$burnin,
-							# verbose=verbose))
-			# }
-		# }
-	# }
+    if(auto.run) {
+		diag <- try(tfr3.diagnose(sim.dir=sim.dir, express=TRUE, 
+						thin=auto.conf$thin, burnin=auto.conf$burnin,
+						verbose=verbose))
+		if(auto.conf$max.loops>1) {
+			for(loop in 2:auto.conf$max.loops) {
+				if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
+				mcmc.set <- continue.e0.mcmc(iter=auto.conf$iter.incr, output.dir=output.dir, nr.nodes=nr.nodes,
+										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
+				diag <- try(tfr3.diagnose(sim.dir=sim.dir, express=TRUE, 
+							thin=auto.conf$thin, burnin=auto.conf$burnin,
+							verbose=verbose))
+			}
+		}
+	}
     if (verbose) 
 		cat('\nSimulation successfully finished!!!\n')
     invisible(mcmc.set)
@@ -172,9 +172,9 @@ mcmc3.ini <- function(chain.id, mcmc.meta, iter=100, thin=1, starting.values=NUL
     return(mcmc) 
 }
 
-continue.tfr3.mcmc <- function(iter, chain.ids=NULL, output.dir=file.path(getwd(), 'bayesTFR.output'), 
-								parallel=FALSE, nr.nodes=NULL, auto.conf = NULL, verbose=FALSE, verbose.iter=1000, ...) {
-	mcmc.set <- get.tfr3.mcmc(output.dir)
+continue.tfr3.mcmc <- function(sim.dir, iter, chain.ids=NULL, parallel=FALSE, nr.nodes=NULL, auto.conf = NULL, 
+								verbose=FALSE, verbose.iter=1000, ...) {
+	mcmc.set <- get.tfr3.mcmc(sim.dir)
 
 	auto.run <- FALSE
 	if(iter == 'auto') { # defaults for auto-run (includes convergence diagnostics)
@@ -204,21 +204,21 @@ continue.tfr3.mcmc <- function(iter, chain.ids=NULL, output.dir=file.path(getwd(
 		}
 	}
 	cat('\n')
-	# if(auto.run) {
-		# diag <- try(tfr.diagnose(sim.dir=output.dir, keep.thin.mcmc=TRUE, 
-						# thin=auto.conf$thin, burnin=auto.conf$burnin,
-						# verbose=verbose))
-		# if(auto.conf$max.loops>1) {
-			# for(loop in 2:auto.conf$max.loops) {
-				# if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
-				# mcmc.set <- continue.tfr.mcmc(iter=auto.conf$iter.incr, output.dir=output.dir, nr.nodes=nr.nodes,
-										  # parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
-				# diag <- try(tfr.diagnose(sim.dir=output.dir, keep.thin.mcmc=TRUE, 
-							# thin=auto.conf$thin, burnin=auto.conf$burnin,
-							# verbose=verbose))
-			# }
-		# }
-	# }
+	if(auto.run) {
+		diag <- try(tfr3.diagnose(sim.dir=sim.dir, express=TRUE, 
+						thin=auto.conf$thin, burnin=auto.conf$burnin,
+						verbose=verbose))
+		if(auto.conf$max.loops>1) {
+			for(loop in 2:auto.conf$max.loops) {
+				if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
+				mcmc.set <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=auto.conf$iter.incr, nr.nodes=nr.nodes,
+										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
+				diag <- try(tfr3.diagnose(sim.dir=sim.dir, express=TRUE, 
+							thin=auto.conf$thin, burnin=auto.conf$burnin,
+							verbose=verbose))
+			}
+		}
+	}
 	invisible(mcmc.set)
 }
 	

@@ -498,7 +498,7 @@ process.not.converged.parameters <- function(diag, iter) {
 					nr.countries=nr.countries),
 				 class=class.name)
 	if(verbose) summary(diag)
-	save.dir <- file.path(sim.dir, 'diagnostics')
+	save.dir <- file.path(mcmc.set$meta$output.dir, 'diagnostics')
 	if(!file.exists(save.dir)) 
 		dir.create(save.dir, recursive=TRUE)
 	save.file <- do.call(paste('store.', class.name, sep=''), list(diag, thin=thin, burnin=burnin, 
@@ -511,7 +511,7 @@ tfr.diagnose <- function(sim.dir, thin=80, burnin=2000, express=FALSE,
 							country.sampling.prop=NULL, keep.thin.mcmc=FALSE, verbose=TRUE) {
 	invisible(.do.diagnose(type='tfr', class.name='bayesTFR.convergence', 
 							sim.dir=sim.dir, thin=thin, burnin=burnin, express=express,
-							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,							verbose=verbose))
+							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,	verbose=verbose))
 }
 
 tfr3.raftery.diag <- function(mcmc=NULL, 
@@ -521,18 +521,17 @@ tfr3.raftery.diag <- function(mcmc=NULL,
 							 par.names.cs = tfr3.parameter.names.cs(),
 							 country.sampling.prop=1,
 							 verbose=TRUE, ...) {
-return(tfr.raftery.diag(mcmc=mcmc, sim.dir=sim.dir, burnin=burnin,
+	mcmc.set <- if (is.null(mcmc)) get.tfr3.mcmc(sim.dir=sim.dir, low.memory=TRUE) else mcmc
+	return(tfr.raftery.diag(mcmc=mcmc.set, burnin=burnin,
 						country=country, par.names=par.names, par.names.cs=par.names.cs,
 						country.sampling.prop=country.sampling.prop, verbose=verbose, ...))
 }
 
-tfr3.diagnose <- function(sim.dir, thin=120, burnin=20000, express=FALSE, 
-						country.sampling.prop=NULL, keep.thin.mcmc=FALSE, verbose=TRUE) {
+tfr3.diagnose <- function(sim.dir, thin=60, burnin=10000, express=FALSE, 
+						country.sampling.prop=NULL, verbose=TRUE) {
 	invisible(.do.diagnose(type='tfr3', class.name='bayesTFR.convergence', 
 							sim.dir=sim.dir, thin=thin, burnin=burnin, express=express,
-							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,							verbose=verbose))
-	
-	
+							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=FALSE, verbose=verbose))
 }
 
 diag.thin.indep <- function(mcmc.list, q) {

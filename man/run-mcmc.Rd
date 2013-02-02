@@ -6,10 +6,10 @@
 
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Running Markov Chain Monte Carlo for Parameters of Total Fertility Rate 
+Running Markov Chain Monte Carlo for Parameters of Total Fertility Rate in Phase II
 }
 \description{
-Runs (or continues running) MCMCs for simulating the total fertility rate of all countries of the world, using a Bayesian hierarchical model.
+Runs (or continues running) MCMCs for simulating the total fertility rate of all countries of the world (phase II), using a Bayesian hierarchical model.
 }
 \usage{
 run.tfr.mcmc(nr.chains = 3, iter = 62000, 
@@ -39,12 +39,12 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     save.all.parameters = FALSE, compression.type = 'None',
     auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, 
         nr.chains=3, thin=80, burnin=2000),
-    verbose = FALSE, verbose.iter = 10, ...)
+    verbose = FALSE, verbose.iter = 10, \dots)
 		
 continue.tfr.mcmc(iter, chain.ids=NULL, 
     output.dir=file.path(getwd(), "bayesTFR.output"), 
     parallel = FALSE, nr.nodes = NULL, auto.conf = NULL,
-    verbose=FALSE, verbose.iter = 10, ...)
+    verbose=FALSE, verbose.iter = 10, \dots)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

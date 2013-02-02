@@ -1,12 +1,14 @@
 tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						sim.dir=file.path(getwd(), 'bayesTFR.output'),
 						replace.output=FALSE,
-						nr.traj = NULL, thin = NULL, burnin=2000, burnin3=5000,
+						nr.traj = NULL, thin = NULL, burnin=2000, 
 						use.diagnostics=FALSE,
+						use.tfr3=TRUE, burnin3=10000,
+						mu=2.1, rho=0.8859, sigmaAR1=0.1016,
 						save.as.ascii=1000, output.dir = NULL,
 						low.memory=TRUE,
 						# parameters for the AR1 stuff
-						mu=2.1, rho=0.8859, sigmaAR1=0.1016,
+
 						seed=NULL, verbose=TRUE) {
 	if(!is.null(mcmc.set)) {
 		if (class(mcmc.set) != 'bayesTFR.mcmc.set') {
@@ -15,7 +17,12 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 	} else {		
 		mcmc.set <- get.tfr.mcmc(sim.dir, low.memory=low.memory, verbose=verbose)
 	}
-	has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
+	has.phase3 <- FALSE
+	if(use.tfr3) {
+		has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
+		if(!has.phase3)
+			warning('No Phase III MCMCs available. Switching to constant AR(1) parameters.', immediate. = TRUE)
+	}
 	if(!has.phase3) {
 		if (is.null(rho) || is.na(rho) || is.null(sigmaAR1) || is.na(sigmaAR1)) {
 			res <- get.ar1.parameters(mu = mu, mcmc.set$meta)
@@ -55,7 +62,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 			cat('\nUsing convergence settings: nr.traj=', nr.traj, ', burnin=', burnin, '\n')
 	}
 	invisible(make.tfr.prediction(mcmc.set, end.year=end.year, replace.output=replace.output,  
-					nr.traj=nr.traj, burnin=burnin, thin=thin, burnin3=burnin3,
+					nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, burnin3=burnin3,
 					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1,
 					save.as.ascii=save.as.ascii,
 					output.dir=output.dir, verbose=verbose))			
@@ -87,8 +94,13 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		cat('\nNothing to be done.\n')
 		return(invisible(pred))	
 	}
+	use.tfr3 <- pred$use.tfr3
+	if(pred$use.tfr3 && !has.tfr3.mcmc(sim.dir)) {
+		warning('Prediction used BHM for phase III TFR but the MCMCs are not longer available. Switching to constant AR(1) parameters.')
+		use.tfr3 <- FALSE
+	}
 	new.pred <- make.tfr.prediction(mcmc.set, end.year=pred$end.year, replace.output=FALSE,
-									nr.traj=pred$nr.traj, burnin=pred$burnin,
+									nr.traj=pred$nr.traj, burnin=pred$burnin, use.tfr3=use.tfr3, burnin3=pred$burnin3,
 									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, 
 									countries=countries.idx, save.as.ascii=0, output.dir=prediction.dir,
 									force.creating.thinned.mcmc=TRUE,
@@ -129,7 +141,7 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 
 
 make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
-								nr.traj = NULL, burnin=0, thin = NULL, burnin3=0,
+								nr.traj = NULL, burnin=0, thin = NULL, use.tfr3=TRUE, burnin3=0,
 								mu=2.1, rho=0.9057, sigmaAR1 = 0.0922, countries = NULL,
 								adj.factor1=NA, adj.factor2=0, forceAR1=FALSE,
 							    save.as.ascii=1000, output.dir = NULL, write.summary.files=TRUE, 
@@ -231,7 +243,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 	mid.years <- as.integer(c(if(suppl.T > 0) rownames(mcmc.set$meta$suppl.data$tfr_matrix) else c(), rownames(tfr_matrix_reconstructed)))
 	const_sd_dummie_Tc[mid.years < 1975,] <- 1
 	
-	has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
+	has.phase3 <- use.tfr3
 	if(has.phase3) {
 		mcmc3 <- get.tfr3.mcmc(mcmc.set$meta$output.dir)
 		total.iter <- get.stored.mcmc.length(mcmc3$mcmc.list, burnin3)
@@ -496,7 +508,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 				mcmc.set=load.mcmc.set,
 				nr.projections=nr_project,
 				burnin=burnin,
-				end.year=end.year,
+				end.year=end.year, use.tfr3=has.phase3, burnin3=burnin3,
 				mu=mu, rho=rho,  sigma_t = sigma_t, sigmaAR1 = sigmaAR1),
 				class='bayesTFR.prediction')
 			
