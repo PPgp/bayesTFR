@@ -29,6 +29,8 @@ export(
 	has.tfr.prediction,
 	get.tfr.convergence.all,
 	get.tfr.convergence,
+	get.tfr3.convergence.all,
+	get.tfr3.convergence,
 	has.mcmc.converged,
 	tfr.parameter.names.extended,
 	tfr.parameter.names.cs.extended,

@@ -256,6 +256,17 @@ get.tfr.convergence <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	return(bayesTFR.convergence)
 }
 
+get.tfr3.convergence.all <- function(sim.dir=file.path(getwd(), 'bayesTFR.output')) {
+	return(get.tfr.convergence.all(sim.dir=file.path(sim.dir, 'phaseIII')))
+}
+
+get.tfr3.convergence <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+									thin=60, burnin=10000) {
+	return(get.tfr.convergence(file.path(sim.dir, 'phaseIII'), thin=thin, burnin=burnin))
+}
+
+
+
 has.mcmc.converged <- function(diag) return(diag$status['green'])	
 get.burned.tfr.traces <- function(mcmc, par.names, burnin=0, thinning.index=NULL) {
 	# get traces that are already loaded in the mcmc object
@@ -474,9 +485,7 @@ get.total.iterations <- function(mcmc.list, burnin=0) {
 get.thinned.burnin <- function(mcmc, burnin) {
 	if (burnin==0) return(0)
 	if (mcmc$thin == 1) return(burnin)
-	res <- burnin/mcmc$thin
-	if(burnin %% mcmc$thin == 0) return(res)
-	return (floor(res)+1)
+	return(1 + if(burnin >= mcmc$thin) length(seq(mcmc$thin, burnin, by=mcmc$thin)) else 0)
 }
 
 get.stored.mcmc.length <- function(mcmc.list, burnin=0) {
@@ -868,9 +877,7 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	cat('\nNumber of observations:', sum(sapply(object$mcmc.list[[1]]$observations, function(x) length(x)-1)))
 	cat('\nWPP:', object$meta$parent$wpp.year)
 	cat('\n')
-	if(meta.only) {
-		return(get.meta.only(object))
-	} 
+	if(meta.only) return(get.meta.only(object))
 	if (!is.null(chain.id))
 		return(summary(object$mcmc.list[[chain.id]], country=country, par.names=par.names,
 							par.names.cs=par.names.cs, thin=thin, burnin=burnin, ...))
@@ -950,7 +957,7 @@ get.prediction.summary.data <- function(object, unchanged.pars, country, compact
 
 summary.bayesTFR.prediction <- function(object, country=NULL, compact=TRUE, ...) {
 	res <- get.prediction.summary.data(object, 
-				unchanged.pars=c('burnin', 'nr.traj', 'mu', 'rho', 'sigmaAR1'), 
+				unchanged.pars=c('burnin', 'thin', 'nr.traj', 'mu', 'rho', 'sigmaAR1', 'use.tfr3', 'burnin3', 'thin3'), 
 				country=country, compact=compact)
 	class(res) <- 'summary.bayesTFR.prediction'
 	return(.update.summary.data.by.shift(res, object, country))
@@ -960,12 +967,18 @@ print.summary.bayesTFR.prediction <- function(x, digits = 3, ...) {
 	cat('\nProjections:', length(x$projection.years), '(', x$projection.years[1], '-', 
 					x$projection.years[length(x$projection.years)], ')')
 	cat('\nTrajectories:', x$nr.traj)
-	cat('\nBurnin:', x$burnin)
-	cat('\nParameters of AR(1):\n')
-	arpars <- c(x$mu, x$rho, x$sigmaAR1)
-	ar.table<-matrix(arpars, nrow=1, ncol=length(arpars),
+	cat('\nPhase II burnin:', x$burnin)
+	cat('\nPhase II thin:', x$thin)
+	if(x$use.tfr3) {
+		cat('\nPhase III burnin:', x$burnin3)
+		cat('\nPhase III thin:', x$thin3)
+	} else {
+		cat('\nParameters of AR(1):\n')
+		arpars <- c(x$mu, x$rho, x$sigmaAR1)
+		ar.table<-matrix(arpars, nrow=1, ncol=length(arpars),
 						dimnames=list('',c('mu', 'rho', rep('sigma', length(x$sigmaAR1)))))
-	print(ar.table, digits=digits, ...)
+		print(ar.table, digits=digits, ...)
+	}
 	if(!is.null(x$country.name)) {
 		cat('\nCountry:', x$country.name, '\n')
 		cat('\nProjected TFR:')
@@ -1072,11 +1085,14 @@ burn.and.thin <- function(mcmc, burnin=0, thin=1) {
 
 no.traces.loaded <- function(mcmc) return((length(mcmc$traces) == 1) && mcmc$traces == 0)
 
-tfr.set.identical <- function(mcmc.set1, mcmc.set2) {
+tfr.set.identical <- function(mcmc.set1, mcmc.set2, include.output.dir=TRUE) {
 	# Test if two bayesTFR sets are identical
+	if(!include.output.dir) 
+		mcmc.set1$meta$output.dir <- mcmc.set2$meta$output.dir <- NULL
 	same <- setequal(names(mcmc.set1), names(mcmc.set2)) && identical(mcmc.set1$meta, mcmc.set2$meta) && length(mcmc.set1$mcmc.list) == length(mcmc.set2$mcmc.list)
 	if(!same) return(same)
 	for(i in 1:length(mcmc.set1$mcmc.list)) {
+		if(!include.output.dir) mcmc.set1$mcmc.list[[i]]$meta$output.dir <- mcmc.set2$mcmc.list[[i]]$meta$output.dir <- NULL
 		same <- same && tfr.identical(mcmc.set1$mcmc.list[[i]], mcmc.set2$mcmc.list[[i]])
 	}
 	return(same)
@@ -1115,8 +1131,12 @@ get.countries.index.bayesTFR.mcmc.meta  <- function(meta, ...)
 	return (if(is.null(meta$phase) || (meta$phase==2)) meta$id_DL else meta$id_phase3)
 
 "get.countries.table" <- function(object, ...) UseMethod("get.countries.table")
-get.countries.table.bayesTFR.mcmc.set <- function(object, ...) 
-	return(data.frame(code=object$meta$regions$country_code, name=object$meta$regions$country_name))
+get.countries.table.bayesTFR.mcmc.set <- function(object, ...) {
+	ctable <- data.frame(code=object$meta$regions$country_code, name=object$meta$regions$country_name)
+	if(!is.null(object$meta$phase) && (object$meta$phase==3)) ctable <- ctable[object$meta$id_phase3,]
+	return(ctable)
+}
+
 get.countries.table.bayesTFR.prediction <- function(object, ...) {
 	n <- dim(get.data.imputed(object))[2]
 	return(data.frame(code=object$mcmc.set$meta$regions$country_code[1:n], 

@@ -242,7 +242,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 	const_sd_dummie_Tc <- matrix(0, mcmc.set$meta$T_end+suppl.T, nr_countries)
 	mid.years <- as.integer(c(if(suppl.T > 0) rownames(mcmc.set$meta$suppl.data$tfr_matrix) else c(), rownames(tfr_matrix_reconstructed)))
 	const_sd_dummie_Tc[mid.years < 1975,] <- 1
-	
+	thin3 <- NA
 	has.phase3 <- use.tfr3
 	if(has.phase3) {
 		mcmc3 <- get.tfr3.mcmc(mcmc.set$meta$output.dir)
@@ -251,6 +251,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 		if(length(thinning.index) < nr_simu) stop('Length of MCMCs for phase 2 and 3 cannot be matched with these settings. Check arguments burnin, burnin3, nr.traj and thin.')
 		m3.par.values <- get.tfr3.parameter.traces(mcmc3$mcmc.list, par.names=c('mu', 'rho', 'sigma.eps'), 
 								thinning.index=thinning.index, burnin=burnin3)
+		thin3 <- (thinning.index[2]-thinning.index[1])*mcmc3$mcmc.list[[1]]$thin
 		if(dim(m3.par.values)[1] != nr_simu) stop('Mismatch in length of MCMCs for phase 2 and 3.')				
 	} 
 	country.counter <- 0
@@ -354,7 +355,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
                 
 		nr_obs_in_phaseIII = (this.T_end - mcmc.set$meta$lambda_c[country])
 		sigma_t  = sigmas_all[(nr_obs_in_phaseIII+1):(nr_obs_in_phaseIII+this.nr_project)]
-		if (verbose & nmissing > 0) 
+		if (verbose && nmissing > 0) 
 			cat('\t', nmissing, 'data points reconstructed.\n')
 		# the projections
 		f_ps <- matrix(NA, this.nr_project+1,nr_simu)
@@ -380,6 +381,8 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 					# country in Phase II
             		d11 <- DLcurve(theta_si[s,], all.tfr[this.T_end-1], mcmc.set$meta$dl.p1, mcmc.set$meta$dl.p2)
 		  			S11 <- D11 - d11
+		  			mu.c <- mu
+					rho.c <- rho
 		  		} else {
 					# country already in Phase III in last obs. period
 					if(has.phase3) {
@@ -471,6 +474,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 				#if(has.phase3 && is.element(country, mcmc3$meta$id_phase3)) stop('') 
  			}# end AR(1) loop
 		} # end simu loop
+		# Ignore trajectories that go below 0.5
 		#isnotNA <- apply(1-(f_ps<0), 2, prod) 
 		isnotNA <- apply(1-(f_ps<0.5), 2, prod) 
 		isnotNA <- ifelse(is.na(isnotNA),0,isnotNA)
@@ -507,8 +511,8 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 				na.index=(1:nr_simu)[hasNAs],
 				mcmc.set=load.mcmc.set,
 				nr.projections=nr_project,
-				burnin=burnin,
-				end.year=end.year, use.tfr3=has.phase3, burnin3=burnin3,
+				burnin=burnin, thin=thin,
+				end.year=end.year, use.tfr3=has.phase3, burnin3=burnin3, thin3=thin3,
 				mu=mu, rho=rho,  sigma_t = sigma_t, sigmaAR1 = sigmaAR1),
 				class='bayesTFR.prediction')
 			
@@ -991,7 +995,7 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 		return(invisible(pred))	
 	}
 	new.pred <- make.tfr.prediction(mcmc.set, end.year=pred$end.year, replace.output=FALSE,
-									nr.traj=NULL, burnin=0,
+									nr.traj=NULL, burnin=0, use.tfr3=pred$use.tfr3,
 									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, 
 									countries=countries.idx, adj.factor1=factor1, adj.factor2=factor2,
 									forceAR1=forceAR1, save.as.ascii=0, output.dir=NULL,

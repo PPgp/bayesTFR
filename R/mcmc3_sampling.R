@@ -123,7 +123,7 @@ tfr3.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbos
         if (iter %% thin == 0){
         	mcmc$length <- mcmc$length + 1
         	flush.buffer <- FALSE
-            if (iter + 1 > niter) flush.buffer <- TRUE                
+            if (iter + thin > niter) flush.buffer <- TRUE                
             store.mcmc3(mcmc, append=TRUE, flush.buffer=flush.buffer, verbose=verbose)
          }
 	}

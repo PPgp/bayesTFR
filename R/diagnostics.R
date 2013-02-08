@@ -527,8 +527,8 @@ tfr3.raftery.diag <- function(mcmc=NULL,
 						country.sampling.prop=country.sampling.prop, verbose=verbose, ...))
 }
 
-tfr3.diagnose <- function(sim.dir, thin=60, burnin=10000, express=FALSE, 
-						country.sampling.prop=NULL, verbose=TRUE) {
+tfr3.diagnose <- function(sim.dir, thin=60, burnin=10000, express=TRUE, 
+						country.sampling.prop=NULL, verbose=TRUE, ...) {
 	invisible(.do.diagnose(type='tfr3', class.name='bayesTFR.convergence', 
 							sim.dir=sim.dir, thin=thin, burnin=burnin, express=express,
 							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=FALSE, verbose=verbose))

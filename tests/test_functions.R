@@ -61,16 +61,16 @@ test.run.mcmc.simulation <- function(compression='None') {
 	sim.dir <- tempfile()
 
 	# run MCMC
-	test.name <- 'running MCMC'
+	test.name <- 'running Phase II MCMC'
 	start.test(test.name)
 	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, start.year=1950, compression.type=compression)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
-	stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir)))
+	stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))
 	test.ok(test.name)
 
 	# continue MCMC
-	test.name <- 'continuing MCMC'
+	test.name <- 'continuing Phase II MCMC'
 	start.test(test.name)
 	m <- continue.tfr.mcmc(iter=5, output.dir=sim.dir)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 10)
@@ -79,7 +79,7 @@ test.run.mcmc.simulation <- function(compression='None') {
 	test.ok(test.name)
 
 	# run MCMC for an aggregation
-	test.name <- 'running MCMC for extra areas'
+	test.name <- 'running Phase II MCMC for extra areas'
 	start.test(test.name)
 	data.dir <- file.path(.find.package("bayesTFR"), 'data')
 	m <- run.tfr.mcmc.extra(sim.dir=sim.dir, 
@@ -87,21 +87,46 @@ test.run.mcmc.simulation <- function(compression='None') {
 	stopifnot(is.element(900, m$meta$regions$country_code)) # 'World' should be included
 	test.ok(test.name)
 
-	# run prediction
-	test.name <- 'running projections'
+	test.name <- 'running Phase III MCMC'
 	start.test(test.name)
-	pred <- tfr.predict(m, burnin=0, rho=NULL, sigmaAR1=NULL, verbose=FALSE)
+	m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=20, thin=1, nr.chains=2,  compression.type=compression)
+	stopifnot(m3$mcmc.list[[1]]$finished.iter == 20)
+	stopifnot(get.total.iterations(m3$mcmc.list, 0) == 40)
+	stopifnot(bayesTFR:::tfr.set.identical(m3, get.tfr3.mcmc(sim.dir), include.output.dir=FALSE))
+	test.ok(test.name)
+
+	# continue MCMC
+	test.name <- 'continuing Phase III MCMC'
+	start.test(test.name)
+	m3 <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=5)
+	stopifnot(m3$mcmc.list[[1]]$finished.iter == 25)
+	stopifnot(get.total.iterations(m3$mcmc.list, 0) == 50)
+	test.ok(test.name)
+
+	# run prediction
+	test.name <- 'running projections with classic AR(1)'
+	start.test(test.name)
+	pred <- tfr.predict(m, burnin=0, use.tfr3=FALSE, rho=NULL, sigmaAR1=NULL, verbose=FALSE)
 	spred <- summary(pred)
 	stopifnot(spred$nr.traj == 10)
+	stopifnot(is.na(pred$thin3))
 	stopifnot(!is.element(903, pred$mcmc.set$regions$country_code))
 	test.ok(test.name)
 	
-	npred <- dim(pred$tfr_matrix_reconstructed)[2]
 	rho <- pred$rho
 	sigma <- pred$sigmaAR1
 	mu <- pred$mu
 	
-
+	test.name <- 'running projections with BHM for phase III'
+	start.test(test.name)
+	pred <- tfr.predict(m, burnin=0, use.tfr3=TRUE, burnin3=5, verbose=FALSE, replace.output=TRUE)
+	spred <- summary(pred)
+	stopifnot(spred$nr.traj == 10)
+	stopifnot(pred$thin3 == 4) 
+	stopifnot(!is.element(903, pred$mcmc.set$regions$country_code))
+	test.ok(test.name)
+	npred <- dim(pred$tfr_matrix_reconstructed)[2]
+	
 	# run MCMC for another aggregation
 	test.name <- 'running projections on extra areas'
 	start.test(test.name)
@@ -111,6 +136,7 @@ test.run.mcmc.simulation <- function(compression='None') {
 	stopifnot(is.element(903, pred$mcmc.set$meta$regions$country_code))
 	stopifnot(dim(pred$tfr_matrix_reconstructed)[2] == npred+1)
 	stopifnot(!is.null(bayesTFR:::get.trajectories(pred, 903)$trajectories))
+	stopifnot(pred$use.tfr3) 
 	test.ok(test.name)
 
 	test.name <- 'estimating AR(1) parameters'
@@ -153,7 +179,7 @@ test.run.mcmc.simulation <- function(compression='None') {
 test.thinned.simulation <- function(compression='None') {
 	sim.dir <- tempfile()
 	# run MCMC
-	test.name <- 'running thinned MCMC'
+	test.name <- 'running thinned Phase II MCMC'
 	start.test(test.name)
 	m <- run.tfr.mcmc(iter=10, nr.chains=2, output.dir=sim.dir, thin=2, compression.type=compression)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 10)
@@ -163,7 +189,7 @@ test.thinned.simulation <- function(compression='None') {
 	test.ok(test.name)
 
 	# continue MCMC
-	test.name <- 'continuing thinned MCMC'
+	test.name <- 'continuing thinned Phase II MCMC'
 	start.test(test.name)
 	m <- continue.tfr.mcmc(iter=10, output.dir=sim.dir)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 20)
@@ -180,12 +206,32 @@ test.thinned.simulation <- function(compression='None') {
 	stopifnot(is.element(900, m$meta$regions$country_code)) # 'World' should be included
 	test.ok(test.name)
 
+	test.name <- 'running thinned Phase III MCMC'
+	start.test(test.name)
+	m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=20, nr.chains=3, thin=4, compression.type=compression)
+	stopifnot(m3$mcmc.list[[1]]$finished.iter == 20)
+	stopifnot(m3$mcmc.list[[1]]$length == 6)
+	stopifnot(get.total.iterations(m3$mcmc.list, 0) == 60)
+	stopifnot(get.stored.mcmc.length(m3$mcmc.list, burnin=4) == 12)
+	test.ok(test.name)
+
+	# continue MCMC
+	test.name <- 'continuing thinned Phase III MCMC'
+	start.test(test.name)
+	m3 <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=5)
+	stopifnot(m3$mcmc.list[[1]]$finished.iter == 25)
+	stopifnot(m3$mcmc.list[[1]]$length == 7)
+	stopifnot(get.total.iterations(m3$mcmc.list, 0) == 75)
+	stopifnot(get.stored.mcmc.length(m3$mcmc.list, burnin=4) == 15)
+	test.ok(test.name)
+
 	# run prediction
 	test.name <- 'running thinned projections'
 	start.test(test.name)
-	pred <- tfr.predict(m, burnin=5, verbose=FALSE)
+	pred <- tfr.predict(m, burnin=5, burnin3=3, verbose=FALSE)
 	spred <- summary(pred)
 	stopifnot(spred$nr.traj == 16) # 2x8
+	stopifnot(pred$thin3 == 4)
 	stopifnot(pred$mcmc.set$mcmc.list[[1]]$finished.iter == 16)
 	stopifnot(length(pred$mcmc.set$mcmc.list) == 1)
 	npred <- dim(pred$tfr_matrix_reconstructed)[2]
@@ -221,18 +267,37 @@ test.thinned.simulation <- function(compression='None') {
 	stopifnot(size > 0)
 	test.ok(test.name)
 
-	test.name <- 'getting parameter traces with thinned MCMC'
+	test.name <- 'getting Phase II parameter traces with thinned MCMC'
 	start.test(test.name)
 	traces <- get.tfr.parameter.traces(m$mcmc.list, burnin=5, 
 					thinning.index=c(1, 3, 10, 15))
 	stopifnot(nrow(traces)==4)
 	test.ok(test.name)
+	
+	test.name <- 'getting Phase III parameter traces with thinned MCMC'
+	start.test(test.name)
+	m3 <- get.tfr3.mcmc(sim.dir)
+	traces <- get.tfr3.parameter.traces(m3$mcmc.list, burnin=10, 
+					thinning.index=c(1, 3, 5, 10))
+	stopifnot(nrow(traces)==4)
+	test.ok(test.name)
 
-	test.name <- 'plotting parameter density'
+	test.name <- 'plotting Phase II parameter density'
 	start.test(test.name)
 	filename <- tempfile()
 	png(filename=filename)
 	tfr.pardensity.plot(m, burnin=10)
+	dev.off()
+	size <- file.info(filename)['size']
+	unlink(filename)
+	stopifnot(size > 0)
+	test.ok(test.name)
+	
+	test.name <- 'plotting Phase III parameter density'
+	start.test(test.name)
+	filename <- tempfile()
+	png(filename=filename)
+	tfr3.pardensity.plot(m3, burnin=10)
 	dev.off()
 	size <- file.info(filename)['size']
 	unlink(filename)
@@ -245,16 +310,29 @@ test.thinned.simulation <- function(compression='None') {
 test.run.mcmc.simulation.auto <- function() {
 	sim.dir <- tempfile()
 	# run MCMC
-	test.name <- 'running auto MCMC'
+	test.name <- 'running auto Phase II MCMC'
 	start.test(test.name)
 	m <- run.tfr.mcmc(iter='auto', output.dir=sim.dir,
 					auto.conf=list(iter=10, iter.incr=5, max.loops=3, nr.chains=2, thin=1, burnin=5))
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 40)
 	test.ok(test.name)
 
-	test.name <- 'continuing auto MCMC'
+	test.name <- 'continuing auto Phase II MCMC'
 	start.test(test.name)
 	m <- continue.tfr.mcmc(iter='auto', output.dir=sim.dir, auto.conf=list(max.loops=2))
+	stopifnot(get.total.iterations(m$mcmc.list, 0) == 60)
+	test.ok(test.name)
+	
+	test.name <- 'running auto Phase III MCMC'
+	start.test(test.name)
+	m3 <- run.tfr3.mcmc(iter='auto', output.dir=sim.dir,
+					auto.conf=list(iter=10, iter.incr=5, max.loops=3, nr.chains=2, thin=1, burnin=5))
+	stopifnot(get.total.iterations(m$mcmc.list, 0) == 40)
+	test.ok(test.name)
+
+	test.name <- 'continuing auto Phase III MCMC'
+	start.test(test.name)
+	m3 <- continue.tfr3.mcmc(iter='auto', output.dir=sim.dir, auto.conf=list(max.loops=2))
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 60)
 	test.ok(test.name)
 
@@ -271,15 +349,20 @@ test.imputation <- function() {
 	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, my.tfr.file=my.tfr.file)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
-	stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir)))
+	stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))
 	# some countries are not DL because of the missing data
 	# This was the case in UN2008 but not in UN2010
 	# stopifnot(length(get.countries.index(m$meta)) != get.nr.countries(m$meta))
+	
+	m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=10, nr.chains=1, thin=1, my.tfr.file=my.tfr.file)
+	stopifnot(m3$mcmc.list[[1]]$finished.iter == 10)
+	stopifnot(get.total.iterations(m3$mcmc.list, 0) == 10)
+	stopifnot(bayesTFR:::tfr.set.identical(m3, get.tfr3.mcmc(sim.dir), include.output.dir=FALSE))
 	test.ok(test.name)
 	
 	test.name <- 'running projections with imputation'
 	start.test(test.name)
-	pred <- tfr.predict(m, burnin=0, verbose=FALSE)
+	pred <- tfr.predict(m, burnin=0, burnin3=3, verbose=FALSE)
 	spred <- summary(pred)
 	stopifnot(spred$nr.traj == 5)
 	test.ok(test.name)
@@ -308,7 +391,7 @@ test.imputation <- function() {
 }
 
 test.existing.simulation <- function() {
-	test.name <- 'retrieving MCMC results'
+	test.name <- 'retrieving Phase II MCMC results'
 	start.test(test.name)
 	sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
 	m <- get.tfr.mcmc(sim.dir, low.memory=FALSE, burnin=25, chain.ids=1)
@@ -448,7 +531,7 @@ test.median.adjust <- function() {
 	pred.dir <- tempfile()
 	m <- get.tfr.mcmc(sim.dir)
 	pred.dir <- tempfile()
-	pred <- tfr.predict(m, burnin=0, output.dir=pred.dir, nr.traj=10, save.as.ascii=0, verbose=FALSE)
+	pred <- tfr.predict(m, burnin=0, output.dir=pred.dir, nr.traj=10, save.as.ascii=0, verbose=FALSE, use.tfr3=FALSE)
 	country.obj1 <- get.country.object('Kenya', m$meta)
 	country.obj2 <- get.country.object('Mongolia', m$meta)
 	new.pred <- tfr.median.adjust(pred.dir, countries=c('Kenya', 'Mongolia'))
@@ -512,7 +595,7 @@ test.estimate.mcmc.with.suppl.data <- function() {
 	# run prediction
 	test.name <- 'running projections for simulation with supplemental data'
 	start.test(test.name)
-	pred <- tfr.predict(m, burnin=10, verbose=FALSE, save.as.ascii=0, rho=NULL, sigmaAR1=NULL)
+	pred <- tfr.predict(m, burnin=10, verbose=FALSE, save.as.ascii=0, rho=NULL, sigmaAR1=NULL, use.tfr3=FALSE)
 	spred <- summary(pred)
 	stopifnot(spred$nr.traj == 30)
 	stopifnot(!is.element(903, pred$mcmc.set$regions$country_code))

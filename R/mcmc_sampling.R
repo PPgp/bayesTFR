@@ -176,7 +176,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
          if (simu %% thin == 0){
          	mcenv$length <- mcenv$length + 1
          	flush.buffer <- FALSE
-            if (simu + 1 > nr_simu) flush.buffer <- TRUE
+            if (simu + thin > nr_simu) flush.buffer <- TRUE
             store.mcmc(mcenv, append=TRUE, flush.buffer=flush.buffer, verbose=verbose)
          }
 	}       # end simu loop MCMC
