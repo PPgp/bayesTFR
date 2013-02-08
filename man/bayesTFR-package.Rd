@@ -74,6 +74,9 @@ Hana Sevcikova, Leontine Alkema, Adrian E. Raftery (2011). bayesTFR: An
   Journal of Statistical Software, 43(1), 1-29.
   \url{http://www.jstatsoft.org/v43/i01/}.
 
+Raftery, A.E., Alkema, L. and Gerland, P. (2013). Bayesian Population Projections for the United Nations. 
+Statistical Science, in press.
+
 L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. (A Working Paper version at \url{http://www.csss.washington.edu/Papers} [nr. 97])
 }
 

@@ -4,11 +4,13 @@
 \alias{has.tfr.mcmc}
 \alias{tfr.mcmc}
 \alias{tfr.mcmc.list}
+\alias{get.tfr3.mcmc}
+\alias{has.tfr3.mcmc}
 \title{
 Accessing MCMC Results
 }
 \description{
-The function \code{get.tfr.mcmc} retrieves results of an MCMC simulation and creates an object of class \code{\link{bayesTFR.mcmc.set}}. Function \code{has.tfr.mcmc} checks the existence of such results. Function \code{tfr.mcmc} extracts a single chain and \code{tfr.mcmc.list} extracts several or all chains from the simulation results. 
+The function \code{get.tfr.mcmc} retrieves results of an MCMC simulation of Phase II and creates an object of class \code{\link{bayesTFR.mcmc.set}}. Function \code{has.tfr.mcmc} checks the existence of such results. Functions \code{get.tfr3.mcmc} and \code{has.tfr3.mcmc} do the same for Phase III MCMCs. Function \code{tfr.mcmc} extracts a single chain and \code{tfr.mcmc.list} extracts several or all chains from the simulation results. 
 }
 \usage{
 get.tfr.mcmc(sim.dir = file.path(getwd(), "bayesTFR.output"), 
@@ -16,9 +18,15 @@ get.tfr.mcmc(sim.dir = file.path(getwd(), "bayesTFR.output"),
 
 has.tfr.mcmc(sim.dir)
 
+get.tfr3.mcmc(sim.dir = file.path(getwd(), "bayesTFR.output"), \dots)
+
+has.tfr3.mcmc(sim.dir)
+
 tfr.mcmc(mcmc.set, chain.id)
 
 tfr.mcmc.list(mcmc.set, chain.ids=NULL)
+
+
 }
 \arguments{
   \item{sim.dir}{Directory where the simulation results are stored.}
@@ -28,12 +36,13 @@ tfr.mcmc.list(mcmc.set, chain.ids=NULL)
   \item{verbose}{Logical switching log messages on and off.}
   \item{chain.id}{Chain identifier.}
   \item{mcmc.set}{Object of class \code{\link{bayesTFR.mcmc.set}}.}
+  \item{\dots}{Arguments passed to \code{get.tfr.mcmc}.}
 }
-%\details{
-%%  ~~ If necessary, more details than the description above ~~
-%}
+\details{
+Function \code{get.tfr.mcmc} is an accessor of results generated using \code{\link{run.tfr.mcmc}} and \code{\link{continue.tfr.mcmc}}. Function \code{get.tfr3.mcmc} can be used to access results generated using \code{\link{run.tfr3.mcmc}} and \code{\link{continue.tfr3.mcmc}}. 
+}
 \value{
-\code{get.tfr.mcmc} returns an object of class \code{\link{bayesTFR.mcmc.set}}. \code{has.tfr.mcmc} returns a logical value. \code{tfr.mcmc} returns an object of class \code{\link{bayesTFR.mcmc}}, and \code{tfr.mcmc.list} returns a list of \code{\link{bayesTFR.mcmc}} objects.
+\code{get.tfr.mcmc} and \code{get.tfr3.mcmc} return an object of class \code{\link{bayesTFR.mcmc.set}}. \code{has.tfr.mcmc} and \code{has.tfr3.mcmc} return a logical value. \code{tfr.mcmc} returns an object of class \code{\link{bayesTFR.mcmc}}, and \code{tfr.mcmc.list} returns a list of \code{\link{bayesTFR.mcmc}} objects.
 }
 
 \author{
@@ -53,5 +62,5 @@ for(mc in tfr.mcmc.list(m)) print(summary(mc))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ programming }
-%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ manip }
+

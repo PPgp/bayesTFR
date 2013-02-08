@@ -61,7 +61,8 @@ The MCMCs are stored in \code{sim.dir} in a subdirectory called \dQuote{phaseIII
 	\item{mcmc.list}{A list of objects of class \code{\link{bayesTFR.mcmc}}, one for each MCMC.}
 }
 \references{
-%% ~put references to the literature/web site here ~
+Raftery, A.E., Alkema, L. and Gerland, P. (2013). Bayesian Population Projections for the United Nations. 
+Statistical Science, in press.
 }
 \author{
 Hana Sevcikova
@@ -72,6 +73,16 @@ Hana Sevcikova
 }
 
 \examples{
+\dontrun{
+sim.dir <- tempfile()
+# Runs Phase II MCMCs (must be run before Phase III)
+m <- run.tfr.mcmc(nr.chains=1, iter=5, output.dir=sim.dir, verbose=TRUE)
+# Runs Phase III MCMCs
+m3 <- run.tfr3.mcmc(sim.dir=sim.dir, nr.chains=2, iter=50, thin=1, verbose=TRUE)
+m3 <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=10, verbose=TRUE)
+summary(m3, burnin=10)
+unlink(sim.dir, recursive=TRUE)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
