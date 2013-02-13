@@ -1,6 +1,7 @@
 \name{tfr.diagnose}
 \Rdversion{1.1}
 \alias{tfr.diagnose}
+\alias{tfr3.diagnose}
 \alias{bayesTFR.convergence}
 \alias{has.mcmc.converged}
 
@@ -8,11 +9,14 @@
 Convergence Diagnostics of TFR Markov Chain Monte Carlo
 }
 \description{
-Function \code{tfr.diagnose} runs convergence diagnostics of existing TFR MCMCs, using the \code{raftery.diag} function from the \pkg{coda} package. \code{has.mcmc.converged} checks if the existing diagnostics converged.
+Functions \code{tfr.diagnose} and \code{tfr3.diagnose} run convergence diagnostics of existing TFR MCMCs for phase II and phase III, respectively, using the \code{raftery.diag} function from the \pkg{coda} package. \code{has.mcmc.converged} checks if the existing diagnostics converged.
 }
 \usage{
 tfr.diagnose(sim.dir, thin = 80, burnin = 2000, express = FALSE, 
     country.sampling.prop = NULL, keep.thin.mcmc=FALSE, verbose = TRUE)
+    
+tfr3.diagnose(sim.dir, thin = 60, burnin = 10000, express = TRUE, 
+    country.sampling.prop = NULL, verbose = TRUE)
     
 has.mcmc.converged(diag)
 }
@@ -22,18 +26,18 @@ has.mcmc.converged(diag)
   \item{burnin}{Number of iterations to be discarded from the beginning of the parameter traces.}
   \item{express}{Logical. If \code{TRUE}, the convergence diagnostics is run only on the country-independent parameters. If \code{FALSE}, the country-specific parameters are included in the diagnostics. The number of countries can be controlled by \code{country.sampling.prop}.}
   \item{country.sampling.prop}{Proportion of countries that are included in the diagnostics. If it is \code{NULL} and \code{express=FALSE}, all countries are included. Setting here a number between 0 and 1, one can limit the number of countries which are then randomly sampled. Note that for long MCMCs, this argument may significantly influence the run-time of this function.}
-  \item{keep.thin.mcmc}{Logical. If \code{TRUE} the thinned traces used for computing the diagnostics are stored on disk (see \code{\link{create.thinned.tfr.mcmc}}).}
+  \item{keep.thin.mcmc}{Logical. If \code{TRUE} the thinned traces used for computing the diagnostics are stored on disk (see \code{\link{create.thinned.tfr.mcmc}}). It is only available for phase II MCMCs.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{diag}{Object of class \code{bayesTFR.convergence}.}
 }
 \details{
-The function invokes the \code{\link{tfr.raftery.diag}} function separately for country-independent parameters and for country-specific parameters. It results in two possible states: red, i.e. it did not converge, and green, i.e. it converged.
-The resulting object is stored in \cr \file{\{sim.dir\}/diagnostics/bayesTFR.convergence_\{thin\}_\{burnin\}.rda} and can be accessed using the function \code{\link{get.tfr.convergence}}.
+The diagnose functions invoke the \code{\link{tfr.raftery.diag}} (or \code{\link{tfr3.raftery.diag}}) function separately for country-independent parameters and for country-specific parameters. It results in two possible states: red, i.e. it did not converge, and green, i.e. it converged.
+The resulting object from \code{tfr.diagnose} is stored in \cr \file{\{sim.dir\}/diagnostics/bayesTFR.convergence_\{thin\}_\{burnin\}.rda} and can be accessed using the function \code{\link{get.tfr.convergence}}. Function \code{tfr3.diagnose} stores its result into \cr \file{\{sim.dir\}/phaseIII/diagnostics/bayesTFR.convergence_\{thin\}_\{burnin\}.rda} which can be accessed via \code{\link{get.tfr3.convergence}}. 
 }
 \value{
 	\code{has.mcmc.converged} returns a logical value determining if there is convergence or not.
 	
-	\code{tfr.diagnose} returns an object of class \code{bayesTFR.convergence} with components:
+	\code{tfr.diagnose} and \code{tfr3.diagnose} return an object of class \code{bayesTFR.convergence} with components:
 	\item{result}{Table containing all not-converged parameters. Its columns include \sQuote{Total iterations needed} and \sQuote{Remaining iterations}.}
 	\item{lresult.country.independent}{Number of rows in \code{result} that correspond to country-independent paramters. These rows are groupped at the beginning of the table.}
 	\item{country.independent}{Result of \code{\link{tfr.raftery.diag}} processed on country-independent parameters.}

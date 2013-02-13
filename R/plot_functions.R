@@ -530,15 +530,19 @@ tfr3.partraces.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'baye
 									nr.points=NULL, dev.ncol=3, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
+	else if(class(mcmc.list)=='bayesTFR.prediction')
+			stop('Function not available for bayesTFR.prediction objects.')
 	tfr.partraces.plot(mcmc.list, sim.dir=NULL, chain.ids=chain.ids, par.names=par.names, 
 						nr.points=nr.points, dev.ncol=dev.ncol, ...)
 }
 
 tfr3.partraces.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 									chain.ids=NULL, par.names=tfr3.parameter.names.cs(), 
-									nr.points=NULL, dev.ncol=3, low.memory=TRUE, ...) {
+									nr.points=NULL, dev.ncol=2, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
+	else if(class(mcmc.list)=='bayesTFR.prediction')
+			stop('Function not available for bayesTFR.prediction objects.')
 	mcmc.list <- get.mcmc.list(mcmc.list)
 	country.obj <- get.country.object(country, mcmc.list[[1]]$meta)
 	if (is.null(country.obj$name))
@@ -620,9 +624,11 @@ tfr.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(ge
 
 tfr3.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 									chain.ids=NULL, par.names=tfr3.parameter.names(), 
-									burnin=NULL, dev.ncol=5, low.memory=TRUE, ...) {
+									burnin=NULL, dev.ncol=3, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
+	else if(class(mcmc.list)=='bayesTFR.prediction')
+			stop('Function not available for bayesTFR.prediction objects.')
 	do.plot.tfr.pardensity(mcmc.list, 'get.tfr.parameter.traces', chain.ids=chain.ids, par.names=par.names,
 							par.names.ext=par.names,
 							burnin=burnin, dev.ncol=dev.ncol, ...)
@@ -633,6 +639,8 @@ tfr3.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(g
 									burnin=NULL, dev.ncol=2, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
+	else if(class(mcmc.list)=='bayesTFR.prediction')
+			stop('Function not available for bayesTFR.prediction objects.')
 	mcmc.l <- get.mcmc.list(mcmc.list)
 	country.obj <- get.country.object(country, mcmc.l[[1]]$meta)
 	if (is.null(country.obj$name))

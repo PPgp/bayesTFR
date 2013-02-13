@@ -1,12 +1,13 @@
 \name{tfr.raftery.diag}
 \Rdversion{1.1}
 \alias{tfr.raftery.diag}
+\alias{tfr3.raftery.diag}
 
 \title{
 Raftery Diagnostics for Parameters of the Total Fertility Rate
 }
 \description{
-The function computes the Raftery diagnostics for each parameter, taking median over chains.}
+The functions compute the Raftery diagnostics for each parameter of MCMCs of phase II (\code{tfr.raftery.diag}) and phase III (\code{tfr3.raftery.diag}), taking median over all chains.}
 \usage{
 tfr.raftery.diag(mcmc = NULL, 
     sim.dir = file.path(getwd(), "bayesTFR.output"), 
@@ -15,6 +16,15 @@ tfr.raftery.diag(mcmc = NULL,
     par.names.cs = tfr.parameter.names.cs(trans=TRUE),
     country.sampling.prop = 1, verbose=TRUE, \dots)
 }
+
+tfr3.raftery.diag(mcmc = NULL, 
+    sim.dir = file.path(getwd(), "bayesTFR.output"), 
+    burnin = 0, country = NULL,
+    par.names = tfr3.parameter.names(trans = TRUE), 
+    par.names.cs = tfr3.parameter.names.cs(trans=TRUE),
+    country.sampling.prop = 1, verbose=TRUE, \dots)
+}
+
 
 \arguments{
   \item{mcmc}{
@@ -66,5 +76,5 @@ Hana Sevcikova, Adrian Raftery
 %}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-%\keyword{ ~kwd1 }
+\keyword{ htest }
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

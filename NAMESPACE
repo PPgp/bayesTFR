@@ -47,6 +47,7 @@ export(
 	get.tfr.trajectories,
 	coda.mcmc,
 	coda.list.mcmc,
+	coda.list.mcmc3,
 	get.cov.gammas,
 	get.country.object,
 	country.names,

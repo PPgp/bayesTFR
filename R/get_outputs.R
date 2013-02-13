@@ -724,6 +724,9 @@ coda.list.mcmc3 <- function(mcmc=NULL, country=NULL, chain.ids=NULL,
 	if (is.null(mcmc)) 
 		mcmc <- get.tfr3.mcmc(sim.dir, chain.ids=chain.ids, low.memory=low.memory, 
 									burnin=burnin)$mcmc.list
+	else
+		if(class(mcmc)=='bayesTFR.prediction')
+			stop('Function not available for bayesTFR.prediction objects.')
 	return(coda.list.mcmc(mcmc=mcmc, country=country, chain.ids=chain.ids, sim.dir=NULL, 
 			par.names=par.names, par.names.cs=par.names.cs, rm.const.pars=FALSE, burnin=burnin, ...))										
 }
@@ -804,10 +807,15 @@ country.names <- function(meta, countries=NULL, index=FALSE) {
 }
 
 summary.bayesTFR.mcmc <- function(object, country=NULL, 
-								par.names=tfr.parameter.names(trans=TRUE), 
-								par.names.cs=tfr.parameter.names.cs(trans=TRUE), 
+								par.names=NULL, par.names.cs=NULL, 
 								thin=1, burnin=0, ...) {
-	if(is.null(country) & missing(par.names.cs)) par.names.cs <- NULL
+	if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
+	if(is.null(par.names))
+	 	par.names <- if(is.null(object$meta$phase) || object$meta$phase == 2) tfr.parameter.names(trans=TRUE) 
+	 					else tfr3.parameter.names()
+	if(is.null(par.names.cs) && !is.null(country))
+		par.names.cs <- if(is.null(object$meta$phase) || object$meta$phase == 2) tfr.parameter.names.cs(trans=TRUE) 
+	 					else tfr3.parameter.names.cs()
 	if (!is.null(country)) {
 		country.obj <- get.country.object(country, object$meta)
 		cat('\nCountry:', country.obj$name, '\n')
