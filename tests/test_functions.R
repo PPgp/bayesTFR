@@ -325,14 +325,14 @@ test.run.mcmc.simulation.auto <- function() {
 	
 	test.name <- 'running auto Phase III MCMC'
 	start.test(test.name)
-	m3 <- run.tfr3.mcmc(iter='auto', output.dir=sim.dir,
+	m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter='auto', thin=1,
 					auto.conf=list(iter=10, iter.incr=5, max.loops=3, nr.chains=2, thin=1, burnin=5))
-	stopifnot(get.total.iterations(m$mcmc.list, 0) == 40)
+	stopifnot(get.total.iterations(m3$mcmc.list, 0) == 40)
 	test.ok(test.name)
 
 	test.name <- 'continuing auto Phase III MCMC'
 	start.test(test.name)
-	m3 <- continue.tfr3.mcmc(iter='auto', output.dir=sim.dir, auto.conf=list(max.loops=2))
+	m3 <- continue.tfr3.mcmc(sim.dir=sim.dir, iter='auto', auto.conf=list(max.loops=2))
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 60)
 	test.ok(test.name)
 

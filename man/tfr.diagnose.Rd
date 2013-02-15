@@ -16,7 +16,7 @@ tfr.diagnose(sim.dir, thin = 80, burnin = 2000, express = FALSE,
     country.sampling.prop = NULL, keep.thin.mcmc=FALSE, verbose = TRUE)
     
 tfr3.diagnose(sim.dir, thin = 60, burnin = 10000, express = TRUE, 
-    country.sampling.prop = NULL, verbose = TRUE)
+    country.sampling.prop = NULL, verbose = TRUE, \dots)
     
 has.mcmc.converged(diag)
 }
@@ -29,6 +29,7 @@ has.mcmc.converged(diag)
   \item{keep.thin.mcmc}{Logical. If \code{TRUE} the thinned traces used for computing the diagnostics are stored on disk (see \code{\link{create.thinned.tfr.mcmc}}). It is only available for phase II MCMCs.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{diag}{Object of class \code{bayesTFR.convergence}.}
+  \item{\dots}{Not used.}
 }
 \details{
 The diagnose functions invoke the \code{\link{tfr.raftery.diag}} (or \code{\link{tfr3.raftery.diag}}) function separately for country-independent parameters and for country-specific parameters. It results in two possible states: red, i.e. it did not converge, and green, i.e. it converged.

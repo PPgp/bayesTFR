@@ -7,15 +7,15 @@
 Generating Posterior Trajectories of the Total Fertility Rate
 }
 \description{
-Using the posterior parameter samples simulated by \code{\link{run.tfr.mcmc}} (and possibly \code{\link{run3.tfr.mcmc}}) the function  generates posterior trajectories for the total fertility rate for all countries of the world.
+Using the posterior parameter samples simulated by \code{\link{run.tfr.mcmc}} (and possibly \code{\link{run.tfr3.mcmc}}) the function  generates posterior trajectories for the total fertility rate for all countries of the world.
 }
 \usage{
 tfr.predict(mcmc.set = NULL, end.year = 2100, 
     sim.dir = file.path(getwd(), "bayesTFR.output"), 
     replace.output = FALSE, nr.traj = NULL, thin = NULL, burnin = 2000,
     use.diagnostics = FALSE, use.tfr3 = TRUE, burnin3 = 10000,
-    save.as.ascii = 1000, output.dir = NULL, low.memory = TRUE, 
     mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016,
+    save.as.ascii = 1000, output.dir = NULL, low.memory = TRUE, 
     seed = NULL, verbose = TRUE)
 }
 
@@ -28,7 +28,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
   \item{thin}{Thinning interval used for determining the number of trajectories. Only relevant, if \code{nr.traj} is \code{NULL}.}
   \item{burnin}{Number of iterations to be discarded from the beginning of the parameter traces.}
   \item{use.diagnostics}{Logical determining if an existing convergence diagnostics for phase II MCMCs should be used for choosing the values of \code{thin} and \code{burnin}. In such a case, arguments \code{nr.traj}, \code{thin} and \code{burnin} are ignored. The \sQuote{best} values are chosen from results of running the \code{\link{tfr.diagnose}} function. Only diagnostics can be used that suggest a convergence of the underlying MCMCs. If there are more than one such objects, the one is chosen whose recommendation for the number of trajectories is larger and closest to 2000.}
-  \item{use.tfr3}{Logical determining if phase III should be predicted via MCMCs (simulated via \code{\link{run3.tfr.mcmc}}) or a classic AR(1) process. If \code{TRUE} but no phase III MCMCs were simulated, a warning is given and the prediction switches automatically to AR(1) process.}
+  \item{use.tfr3}{Logical determining if phase III should be predicted via MCMCs (simulated via \code{\link{run.tfr3.mcmc}}) or a classic AR(1) process. If \code{TRUE} but no phase III MCMCs were simulated, a warning is given and the prediction switches automatically to AR(1) process.}
   \item{burnin3}{Burnin used for phase III MCMCs. Only relevant if \code{use.tfr3} is \code{TRUE}.}
   \item{save.as.ascii}{Either a number determining how many trajectories should be converted into an ASCII file, or \dQuote{all} in which case all trajectories are converted. It should be set to 0, if no conversion is desired.}
   \item{output.dir}{Directory into which the resulting prediction object and the trajectories are stored. If it is \code{NULL}, it is set to either \code{sim.dir}, or to \code{output.dir} of \code{mcmc.set$meta} if \code{mcmc.set} is given.}

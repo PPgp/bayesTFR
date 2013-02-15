@@ -12,25 +12,18 @@ It contains information that is common to all chains. It is part of a \code{\lin
 
 
 \value{
-	A \code{bayesTFR.mcmc.meta} object contains components \code{U.width, U.c.low, U.up,
-			a.width, a.low, a.up, 
-			b.width, b.low, b.up,
-			const.width, const.low, const.up,
-			S.width, S.low, S.up,
-			sigma0.width, sigma0.low, sigma0.up,
-			sigma0.min, 
-			mean.eps.tau0, sd.eps.tau0, nu.tau0,
-			d.low, d.up, 
-			Triangle4.0, delta4.0, nu4,
-            Triangle_c4.low, Triangle_c4.up,
-            Triangle_c4.trans.width,
-			chi0, nu.psi0, psi0, d.trans.width, 
-			dl.p1, dl.p2, 
-			nu.delta0, delta0, alpha0.p, start.year, present.year, wpp.year, buffer.size, auto.conf}. Their meaning and value are the same as the input arguments 
-			to the \code{\link{run.tfr.mcmc}} function. Furthermore, it contains components:
+	A \code{bayesTFR.mcmc.meta} object contains various components that correspond to the input arguments 
+			of the \code{\link{run.tfr.mcmc}} and \code{\link{run.tfr3.mcmc}} functions. Furthermore, it contains components:
 	\item{nr.chains}{Number of MCMC chains.}
+	\item{phase}{Value 2 or 3, depending which Phase the object belongs to.}
+	\item{output.dir}{Directory for storing simulation output.}
+}
+	
+\section{Value Phase II}{
+	Furthermore, Phase II meta objects contain components:
+	\describe{
 	\item{tfr_matrix_all}{A \eqn{q \times n}{q x n} matrix with the United Nations TFR estimates. \eqn{q} is number of years (see \code{T_end} below), \eqn{n} is number of countries (see \code{nr_countries} below). The first \eqn{n_e} columns correspond to countries included in the MCMC estimation (see \code{nr_countries_estimation} below), where \eqn{n_e <= n}.}
-	\item{tfr_matrix}{Like \code{tfr_matrix_all}, but it has \code{NA} values before and after country's fertility transition.}
+	\item{tfr_matrix}{Like \code{tfr_matrix_all}, but it has \code{NA} values before and after country''s fertility transition.}
 	\item{tfr_matrix_observed}{Like \code{tfr_matrix}, but it has \code{NA} values for years where no historical data is available.}
 	\item{nr_countries}{Number of countries included in the tfr matrices.}
 	\item{nr_countries_estimation}{Number of countries included in the MCMC estimation. It must be smaller or equal to \code{nr_countries}.}
@@ -52,7 +45,15 @@ It contains information that is common to all chains. It is part of a \code{\lin
 		\code{country_name} - Array of country names. \cr
 		\code{country_code} - Array of country codes. \cr
 		Any country indices in the \code{bayesTFR.mcmc.meta} object are derived from this component.}
-	\item{output.dir}{Directory for storing simulation output.}
+	}
+}
+\section{Value Phase III}{
+	Phase III meta objects contain additional components:
+	\describe{
+	\item{id_phase3}{Indices of countries included in the Phase III estimation. It is relative to the order of countries in the \code{region} object in the parent meta object.}
+	\item{nr.countries}{Number of countries included in the estimation.}
+	\item{parent}{Link to the Phase II meta object.}
+	}
 }
 
 \details{
@@ -72,7 +73,7 @@ Hana Sevcikova, Leontine Alkema
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{run.tfr.mcmc}}, \code{\link{get.tfr.mcmc}}
+\code{\link{run.tfr.mcmc}}, \code{\link{get.tfr.mcmc}}, \code{\link{run.tfr3.mcmc}}, \code{\link{get.tfr3.mcmc}}
 }
 \examples{
 sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")

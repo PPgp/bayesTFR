@@ -362,7 +362,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 		# fs also includes last estimate!
 		f_ps[1,] <- all.tfr[this.T_end]
 		if(has.phase3 && is.element(country, mcmc3$meta$id_phase3)) 
-			m3.par.values.cs <- get.tfr3.parameter.traces.cs(mcmc3$mcmc.list, country.obj==country.obj,
+			m3.par.values.cs <- get.tfr3.parameter.traces.cs(mcmc3$mcmc.list, country.obj=country.obj,
 										par.names=c('mu.c', 'rho.c'), burnin=burnin3, thinning.index=thinning.index)
 		if(adjust.true) D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
  		S11 <- 0
