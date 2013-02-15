@@ -15,7 +15,6 @@ tfr.raftery.diag(mcmc = NULL,
     par.names = tfr.parameter.names(trans = TRUE), 
     par.names.cs = tfr.parameter.names.cs(trans=TRUE),
     country.sampling.prop = 1, verbose=TRUE, \dots)
-}
 
 tfr3.raftery.diag(mcmc = NULL, 
     sim.dir = file.path(getwd(), "bayesTFR.output"), 
