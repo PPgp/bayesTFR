@@ -36,7 +36,7 @@ tfr3.pardensity.cs.plot(country, mcmc.list=NULL,
 
 \arguments{
   \item{country}{Name or numerical code of a country.}
-  \item{mcmc.list}{List of \code{\link{bayesTFR.mcmc}} objects, or an object of class \code{\link{bayesTFR.mcmc.set}} or of class \code{\link{bayesTFR.prediction}} (allowed only for phase II MCMCs). If it is \code{NULL}, the parameter values are loaded from \code{sim.dir}.}
+  \item{mcmc.list}{List of \code{\link{bayesTFR.mcmc}} objects, or an object of class \code{\link{bayesTFR.mcmc.set}} or of class \code{\link{bayesTFR.prediction}} (allowed only for Phase II MCMCs). If it is \code{NULL}, the parameter values are loaded from \code{sim.dir}.}
   \item{sim.dir}{Directory with the MCMC simulation results. It is only used if \code{mcmc.list} is \code{NULL}.}
   \item{chain.ids}{List of MCMC identifiers to be plotted. If it is \code{NULL}, all chains found in \code{mcmc.list} or \code{sim.dir} are plotted.}
   \item{par.names}{Names of parameters for which density should be plotted. By default all (possibly transformed) country-independent parameters are plotted if used within \code{tfr.pardensity.plot} and \code{tfr3.pardensity.plot}, or country-specific parameters are plotted if used within \code{tfr.pardensity.cs.plot} and \code{tfr3.pardensity.cs.plot}.}

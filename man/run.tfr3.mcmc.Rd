@@ -22,7 +22,8 @@ run.tfr3.mcmc(sim.dir, nr.chains = 3, iter = 50000, thin = 10,
     sigma.eps.ini = NULL, sigma.eps.ini.range = sigma.eps.prior.range, 
     seed = NULL, parallel = FALSE, nr.nodes = nr.chains, compression.type = "None", 
     auto.conf = list(max.loops = 5, iter = 50000, iter.incr = 20000, nr.chains = 3, 
-        thin = 60, burnin = 10000), verbose = FALSE, verbose.iter = 1000, \dots)
+                    thin = 60, burnin = 10000), 
+    verbose = FALSE, verbose.iter = 1000, \dots)
         
 continue.tfr3.mcmc(sim.dir, iter, chain.ids=NULL, 
     parallel = FALSE, nr.nodes = NULL, auto.conf = NULL,

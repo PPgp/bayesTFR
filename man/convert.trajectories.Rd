@@ -46,7 +46,7 @@ pred.dir <- file.path(getwd(), "exampleTFRpred")
 
 # stores 10 trajectories out of 35 (1x(60-25)) into 
 # exampleTFRpred/predictions/ascii_trajectories.csv
-tfr.predict(sim.dir=sim.dir, output.dir=pred.dir, 
+tfr.predict(sim.dir=sim.dir, output.dir=pred.dir, use.tfr3=FALSE,
             burnin=25, save.as.ascii=10, verbose=TRUE)
             
 # stores all 35 trajectories into the current directory

@@ -8,7 +8,7 @@
 TFR World Map 
 }
 \description{
-Generates a world map of the total fertility rate for given projection period and quantile. In addition, country specific MCMC paramters can be projected into the world map. 
+Generates a world map of the total fertility rate for given projection period and quantile. In addition, country specific Phase II MCMC parameters can be projected into the world map. 
 }
 \usage{
 tfr.map(pred, quantile = 0.5, 
@@ -57,13 +57,13 @@ Arguments passed to the \code{\link[rworldmap]{mapCountryData}} function of the 
 \item{pi}{Probability interval to be shown when a country is selected in an interactive map. The corresponding quantiles must be available (see argument \code{quantile} above).}
 }
 \details{
-\code{tfr.map} creates a single map for a given projection period and quantile. \code{tfr.map.all} generates a sequence of maps, namely one for each projection period. If the package \pkg{fields} is installed, a color bar legend at the botom of the map is created.
+\code{tfr.map} creates a single map for a given projection period and quantile using the \pkg{rworldmap} package. \code{tfr.map.all} generates a sequence of such maps, namely one for each projection period. If the package \pkg{fields} is installed, a color bar legend at the botom of the map is created.
 
 Function \code{get.tfr.map.parameters} can be used in combination with \code{tfr.map}. (Note that \code{get.tfr.map.parameters} is called from inside of \code{tfr.map.all}.) It sets breakpoints for the color scheme using quantiles of a fitted gamma distribution.
 
 Function \code{tfr.map.gvis} creates an interactive map using the \pkg{googleVis} package and opens it in an internet browser. It also generates a table of TFRs that can be sorted by columns interactively in the browser. 
 
-By default, both \code{tfr.map} and \code{tfr.map.gvis} produce maps of TFRs. Alternatively, the functions can be used to plot country-specific MCMC parameters into a world map. They are given by the argument \code{par.name}. In addition to the MCMC parameters, if \code{par.name='lambda'}, the period of the end of TFR decline is computed for each country and projected into the map. In such a case, we recommend to adjust the color scale in \code{tfr.map} e.g. using the arguments \code{catMethod='pretty'} and \code{numCats=20} (see \code{\link[rworldmap]{mapCountryData}}). 
+By default, both \code{tfr.map} and \code{tfr.map.gvis} produce maps of TFRs. Alternatively, the functions can be used to plot country-specific Phase II MCMC parameters into a world map. They are given by the argument \code{par.name}. In addition to the MCMC parameters, if \code{par.name='lambda'}, the period of the end of TFR decline (i.e. start of Phase III) is computed for each country and projected into the map. In such a case, we recommend to adjust the color scale in \code{tfr.map} e.g. using the arguments \code{catMethod='pretty'} and \code{numCats=20} (see \code{\link[rworldmap]{mapCountryData}}). 
 }
 \value{
 \code{get.tfr.map.parameters} returns a list with elements:

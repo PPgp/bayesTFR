@@ -7,7 +7,7 @@
 Plotting  Posterior Distribution of the Double Logistic Function
 }
 \description{
-The functions plot the posterior distribution of the double logistic function used in the simulation, including their median and given probability intervals.
+The functions plot the posterior distribution of the double logistic function used in the simulation of Phase II, including their median and given probability intervals.
 }
 \usage{
 DLcurve.plot(mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 10, 

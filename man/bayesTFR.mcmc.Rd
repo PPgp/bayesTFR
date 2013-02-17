@@ -10,12 +10,12 @@ MCMC simulation object \code{bayesTFR.mcmc} containing information about one MCM
 }
 
 \value{
-A \code{bayesTFR.mcmc} object contains parameters of the Bayesian hierarchical model, more specifically, their values from the last iteration.  If it is a \emph{Phase II} object these parameters are: \cr
+A \code{bayesTFR.mcmc} object contains parameters of the Bayesian hierarchical model, more specifically, their values from the last iteration.  If it is a \bold{Phase II} object these parameters are: \cr
 \code{psi, chi, a_sd, b_sd, const_sd, S_sd, sigma0, mean_eps_tau, sd_eps_tau, Triangle4} - non-country specific parameters, containing one value each.\cr
 \code{alpha, delta} -  non-country specific parameters, containing three values each.\cr
 \code{U_c, d_c, Triangle_c4} - country-specific parameters (1d array).\cr
 \code{gamma_ci} - country-specific parameter with three values for each country, i.e. an \eqn{n \times 3}{n x 3} matrix where \eqn{n} is the number of countries.\cr
-\emph{Phase III} MCMC objects contain single-value parameters \code{mu}, \code{rho}, \code{sigma.mu}, \code{sigma.rho}, \code{sigma.eps} and \eqn{n}-sized vectors \code{mu.c} and \code{rho.c}.\cr
+\bold{Phase III} MCMC objects contain single-value parameters \code{mu}, \code{rho}, \code{sigma.mu}, \code{sigma.rho}, \code{sigma.eps} and \eqn{n}-size vectors \code{mu.c} and \code{rho.c}.\cr
 Furthermore, the object (independent of Phase) contains components:
 \item{iter}{Total number of iterations the simulation was started with.}
 \item{finished.iter}{Number of iterations that were finished.  Results from the last finished iteration are stored in the parameters above.}

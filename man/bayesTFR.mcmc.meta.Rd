@@ -19,7 +19,7 @@ It contains information that is common to all chains. It is part of a \code{\lin
 	\item{output.dir}{Directory for storing simulation output.}
 }
 	
-\section{Value Phase II}{
+\section{Value - Phase II}{
 	Furthermore, Phase II meta objects contain components:
 	\describe{
 	\item{tfr_matrix_all}{A \eqn{q \times n}{q x n} matrix with the United Nations TFR estimates. \eqn{q} is number of years (see \code{T_end} below), \eqn{n} is number of countries (see \code{nr_countries} below). The first \eqn{n_e} columns correspond to countries included in the MCMC estimation (see \code{nr_countries_estimation} below), where \eqn{n_e <= n}.}
@@ -47,7 +47,7 @@ It contains information that is common to all chains. It is part of a \code{\lin
 		Any country indices in the \code{bayesTFR.mcmc.meta} object are derived from this component.}
 	}
 }
-\section{Value Phase III}{
+\section{Value - Phase III}{
 	Phase III meta objects contain additional components:
 	\describe{
 	\item{id_phase3}{Indices of countries included in the Phase III estimation. It is relative to the order of countries in the \code{region} object in the parent meta object.}

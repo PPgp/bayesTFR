@@ -6,7 +6,7 @@
 Summary of a TFR Convergence Object
 }
 \description{
-Summary of an object of class \code{\link{bayesTFR.convergence}} created using the \code{\link{tfr.diagnose}} function. It gives an overview about parameters that did not converge.
+Summary of an object of class \code{\link{bayesTFR.convergence}} created using the \code{\link{tfr.diagnose}} or \code{\link{tfr3.diagnose}}  functions. It gives an overview about parameters that did not converge.
 }
 \usage{
 \method{summary}{bayesTFR.convergence}(object, expand = FALSE, \dots)
@@ -28,7 +28,7 @@ Summary of an object of class \code{\link{bayesTFR.convergence}} created using t
 Hana Sevcikova
 }
 \seealso{
-\code{\link{tfr.diagnose}}
+\code{\link{tfr.diagnose}}, \code{\link{tfr3.diagnose}}
 }
 %\examples{
 %}

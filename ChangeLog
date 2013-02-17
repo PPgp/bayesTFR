@@ -1,3 +1,7 @@
+3.0-0 (2/16/2013)
+-----
+Simulation of Phase III BHM added -> many new functions 
+
 2.1-1 (1/3/2013)
 -----
 .First.lib and .Last.lib changed to .onLoad and .onUnload

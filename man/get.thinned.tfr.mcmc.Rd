@@ -8,7 +8,7 @@ Creating and Accessing Thinned MCMCs
 }
 \description{
 The function \code{get.thinned.tfr.mcmc} accesses 
-a thinned and burned version of the given MCMC set. \code{create.thinned.tfr.mcmc} creates such a set.
+a thinned and burned version of the given Phase II MCMC set. \code{create.thinned.tfr.mcmc} creates such a set.
 }
 
 \usage{
@@ -18,7 +18,7 @@ create.thinned.tfr.mcmc(mcmc.set, thin = 1, burnin = 0,
     output.dir = NULL, verbose = TRUE)
 }
 \arguments{
-  \item{mcmc.set}{Object of class \code{\link{bayesTFR.mcmc.set}}.}
+  \item{mcmc.set}{Object of class \code{\link{bayesTFR.mcmc.set}} of Phase II.}
   \item{thin, burnin}{Thinning interval and burnin used for creating or identifying the thinned object.}
   \item{output.dir}{Output directory. It is only used if the output goes to a non-standard directory.}
   \item{verbose}{Logical switching log messages on and off.}
@@ -45,7 +45,7 @@ Hana Sevcikova
 \dontrun{
 sim.dir <- tempfile()
 m <- run.tfr.mcmc(nr.chains=2, iter=30, seed=1, output.dir=sim.dir, verbose=TRUE)
-tfr.predict(m, burnin=15) # creates thinned MCMCs
+tfr.predict(m, burnin=15, use.tfr3=FALSE) # creates thinned MCMCs
 mb <- get.thinned.tfr.mcmc(m, thin=1, burnin=15)
 summary(mb, meta.only=TRUE) # length 30 = 2chains x (30-15)iters.
 unlink(sim.dir, recursive=TRUE)

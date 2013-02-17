@@ -29,7 +29,7 @@ tfr.median.adjust(sim.dir, countries, factor1 = 2/3, factor2 = 1/3, forceAR1 = F
   \item{from}{Year from which the offset/reset should start. By default, it starts at the first prediction period.}
   \item{to}{Year until which the offset/reset should be done. By default, it is set to the last prediction period.}
   \item{factor1, factor2}{Adjusting factors for the first and second projection period, respectively (see below).}
-  \item{forceAR1}{Logical. If \code{TRUE}, the given countries are forced to enter the phase III (i.e. the AR(1) process) in the first projection period.}
+  \item{forceAR1}{Logical. If \code{TRUE}, the given countries are forced to enter Phase III (i.e. the AR(1) process) in the first projection period.}
 }
 \details{
 The function \code{tfr.median.set} can be used to set the medians of the given country to specific values. Function \code{tfr.median.shift} can be used to offset the medians by a specific constant, or to reset the medians to their original BHM values.

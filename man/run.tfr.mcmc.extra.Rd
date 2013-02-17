@@ -70,11 +70,13 @@ Hana Sevcikova, Leontine Alkema
 }
 \examples{
 \dontrun{
-m <- run.tfr.mcmc(nr.chains=1, iter=20, verbose=TRUE)
-m <- run.tfr.mcmc.extra(countries=c(908,924), burnin=10, verbose=TRUE)
+sim.dir <- tempfile()
+m <- run.tfr.mcmc(nr.chains=1, iter=20, output.dir=sim.dir, verbose=TRUE)
+m <- run.tfr.mcmc.extra(sim.dir=sim.dir, countries=c(908,924), burnin=10, verbose=TRUE)
 summary(m, country=924)
-pred <- tfr.predict(burnin=10, verbose=TRUE)
+pred <- tfr.predict(m, burnin=10, use.tfr3=FALSE, verbose=TRUE)
 summary(pred, country=908)
+unlink(sim.dir, recursive=TRUE)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
