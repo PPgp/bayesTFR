@@ -886,7 +886,7 @@ bdem.map.gvis.bayesTFR.prediction <- function(pred, year=NULL, quantile=0.5, pi=
 		upper.name <- paste('upper_', pi, sep='')
 		data[[lower.name]] <- round(lower[unidx], 2)
 		data[[upper.name]] <- round(upper[unidx], 2)
-		data$pi <- paste(e$iso3166$charcode[unmatch][unidx], ': ', pi, '% CI (', data[[lower.name]], ', ', 
+		data$pi <- paste(e$iso3166$charcode[unmatch][unidx], ': ', pi, '% PI (', data[[lower.name]], ', ', 
 				data[[upper.name]], ')', sep='')
 		hovervar <- 'pi'
 	} else { # no confidence intervals
