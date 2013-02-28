@@ -313,8 +313,11 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 	lpart1 <- length(y1.part1)
 	y1.part2 <- NULL
 	lpart2 <- tfr.pred$mcmc.set$meta$T_end - T_end_c[country$index] + suppl.T
-	if (lpart2 > 0) 
-		y1.part2 <- tfr_matrix_reconstructed[(T_end_c[country$index]+1-suppl.T):nrow(tfr_matrix_reconstructed),country$index]
+	if (lpart2 > 0) {
+		p2idx <- (T_end_c[country$index]+1-suppl.T):nrow(tfr_matrix_reconstructed)
+		y1.part2 <- tfr_matrix_reconstructed[p2idx,country$index]
+		names(y1.part2) <- rownames(tfr_matrix_reconstructed)[p2idx]
+	}
 	x1 <- as.integer(c(names(y1.part1), names(y1.part2)))
 	x2 <- as.numeric(dimnames(tfr.pred$quantiles)[[3]])	
 	trajectories <- get.trajectories(tfr.pred, country$code, nr.traj, typical.trajectory=typical.trajectory)

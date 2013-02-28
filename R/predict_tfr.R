@@ -141,7 +141,8 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 
 
 make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
-								nr.traj = NULL, burnin=0, thin = NULL, use.tfr3=TRUE, burnin3=0,
+								nr.traj = NULL, burnin=0, thin = NULL, 
+								use.tfr3=TRUE, mcmc3.set=NULL, burnin3=0,
 								mu=2.1, rho=0.9057, sigmaAR1 = 0.0922, countries = NULL,
 								adj.factor1=NA, adj.factor2=0, forceAR1=FALSE,
 							    save.as.ascii=1000, output.dir = NULL, write.summary.files=TRUE, 
@@ -245,7 +246,7 @@ make.tfr.prediction <- function(mcmc.set, end.year=2100, replace.output=FALSE,
 	thin3 <- NA
 	has.phase3 <- use.tfr3
 	if(has.phase3) {
-		mcmc3 <- get.tfr3.mcmc(mcmc.set$meta$output.dir)
+		mcmc3 <- if(is.null(mcmc3.set)) get.tfr3.mcmc(mcmc.set$meta$output.dir) else mcmc3.set
 		total.iter <- get.stored.mcmc.length(mcmc3$mcmc.list, burnin3)
 		thinning.index <- unique(round(seq(1, total.iter, length=nr_simu)))
 		if(length(thinning.index) < nr_simu) stop('Length of MCMCs for phase 2 and 3 cannot be matched with these settings. Check arguments burnin, burnin3, nr.traj and thin.')
@@ -994,8 +995,10 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 		cat('\nNo valid countries given. Nothing to be done.\n')
 		return(invisible(pred))	
 	}
+	m3.set <- if(pred$use.tfr3) get.tfr3.mcmc(sim.dir) else NULL
 	new.pred <- make.tfr.prediction(mcmc.set, end.year=pred$end.year, replace.output=FALSE,
-									nr.traj=NULL, burnin=0, use.tfr3=pred$use.tfr3,
+									nr.traj=NULL, burnin=0, 
+									use.tfr3=pred$use.tfr3, mcmc3.set=m3.set, burnin3=pred$burnin3,
 									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, 
 									countries=countries.idx, adj.factor1=factor1, adj.factor2=factor2,
 									forceAR1=forceAR1, save.as.ascii=0, output.dir=NULL,

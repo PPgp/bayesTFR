@@ -29,8 +29,8 @@ tfr.dl.coverage(sim.dir, pi = c(80, 90, 95), burnin = 2000, verbose = TRUE)
   \item{total.mae}{Mean absolute error as \eqn{1/n\sum|x-m|} where \eqn{x} are observed data points, \eqn{m} is the median of the posterior distribution and \eqn{n} is the number of data points. Here the sum is taken over all countries and historical time periods.}
     \item{time.mae}{Like \code{total.mae} except that each time period is considered separately.}
   \item{country.mae}{Like \code{total.mae} except that each country is considered separately.}
-  \item{pred.cdf}{\eqn{T \times C} matrix (with \eqn{T} being the number of time periods and \eqn{C} being the number of countries), containing the predictive CDF of the observation, i.e. the quantile of each data point within the predictive posterior distribution.}
-  \item{n}{0-1 \eqn{T \times C} matrix indicating if the corresponding data point was included in the goodness of fit computation. Zeros indicate missing historical values.}
+  \item{pred.cdf}{\eqn{T \times C}{TxC} matrix (with \eqn{T} being the number of time periods and \eqn{C} being the number of countries), containing the predictive CDF of the observation, i.e. the quantile of each data point within the predictive posterior distribution.}
+  \item{n}{0-1 \eqn{T \times C}{TxC} matrix indicating if the corresponding data point was included in the goodness of fit computation. Zeros indicate missing historical values.}
 }
 %\references{
 %% ~put references to the literature/web site here ~

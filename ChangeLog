@@ -1,3 +1,11 @@
+3.0-1 (2/27/2012)
+-----
+Preliminary wpp 2012 data added.
+
+Bug in tfr.plot.trajectories fixed.
+
+Bug in tfr.median.adjust fixed.
+
 3.0-0 (2/16/2013)
 -----
 Simulation of Phase III BHM added -> many new functions 
