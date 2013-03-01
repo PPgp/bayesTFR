@@ -1,3 +1,7 @@
+3.0-2/3 (2/28/2012)
+-----
+Added start.year into make.tfr.prediction. Now projections that start before (or at) 'present.year' are allowed.
+
 3.0-1 (2/27/2012)
 -----
 Preliminary wpp 2012 data added.

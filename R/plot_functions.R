@@ -153,6 +153,7 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 	}
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	obs.data <- get.data.imputed.for.country(tfr.pred, country$index)
+	if(!is.null(tfr.pred$present.year.index)) obs.data <- obs.data[1:min(length(obs.data), tfr.pred$present.year.index.all)]
 	pred.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
 	trajectories <- get.trajectories(tfr.pred, country$code)
 	cqp <- list()
@@ -184,7 +185,8 @@ get.trajectories <- function(tfr.pred, country, nr.traj=NULL, adjusted=TRUE, bas
 			shift <- get.tfr.shift(country, tfr.pred)
 	 		if(!is.null(shift)) trajectories <- trajectories + shift
 	 	}
-	 	rownames(trajectories) <- get.prediction.years(tfr.pred$mcmc.set$meta, dim(trajectories)[1])
+	 	rownames(trajectories) <- get.prediction.years(tfr.pred$mcmc.set$meta, dim(trajectories)[1], 
+	 													present.year.index=tfr.pred$present.year.index)
 	 }
 	return(list(trajectories=trajectories, index=traj.idx))
 }
@@ -305,21 +307,21 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 	}
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
-	T_end_c <- tfr.pred$mcmc.set$meta$T_end_c
+	T_end_c <- pmin(tfr.pred$mcmc.set$meta$T_end_c, tfr.pred$present.year.index.all)
 	tfr_matrix_reconstructed <- get.tfr.reconstructed(tfr.pred$tfr_matrix_reconstructed, tfr.pred$mcmc.set$meta)
 	suppl.T <- length(tfr_observed) - tfr.pred$mcmc.set$meta$T_end
 	y1.part1 <- tfr_observed[1:T_end_c[country$index]]
 	y1.part1 <- y1.part1[!is.na(y1.part1)]
 	lpart1 <- length(y1.part1)
 	y1.part2 <- NULL
-	lpart2 <- tfr.pred$mcmc.set$meta$T_end - T_end_c[country$index] + suppl.T
+	lpart2 <- min(tfr.pred$mcmc.set$meta$T_end, tfr.pred$present.year.index) - T_end_c[country$index] + suppl.T
 	if (lpart2 > 0) {
 		p2idx <- (T_end_c[country$index]+1-suppl.T):nrow(tfr_matrix_reconstructed)
 		y1.part2 <- tfr_matrix_reconstructed[p2idx,country$index]
 		names(y1.part2) <- rownames(tfr_matrix_reconstructed)[p2idx]
 	}
 	x1 <- as.integer(c(names(y1.part1), names(y1.part2)))
-	x2 <- as.numeric(dimnames(tfr.pred$quantiles)[[3]])	
+	x2 <- as.numeric(dimnames(tfr.pred$quantiles)[[3]])
 	trajectories <- get.trajectories(tfr.pred, country$code, nr.traj, typical.trajectory=typical.trajectory)
 	# plot historical data: observed
 	if (!add) {
@@ -762,7 +764,7 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=N
 		if (par.name == 'lambda') {
 			tfr <- get.data.imputed(pred)
 			tfr.years <- bayesTFR:::get.estimation.years(meta)
-			all.years <- c(tfr.years, bayesTFR:::get.prediction.years(meta, pred$nr.projections+1)[-1])
+			all.years <- c(tfr.years, bayesTFR:::get.prediction.years(meta, pred$nr.projections+1, pred$present.year.index)[-1])
 			nr.data <- pred$nr.projections+dim(tfr)[1]
 			for (country in 1:get.nr.countries(meta)) {
 				country.obj <- get.country.object(country, meta, index=TRUE)
@@ -805,7 +807,8 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=N
 					 '\nCheck arguments "quantile" and "pi".')
 			data <- pred$quantiles[, as.character(quantiles), projection.index]
 			if(adjusted) data <- data + get.tfr.shift.all(pred, projection.index)
-			period <- get.prediction.periods(meta, projection.index)[projection.index]
+			period <- get.prediction.periods(meta, projection.index, 
+								present.year.index=pred$present.year.index)[projection.index]
 		} else {
 			data <- get.data.imputed(pred)[projection.index, ]
 			period <- get.tfr.periods(meta)[projection.index]

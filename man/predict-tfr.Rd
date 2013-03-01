@@ -16,7 +16,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
     use.diagnostics = FALSE, use.tfr3 = TRUE, burnin3 = 10000,
     mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016,
     save.as.ascii = 1000, output.dir = NULL, low.memory = TRUE, 
-    seed = NULL, verbose = TRUE)
+    seed = NULL, verbose = TRUE, \dots)
 }
 
 \arguments{
@@ -38,6 +38,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
   \item{sigmaAR1}{Standard deviation \eqn{s} of AR(1) distortion terms in short-term projections. If it is \code{NULL} it is estimated from the data. It can be a single value or a vector giving the standard deviations for single projections. If the vector is shorter than the number of projections simulated via the AR(1) process, the last value is repeated for the remaining projections. In case of a single value (default), the standard deviation is kept constant over all AR(1) projections. Only used if \code{use.tfr3} is \code{FALSE}.}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible projections.}
   \item{verbose}{Logical switching log messages on and off.}
+  \item{\dots}{Further arguments passed to the underlying functions.}
 }
 \details{
 The trajectories are generated using a distribution of country-specific decline curves (Alkema et al 2011) and either a classic AR(1) process or a country-specific AR(1) process (Raftery et al 2013).  Phase II parameter samples  simulated using \code{\link{run.tfr.mcmc}} are used from all chains, from which the given burnin was discarded. They are evenly thinned to match \code{nr.traj} or using the \code{thin} argument. Such thinned parameter traces, collapsed into one chain, if they do not already exist, are stored on disk into the sub-directory \file{\{thinned_mcmc_\emph{t}_\emph{b}} where \emph{t} is the value  of \code{thin} and \emph{b} the value of \code{burnin} (see \code{\link{create.thinned.tfr.mcmc}}). 
