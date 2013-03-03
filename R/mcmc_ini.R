@@ -227,7 +227,7 @@ do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_g
     	tfr_min_c <- c()
  		# loop over countries to find minimum
  		for (country in 1:nr_countries){
-    		data <- get.observed.with.supplemental(country, updated.tfr.matrix, results_tau$suppl.matrix)
+    		data <- get.observed.with.supplemental(country, updated.tfr.matrix, suppl.data)
     		tfr_min_c <- c(tfr_min_c, min(data, na.rm=TRUE))
     	}
     } else
