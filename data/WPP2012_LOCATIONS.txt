@@ -268,3 +268,1763 @@
 267	"Tonga"	776	957	"Polynesia"	909	"Oceania"	4	2
 268	"Tuvalu"	798	957	"Polynesia"	909	"Oceania"	4	2
 269	"Wallis and Futuna Islands"	876	957	"Polynesia"	909	"Oceania"	4	2
+270	"Argentina, Provinces (Juridicions): Buenos Aires"	3200146	32	"Argentina"	931	"South America"	4	2
+271	"Argentina, Provinces (Juridicions): Catamarca"	3200147	32	"Argentina"	931	"South America"	4	2
+272	"Argentina, Provinces (Juridicions): Chaco"	3200148	32	"Argentina"	931	"South America"	4	2
+273	"Argentina, Provinces (Juridicions): Chubut"	3200149	32	"Argentina"	931	"South America"	4	2
+274	"Argentina, Provinces (Juridicions): Capital Federal"	3200150	32	"Argentina"	931	"South America"	4	2
+275	"Argentina, Provinces (Juridicions): Cordoba"	3200151	32	"Argentina"	931	"South America"	4	2
+276	"Argentina, Provinces (Juridicions): Corrientes"	3200152	32	"Argentina"	931	"South America"	4	2
+277	"Argentina, Provinces (Juridicions): Entre Rios"	3200153	32	"Argentina"	931	"South America"	4	2
+278	"Argentina, Provinces (Juridicions): Formosa"	3200154	32	"Argentina"	931	"South America"	4	2
+279	"Argentina, Provinces (Juridicions): Jujuy"	3200155	32	"Argentina"	931	"South America"	4	2
+280	"Argentina, Provinces (Juridicions): La Pampa"	3200156	32	"Argentina"	931	"South America"	4	2
+281	"Argentina, Provinces (Juridicions): La Rioja"	3200157	32	"Argentina"	931	"South America"	4	2
+282	"Argentina, Provinces (Juridicions): Mendoza"	3200158	32	"Argentina"	931	"South America"	4	2
+283	"Argentina, Provinces (Juridicions): Misiones"	3200159	32	"Argentina"	931	"South America"	4	2
+284	"Argentina, Provinces (Juridicions): Neuquen"	3200160	32	"Argentina"	931	"South America"	4	2
+285	"Argentina, Provinces (Juridicions): Rio Negro"	3200161	32	"Argentina"	931	"South America"	4	2
+286	"Argentina, Provinces (Juridicions): Salta"	3200162	32	"Argentina"	931	"South America"	4	2
+287	"Argentina, Provinces (Juridicions): San Juan"	3200163	32	"Argentina"	931	"South America"	4	2
+288	"Argentina, Provinces (Juridicions): San Luis"	3200164	32	"Argentina"	931	"South America"	4	2
+289	"Argentina, Provinces (Juridicions): Santa Cruz"	3200165	32	"Argentina"	931	"South America"	4	2
+290	"Argentina, Provinces (Juridicions): Santa Fe"	3200166	32	"Argentina"	931	"South America"	4	2
+291	"Argentina, Provinces (Juridicions): Santiago del Estero"	3200167	32	"Argentina"	931	"South America"	4	2
+292	"Argentina, Provinces (Juridicions): Tierra del Fuego"	3200168	32	"Argentina"	931	"South America"	4	2
+293	"Argentina, Provinces (Juridicions): Tucuman"	3200169	32	"Argentina"	931	"South America"	4	2
+294	"Australia, States and Territories: Australian Capital Territory"	3600183	36	"Australia"	927	"Australia/New Zealand"	4	2
+295	"Australia, States and Territories: New South Wales"	3600185	36	"Australia"	927	"Australia/New Zealand"	4	2
+296	"Australia, States and Territories: Northern Territory"	3600186	36	"Australia"	927	"Australia/New Zealand"	4	2
+297	"Australia, States and Territories: Queensland"	3600187	36	"Australia"	927	"Australia/New Zealand"	4	2
+298	"Australia, States and Territories: South Australia"	3600188	36	"Australia"	927	"Australia/New Zealand"	4	2
+299	"Australia, States and Territories: Tasmania"	3600189	36	"Australia"	927	"Australia/New Zealand"	4	2
+300	"Australia, States and Territories: Victoria"	3600191	36	"Australia"	927	"Australia/New Zealand"	4	2
+301	"Australia, States and Territories: Western Australia"	3600192	36	"Australia"	927	"Australia/New Zealand"	4	2
+302	"Austria, States: Burgenland"	4000193	40	"Austria"	926	"Western Europe"	4	2
+303	"Austria, States: Carinthia"	4000194	40	"Austria"	926	"Western Europe"	4	2
+304	"Austria, States: Lower Austria"	4000195	40	"Austria"	926	"Western Europe"	4	2
+305	"Austria, States: Upper Austria"	4000196	40	"Austria"	926	"Western Europe"	4	2
+306	"Austria, States: Salzburg"	4000197	40	"Austria"	926	"Western Europe"	4	2
+307	"Austria, States: Styria"	4000198	40	"Austria"	926	"Western Europe"	4	2
+308	"Austria, States: Tyrol"	4000199	40	"Austria"	926	"Western Europe"	4	2
+309	"Austria, States: Vorarlberg"	4000200	40	"Austria"	926	"Western Europe"	4	2
+310	"Austria, States: Vienna"	4000201	40	"Austria"	926	"Western Europe"	4	2
+311	"Belgium, Regions: Reg. de Bruxelles-capitale"	5600333	56	"Belgium"	926	"Western Europe"	4	2
+312	"Belgium, Regions: Region flamande"	5600334	56	"Belgium"	926	"Western Europe"	4	2
+313	"Belgium, Regions: Region wallonne"	5600338	56	"Belgium"	926	"Western Europe"	4	2
+314	"Brazil, States: Acre"	7600417	76	"Brazil"	931	"South America"	4	2
+315	"Brazil, States: Alagoas"	7600418	76	"Brazil"	931	"South America"	4	2
+316	"Brazil, States: Amapa"	7600419	76	"Brazil"	931	"South America"	4	2
+317	"Brazil, States: Amazonas"	7600420	76	"Brazil"	931	"South America"	4	2
+318	"Brazil, States: Bahia"	7600421	76	"Brazil"	931	"South America"	4	2
+319	"Brazil, States: Ceara"	7600422	76	"Brazil"	931	"South America"	4	2
+320	"Brazil, States: Distrito Federal"	7600423	76	"Brazil"	931	"South America"	4	2
+321	"Brazil, States: Espirito Santo"	7600424	76	"Brazil"	931	"South America"	4	2
+322	"Brazil, States: Goias"	7600425	76	"Brazil"	931	"South America"	4	2
+323	"Brazil, States: Maranhao"	7600426	76	"Brazil"	931	"South America"	4	2
+324	"Brazil, States: Mato Grosso"	7600427	76	"Brazil"	931	"South America"	4	2
+325	"Brazil, States: Mato Grosso do Sul"	7600428	76	"Brazil"	931	"South America"	4	2
+326	"Brazil, States: Minas Gerais"	7600429	76	"Brazil"	931	"South America"	4	2
+327	"Brazil, States: Para"	7600430	76	"Brazil"	931	"South America"	4	2
+328	"Brazil, States: Paraiba"	7600431	76	"Brazil"	931	"South America"	4	2
+329	"Brazil, States: Parana"	7600432	76	"Brazil"	931	"South America"	4	2
+330	"Brazil, States: Pernambuco"	7600433	76	"Brazil"	931	"South America"	4	2
+331	"Brazil, States: Piaui"	7600434	76	"Brazil"	931	"South America"	4	2
+332	"Brazil, States: Rio de Janeiro"	7600435	76	"Brazil"	931	"South America"	4	2
+333	"Brazil, States: Rio Grande do Norte"	7600436	76	"Brazil"	931	"South America"	4	2
+334	"Brazil, States: Rio Grande do Sul"	7600437	76	"Brazil"	931	"South America"	4	2
+335	"Brazil, States: Rondonia"	7600438	76	"Brazil"	931	"South America"	4	2
+336	"Brazil, States: Roraima"	7600439	76	"Brazil"	931	"South America"	4	2
+337	"Brazil, States: Santa Catarina"	7600440	76	"Brazil"	931	"South America"	4	2
+338	"Brazil, States: Sao Paulo"	7600441	76	"Brazil"	931	"South America"	4	2
+339	"Brazil, States: Sergipe"	7600442	76	"Brazil"	931	"South America"	4	2
+340	"Brazil, States: Tocantins"	7600443	76	"Brazil"	931	"South America"	4	2
+341	"Bulgaria, Regions: North-West"	10000010	100	"Bulgaria"	923	"Eastern Europe"	4	2
+342	"Bulgaria, Regions: North Central"	10000011	100	"Bulgaria"	923	"Eastern Europe"	4	2
+343	"Bulgaria, Regions: North-East"	10000012	100	"Bulgaria"	923	"Eastern Europe"	4	2
+344	"Bulgaria, Regions: South-East"	10000013	100	"Bulgaria"	923	"Eastern Europe"	4	2
+345	"Bulgaria, Regions: South-West"	10000014	100	"Bulgaria"	923	"Eastern Europe"	4	2
+346	"Bulgaria, Regions: South Central"	10000015	100	"Bulgaria"	923	"Eastern Europe"	4	2
+347	"Canada, Provinces-Territories: Alberta"	12400658	124	"Canada"	905	"Northern America"	4	2
+348	"Canada, Provinces-Territories: British Columbia"	12400659	124	"Canada"	905	"Northern America"	4	2
+349	"Canada, Provinces-Territories: Manitoba"	12400660	124	"Canada"	905	"Northern America"	4	2
+350	"Canada, Provinces-Territories: New Brunswick"	12400661	124	"Canada"	905	"Northern America"	4	2
+351	"Canada, Provinces-Territories: Newfoundland and Labrador"	12400662	124	"Canada"	905	"Northern America"	4	2
+352	"Canada, Provinces-Territories: Northwest Territories"	12400663	124	"Canada"	905	"Northern America"	4	2
+353	"Canada, Provinces-Territories: Nova Scotia"	12400664	124	"Canada"	905	"Northern America"	4	2
+354	"Canada, Provinces-Territories: Nunavut"	12400665	124	"Canada"	905	"Northern America"	4	2
+355	"Canada, Provinces-Territories: Ontario"	12400666	124	"Canada"	905	"Northern America"	4	2
+356	"Canada, Provinces-Territories: Prince Edward Island"	12400667	124	"Canada"	905	"Northern America"	4	2
+357	"Canada, Provinces-Territories: Quebec"	12400668	124	"Canada"	905	"Northern America"	4	2
+358	"Canada, Provinces-Territories: Saskatchewan"	12400669	124	"Canada"	905	"Northern America"	4	2
+359	"Canada, Provinces-Territories: Yukon"	12400670	124	"Canada"	905	"Northern America"	4	2
+360	"Chile, Regions: Aisén del General Carlos Ibáñez del Campo"	15200872	152	"Chile"	931	"South America"	4	2
+361	"Chile, Regions: Antofagasta"	15200873	152	"Chile"	931	"South America"	4	2
+362	"Chile, Regions: Araucanía"	15200874	152	"Chile"	931	"South America"	4	2
+363	"Chile, Regions: Atacama"	15200875	152	"Chile"	931	"South America"	4	2
+364	"Chile, Regions: Bío-Bío"	15200876	152	"Chile"	931	"South America"	4	2
+365	"Chile, Regions: Coquimbo"	15200877	152	"Chile"	931	"South America"	4	2
+366	"Chile, Regions: Libertador General Bernardo O'Higgins"	15200878	152	"Chile"	931	"South America"	4	2
+367	"Chile, Regions: Los Lagos"	15200879	152	"Chile"	931	"South America"	4	2
+368	"Chile, Regions: Magallanes y Antártica Chilena"	15200880	152	"Chile"	931	"South America"	4	2
+369	"Chile, Regions: Maule"	15200881	152	"Chile"	931	"South America"	4	2
+370	"Chile, Regions: Región Metropolitana de Santiago"	15200882	152	"Chile"	931	"South America"	4	2
+371	"Chile, Regions: Tarapacá"	15200883	152	"Chile"	931	"South America"	4	2
+372	"Chile, Regions: Valparaíso"	15200884	152	"Chile"	931	"South America"	4	2
+373	"Chile, Regions: Arica and Parinacota"	15211730	152	"Chile"	931	"South America"	4	2
+374	"Chile, Regions: Los Ríos"	15211731	152	"Chile"	931	"South America"	4	2
+375	"China (UNPD Adjusted), Provinces: Anhui"	15600885	156	"China"	906	"Eastern Asia"	4	2
+376	"China (UNPD Adjusted), Provinces: Beijing"	15600886	156	"China"	906	"Eastern Asia"	4	2
+377	"China (UNPD Adjusted), Provinces: Chongqing"	15600887	156	"China"	906	"Eastern Asia"	4	2
+378	"China (UNPD Adjusted), Provinces: Fujian"	15600888	156	"China"	906	"Eastern Asia"	4	2
+379	"China (UNPD Adjusted), Provinces: Gansu"	15600889	156	"China"	906	"Eastern Asia"	4	2
+380	"China (UNPD Adjusted), Provinces: Guangdong"	15600890	156	"China"	906	"Eastern Asia"	4	2
+381	"China (UNPD Adjusted), Provinces: Guangxi"	15600891	156	"China"	906	"Eastern Asia"	4	2
+382	"China (UNPD Adjusted), Provinces: Guizhou"	15600892	156	"China"	906	"Eastern Asia"	4	2
+383	"China (UNPD Adjusted), Provinces: Hainan"	15600893	156	"China"	906	"Eastern Asia"	4	2
+384	"China (UNPD Adjusted), Provinces: Hebei"	15600894	156	"China"	906	"Eastern Asia"	4	2
+385	"China (UNPD Adjusted), Provinces: Heilongjiang"	15600895	156	"China"	906	"Eastern Asia"	4	2
+386	"China (UNPD Adjusted), Provinces: Henan"	15600896	156	"China"	906	"Eastern Asia"	4	2
+387	"China (UNPD Adjusted), Provinces: Hubei"	15600897	156	"China"	906	"Eastern Asia"	4	2
+388	"China (UNPD Adjusted), Provinces: Hunan"	15600898	156	"China"	906	"Eastern Asia"	4	2
+389	"China (UNPD Adjusted), Provinces: Jiangsu"	15600899	156	"China"	906	"Eastern Asia"	4	2
+390	"China (UNPD Adjusted), Provinces: Jiangxi"	15600900	156	"China"	906	"Eastern Asia"	4	2
+391	"China (UNPD Adjusted), Provinces: Jilin"	15600901	156	"China"	906	"Eastern Asia"	4	2
+392	"China (UNPD Adjusted), Provinces: Liaoning"	15600902	156	"China"	906	"Eastern Asia"	4	2
+393	"China (UNPD Adjusted), Provinces: Inner Mongolia"	15600903	156	"China"	906	"Eastern Asia"	4	2
+394	"China (UNPD Adjusted), Provinces: Ningxia"	15600904	156	"China"	906	"Eastern Asia"	4	2
+395	"China (UNPD Adjusted), Provinces: Qinghai"	15600906	156	"China"	906	"Eastern Asia"	4	2
+396	"China (UNPD Adjusted), Provinces: Shaanxi"	15600907	156	"China"	906	"Eastern Asia"	4	2
+397	"China (UNPD Adjusted), Provinces: Shandong"	15600908	156	"China"	906	"Eastern Asia"	4	2
+398	"China (UNPD Adjusted), Provinces: Shanghai"	15600909	156	"China"	906	"Eastern Asia"	4	2
+399	"China (UNPD Adjusted), Provinces: Shanxi"	15600910	156	"China"	906	"Eastern Asia"	4	2
+400	"China (UNPD Adjusted), Provinces: Sichuan"	15600911	156	"China"	906	"Eastern Asia"	4	2
+401	"China (UNPD Adjusted), Provinces: Tianjin"	15600912	156	"China"	906	"Eastern Asia"	4	2
+402	"China (UNPD Adjusted), Provinces: Xinjiang"	15600913	156	"China"	906	"Eastern Asia"	4	2
+403	"China (UNPD Adjusted), Provinces: Tibet"	15600914	156	"China"	906	"Eastern Asia"	4	2
+404	"China (UNPD Adjusted), Provinces: Yunnan"	15600915	156	"China"	906	"Eastern Asia"	4	2
+405	"China (UNPD Adjusted), Provinces: Zhejiang"	15600916	156	"China"	906	"Eastern Asia"	4	2
+406	"China (UNPD Adjusted), Provinces: Shanghai_Total"	15601000	156	"China"	906	"Eastern Asia"	4	2
+407	"China (UNPD Adjusted), Provinces: Shanghai_Urban"	15601001	156	"China"	906	"Eastern Asia"	4	2
+408	"China (UNPD Adjusted), Provinces: Shanghai_Rural"	15601002	156	"China"	906	"Eastern Asia"	4	2
+409	"China (UNPD Adjusted), Districts: Shanghai_HP (Urban)"	15601010	156	"China"	906	"Eastern Asia"	4	2
+410	"China (UNPD Adjusted), Districts: Shanghai_LW (Urban)"	15601011	156	"China"	906	"Eastern Asia"	4	2
+411	"China (UNPD Adjusted), Districts: Shanghai_XH (Urban)"	15601012	156	"China"	906	"Eastern Asia"	4	2
+412	"China (UNPD Adjusted), Districts: Shanghai_CN (Urban)"	15601013	156	"China"	906	"Eastern Asia"	4	2
+413	"China (UNPD Adjusted), Districts: Shanghai_JA (Urban)"	15601014	156	"China"	906	"Eastern Asia"	4	2
+414	"China (UNPD Adjusted), Districts: Shanghai_PT (Urban)"	15601015	156	"China"	906	"Eastern Asia"	4	2
+415	"China (UNPD Adjusted), Districts: Shangha_ZB (Urban)"	15601016	156	"China"	906	"Eastern Asia"	4	2
+416	"China (UNPD Adjusted), Districts: Shanghai_HK (Urban)"	15601017	156	"China"	906	"Eastern Asia"	4	2
+417	"China (UNPD Adjusted), Districts: Shanghai_YP (Rural)"	15601018	156	"China"	906	"Eastern Asia"	4	2
+418	"China (UNPD Adjusted), Districts: Shanghai_MH (Rural)"	15601019	156	"China"	906	"Eastern Asia"	4	2
+419	"China (UNPD Adjusted), Districts: Shanghai_BS (Rural)"	15601020	156	"China"	906	"Eastern Asia"	4	2
+420	"China (UNPD Adjusted), Districts: Shanghai_JD (Rural)"	15601021	156	"China"	906	"Eastern Asia"	4	2
+421	"China (UNPD Adjusted), Districts: Shanghai_PD (Rural)"	15601022	156	"China"	906	"Eastern Asia"	4	2
+422	"China (UNPD Adjusted), Districts: Shanghai_JS (Rural)"	15601023	156	"China"	906	"Eastern Asia"	4	2
+423	"China (UNPD Adjusted), Districts: Shanghai_SJ (Rural)"	15601024	156	"China"	906	"Eastern Asia"	4	2
+424	"China (UNPD Adjusted), Districts: Shanghai_QP (Rural)"	15601025	156	"China"	906	"Eastern Asia"	4	2
+425	"China (UNPD Adjusted), Districts: Shanghai_NH (Rural)"	15601026	156	"China"	906	"Eastern Asia"	4	2
+426	"China (UNPD Adjusted), Districts: Shanghai_FX (Rural)"	15601027	156	"China"	906	"Eastern Asia"	4	2
+427	"China (UNPD Adjusted), Districts: Shanghai_CM (Rural)"	15601028	156	"China"	906	"Eastern Asia"	4	2
+428	"China (UNPD Adjusted), Districts: Shanghai_NS (Rural)"	15601029	156	"China"	906	"Eastern Asia"	4	2
+429	"Costa Rica, Provinces: Alajuela"	18800952	188	"Costa Rica"	916	"Central America"	4	2
+430	"Costa Rica, Provinces: Cartago"	18800953	188	"Costa Rica"	916	"Central America"	4	2
+431	"Costa Rica, Provinces: Guanacaste"	18800954	188	"Costa Rica"	916	"Central America"	4	2
+432	"Costa Rica, Provinces: Heredia"	18800955	188	"Costa Rica"	916	"Central America"	4	2
+433	"Costa Rica, Provinces: Lim?n"	18800956	188	"Costa Rica"	916	"Central America"	4	2
+434	"Costa Rica, Provinces: Puntarenas"	18800957	188	"Costa Rica"	916	"Central America"	4	2
+435	"Costa Rica, Provinces: San Jos?"	18800958	188	"Costa Rica"	916	"Central America"	4	2
+436	"Cuba, Provinces: Pinar del Río"	19200001	192	"Cuba"	915	"Caribbean"	4	2
+437	"Cuba, Provinces: La  Habana"	19200002	192	"Cuba"	915	"Caribbean"	4	2
+438	"Cuba, Provinces: Ciudad de La Habana"	19200003	192	"Cuba"	915	"Caribbean"	4	2
+439	"Cuba, Provinces: Matanzas"	19200004	192	"Cuba"	915	"Caribbean"	4	2
+440	"Cuba, Provinces: Villa  Clara"	19200005	192	"Cuba"	915	"Caribbean"	4	2
+441	"Cuba, Provinces: Cienfuegos"	19200006	192	"Cuba"	915	"Caribbean"	4	2
+442	"Cuba, Provinces: Sancti  Spíritus"	19200007	192	"Cuba"	915	"Caribbean"	4	2
+443	"Cuba, Provinces: Ciego de Ávila"	19200008	192	"Cuba"	915	"Caribbean"	4	2
+444	"Cuba, Provinces: Camagüey"	19200009	192	"Cuba"	915	"Caribbean"	4	2
+445	"Cuba, Provinces: Las Tunas"	19200010	192	"Cuba"	915	"Caribbean"	4	2
+446	"Cuba, Provinces: Holguín"	19200011	192	"Cuba"	915	"Caribbean"	4	2
+447	"Cuba, Provinces: Granma"	19200012	192	"Cuba"	915	"Caribbean"	4	2
+448	"Cuba, Provinces: Santiago de Cuba"	19200013	192	"Cuba"	915	"Caribbean"	4	2
+449	"Cuba, Provinces: Guantánamo"	19200014	192	"Cuba"	915	"Caribbean"	4	2
+450	"Cuba, Provinces: Isla de la  Juventud"	19200015	192	"Cuba"	915	"Caribbean"	4	2
+451	"Czech Republick, Regions: Jiho?eský"	20301020	203	"Czech Republic"	923	"Eastern Europe"	4	2
+452	"Czech Republick, Regions: Jihomoravský"	20301021	203	"Czech Republic"	923	"Eastern Europe"	4	2
+453	"Czech Republick, Regions: Karlovarský"	20301022	203	"Czech Republic"	923	"Eastern Europe"	4	2
+454	"Czech Republick, Regions: Vyso?ina"	20301023	203	"Czech Republic"	923	"Eastern Europe"	4	2
+455	"Czech Republick, Regions: Královéhradecký"	20301024	203	"Czech Republic"	923	"Eastern Europe"	4	2
+456	"Czech Republick, Regions: Liberecký"	20301025	203	"Czech Republic"	923	"Eastern Europe"	4	2
+457	"Czech Republick, Regions: Moravskoslezský"	20301026	203	"Czech Republic"	923	"Eastern Europe"	4	2
+458	"Czech Republick, Regions: Olomoucký"	20301027	203	"Czech Republic"	923	"Eastern Europe"	4	2
+459	"Czech Republick, Regions: Pardubický"	20301028	203	"Czech Republic"	923	"Eastern Europe"	4	2
+460	"Czech Republick, Regions: Plze?ský"	20301029	203	"Czech Republic"	923	"Eastern Europe"	4	2
+461	"Czech Republick, Regions: Praha"	20301030	203	"Czech Republic"	923	"Eastern Europe"	4	2
+462	"Czech Republick, Regions: St?edo?eský"	20301031	203	"Czech Republic"	923	"Eastern Europe"	4	2
+463	"Czech Republick, Regions: Ústecký"	20301032	203	"Czech Republic"	923	"Eastern Europe"	4	2
+464	"Czech Republick, Regions: Zlínský"	20301033	203	"Czech Republic"	923	"Eastern Europe"	4	2
+465	"Denmark, Counties: Århus County"	20801043	208	"Denmark"	924	"Northern Europe"	4	2
+466	"Denmark, Counties: Bornholm (excl. Christiansø)"	20801044	208	"Denmark"	924	"Northern Europe"	4	2
+467	"Denmark, Counties: Copenhagen County"	20801045	208	"Denmark"	924	"Northern Europe"	4	2
+468	"Denmark, Counties: Frederiksborg County"	20801046	208	"Denmark"	924	"Northern Europe"	4	2
+469	"Denmark, Counties: Funen County"	20801047	208	"Denmark"	924	"Northern Europe"	4	2
+470	"Denmark, Counties: North Jutland County"	20801048	208	"Denmark"	924	"Northern Europe"	4	2
+471	"Denmark, Counties: Ribe County"	20801049	208	"Denmark"	924	"Northern Europe"	4	2
+472	"Denmark, Counties: Ringkøbing County"	20801050	208	"Denmark"	924	"Northern Europe"	4	2
+473	"Denmark, Counties: Roskilde County"	20801051	208	"Denmark"	924	"Northern Europe"	4	2
+474	"Denmark, Counties: South Jutland County"	20801052	208	"Denmark"	924	"Northern Europe"	4	2
+475	"Denmark, Counties: Storstrøm County"	20801053	208	"Denmark"	924	"Northern Europe"	4	2
+476	"Denmark, Counties: Vejle County"	20801054	208	"Denmark"	924	"Northern Europe"	4	2
+477	"Denmark, Counties: West Zealand County"	20801055	208	"Denmark"	924	"Northern Europe"	4	2
+478	"Denmark, Counties: Viborg County"	20801056	208	"Denmark"	924	"Northern Europe"	4	2
+479	"Denmark, Counties: Copenhagen"	20813993	208	"Denmark"	924	"Northern Europe"	4	2
+480	"Denmark, Counties: Frederiksberg"	20813995	208	"Denmark"	924	"Northern Europe"	4	2
+481	"Ecuador, Provinces: Azuay"	21800001	218	"Ecuador"	931	"South America"	4	2
+482	"Ecuador, Provinces: Bolivar"	21800002	218	"Ecuador"	931	"South America"	4	2
+483	"Ecuador, Provinces: Ca±ar"	21800003	218	"Ecuador"	931	"South America"	4	2
+484	"Ecuador, Provinces: Carchi"	21800004	218	"Ecuador"	931	"South America"	4	2
+485	"Ecuador, Provinces: Cotopaxi"	21800005	218	"Ecuador"	931	"South America"	4	2
+486	"Ecuador, Provinces: Chimborazo"	21800006	218	"Ecuador"	931	"South America"	4	2
+487	"Ecuador, Provinces: El Oro"	21800007	218	"Ecuador"	931	"South America"	4	2
+488	"Ecuador, Provinces: Esmeraldas"	21800008	218	"Ecuador"	931	"South America"	4	2
+489	"Ecuador, Provinces: Guayas"	21800009	218	"Ecuador"	931	"South America"	4	2
+490	"Ecuador, Provinces: Imbabura"	21800010	218	"Ecuador"	931	"South America"	4	2
+491	"Ecuador, Provinces: Loja"	21800011	218	"Ecuador"	931	"South America"	4	2
+492	"Ecuador, Provinces: Los Rios"	21800012	218	"Ecuador"	931	"South America"	4	2
+493	"Ecuador, Provinces: Manabi"	21800013	218	"Ecuador"	931	"South America"	4	2
+494	"Ecuador, Provinces: Morona Santiago"	21800014	218	"Ecuador"	931	"South America"	4	2
+495	"Ecuador, Provinces: Napo"	21800015	218	"Ecuador"	931	"South America"	4	2
+496	"Ecuador, Provinces: Pastaza"	21800016	218	"Ecuador"	931	"South America"	4	2
+497	"Ecuador, Provinces: Pichincha"	21800017	218	"Ecuador"	931	"South America"	4	2
+498	"Ecuador, Provinces: Tungurahua"	21800018	218	"Ecuador"	931	"South America"	4	2
+499	"Ecuador, Provinces: Zamora Chinchipe"	21800019	218	"Ecuador"	931	"South America"	4	2
+500	"Ecuador, Provinces: Galapagos"	21800020	218	"Ecuador"	931	"South America"	4	2
+501	"Ecuador, Provinces: Sucumbios"	21800021	218	"Ecuador"	931	"South America"	4	2
+502	"Ecuador, Provinces: Zonas No Delimitadas"	21800025	218	"Ecuador"	931	"South America"	4	2
+503	"Estonia, Counties: Harju"	23301170	233	"Estonia"	924	"Northern Europe"	4	2
+504	"Estonia, Counties: Hiiu"	23301171	233	"Estonia"	924	"Northern Europe"	4	2
+505	"Estonia, Counties: Ida-Viru"	23301172	233	"Estonia"	924	"Northern Europe"	4	2
+506	"Estonia, Counties: Järva"	23301173	233	"Estonia"	924	"Northern Europe"	4	2
+507	"Estonia, Counties: Jõgeva"	23301174	233	"Estonia"	924	"Northern Europe"	4	2
+508	"Estonia, Counties: Lääne-Viru"	23301175	233	"Estonia"	924	"Northern Europe"	4	2
+509	"Estonia, Counties: Lääne"	23301176	233	"Estonia"	924	"Northern Europe"	4	2
+510	"Estonia, Counties: Pärnu"	23301177	233	"Estonia"	924	"Northern Europe"	4	2
+511	"Estonia, Counties: Põlva"	23301179	233	"Estonia"	924	"Northern Europe"	4	2
+512	"Estonia, Counties: Rapla"	23301180	233	"Estonia"	924	"Northern Europe"	4	2
+513	"Estonia, Counties: Saare"	23301181	233	"Estonia"	924	"Northern Europe"	4	2
+514	"Estonia, Counties: Tartu"	23301182	233	"Estonia"	924	"Northern Europe"	4	2
+515	"Estonia, Counties: Valga"	23301183	233	"Estonia"	924	"Northern Europe"	4	2
+516	"Estonia, Counties: Viljandi"	23301184	233	"Estonia"	924	"Northern Europe"	4	2
+517	"Estonia, Counties: Võru"	23301185	233	"Estonia"	924	"Northern Europe"	4	2
+518	"Estonia, Counties: Tallinn"	23314844	233	"Estonia"	924	"Northern Europe"	4	2
+519	"Finland, Regions: North Carelia"	24614874	246	"Finland"	924	"Northern Europe"	4	2
+520	"Finland, Regions: Pohjois-Savo"	24614875	246	"Finland"	924	"Northern Europe"	4	2
+521	"Finland, Regions: Etelä-Savo"	24614877	246	"Finland"	924	"Northern Europe"	4	2
+522	"Finland, Regions: Lapland"	24614878	246	"Finland"	924	"Northern Europe"	4	2
+523	"Finland, Regions: Kainuu"	24614879	246	"Finland"	924	"Northern Europe"	4	2
+524	"Finland, Regions: North Ostrobothnia"	24614880	246	"Finland"	924	"Northern Europe"	4	2
+525	"Finland, Regions: Kymenlaakso"	24614882	246	"Finland"	924	"Northern Europe"	4	2
+526	"Finland, Regions: Päijät-Häme"	24614883	246	"Finland"	924	"Northern Europe"	4	2
+527	"Finland, Regions: South Carelia"	24614884	246	"Finland"	924	"Northern Europe"	4	2
+528	"Finland, Regions: Uusimaa"	24614885	246	"Finland"	924	"Northern Europe"	4	2
+529	"Finland, Regions: Central Finland"	24614886	246	"Finland"	924	"Northern Europe"	4	2
+530	"Finland, Regions: Central Ostrobothnia"	24614887	246	"Finland"	924	"Northern Europe"	4	2
+531	"Finland, Regions: Varsinais-Suomi"	24614888	246	"Finland"	924	"Northern Europe"	4	2
+532	"Finland, Regions: Ostrobothnia"	24615571	246	"Finland"	924	"Northern Europe"	4	2
+533	"Finland, Regions: Åland"	24615572	246	"Finland"	924	"Northern Europe"	4	2
+534	"Finland, Regions: Pirkanmaa"	24615573	246	"Finland"	924	"Northern Europe"	4	2
+535	"Finland, Regions: Satakunta"	24615574	246	"Finland"	924	"Northern Europe"	4	2
+536	"Finland, Regions: South Ostrobothnia"	24615575	246	"Finland"	924	"Northern Europe"	4	2
+537	"Finland, Regions: Kanta-Häme"	24615576	246	"Finland"	924	"Northern Europe"	4	2
+538	"France métropolitaine, Departements: Somme"	25014677	250	"France"	926	"Western Europe"	4	2
+539	"France métropolitaine, Departements: Eure"	25014678	250	"France"	926	"Western Europe"	4	2
+540	"France métropolitaine, Departements: Seine-Maritime"	25014679	250	"France"	926	"Western Europe"	4	2
+541	"France métropolitaine, Departements: Cher"	25014680	250	"France"	926	"Western Europe"	4	2
+542	"France métropolitaine, Departements: Eure-et-Loir"	25014681	250	"France"	926	"Western Europe"	4	2
+543	"France métropolitaine, Departements: Indre"	25014682	250	"France"	926	"Western Europe"	4	2
+544	"France métropolitaine, Departements: Indre-et-Loire"	25014683	250	"France"	926	"Western Europe"	4	2
+545	"France métropolitaine, Departements: Loir-et-Cher"	25014684	250	"France"	926	"Western Europe"	4	2
+546	"France métropolitaine, Departements: Loiret"	25014685	250	"France"	926	"Western Europe"	4	2
+547	"France métropolitaine, Departements: Calvados"	25014686	250	"France"	926	"Western Europe"	4	2
+548	"France métropolitaine, Departements: Manche"	25014687	250	"France"	926	"Western Europe"	4	2
+549	"France métropolitaine, Departements: Orne"	25014688	250	"France"	926	"Western Europe"	4	2
+550	"France métropolitaine, Departements: Côte-d'Or"	25014689	250	"France"	926	"Western Europe"	4	2
+551	"France métropolitaine, Departements: Nièvre"	25014690	250	"France"	926	"Western Europe"	4	2
+552	"France métropolitaine, Departements: Saône-et-Loire"	25014691	250	"France"	926	"Western Europe"	4	2
+553	"France métropolitaine, Departements: Yonne"	25014692	250	"France"	926	"Western Europe"	4	2
+554	"France métropolitaine, Departements: Nord"	25014693	250	"France"	926	"Western Europe"	4	2
+555	"France métropolitaine, Departements: Pas-de-Calais"	25014694	250	"France"	926	"Western Europe"	4	2
+556	"France métropolitaine, Departements: Meurthe-et-Moselle"	25014695	250	"France"	926	"Western Europe"	4	2
+557	"France métropolitaine, Departements: Meuse"	25014696	250	"France"	926	"Western Europe"	4	2
+558	"France métropolitaine, Departements: Moselle"	25014697	250	"France"	926	"Western Europe"	4	2
+559	"France métropolitaine, Departements: Vosges"	25014698	250	"France"	926	"Western Europe"	4	2
+560	"France métropolitaine, Departements: Bas-Rhin"	25014699	250	"France"	926	"Western Europe"	4	2
+561	"France métropolitaine, Departements: Paris"	25015577	250	"France"	926	"Western Europe"	4	2
+562	"France métropolitaine, Departements: Seine-et-Marne"	25015578	250	"France"	926	"Western Europe"	4	2
+563	"France métropolitaine, Departements: Yvelines"	25015579	250	"France"	926	"Western Europe"	4	2
+564	"France métropolitaine, Departements: Essonne"	25015580	250	"France"	926	"Western Europe"	4	2
+565	"France métropolitaine, Departements: Hauts-de-Seine"	25015581	250	"France"	926	"Western Europe"	4	2
+566	"France métropolitaine, Departements: Seine-Saint-Denis"	25015582	250	"France"	926	"Western Europe"	4	2
+567	"France métropolitaine, Departements: Val-de-Marne"	25015583	250	"France"	926	"Western Europe"	4	2
+568	"France métropolitaine, Departements: Val-d'Oise"	25015584	250	"France"	926	"Western Europe"	4	2
+569	"France métropolitaine, Departements: Ardennes"	25015585	250	"France"	926	"Western Europe"	4	2
+570	"France métropolitaine, Departements: Aube"	25015586	250	"France"	926	"Western Europe"	4	2
+571	"France métropolitaine, Departements: Marne"	25015587	250	"France"	926	"Western Europe"	4	2
+572	"France métropolitaine, Departements: Haute-Marne"	25015588	250	"France"	926	"Western Europe"	4	2
+573	"France métropolitaine, Departements: Aisne"	25015589	250	"France"	926	"Western Europe"	4	2
+574	"France métropolitaine, Departements: Oise"	25015590	250	"France"	926	"Western Europe"	4	2
+575	"France métropolitaine, Departements: Haut-Rhin"	25015591	250	"France"	926	"Western Europe"	4	2
+576	"France métropolitaine, Departements: Doubs"	25015592	250	"France"	926	"Western Europe"	4	2
+577	"France métropolitaine, Departements: Jura"	25015593	250	"France"	926	"Western Europe"	4	2
+578	"France métropolitaine, Departements: Haute-Saône"	25015594	250	"France"	926	"Western Europe"	4	2
+579	"France métropolitaine, Departements: Territoire de Belfort"	25015595	250	"France"	926	"Western Europe"	4	2
+580	"France métropolitaine, Departements: Loire-Atlantique"	25015596	250	"France"	926	"Western Europe"	4	2
+581	"France métropolitaine, Departements: Maine-et-Loire"	25015597	250	"France"	926	"Western Europe"	4	2
+582	"France métropolitaine, Departements: Mayenne"	25015598	250	"France"	926	"Western Europe"	4	2
+583	"France métropolitaine, Departements: Sarthe"	25015599	250	"France"	926	"Western Europe"	4	2
+584	"France métropolitaine, Departements: Vendée"	25015600	250	"France"	926	"Western Europe"	4	2
+585	"France métropolitaine, Departements: Côtes-d'Armor"	25015601	250	"France"	926	"Western Europe"	4	2
+586	"France métropolitaine, Departements: Finistère"	25015602	250	"France"	926	"Western Europe"	4	2
+587	"France métropolitaine, Departements: Ille-et-Vilaine"	25015603	250	"France"	926	"Western Europe"	4	2
+588	"France métropolitaine, Departements: Morbihan"	25015604	250	"France"	926	"Western Europe"	4	2
+589	"France métropolitaine, Departements: Charente"	25015605	250	"France"	926	"Western Europe"	4	2
+590	"France métropolitaine, Departements: Charente-Maritime"	25015606	250	"France"	926	"Western Europe"	4	2
+591	"France métropolitaine, Departements: Deux-Sèvres"	25015607	250	"France"	926	"Western Europe"	4	2
+592	"France métropolitaine, Departements: Vienne"	25015608	250	"France"	926	"Western Europe"	4	2
+593	"France métropolitaine, Departements: Dordogne"	25015609	250	"France"	926	"Western Europe"	4	2
+594	"France métropolitaine, Departements: Gironde"	25015610	250	"France"	926	"Western Europe"	4	2
+595	"France métropolitaine, Departements: Landes"	25015611	250	"France"	926	"Western Europe"	4	2
+596	"France métropolitaine, Departements: Lot-et-Garonne"	25015612	250	"France"	926	"Western Europe"	4	2
+597	"France métropolitaine, Departements: Pyrénées-Atlantiques"	25015613	250	"France"	926	"Western Europe"	4	2
+598	"France métropolitaine, Departements: Ariège"	25015614	250	"France"	926	"Western Europe"	4	2
+599	"France métropolitaine, Departements: Aveyron"	25015615	250	"France"	926	"Western Europe"	4	2
+600	"France métropolitaine, Departements: Haute-Garonne"	25015616	250	"France"	926	"Western Europe"	4	2
+601	"France métropolitaine, Departements: Gers"	25015617	250	"France"	926	"Western Europe"	4	2
+602	"France métropolitaine, Departements: Lot"	25015618	250	"France"	926	"Western Europe"	4	2
+603	"France métropolitaine, Departements: Hautes-Pyrénées"	25015619	250	"France"	926	"Western Europe"	4	2
+604	"France métropolitaine, Departements: Tarn"	25015620	250	"France"	926	"Western Europe"	4	2
+605	"France métropolitaine, Departements: Tarn-et-Garonne"	25015621	250	"France"	926	"Western Europe"	4	2
+606	"France métropolitaine, Departements: Corrèze"	25015622	250	"France"	926	"Western Europe"	4	2
+607	"France métropolitaine, Departements: Creuse"	25015623	250	"France"	926	"Western Europe"	4	2
+608	"France métropolitaine, Departements: Haute-Vienne"	25015624	250	"France"	926	"Western Europe"	4	2
+609	"France métropolitaine, Departements: Ain"	25015625	250	"France"	926	"Western Europe"	4	2
+610	"France métropolitaine, Departements: Ardèche"	25015626	250	"France"	926	"Western Europe"	4	2
+611	"France métropolitaine, Departements: Drôme"	25015627	250	"France"	926	"Western Europe"	4	2
+612	"France métropolitaine, Departements: Isère"	25015628	250	"France"	926	"Western Europe"	4	2
+613	"France métropolitaine, Departements: Loire"	25015629	250	"France"	926	"Western Europe"	4	2
+614	"France métropolitaine, Departements: Rhône"	25015630	250	"France"	926	"Western Europe"	4	2
+615	"France métropolitaine, Departements: Savoie"	25015631	250	"France"	926	"Western Europe"	4	2
+616	"France métropolitaine, Departements: Haute-Savoie"	25015632	250	"France"	926	"Western Europe"	4	2
+617	"France métropolitaine, Departements: Allier"	25015633	250	"France"	926	"Western Europe"	4	2
+618	"France métropolitaine, Departements: Cantal"	25015634	250	"France"	926	"Western Europe"	4	2
+619	"France métropolitaine, Departements: Haute-Loire"	25015635	250	"France"	926	"Western Europe"	4	2
+620	"France métropolitaine, Departements: Puy-de-Dôme"	25015636	250	"France"	926	"Western Europe"	4	2
+621	"France métropolitaine, Departements: Aude"	25015637	250	"France"	926	"Western Europe"	4	2
+622	"France métropolitaine, Departements: Gard"	25015638	250	"France"	926	"Western Europe"	4	2
+623	"France métropolitaine, Departements: Hérault"	25015639	250	"France"	926	"Western Europe"	4	2
+624	"France métropolitaine, Departements: Lozère"	25015640	250	"France"	926	"Western Europe"	4	2
+625	"France métropolitaine, Departements: Pyrénées-Orientales"	25015641	250	"France"	926	"Western Europe"	4	2
+626	"France métropolitaine, Departements: Alpes-de-Haute-Provence"	25015642	250	"France"	926	"Western Europe"	4	2
+627	"France métropolitaine, Departements: Hautes-Alpes"	25015643	250	"France"	926	"Western Europe"	4	2
+628	"France métropolitaine, Departements: Alpes-Maritimes"	25015644	250	"France"	926	"Western Europe"	4	2
+629	"France métropolitaine, Departements: Bouches-du-Rhône"	25015645	250	"France"	926	"Western Europe"	4	2
+630	"France métropolitaine, Departements: Var"	25015646	250	"France"	926	"Western Europe"	4	2
+631	"France métropolitaine, Departements: Vaucluse"	25015647	250	"France"	926	"Western Europe"	4	2
+632	"France métropolitaine, Departements: Corse-du-Sud"	25015648	250	"France"	926	"Western Europe"	4	2
+633	"France métropolitaine, Departements: Haute-Corse"	25015649	250	"France"	926	"Western Europe"	4	2
+634	"Germany, Bundesl?nder (States): Baden-Württemberg"	27601268	276	"Germany"	926	"Western Europe"	4	2
+635	"Germany, Bundesl?nder (States): Bayern"	27601269	276	"Germany"	926	"Western Europe"	4	2
+636	"Germany, Bundesl?nder (States): Berlin"	27601270	276	"Germany"	926	"Western Europe"	4	2
+637	"Germany, Bundesl?nder (States): Brandenburg"	27601271	276	"Germany"	926	"Western Europe"	4	2
+638	"Germany, Bundesl?nder (States): Bremen"	27601272	276	"Germany"	926	"Western Europe"	4	2
+639	"Germany, Bundesl?nder (States): Hamburg"	27601273	276	"Germany"	926	"Western Europe"	4	2
+640	"Germany, Bundesl?nder (States): Hessen"	27601274	276	"Germany"	926	"Western Europe"	4	2
+641	"Germany, Bundesl?nder (States): Mecklenburg-Vorpommern"	27601275	276	"Germany"	926	"Western Europe"	4	2
+642	"Germany, Bundesl?nder (States): Niedersachsen"	27601276	276	"Germany"	926	"Western Europe"	4	2
+643	"Germany, Bundesl?nder (States): Nordrhein-Westfalen"	27601277	276	"Germany"	926	"Western Europe"	4	2
+644	"Germany, Bundesl?nder (States): Rheinland-Pfalz"	27601278	276	"Germany"	926	"Western Europe"	4	2
+645	"Germany, Bundesl?nder (States): Saarland"	27601279	276	"Germany"	926	"Western Europe"	4	2
+646	"Germany, Bundesl?nder (States): Sachsen-Anhalt"	27601280	276	"Germany"	926	"Western Europe"	4	2
+647	"Germany, Bundesl?nder (States): Sachsen"	27601281	276	"Germany"	926	"Western Europe"	4	2
+648	"Germany, Bundesl?nder (States): Schleswig-Holstein"	27601282	276	"Germany"	926	"Western Europe"	4	2
+649	"Germany, Bundesl?nder (States): Thüringen"	27601283	276	"Germany"	926	"Western Europe"	4	2
+650	"Greece, Regions: Anatoliki Makedonia, Thraki"	30000011	300	"Greece"	925	"Southern Europe"	4	2
+651	"Greece, Regions: Kentriki Makedonia"	30000012	300	"Greece"	925	"Southern Europe"	4	2
+652	"Greece, Regions: Dytiki Makedonia"	30000013	300	"Greece"	925	"Southern Europe"	4	2
+653	"Greece, Regions: Thessalia"	30000014	300	"Greece"	925	"Southern Europe"	4	2
+654	"Greece, Regions: Ipeiros"	30000021	300	"Greece"	925	"Southern Europe"	4	2
+655	"Greece, Regions: Ionia Nisia"	30000022	300	"Greece"	925	"Southern Europe"	4	2
+656	"Greece, Regions: Dytiki Ellada"	30000023	300	"Greece"	925	"Southern Europe"	4	2
+657	"Greece, Regions: Sterea Ellada"	30000024	300	"Greece"	925	"Southern Europe"	4	2
+658	"Greece, Regions: Peloponnisos"	30000025	300	"Greece"	925	"Southern Europe"	4	2
+659	"Greece, Regions: Attiki"	30000030	300	"Greece"	925	"Southern Europe"	4	2
+660	"Greece, Regions: Voreio Aigaio"	30000041	300	"Greece"	925	"Southern Europe"	4	2
+661	"Greece, Regions: Notio Aigaio"	30000042	300	"Greece"	925	"Southern Europe"	4	2
+662	"Greece, Regions: Kriti"	30000043	300	"Greece"	925	"Southern Europe"	4	2
+663	"Hungary, Regions: Közép-Magyarország"	34800010	348	"Hungary"	923	"Eastern Europe"	4	2
+664	"Hungary, Regions: Közép-Dunántúl"	34800021	348	"Hungary"	923	"Eastern Europe"	4	2
+665	"Hungary, Regions: Nyugat-Dunántúl"	34800022	348	"Hungary"	923	"Eastern Europe"	4	2
+666	"Hungary, Regions: Dél-Dunántúl"	34800023	348	"Hungary"	923	"Eastern Europe"	4	2
+667	"Hungary, Regions: Észak-Magyarország"	34800031	348	"Hungary"	923	"Eastern Europe"	4	2
+668	"Hungary, Regions: Észak-Alföld"	34800032	348	"Hungary"	923	"Eastern Europe"	4	2
+669	"Hungary, Regions: Dél-Alföld"	34800033	348	"Hungary"	923	"Eastern Europe"	4	2
+670	"India, States: Andaman and Nicobar (Rural)"	35614622	356	"India"	5501	"Southern Asia"	4	2
+671	"India, States: Andaman and Nicobar"	35614620	356	"India"	5501	"Southern Asia"	4	2
+672	"India, States: Andaman and Nicobar (Urban)"	35614621	356	"India"	5501	"Southern Asia"	4	2
+673	"India, States: Andhra Pradesh (Rural)"	35614632	356	"India"	5501	"Southern Asia"	4	2
+674	"India, States: Andhra Pradesh"	35614630	356	"India"	5501	"Southern Asia"	4	2
+675	"India, States: Andhra Pradesh (Urban)"	35614631	356	"India"	5501	"Southern Asia"	4	2
+676	"India, States: Arunachal Pradesh (Rural)"	35614642	356	"India"	5501	"Southern Asia"	4	2
+677	"India, States: Arunachal Pradesh"	35614640	356	"India"	5501	"Southern Asia"	4	2
+678	"India, States: Arunachal Pradesh (Urban)"	35614641	356	"India"	5501	"Southern Asia"	4	2
+679	"India, States: Assam (Rural)"	35614652	356	"India"	5501	"Southern Asia"	4	2
+680	"India, States: Assam"	35614650	356	"India"	5501	"Southern Asia"	4	2
+681	"India, States: Assam (Urban)"	35614651	356	"India"	5501	"Southern Asia"	4	2
+682	"India, States: Bihar (Rural)"	35614662	356	"India"	5501	"Southern Asia"	4	2
+683	"India, States: Bihar"	35614660	356	"India"	5501	"Southern Asia"	4	2
+684	"India, States: Bihar (Urban)"	35614661	356	"India"	5501	"Southern Asia"	4	2
+685	"India, States: Chandigarh (Rural)"	35614672	356	"India"	5501	"Southern Asia"	4	2
+686	"India, States: Chandigarh"	35614670	356	"India"	5501	"Southern Asia"	4	2
+687	"India, States: Chandigarh (Urban)"	35614671	356	"India"	5501	"Southern Asia"	4	2
+688	"India, States: Chhattisgarh (Rural)"	35614682	356	"India"	5501	"Southern Asia"	4	2
+689	"India, States: Chhattisgarh"	35614680	356	"India"	5501	"Southern Asia"	4	2
+690	"India, States: Chhattisgarh (Urban)"	35614681	356	"India"	5501	"Southern Asia"	4	2
+691	"India, States: Dadra and Nagar Haveli (Rural)"	35614692	356	"India"	5501	"Southern Asia"	4	2
+692	"India, States: Dadra and Nagar Haveli"	35614690	356	"India"	5501	"Southern Asia"	4	2
+693	"India, States: Dadra and Nagar Haveli (Urban)"	35614691	356	"India"	5501	"Southern Asia"	4	2
+694	"India, States: Daman and Diu (Rural)"	35614702	356	"India"	5501	"Southern Asia"	4	2
+695	"India, States: Daman and Diu"	35614700	356	"India"	5501	"Southern Asia"	4	2
+696	"India, States: Daman and Diu (Urban)"	35614701	356	"India"	5501	"Southern Asia"	4	2
+697	"India, States: Delhi (Rural)"	35614712	356	"India"	5501	"Southern Asia"	4	2
+698	"India, States: Delhi"	35614710	356	"India"	5501	"Southern Asia"	4	2
+699	"India, States: Delhi (Urban)"	35614711	356	"India"	5501	"Southern Asia"	4	2
+700	"India, States: Goa (Rural)"	35614722	356	"India"	5501	"Southern Asia"	4	2
+701	"India, States: Goa"	35614720	356	"India"	5501	"Southern Asia"	4	2
+702	"India, States: Goa (Urban)"	35614721	356	"India"	5501	"Southern Asia"	4	2
+703	"India, States: Gujarat (Rural)"	35614732	356	"India"	5501	"Southern Asia"	4	2
+704	"India, States: Gujarat"	35614730	356	"India"	5501	"Southern Asia"	4	2
+705	"India, States: Gujarat (Urban)"	35614731	356	"India"	5501	"Southern Asia"	4	2
+706	"India, States: Haryana (Rural)"	35614742	356	"India"	5501	"Southern Asia"	4	2
+707	"India, States: Haryana"	35614740	356	"India"	5501	"Southern Asia"	4	2
+708	"India, States: Haryana (Urban)"	35614741	356	"India"	5501	"Southern Asia"	4	2
+709	"India, States: Himachal Pradesh (Rural)"	35614752	356	"India"	5501	"Southern Asia"	4	2
+710	"India, States: Himachal Pradesh"	35614750	356	"India"	5501	"Southern Asia"	4	2
+711	"India, States: Himachal Pradesh (Urban)"	35614751	356	"India"	5501	"Southern Asia"	4	2
+712	"India, States: Jammu & Kashmir (Rural)"	35614762	356	"India"	5501	"Southern Asia"	4	2
+713	"India, States: Jammu & Kashmir"	35614760	356	"India"	5501	"Southern Asia"	4	2
+714	"India, States: Jammu & Kashmir (Urban)"	35614761	356	"India"	5501	"Southern Asia"	4	2
+715	"India, States: Jharkhand (Rural)"	35614772	356	"India"	5501	"Southern Asia"	4	2
+716	"India, States: Jharkhand"	35614770	356	"India"	5501	"Southern Asia"	4	2
+717	"India, States: Jharkhand (Urban)"	35614771	356	"India"	5501	"Southern Asia"	4	2
+718	"India, States: Karnataka (Rural)"	35614782	356	"India"	5501	"Southern Asia"	4	2
+719	"India, States: Karnataka"	35614780	356	"India"	5501	"Southern Asia"	4	2
+720	"India, States: Karnataka (Urban)"	35614781	356	"India"	5501	"Southern Asia"	4	2
+721	"India, States: Kerala (Rural)"	35614792	356	"India"	5501	"Southern Asia"	4	2
+722	"India, States: Kerala"	35614790	356	"India"	5501	"Southern Asia"	4	2
+723	"India, States: Kerala (Urban)"	35614791	356	"India"	5501	"Southern Asia"	4	2
+724	"India, States: Lakshadweep (Rural)"	35614802	356	"India"	5501	"Southern Asia"	4	2
+725	"India, States: Lakshadweep"	35614800	356	"India"	5501	"Southern Asia"	4	2
+726	"India, States: Lakshadweep (Urban)"	35614801	356	"India"	5501	"Southern Asia"	4	2
+727	"India, States: Madhya Pradesh (Rural)"	35614812	356	"India"	5501	"Southern Asia"	4	2
+728	"India, States: Madhya Pradesh"	35614810	356	"India"	5501	"Southern Asia"	4	2
+729	"India, States: Madhya Pradesh (Urban)"	35614811	356	"India"	5501	"Southern Asia"	4	2
+730	"India, States: Maharashtra (Rural)"	35614822	356	"India"	5501	"Southern Asia"	4	2
+731	"India, States: Maharashtra"	35614820	356	"India"	5501	"Southern Asia"	4	2
+732	"India, States: Maharashtra (Urban)"	35614821	356	"India"	5501	"Southern Asia"	4	2
+733	"India, States: Manipur (Rural)"	35614832	356	"India"	5501	"Southern Asia"	4	2
+734	"India, States: Manipur"	35614830	356	"India"	5501	"Southern Asia"	4	2
+735	"India, States: Manipur (Urban)"	35614831	356	"India"	5501	"Southern Asia"	4	2
+736	"India, States: Meghalaya (Rural)"	35614842	356	"India"	5501	"Southern Asia"	4	2
+737	"India, States: Meghalaya"	35614840	356	"India"	5501	"Southern Asia"	4	2
+738	"India, States: Meghalaya (Urban)"	35614841	356	"India"	5501	"Southern Asia"	4	2
+739	"India, States: Nagaland (Rural)"	35614862	356	"India"	5501	"Southern Asia"	4	2
+740	"India, States: Nagaland"	35614860	356	"India"	5501	"Southern Asia"	4	2
+741	"India, States: Nagaland (Urban)"	35614861	356	"India"	5501	"Southern Asia"	4	2
+742	"India, States: Odisha (Rural)"	35614872	356	"India"	5501	"Southern Asia"	4	2
+743	"India, States: Odisha"	35614870	356	"India"	5501	"Southern Asia"	4	2
+744	"India, States: Odisha (Urban)"	35614871	356	"India"	5501	"Southern Asia"	4	2
+745	"India, States: Puducherry (Rural)"	35614882	356	"India"	5501	"Southern Asia"	4	2
+746	"India, States: Puducherry"	35614880	356	"India"	5501	"Southern Asia"	4	2
+747	"India, States: Puducherry (Urban)"	35614881	356	"India"	5501	"Southern Asia"	4	2
+748	"India, States: Punjab (Rural)"	35614892	356	"India"	5501	"Southern Asia"	4	2
+749	"India, States: Punjab"	35614890	356	"India"	5501	"Southern Asia"	4	2
+750	"India, States: Punjab (Urban)"	35614891	356	"India"	5501	"Southern Asia"	4	2
+751	"India, States: Rajasthan (Rural)"	35614902	356	"India"	5501	"Southern Asia"	4	2
+752	"India, States: Rajasthan"	35614900	356	"India"	5501	"Southern Asia"	4	2
+753	"India, States: Rajasthan (Urban)"	35614901	356	"India"	5501	"Southern Asia"	4	2
+754	"India, States: Sikkim (Rural)"	35614912	356	"India"	5501	"Southern Asia"	4	2
+755	"India, States: Sikkim"	35614910	356	"India"	5501	"Southern Asia"	4	2
+756	"India, States: Sikkim (Urban)"	35614911	356	"India"	5501	"Southern Asia"	4	2
+757	"India, States: Tamil Nadu (Rural)"	35614922	356	"India"	5501	"Southern Asia"	4	2
+758	"India, States: Tamil Nadu"	35614920	356	"India"	5501	"Southern Asia"	4	2
+759	"India, States: Tamil Nadu (Urban)"	35614921	356	"India"	5501	"Southern Asia"	4	2
+760	"India, States: Tripura (Rural)"	35614932	356	"India"	5501	"Southern Asia"	4	2
+761	"India, States: Tripura"	35614930	356	"India"	5501	"Southern Asia"	4	2
+762	"India, States: Tripura (Urban)"	35614931	356	"India"	5501	"Southern Asia"	4	2
+763	"India, States: Uttar Pradesh (Rural)"	35614942	356	"India"	5501	"Southern Asia"	4	2
+764	"India, States: Uttar Pradesh"	35614940	356	"India"	5501	"Southern Asia"	4	2
+765	"India, States: Uttar Pradesh (Urban)"	35614941	356	"India"	5501	"Southern Asia"	4	2
+766	"India, States: West Bengal (Rural)"	35614962	356	"India"	5501	"Southern Asia"	4	2
+767	"India, States: West Bengal"	35614960	356	"India"	5501	"Southern Asia"	4	2
+768	"India, States: West Bengal (Urban)"	35614961	356	"India"	5501	"Southern Asia"	4	2
+769	"Indonesia, Provinces: Bangka Belitung"	36000019	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+770	"Indonesia, Provinces: Kepulauan Riau"	36000021	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+771	"Indonesia, Provinces: Banten"	36000036	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+772	"Indonesia, Provinces: Gorontalo"	36000075	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+773	"Indonesia, Provinces: Sulawesi Barat"	36000076	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+774	"Indonesia, Provinces: Maluku Utara"	36000082	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+775	"Indonesia, Provinces: Papua Barat"	36000091	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+776	"Indonesia, Provinces: Aceh"	36001497	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+777	"Indonesia, Provinces: Bali"	36001498	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+778	"Indonesia, Provinces: Bengkulu"	36001501	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+779	"Indonesia, Provinces: Jakarta Raya"	36001504	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+780	"Indonesia, Provinces: Jambi"	36001505	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+781	"Indonesia, Provinces: Jawa Barat"	36001506	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+782	"Indonesia, Provinces: Jawa Tengah"	36001507	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+783	"Indonesia, Provinces: Jawa Timur"	36001508	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+784	"Indonesia, Provinces: Kalimantan Barat"	36001509	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+785	"Indonesia, Provinces: Kalimantan Selatan"	36001510	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+786	"Indonesia, Provinces: Kalimantan Tengah"	36001511	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+787	"Indonesia, Provinces: Kalimantan Timur"	36001512	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+788	"Indonesia, Provinces: Lampung"	36001514	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+789	"Indonesia, Provinces: Maluku"	36001516	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+790	"Indonesia, Provinces: Nusa Tenggara Barat"	36001517	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+791	"Indonesia, Provinces: Nusa Tenggara Timur"	36001518	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+792	"Indonesia, Provinces: Papua"	36001519	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+793	"Indonesia, Provinces: Riau"	36001520	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+794	"Indonesia, Provinces: Sulawesi Selatan"	36001522	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+795	"Indonesia, Provinces: Sulawesi Tengah"	36001523	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+796	"Indonesia, Provinces: Sulawesi Tenggara"	36001524	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+797	"Indonesia, Provinces: Sulawesi Utara"	36001525	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+798	"Indonesia, Provinces: Sumatera Barat"	36001526	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+799	"Indonesia, Provinces: Sumatera Selatan"	36001527	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+800	"Indonesia, Provinces: Sumatera Utara"	36001528	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+801	"Indonesia, Provinces: DI Yogyakarta"	36001529	360	"Indonesia"	920	"South-Eastern Asia"	4	2
+802	"Iran, Provinces: Ardabil"	36401530	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+803	"Iran, Provinces: Bushehr"	36401531	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+804	"Iran, Provinces: Charmahal B."	36401532	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+805	"Iran, Provinces: Azerbaijan E."	36401533	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+806	"Iran, Provinces: Esfahan"	36401534	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+807	"Iran, Provinces: Fars"	36401535	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+808	"Iran, Provinces: Gilan"	36401536	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+809	"Iran, Provinces: Hamadan"	36401538	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+810	"Iran, Provinces: Hormozgan"	36401539	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+811	"Iran, Provinces: Ilam"	36401540	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+812	"Iran, Provinces: Kerman"	36401541	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+813	"Iran, Provinces: Kermanshah"	36401542	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+814	"Iran, Provinces: Khouzistan"	36401543	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+815	"Iran, Provinces: Kohgilooye"	36401544	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+816	"Iran, Provinces: Kurdistan"	36401545	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+817	"Iran, Provinces: Loristan"	36401546	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+818	"Iran, Provinces: Markazy"	36401547	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+819	"Iran, Provinces: Mazandaran"	36401548	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+820	"Iran, Provinces: Qom"	36401551	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+821	"Iran, Provinces: Khorasan"	36401552	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+822	"Iran, Provinces: Semnan"	36401553	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+823	"Iran, Provinces: Sistan & B."	36401554	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+824	"Iran, Provinces: Tehran"	36401556	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+825	"Iran, Provinces: Azerbaijan W."	36401557	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+826	"Iran, Provinces: Yazd"	36401558	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+827	"Iran, Provinces: Zanjan"	36401559	364	"Iran (Islamic Republic of)"	5501	"Southern Asia"	4	2
+828	"Italy, Regions: Abruzzo"	38001611	380	"Italy"	925	"Southern Europe"	4	2
+829	"Italy, Regions: Puglia"	38001612	380	"Italy"	925	"Southern Europe"	4	2
+830	"Italy, Regions: Basilicata"	38001613	380	"Italy"	925	"Southern Europe"	4	2
+831	"Italy, Regions: Calabria"	38001614	380	"Italy"	925	"Southern Europe"	4	2
+832	"Italy, Regions: Campania"	38001615	380	"Italy"	925	"Southern Europe"	4	2
+833	"Italy, Regions: Emilia Romagna"	38001616	380	"Italy"	925	"Southern Europe"	4	2
+834	"Italy, Regions: Friuli Venezia Giulia"	38001617	380	"Italy"	925	"Southern Europe"	4	2
+835	"Italy, Regions: Lazio"	38001618	380	"Italy"	925	"Southern Europe"	4	2
+836	"Italy, Regions: Liguria"	38001619	380	"Italy"	925	"Southern Europe"	4	2
+837	"Italy, Regions: Lombardia"	38001620	380	"Italy"	925	"Southern Europe"	4	2
+838	"Italy, Regions: Marche"	38001621	380	"Italy"	925	"Southern Europe"	4	2
+839	"Italy, Regions: Molise"	38001622	380	"Italy"	925	"Southern Europe"	4	2
+840	"Italy, Regions: Piemonte"	38001623	380	"Italy"	925	"Southern Europe"	4	2
+841	"Italy, Regions: Sardegna"	38001624	380	"Italy"	925	"Southern Europe"	4	2
+842	"Italy, Regions: Sicilia"	38001625	380	"Italy"	925	"Southern Europe"	4	2
+843	"Italy, Regions: Toscana"	38001626	380	"Italy"	925	"Southern Europe"	4	2
+844	"Italy, Regions: Trentino Alto Adige"	38001627	380	"Italy"	925	"Southern Europe"	4	2
+845	"Italy, Regions: Umbria"	38001628	380	"Italy"	925	"Southern Europe"	4	2
+846	"Italy, Regions: Valle d'Aosta"	38001629	380	"Italy"	925	"Southern Europe"	4	2
+847	"Italy, Regions: Veneto"	38001630	380	"Italy"	925	"Southern Europe"	4	2
+848	"Italy, Regions: Provincia Autonoma Bolzano-Bozen"	38018605	380	"Italy"	925	"Southern Europe"	4	2
+849	"Japan, Prefectures: Aichi"	39201645	392	"Japan"	906	"Eastern Asia"	4	2
+850	"Japan, Prefectures: Akita Prefecture"	39201646	392	"Japan"	906	"Eastern Asia"	4	2
+851	"Japan, Prefectures: Aomori Prefecture"	39201647	392	"Japan"	906	"Eastern Asia"	4	2
+852	"Japan, Prefectures: Chiba"	39201648	392	"Japan"	906	"Eastern Asia"	4	2
+853	"Japan, Prefectures: Ehime Prefecture"	39201649	392	"Japan"	906	"Eastern Asia"	4	2
+854	"Japan, Prefectures: Fukui"	39201650	392	"Japan"	906	"Eastern Asia"	4	2
+855	"Japan, Prefectures: Fukuoka"	39201651	392	"Japan"	906	"Eastern Asia"	4	2
+856	"Japan, Prefectures: Fukushima Prefecture"	39201652	392	"Japan"	906	"Eastern Asia"	4	2
+857	"Japan, Prefectures: Gifu Prefecture"	39201653	392	"Japan"	906	"Eastern Asia"	4	2
+858	"Japan, Prefectures: Gunma Prefecture"	39201654	392	"Japan"	906	"Eastern Asia"	4	2
+859	"Japan, Prefectures: Hiroshima"	39201655	392	"Japan"	906	"Eastern Asia"	4	2
+860	"Japan, Prefectures: Hokkaido"	39201656	392	"Japan"	906	"Eastern Asia"	4	2
+861	"Japan, Prefectures: Hyogo Prefecture"	39201657	392	"Japan"	906	"Eastern Asia"	4	2
+862	"Japan, Prefectures: Ibaraki Prefecture"	39201658	392	"Japan"	906	"Eastern Asia"	4	2
+863	"Japan, Prefectures: Ishikawa"	39201659	392	"Japan"	906	"Eastern Asia"	4	2
+864	"Japan, Prefectures: Iwate Prefecture"	39201660	392	"Japan"	906	"Eastern Asia"	4	2
+865	"Japan, Prefectures: Kagawa"	39201661	392	"Japan"	906	"Eastern Asia"	4	2
+866	"Japan, Prefectures: Kagoshima Prefecture"	39201662	392	"Japan"	906	"Eastern Asia"	4	2
+867	"Japan, Prefectures: Kanagawa Prefecture"	39201663	392	"Japan"	906	"Eastern Asia"	4	2
+868	"Japan, Prefectures: Kochi"	39201664	392	"Japan"	906	"Eastern Asia"	4	2
+869	"Japan, Prefectures: Kumamoto Prefecture"	39201665	392	"Japan"	906	"Eastern Asia"	4	2
+870	"Japan, Prefectures: Kyoto"	39201666	392	"Japan"	906	"Eastern Asia"	4	2
+871	"Japan, Prefectures: Mie Prefecture"	39201667	392	"Japan"	906	"Eastern Asia"	4	2
+872	"Japan, Prefectures: Miyagi"	39201668	392	"Japan"	906	"Eastern Asia"	4	2
+873	"Japan, Prefectures: Miyazaki"	39201669	392	"Japan"	906	"Eastern Asia"	4	2
+874	"Japan, Prefectures: Nagano Prefecture"	39201670	392	"Japan"	906	"Eastern Asia"	4	2
+875	"Japan, Prefectures: Nagasaki Prefecture"	39201671	392	"Japan"	906	"Eastern Asia"	4	2
+876	"Japan, Prefectures: Nara"	39201672	392	"Japan"	906	"Eastern Asia"	4	2
+877	"Japan, Prefectures: Niigata Prefecture"	39201673	392	"Japan"	906	"Eastern Asia"	4	2
+878	"Japan, Prefectures: Oita Prefecture"	39201674	392	"Japan"	906	"Eastern Asia"	4	2
+879	"Japan, Prefectures: Okayama Prefecture"	39201675	392	"Japan"	906	"Eastern Asia"	4	2
+880	"Japan, Prefectures: Okinawa Prefecture"	39201676	392	"Japan"	906	"Eastern Asia"	4	2
+881	"Japan, Prefectures: Osaka prefecture"	39201677	392	"Japan"	906	"Eastern Asia"	4	2
+882	"Japan, Prefectures: Saga"	39201678	392	"Japan"	906	"Eastern Asia"	4	2
+883	"Japan, Prefectures: Saitama"	39201679	392	"Japan"	906	"Eastern Asia"	4	2
+884	"Japan, Prefectures: Shiga Prefecture"	39201680	392	"Japan"	906	"Eastern Asia"	4	2
+885	"Japan, Prefectures: Shimane Prefecture"	39201681	392	"Japan"	906	"Eastern Asia"	4	2
+886	"Japan, Prefectures: Shizuoka Prefecture"	39201682	392	"Japan"	906	"Eastern Asia"	4	2
+887	"Japan, Prefectures: Tochigi Prefecture"	39201683	392	"Japan"	906	"Eastern Asia"	4	2
+888	"Japan, Prefectures: Tokushima Prefecture"	39201684	392	"Japan"	906	"Eastern Asia"	4	2
+889	"Japan, Prefectures: Tokyo"	39201685	392	"Japan"	906	"Eastern Asia"	4	2
+890	"Japan, Prefectures: Tottori Prefecture"	39201686	392	"Japan"	906	"Eastern Asia"	4	2
+891	"Japan, Prefectures: Toyama"	39201687	392	"Japan"	906	"Eastern Asia"	4	2
+892	"Japan, Prefectures: Wakayama Prefecture"	39201688	392	"Japan"	906	"Eastern Asia"	4	2
+893	"Japan, Prefectures: Yamagata Prefecture"	39201689	392	"Japan"	906	"Eastern Asia"	4	2
+894	"Japan, Prefectures: Yamaguchi"	39201690	392	"Japan"	906	"Eastern Asia"	4	2
+895	"Japan, Prefectures: Yamanashi Prefecture"	39201691	392	"Japan"	906	"Eastern Asia"	4	2
+896	"Republic of Korea, Provinces: Busan"	41002735	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+897	"Republic of Korea, Provinces: Chungcheongbuk-do"	41002736	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+898	"Republic of Korea, Provinces: Chungcheongnam-do"	41002737	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+899	"Republic of Korea, Provinces: Daegu"	41002738	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+900	"Republic of Korea, Provinces: Daejeon"	41002739	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+901	"Republic of Korea, Provinces: Gangwon-do"	41002740	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+902	"Republic of Korea, Provinces: Gwangju"	41002741	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+903	"Republic of Korea, Provinces: Gyeonggi-do"	41002742	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+904	"Republic of Korea, Provinces: Gyeongsangbuk-do"	41002743	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+905	"Republic of Korea, Provinces: Gyeongsangnam-do"	41002744	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+906	"Republic of Korea, Provinces: Incheon"	41002745	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+907	"Republic of Korea, Provinces: Jeju-do"	41002746	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+908	"Republic of Korea, Provinces: Jeollabuk-do"	41002747	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+909	"Republic of Korea, Provinces: Jeollanam-do"	41002748	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+910	"Republic of Korea, Provinces: Seoul"	41002749	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+911	"Republic of Korea, Provinces: Ulsan"	41002750	410	"Republic of Korea"	906	"Eastern Asia"	4	2
+912	"Lithuania: Urban"	44000001	440	"Lithuania"	924	"Northern Europe"	4	2
+913	"Lithuania: Rural"	44000002	440	"Lithuania"	924	"Northern Europe"	4	2
+914	"Estados Unidos Mexicanos, States: Aguascalientes"	48401900	484	"Mexico"	916	"Central America"	4	2
+915	"Estados Unidos Mexicanos, States: Baja California"	48401901	484	"Mexico"	916	"Central America"	4	2
+916	"Estados Unidos Mexicanos, States: Baja California Sur"	48401902	484	"Mexico"	916	"Central America"	4	2
+917	"Estados Unidos Mexicanos, States: Campeche"	48401903	484	"Mexico"	916	"Central America"	4	2
+918	"Estados Unidos Mexicanos, States: Chiapas"	48401904	484	"Mexico"	916	"Central America"	4	2
+919	"Estados Unidos Mexicanos, States: Chihuahua"	48401905	484	"Mexico"	916	"Central America"	4	2
+920	"Estados Unidos Mexicanos, States: Coahuila de Zaragoza"	48401906	484	"Mexico"	916	"Central America"	4	2
+921	"Estados Unidos Mexicanos, States: Colima"	48401907	484	"Mexico"	916	"Central America"	4	2
+922	"Estados Unidos Mexicanos, States: Distrito Federal"	48401908	484	"Mexico"	916	"Central America"	4	2
+923	"Estados Unidos Mexicanos, States: Durango"	48401909	484	"Mexico"	916	"Central America"	4	2
+924	"Estados Unidos Mexicanos, States: Guanajuato"	48401910	484	"Mexico"	916	"Central America"	4	2
+925	"Estados Unidos Mexicanos, States: Guerrero"	48401911	484	"Mexico"	916	"Central America"	4	2
+926	"Estados Unidos Mexicanos, States: Hidalgo"	48401912	484	"Mexico"	916	"Central America"	4	2
+927	"Estados Unidos Mexicanos, States: Jalisco"	48401913	484	"Mexico"	916	"Central America"	4	2
+928	"Estados Unidos Mexicanos, States: M?xico"	48401914	484	"Mexico"	916	"Central America"	4	2
+929	"Estados Unidos Mexicanos, States: Michoacßn de Ocampo"	48401915	484	"Mexico"	916	"Central America"	4	2
+930	"Estados Unidos Mexicanos, States: Morelos"	48401916	484	"Mexico"	916	"Central America"	4	2
+931	"Estados Unidos Mexicanos, States: Nayarit"	48401917	484	"Mexico"	916	"Central America"	4	2
+932	"Estados Unidos Mexicanos, States: Nuevo Le?n"	48401918	484	"Mexico"	916	"Central America"	4	2
+933	"Estados Unidos Mexicanos, States: Oaxaca"	48401919	484	"Mexico"	916	"Central America"	4	2
+934	"Estados Unidos Mexicanos, States: Puebla"	48401920	484	"Mexico"	916	"Central America"	4	2
+935	"Estados Unidos Mexicanos, States: Quer?taro"	48401921	484	"Mexico"	916	"Central America"	4	2
+936	"Estados Unidos Mexicanos, States: Quintana Roo"	48401922	484	"Mexico"	916	"Central America"	4	2
+937	"Estados Unidos Mexicanos, States: San Luis Potos?"	48401923	484	"Mexico"	916	"Central America"	4	2
+938	"Estados Unidos Mexicanos, States: Sinaloa"	48401924	484	"Mexico"	916	"Central America"	4	2
+939	"Estados Unidos Mexicanos, States: Sonora"	48401925	484	"Mexico"	916	"Central America"	4	2
+940	"Estados Unidos Mexicanos, States: Tabasco"	48401926	484	"Mexico"	916	"Central America"	4	2
+941	"Estados Unidos Mexicanos, States: Tamaulipas"	48401927	484	"Mexico"	916	"Central America"	4	2
+942	"Estados Unidos Mexicanos, States: Tlaxcala"	48401928	484	"Mexico"	916	"Central America"	4	2
+943	"Estados Unidos Mexicanos, States: Veracruz de Ignacio de la Llave"	48401929	484	"Mexico"	916	"Central America"	4	2
+944	"Estados Unidos Mexicanos, States: Yucatßn"	48401930	484	"Mexico"	916	"Central America"	4	2
+945	"Estados Unidos Mexicanos, States: Zacatecas"	48401931	484	"Mexico"	916	"Central America"	4	2
+946	"Moldova: Urban"	49800001	498	"Republic of Moldova"	923	"Eastern Europe"	4	2
+947	"Moldova: Rural"	49800002	498	"Republic of Moldova"	923	"Eastern Europe"	4	2
+948	"Norway, Counties: Akershus"	57802175	578	"Norway"	924	"Northern Europe"	4	2
+949	"Norway, Counties: Østfold"	57802176	578	"Norway"	924	"Northern Europe"	4	2
+950	"Norway, Counties: Aust-Agder"	57802177	578	"Norway"	924	"Northern Europe"	4	2
+951	"Norway, Counties: Buskerud"	57802178	578	"Norway"	924	"Northern Europe"	4	2
+952	"Norway, Counties: Finnmark Finnmárku"	57802179	578	"Norway"	924	"Northern Europe"	4	2
+953	"Norway, Counties: Hedmark"	57802180	578	"Norway"	924	"Northern Europe"	4	2
+954	"Norway, Counties: Hordaland"	57802181	578	"Norway"	924	"Northern Europe"	4	2
+955	"Norway, Counties: Møre og Romsdal"	57802182	578	"Norway"	924	"Northern Europe"	4	2
+956	"Norway, Counties: Nord-Trøndelag"	57802183	578	"Norway"	924	"Northern Europe"	4	2
+957	"Norway, Counties: Nordland"	57802184	578	"Norway"	924	"Northern Europe"	4	2
+958	"Norway, Counties: Oppland"	57802185	578	"Norway"	924	"Northern Europe"	4	2
+959	"Norway, Counties: Oslo"	57802186	578	"Norway"	924	"Northern Europe"	4	2
+960	"Norway, Counties: Rogaland"	57802187	578	"Norway"	924	"Northern Europe"	4	2
+961	"Norway, Counties: Sogn og Fjordane"	57802188	578	"Norway"	924	"Northern Europe"	4	2
+962	"Norway, Counties: Sør-Trøndelag"	57802189	578	"Norway"	924	"Northern Europe"	4	2
+963	"Norway, Counties: Telemark"	57802190	578	"Norway"	924	"Northern Europe"	4	2
+964	"Norway, Counties: Troms Romsa"	57802191	578	"Norway"	924	"Northern Europe"	4	2
+965	"Norway, Counties: Vest-Agder"	57802192	578	"Norway"	924	"Northern Europe"	4	2
+966	"Norway, Counties: Vestfold"	57802193	578	"Norway"	924	"Northern Europe"	4	2
+967	"Panama, Provinces: Bocas Del Toro"	59100001	591	"Panama"	916	"Central America"	4	2
+968	"Panama, Provinces: Coclé"	59100002	591	"Panama"	916	"Central America"	4	2
+969	"Panama, Provinces: Colón"	59100003	591	"Panama"	916	"Central America"	4	2
+970	"Panama, Provinces: Chiriquí"	59100004	591	"Panama"	916	"Central America"	4	2
+971	"Panama, Provinces: Darién"	59100005	591	"Panama"	916	"Central America"	4	2
+972	"Panama, Provinces: Herrera"	59100006	591	"Panama"	916	"Central America"	4	2
+973	"Panama, Provinces: Los Santos"	59100007	591	"Panama"	916	"Central America"	4	2
+974	"Panama, Provinces: Panamá"	59100008	591	"Panama"	916	"Central America"	4	2
+975	"Panama, Provinces: Veraguas"	59100009	591	"Panama"	916	"Central America"	4	2
+976	"Panama, Provinces: Comarca Kuna Yala"	59100010	591	"Panama"	916	"Central America"	4	2
+977	"Panama, Provinces: Comarca Emberá"	59100011	591	"Panama"	916	"Central America"	4	2
+978	"Panama, Provinces: Comarca Ngöbe Buglé"	59100012	591	"Panama"	916	"Central America"	4	2
+979	"Paraguay, Departments: Asuncion"	60000001	600	"Paraguay"	931	"South America"	4	2
+980	"Paraguay, Departments: Concepcion"	60000002	600	"Paraguay"	931	"South America"	4	2
+981	"Paraguay, Departments: San Pedro"	60000003	600	"Paraguay"	931	"South America"	4	2
+982	"Paraguay, Departments: Cordillera"	60000004	600	"Paraguay"	931	"South America"	4	2
+983	"Paraguay, Departments: Guaira"	60000005	600	"Paraguay"	931	"South America"	4	2
+984	"Paraguay, Departments: Caaguazu"	60000006	600	"Paraguay"	931	"South America"	4	2
+985	"Paraguay, Departments: Caazapa"	60000007	600	"Paraguay"	931	"South America"	4	2
+986	"Paraguay, Departments: Itapua"	60000008	600	"Paraguay"	931	"South America"	4	2
+987	"Paraguay, Departments: Misiones"	60000009	600	"Paraguay"	931	"South America"	4	2
+988	"Paraguay, Departments: Paraguari"	60000010	600	"Paraguay"	931	"South America"	4	2
+989	"Paraguay, Departments: Alto Parana"	60000011	600	"Paraguay"	931	"South America"	4	2
+990	"Paraguay, Departments: Central"	60000012	600	"Paraguay"	931	"South America"	4	2
+991	"Paraguay, Departments: Ñeembucú"	60000013	600	"Paraguay"	931	"South America"	4	2
+992	"Paraguay, Departments: Amambay"	60000014	600	"Paraguay"	931	"South America"	4	2
+993	"Paraguay, Departments: Canindeyu"	60000015	600	"Paraguay"	931	"South America"	4	2
+994	"Paraguay, Departments: Presidente Hayes"	60000016	600	"Paraguay"	931	"South America"	4	2
+995	"Paraguay, Departments: Alto Paraguay"	60000017	600	"Paraguay"	931	"South America"	4	2
+996	"Paraguay, Departments: Boqueron"	60000019	600	"Paraguay"	931	"South America"	4	2
+997	"Poland, Urban-Rural: Urban"	61600001	616	"Poland"	923	"Eastern Europe"	4	2
+998	"Poland, Urban-Rural: Rural"	61600002	616	"Poland"	923	"Eastern Europe"	4	2
+999	"Poland, Voivodships (Provinces): L?dzkie"	61602331	616	"Poland"	923	"Eastern Europe"	4	2
+1000	"Poland, Voivodships (Provinces): Swietokrzyskie"	61602332	616	"Poland"	923	"Eastern Europe"	4	2
+1001	"Poland, Voivodships (Provinces): Wielkopolskie"	61602333	616	"Poland"	923	"Eastern Europe"	4	2
+1002	"Poland, Voivodships (Provinces): Kujawsko-pomorskie"	61602334	616	"Poland"	923	"Eastern Europe"	4	2
+1003	"Poland, Voivodships (Provinces): Malopolskie"	61602335	616	"Poland"	923	"Eastern Europe"	4	2
+1004	"Poland, Voivodships (Provinces): Dolnoslaskie"	61602336	616	"Poland"	923	"Eastern Europe"	4	2
+1005	"Poland, Voivodships (Provinces): Lubelskie"	61602337	616	"Poland"	923	"Eastern Europe"	4	2
+1006	"Poland, Voivodships (Provinces): Lubuskie"	61602338	616	"Poland"	923	"Eastern Europe"	4	2
+1007	"Poland, Voivodships (Provinces): Mazowieckie"	61602339	616	"Poland"	923	"Eastern Europe"	4	2
+1008	"Poland, Voivodships (Provinces): Opolskie"	61602340	616	"Poland"	923	"Eastern Europe"	4	2
+1009	"Poland, Voivodships (Provinces): Podlaskie"	61602341	616	"Poland"	923	"Eastern Europe"	4	2
+1010	"Poland, Voivodships (Provinces): Pomorskie"	61602342	616	"Poland"	923	"Eastern Europe"	4	2
+1011	"Poland, Voivodships (Provinces): Slaskie"	61602343	616	"Poland"	923	"Eastern Europe"	4	2
+1012	"Poland, Voivodships (Provinces): Podkarpackie"	61602344	616	"Poland"	923	"Eastern Europe"	4	2
+1013	"Poland, Voivodships (Provinces): Warminsko-mazurskie"	61602345	616	"Poland"	923	"Eastern Europe"	4	2
+1014	"Poland, Voivodships (Provinces): Zachodniopomorskie"	61602346	616	"Poland"	923	"Eastern Europe"	4	2
+1015	"Portugal, Regions: Regi?o Aut?noma dos A?ores"	62000010	620	"Portugal"	925	"Southern Europe"	4	2
+1016	"Portugal, Regions: Regi?o Aut?noma da Madeira"	62000011	620	"Portugal"	925	"Southern Europe"	4	2
+1017	"Portugal, Regions: Norte"	62000012	620	"Portugal"	925	"Southern Europe"	4	2
+1018	"Portugal, Regions: Centro"	62000013	620	"Portugal"	925	"Southern Europe"	4	2
+1019	"Portugal, Regions: Lisboa"	62000014	620	"Portugal"	925	"Southern Europe"	4	2
+1020	"Portugal, Regions: Algarve"	62000015	620	"Portugal"	925	"Southern Europe"	4	2
+1021	"Portugal, Regions: Alentejo"	62000018	620	"Portugal"	925	"Southern Europe"	4	2
+1022	"Romania, Counties: Alba"	64200854	642	"Romania"	923	"Eastern Europe"	4	2
+1023	"Romania, Counties: Arad"	64200855	642	"Romania"	923	"Eastern Europe"	4	2
+1024	"Romania, Counties: Arges"	64200856	642	"Romania"	923	"Eastern Europe"	4	2
+1025	"Romania, Counties: Bacau"	64200857	642	"Romania"	923	"Eastern Europe"	4	2
+1026	"Romania, Counties: Bihor"	64200858	642	"Romania"	923	"Eastern Europe"	4	2
+1027	"Romania, Counties: Bistrita-Nasaud"	64200859	642	"Romania"	923	"Eastern Europe"	4	2
+1028	"Romania, Counties: Botosani"	64200860	642	"Romania"	923	"Eastern Europe"	4	2
+1029	"Romania, Counties: Braila"	64202450	642	"Romania"	923	"Eastern Europe"	4	2
+1030	"Romania, Counties: Brasov"	64202451	642	"Romania"	923	"Eastern Europe"	4	2
+1031	"Romania, Counties: Bucharest"	64202452	642	"Romania"	923	"Eastern Europe"	4	2
+1032	"Romania, Counties: Buzau"	64202453	642	"Romania"	923	"Eastern Europe"	4	2
+1033	"Romania, Counties: Calarasi"	64202454	642	"Romania"	923	"Eastern Europe"	4	2
+1034	"Romania, Counties: Caras-Severin"	64202455	642	"Romania"	923	"Eastern Europe"	4	2
+1035	"Romania, Counties: Cluj"	64202456	642	"Romania"	923	"Eastern Europe"	4	2
+1036	"Romania, Counties: Constanta"	64202457	642	"Romania"	923	"Eastern Europe"	4	2
+1037	"Romania, Counties: Covasna"	64202458	642	"Romania"	923	"Eastern Europe"	4	2
+1038	"Romania, Counties: Dambovita"	64202459	642	"Romania"	923	"Eastern Europe"	4	2
+1039	"Romania, Counties: Dolj"	64202460	642	"Romania"	923	"Eastern Europe"	4	2
+1040	"Romania, Counties: Galati"	64202461	642	"Romania"	923	"Eastern Europe"	4	2
+1041	"Romania, Counties: Giurgiu"	64202462	642	"Romania"	923	"Eastern Europe"	4	2
+1042	"Romania, Counties: Gorj"	64202463	642	"Romania"	923	"Eastern Europe"	4	2
+1043	"Romania, Counties: Harghita"	64202464	642	"Romania"	923	"Eastern Europe"	4	2
+1044	"Romania, Counties: Hunedoara"	64202465	642	"Romania"	923	"Eastern Europe"	4	2
+1045	"Romania, Counties: Ialomita"	64202466	642	"Romania"	923	"Eastern Europe"	4	2
+1046	"Romania, Counties: Iasi"	64202467	642	"Romania"	923	"Eastern Europe"	4	2
+1047	"Romania, Counties: Maramures"	64202468	642	"Romania"	923	"Eastern Europe"	4	2
+1048	"Romania, Counties: Mehedinti"	64202469	642	"Romania"	923	"Eastern Europe"	4	2
+1049	"Romania, Counties: Mures"	64202470	642	"Romania"	923	"Eastern Europe"	4	2
+1050	"Romania, Counties: Neamt"	64202471	642	"Romania"	923	"Eastern Europe"	4	2
+1051	"Romania, Counties: Olt"	64202472	642	"Romania"	923	"Eastern Europe"	4	2
+1052	"Romania, Counties: Prahova"	64202473	642	"Romania"	923	"Eastern Europe"	4	2
+1053	"Romania, Counties: Salaj"	64202474	642	"Romania"	923	"Eastern Europe"	4	2
+1054	"Romania, Counties: Satu Mare"	64202475	642	"Romania"	923	"Eastern Europe"	4	2
+1055	"Romania, Counties: Sibiu"	64202476	642	"Romania"	923	"Eastern Europe"	4	2
+1056	"Romania, Counties: Suceava"	64202477	642	"Romania"	923	"Eastern Europe"	4	2
+1057	"Romania, Counties: Teleorman"	64202478	642	"Romania"	923	"Eastern Europe"	4	2
+1058	"Romania, Counties: Timis"	64202479	642	"Romania"	923	"Eastern Europe"	4	2
+1059	"Romania, Counties: Tulcea"	64202480	642	"Romania"	923	"Eastern Europe"	4	2
+1060	"Romania, Counties: Valcea"	64202481	642	"Romania"	923	"Eastern Europe"	4	2
+1061	"Romania, Counties: Vaslui"	64202482	642	"Romania"	923	"Eastern Europe"	4	2
+1062	"Romania, Counties: Vrancea"	64202483	642	"Romania"	923	"Eastern Europe"	4	2
+1063	"Romania, Counties: Ilfov"	64202484	642	"Romania"	923	"Eastern Europe"	4	2
+1064	"The Russian Federation, Regions: Nenets autonomous district (Rural)"	64301112	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1065	"The Russian Federation, Regions: Nenets autonomous district"	64301110	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1066	"The Russian Federation, Regions: Nenets autonomous district (Urban)"	64301111	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1067	"The Russian Federation, Regions: Khanty-Mansi autonomous area (Rural)"	64301712	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1068	"The Russian Federation, Regions: Khanty-Mansi autonomous area"	64301710	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1069	"The Russian Federation, Regions: Khanty-Mansi autonomous area (Urban)"	64301711	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1070	"The Russian Federation, Regions: Yamalo-Nenets autonomous area (Rural)"	64302712	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1071	"The Russian Federation, Regions: Yamalo-Nenets autonomous area"	64302710	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1072	"The Russian Federation, Regions: Yamalo-Nenets autonomous area (Urban)"	64302711	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1073	"The Russian Federation, Regions: Altai kray  (Rural)"	64311012	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1074	"The Russian Federation, Regions: Altai kray "	64311010	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1075	"The Russian Federation, Regions: Altai kray  (Urban)"	64311011	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1076	"The Russian Federation, Regions: Krasnodar kray (Rural)"	64311032	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1077	"The Russian Federation, Regions: Krasnodar kray"	64311030	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1078	"The Russian Federation, Regions: Krasnodar kray (Urban)"	64311031	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1079	"The Russian Federation, Regions: Krasnoyarsk kray  (Rural)"	64311042	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1080	"The Russian Federation, Regions: Krasnoyarsk kray "	64311040	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1081	"The Russian Federation, Regions: Krasnoyarsk kray  (Urban)"	64311041	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1082	"The Russian Federation, Regions: Primorsky kray (Rural)"	64311052	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1083	"The Russian Federation, Regions: Primorsky kray"	64311050	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1084	"The Russian Federation, Regions: Primorsky kray (Urban)"	64311051	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1085	"The Russian Federation, Regions: Stavropol kray (Rural)"	64311072	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1086	"The Russian Federation, Regions: Stavropol kray"	64311070	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1087	"The Russian Federation, Regions: Stavropol kray (Urban)"	64311071	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1088	"The Russian Federation, Regions: Khabarovsk kray (Rural)"	64311082	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1089	"The Russian Federation, Regions: Khabarovsk kray"	64311080	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1090	"The Russian Federation, Regions: Khabarovsk kray (Urban)"	64311081	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1091	"The Russian Federation, Regions: Amur oblast (Rural)"	64311102	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1092	"The Russian Federation, Regions: Amur oblast"	64311100	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1093	"The Russian Federation, Regions: Amur oblast (Urban)"	64311101	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1094	"The Russian Federation, Regions: Arkhangelsk oblast (Rural)"	64311112	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1095	"The Russian Federation, Regions: Arkhangelsk oblast"	64311110	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1096	"The Russian Federation, Regions: Arkhangelsk oblast (Urban)"	64311111	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1097	"The Russian Federation, Regions: Astrakhan oblast (Rural)"	64311122	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1098	"The Russian Federation, Regions: Astrakhan oblast"	64311120	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1099	"The Russian Federation, Regions: Astrakhan oblast (Urban)"	64311121	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1100	"The Russian Federation, Regions: Belgorod oblast (Rural)"	64311142	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1101	"The Russian Federation, Regions: Belgorod oblast"	64311140	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1102	"The Russian Federation, Regions: Belgorod oblast (Urban)"	64311141	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1103	"The Russian Federation, Regions: Bryansk oblast (Rural)"	64311152	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1104	"The Russian Federation, Regions: Bryansk oblast"	64311150	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1105	"The Russian Federation, Regions: Bryansk oblast (Urban)"	64311151	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1106	"The Russian Federation, Regions: Vladimir oblast (Rural)"	64311172	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1107	"The Russian Federation, Regions: Vladimir oblast"	64311170	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1108	"The Russian Federation, Regions: Vladimir oblast (Urban)"	64311171	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1109	"The Russian Federation, Regions: Volgograd oblast (Rural)"	64311182	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1110	"The Russian Federation, Regions: Volgograd oblast"	64311180	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1111	"The Russian Federation, Regions: Volgograd oblast (Urban)"	64311181	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1112	"The Russian Federation, Regions: Vologda oblast (Rural)"	64311192	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1113	"The Russian Federation, Regions: Vologda oblast"	64311190	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1114	"The Russian Federation, Regions: Vologda oblast (Urban)"	64311191	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1115	"The Russian Federation, Regions: Voronezh oblast (Rural)"	64311202	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1116	"The Russian Federation, Regions: Voronezh oblast"	64311200	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1117	"The Russian Federation, Regions: Voronezh oblast (Urban)"	64311201	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1118	"The Russian Federation, Regions: Nizhny Novgorod oblast (Rural)"	64311222	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1119	"The Russian Federation, Regions: Nizhny Novgorod oblast"	64311220	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1120	"The Russian Federation, Regions: Nizhny Novgorod oblast (Urban)"	64311221	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1121	"The Russian Federation, Regions: Ivanovo oblast (Rural)"	64311242	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1122	"The Russian Federation, Regions: Ivanovo oblast"	64311240	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1123	"The Russian Federation, Regions: Ivanovo oblast (Urban)"	64311241	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1124	"The Russian Federation, Regions: Irkutsk oblast (Rural)"	64311252	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1125	"The Russian Federation, Regions: Irkutsk oblast"	64311250	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1126	"The Russian Federation, Regions: Irkutsk oblast (Urban)"	64311251	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1127	"The Russian Federation, Regions: Republic of Ingushetia  (Rural)"	64311262	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1128	"The Russian Federation, Regions: Republic of Ingushetia "	64311260	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1129	"The Russian Federation, Regions: Republic of Ingushetia  (Urban)"	64311261	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1130	"The Russian Federation, Regions: Kaliningrad oblast (Rural)"	64311272	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1131	"The Russian Federation, Regions: Kaliningrad oblast"	64311270	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1132	"The Russian Federation, Regions: Kaliningrad oblast (Urban)"	64311271	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1133	"The Russian Federation, Regions: Tver oblast (Rural)"	64311282	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1134	"The Russian Federation, Regions: Tver oblast"	64311280	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1135	"The Russian Federation, Regions: Tver oblast (Urban)"	64311281	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1136	"The Russian Federation, Regions: Kaluga oblast (Rural)"	64311292	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1137	"The Russian Federation, Regions: Kaluga oblast"	64311290	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1138	"The Russian Federation, Regions: Kaluga oblast (Urban)"	64311291	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1139	"The Russian Federation, Regions: Kamchatka kray (Rural)"	64311302	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1140	"The Russian Federation, Regions: Kamchatka kray"	64311300	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1141	"The Russian Federation, Regions: Kamchatka kray (Urban)"	64311301	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1142	"The Russian Federation, Regions: Kemerovo oblast (Rural)"	64311322	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1143	"The Russian Federation, Regions: Kemerovo oblast"	64311320	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1144	"The Russian Federation, Regions: Kemerovo oblast (Urban)"	64311321	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1145	"The Russian Federation, Regions: Kirov oblast (Rural)"	64311332	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1146	"The Russian Federation, Regions: Kirov oblast"	64311330	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1147	"The Russian Federation, Regions: Kirov oblast (Urban)"	64311331	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1148	"The Russian Federation, Regions: Kostroma oblast (Rural)"	64311342	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1149	"The Russian Federation, Regions: Kostroma oblast"	64311340	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1150	"The Russian Federation, Regions: Kostroma oblast (Urban)"	64311341	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1151	"The Russian Federation, Regions: Samara oblast (Rural)"	64311362	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1152	"The Russian Federation, Regions: Samara oblast"	64311360	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1153	"The Russian Federation, Regions: Samara oblast (Urban)"	64311361	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1154	"The Russian Federation, Regions: Kurgan oblast (Rural)"	64311372	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1155	"The Russian Federation, Regions: Kurgan oblast"	64311370	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1156	"The Russian Federation, Regions: Kurgan oblast (Urban)"	64311371	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1157	"The Russian Federation, Regions: Kursk oblast (Rural)"	64311382	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1158	"The Russian Federation, Regions: Kursk oblast"	64311380	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1159	"The Russian Federation, Regions: Kursk oblast (Urban)"	64311381	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1160	"The Russian Federation, Regions: Sankt-Petersburg"	64311400	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1161	"The Russian Federation, Regions: Sankt-Petersburg (Urban)"	64311401	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1162	"The Russian Federation, Regions: Leningrad oblast (Rural)"	64311412	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1163	"The Russian Federation, Regions: Leningrad oblast"	64311410	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1164	"The Russian Federation, Regions: Leningrad oblast (Urban)"	64311411	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1165	"The Russian Federation, Regions: Lipetzk oblast (Rural)"	64311422	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1166	"The Russian Federation, Regions: Lipetzk oblast"	64311420	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1167	"The Russian Federation, Regions: Lipetzk oblast (Urban)"	64311421	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1168	"The Russian Federation, Regions: Magadan oblast (Rural)"	64311442	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1169	"The Russian Federation, Regions: Magadan oblast"	64311440	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1170	"The Russian Federation, Regions: Magadan oblast (Urban)"	64311441	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1171	"The Russian Federation, Regions: Moscow"	64311450	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1172	"The Russian Federation, Regions: Moscow (Urban)"	64311451	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1173	"The Russian Federation, Regions: Moscow oblast (Rural)"	64311462	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1174	"The Russian Federation, Regions: Moscow oblast"	64311460	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1175	"The Russian Federation, Regions: Moscow oblast (Urban)"	64311461	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1176	"The Russian Federation, Regions: Murmansk oblast (Rural)"	64311472	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1177	"The Russian Federation, Regions: Murmansk oblast"	64311470	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1178	"The Russian Federation, Regions: Murmansk oblast (Urban)"	64311471	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1179	"The Russian Federation, Regions: Novgorod oblast (Rural)"	64311492	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1180	"The Russian Federation, Regions: Novgorod oblast"	64311490	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1181	"The Russian Federation, Regions: Novgorod oblast (Urban)"	64311491	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1182	"The Russian Federation, Regions: Novosibirsk oblast (Rural)"	64311502	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1183	"The Russian Federation, Regions: Novosibirsk oblast"	64311500	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1184	"The Russian Federation, Regions: Novosibirsk oblast (Urban)"	64311501	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1185	"The Russian Federation, Regions: Omsk oblast (Rural)"	64311522	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1186	"The Russian Federation, Regions: Omsk oblast"	64311520	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1187	"The Russian Federation, Regions: Omsk oblast (Urban)"	64311521	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1188	"The Russian Federation, Regions: Orenburg oblast (Rural)"	64311532	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1189	"The Russian Federation, Regions: Orenburg oblast"	64311530	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1190	"The Russian Federation, Regions: Orenburg oblast (Urban)"	64311531	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1191	"The Russian Federation, Regions: Oryol oblast (Rural)"	64311542	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1192	"The Russian Federation, Regions: Oryol oblast"	64311540	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1193	"The Russian Federation, Regions: Oryol oblast (Urban)"	64311541	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1194	"The Russian Federation, Regions: Penza oblast (Rural)"	64311562	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1195	"The Russian Federation, Regions: Penza oblast"	64311560	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1196	"The Russian Federation, Regions: Penza oblast (Urban)"	64311561	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1197	"The Russian Federation, Regions: Perm kray (Rural)"	64311572	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1198	"The Russian Federation, Regions: Perm kray"	64311570	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1199	"The Russian Federation, Regions: Perm kray (Urban)"	64311571	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1200	"The Russian Federation, Regions: Pskov oblast (Rural)"	64311582	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1201	"The Russian Federation, Regions: Pskov oblast"	64311580	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1202	"The Russian Federation, Regions: Pskov oblast (Urban)"	64311581	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1203	"The Russian Federation, Regions: Rostov oblast (Rural)"	64311602	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1204	"The Russian Federation, Regions: Rostov oblast"	64311600	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1205	"The Russian Federation, Regions: Rostov oblast (Urban)"	64311601	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1206	"The Russian Federation, Regions: Ryazan oblast (Rural)"	64311612	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1207	"The Russian Federation, Regions: Ryazan oblast"	64311610	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1208	"The Russian Federation, Regions: Ryazan oblast (Urban)"	64311611	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1209	"The Russian Federation, Regions: Saratov oblast (Rural)"	64311632	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1210	"The Russian Federation, Regions: Saratov oblast"	64311630	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1211	"The Russian Federation, Regions: Saratov oblast (Urban)"	64311631	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1212	"The Russian Federation, Regions: Sakhalin oblast (Rural)"	64311642	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1213	"The Russian Federation, Regions: Sakhalin oblast"	64311640	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1214	"The Russian Federation, Regions: Sakhalin oblast (Urban)"	64311641	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1215	"The Russian Federation, Regions: Sverdlovsk oblast (Rural)"	64311652	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1216	"The Russian Federation, Regions: Sverdlovsk oblast"	64311650	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1217	"The Russian Federation, Regions: Sverdlovsk oblast (Urban)"	64311651	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1218	"The Russian Federation, Regions: Smolensk oblast (Rural)"	64311662	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1219	"The Russian Federation, Regions: Smolensk oblast"	64311660	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1220	"The Russian Federation, Regions: Smolensk oblast (Urban)"	64311661	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1221	"The Russian Federation, Regions: Tambov oblast (Rural)"	64311682	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1222	"The Russian Federation, Regions: Tambov oblast"	64311680	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1223	"The Russian Federation, Regions: Tambov oblast (Urban)"	64311681	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1224	"The Russian Federation, Regions: Tomsk oblast (Rural)"	64311692	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1225	"The Russian Federation, Regions: Tomsk oblast"	64311690	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1226	"The Russian Federation, Regions: Tomsk oblast (Urban)"	64311691	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1227	"The Russian Federation, Regions: Tula oblast (Rural)"	64311702	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1228	"The Russian Federation, Regions: Tula oblast"	64311700	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1229	"The Russian Federation, Regions: Tula oblast (Urban)"	64311701	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1230	"The Russian Federation, Regions: Tyumen oblast (Rural)"	64311712	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1231	"The Russian Federation, Regions: Tyumen oblast"	64311710	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1232	"The Russian Federation, Regions: Tyumen oblast (Urban)"	64311711	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1233	"The Russian Federation, Regions: Ulyanovsk oblast (Rural)"	64311732	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1234	"The Russian Federation, Regions: Ulyanovsk oblast"	64311730	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1235	"The Russian Federation, Regions: Ulyanovsk oblast (Urban)"	64311731	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1236	"The Russian Federation, Regions: Chelyabinsk oblast (Rural)"	64311752	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1237	"The Russian Federation, Regions: Chelyabinsk oblast"	64311750	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1238	"The Russian Federation, Regions: Chelyabinsk oblast (Urban)"	64311751	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1239	"The Russian Federation, Regions: Zabaikalsk kray (Rural)"	64311762	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1240	"The Russian Federation, Regions: Zabaikalsk kray"	64311760	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1241	"The Russian Federation, Regions: Zabaikalsk kray (Urban)"	64311761	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1242	"The Russian Federation, Regions: ?hukchi autonomous area (Rural)"	64311772	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1243	"The Russian Federation, Regions: ?hukchi autonomous area"	64311770	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1244	"The Russian Federation, Regions: ?hukchi autonomous area (Urban)"	64311771	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1245	"The Russian Federation, Regions: Yaroslavl oblast (Rural)"	64311782	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1246	"The Russian Federation, Regions: Yaroslavl oblast"	64311780	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1247	"The Russian Federation, Regions: Yaroslavl oblast (Urban)"	64311781	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1248	"The Russian Federation, Regions: Republic of Adygeya (Rural)"	64311792	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1249	"The Russian Federation, Regions: Republic of Adygeya"	64311790	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1250	"The Russian Federation, Regions: Republic of Adygeya (Urban)"	64311791	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1251	"The Russian Federation, Regions: Republic of Bashkortostan (Rural)"	64311802	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1252	"The Russian Federation, Regions: Republic of Bashkortostan"	64311800	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1253	"The Russian Federation, Regions: Republic of Bashkortostan (Urban)"	64311801	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1254	"The Russian Federation, Regions: Republic of Buryatia (Rural)"	64311812	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1255	"The Russian Federation, Regions: Republic of Buryatia"	64311810	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1256	"The Russian Federation, Regions: Republic of Buryatia (Urban)"	64311811	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1257	"The Russian Federation, Regions: Republic of Dagestan (Rural)"	64311822	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1258	"The Russian Federation, Regions: Republic of Dagestan"	64311820	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1259	"The Russian Federation, Regions: Republic of Dagestan (Urban)"	64311821	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1260	"The Russian Federation, Regions: Kabardian-Balkar Republic (Rural)"	64311832	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1261	"The Russian Federation, Regions: Kabardian-Balkar Republic"	64311830	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1262	"The Russian Federation, Regions: Kabardian-Balkar Republic (Urban)"	64311831	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1263	"The Russian Federation, Regions: Republic of Altai (Rural)"	64311842	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1264	"The Russian Federation, Regions: Republic of Altai"	64311840	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1265	"The Russian Federation, Regions: Republic of Altai (Urban)"	64311841	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1266	"The Russian Federation, Regions: Republic of Kalmykia (Rural)"	64311852	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1267	"The Russian Federation, Regions: Republic of Kalmykia"	64311850	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1268	"The Russian Federation, Regions: Republic of Kalmykia (Urban)"	64311851	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1269	"The Russian Federation, Regions: Republic of Karelia (Rural)"	64311862	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1270	"The Russian Federation, Regions: Republic of Karelia"	64311860	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1271	"The Russian Federation, Regions: Republic of Karelia (Urban)"	64311861	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1272	"The Russian Federation, Regions: Republic of Komi (Rural)"	64311872	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1273	"The Russian Federation, Regions: Republic of Komi"	64311870	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1274	"The Russian Federation, Regions: Republic of Komi (Urban)"	64311871	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1275	"The Russian Federation, Regions: Republic of Mariy El (Rural)"	64311882	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1276	"The Russian Federation, Regions: Republic of Mariy El"	64311880	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1277	"The Russian Federation, Regions: Republic of Mariy El (Urban)"	64311881	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1278	"The Russian Federation, Regions: Republic of Mordovia (Rural)"	64311892	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1279	"The Russian Federation, Regions: Republic of Mordovia"	64311890	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1280	"The Russian Federation, Regions: Republic of Mordovia (Urban)"	64311891	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1281	"The Russian Federation, Regions: Republic of North Ossetia - Alania (Rural)"	64311902	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1282	"The Russian Federation, Regions: Republic of North Ossetia - Alania"	64311900	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1283	"The Russian Federation, Regions: Republic of North Ossetia - Alania (Urban)"	64311901	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1284	"The Russian Federation, Regions: Karachaev-Chercassian Republic  (Rural)"	64311912	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1285	"The Russian Federation, Regions: Karachaev-Chercassian Republic "	64311910	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1286	"The Russian Federation, Regions: Karachaev-Chercassian Republic  (Urban)"	64311911	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1287	"The Russian Federation, Regions: Republic of Tatarstan (Rural)"	64311922	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1288	"The Russian Federation, Regions: Republic of Tatarstan"	64311920	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1289	"The Russian Federation, Regions: Republic of Tatarstan (Urban)"	64311921	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1290	"The Russian Federation, Regions: Republic of Tuva (Rural)"	64311932	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1291	"The Russian Federation, Regions: Republic of Tuva"	64311930	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1292	"The Russian Federation, Regions: Republic of Tuva (Urban)"	64311931	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1293	"The Russian Federation, Regions: Udmurt Republic (Rural)"	64311942	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1294	"The Russian Federation, Regions: Udmurt Republic"	64311940	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1295	"The Russian Federation, Regions: Udmurt Republic (Urban)"	64311941	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1296	"The Russian Federation, Regions: Republic of Khakasia  (Rural)"	64311952	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1297	"The Russian Federation, Regions: Republic of Khakasia "	64311950	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1298	"The Russian Federation, Regions: Republic of Khakasia  (Urban)"	64311951	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1299	"The Russian Federation, Regions: Chuvash Republic  (Rural)"	64311972	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1300	"The Russian Federation, Regions: Chuvash Republic "	64311970	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1301	"The Russian Federation, Regions: Chuvash Republic  (Urban)"	64311971	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1302	"The Russian Federation, Regions: Republic of Sakha (Yakutia) (Rural)"	64311982	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1303	"The Russian Federation, Regions: Republic of Sakha (Yakutia)"	64311980	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1304	"The Russian Federation, Regions: Republic of Sakha (Yakutia) (Urban)"	64311981	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1305	"The Russian Federation, Regions: Jewish autonomous oblast (Rural)"	64311992	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1306	"The Russian Federation, Regions: Jewish autonomous oblast"	64311990	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1307	"The Russian Federation, Regions: Jewish autonomous oblast (Urban)"	64311991	643	"Russian Federation"	923	"Eastern Europe"	4	2
+1308	"Serbia, Regions: Central Serbia"	68800001	688	"Serbia"	925	"Southern Europe"	4	2
+1309	"Serbia, Regions: Vojvodina"	68800002	688	"Serbia"	925	"Southern Europe"	4	2
+1310	"Serbia, Regions: Kosovo and Metohija"	68800003	688	"Serbia"	925	"Southern Europe"	4	2
+1311	"Slovak Republic, Regions: Banskobystrický"	70302679	703	"Slovakia"	923	"Eastern Europe"	4	2
+1312	"Slovak Republic, Regions: Bratislavský"	70302680	703	"Slovakia"	923	"Eastern Europe"	4	2
+1313	"Slovak Republic, Regions: Košický"	70302681	703	"Slovakia"	923	"Eastern Europe"	4	2
+1314	"Slovak Republic, Regions: Nitriansky"	70302682	703	"Slovakia"	923	"Eastern Europe"	4	2
+1315	"Slovak Republic, Regions: Prešovský"	70302683	703	"Slovakia"	923	"Eastern Europe"	4	2
+1316	"Slovak Republic, Regions: Tren?iansky"	70302684	703	"Slovakia"	923	"Eastern Europe"	4	2
+1317	"Slovak Republic, Regions: Trnavský"	70302685	703	"Slovakia"	923	"Eastern Europe"	4	2
+1318	"Slovak Republic, Regions: Žilinský"	70302686	703	"Slovakia"	923	"Eastern Europe"	4	2
+1319	"Slovenia, Regions: Vzhodna Slovenija"	70500001	705	"Slovenia"	925	"Southern Europe"	4	2
+1320	"Slovenia, Regions: Zahodna Slovenija"	70500002	705	"Slovenia"	925	"Southern Europe"	4	2
+1321	"Spain, Autonomous Communities: Andalucía"	72402754	724	"Spain"	925	"Southern Europe"	4	2
+1322	"Spain, Autonomous Communities: Aragón"	72402755	724	"Spain"	925	"Southern Europe"	4	2
+1323	"Spain, Autonomous Communities: Cantabria"	72402756	724	"Spain"	925	"Southern Europe"	4	2
+1324	"Spain, Autonomous Communities: Castilla - La Mancha"	72402757	724	"Spain"	925	"Southern Europe"	4	2
+1325	"Spain, Autonomous Communities: Castilla y León"	72402758	724	"Spain"	925	"Southern Europe"	4	2
+1326	"Spain, Autonomous Communities: Cataluña"	72402759	724	"Spain"	925	"Southern Europe"	4	2
+1327	"Spain, Autonomous Communities: Madrid (Comunidad de)"	72402761	724	"Spain"	925	"Southern Europe"	4	2
+1328	"Spain, Autonomous Communities: Navarra, Comunidad Foral de"	72402762	724	"Spain"	925	"Southern Europe"	4	2
+1329	"Spain, Autonomous Communities: Comunitat Valenciana"	72402763	724	"Spain"	925	"Southern Europe"	4	2
+1330	"Spain, Autonomous Communities: Extremadura"	72402764	724	"Spain"	925	"Southern Europe"	4	2
+1331	"Spain, Autonomous Communities: Galicia"	72402765	724	"Spain"	925	"Southern Europe"	4	2
+1332	"Spain, Autonomous Communities: Balears (Illes)"	72402766	724	"Spain"	925	"Southern Europe"	4	2
+1333	"Spain, Autonomous Communities: Canarias"	72402767	724	"Spain"	925	"Southern Europe"	4	2
+1334	"Spain, Autonomous Communities: Rioja (La)"	72402768	724	"Spain"	925	"Southern Europe"	4	2
+1335	"Spain, Autonomous Communities: País Vasco"	72402769	724	"Spain"	925	"Southern Europe"	4	2
+1336	"Spain, Autonomous Communities: Asturias (Principado de)"	72402770	724	"Spain"	925	"Southern Europe"	4	2
+1337	"Spain, Autonomous Communities: Murcia (Región de)"	72402771	724	"Spain"	925	"Southern Europe"	4	2
+1338	"Sweden, Counties: Blekinge"	75202819	752	"Sweden"	924	"Northern Europe"	4	2
+1339	"Sweden, Counties: Dalarna"	75202820	752	"Sweden"	924	"Northern Europe"	4	2
+1340	"Sweden, Counties: Gävleborg"	75202821	752	"Sweden"	924	"Northern Europe"	4	2
+1341	"Sweden, Counties: Gotland"	75202822	752	"Sweden"	924	"Northern Europe"	4	2
+1342	"Sweden, Counties: Halland"	75202823	752	"Sweden"	924	"Northern Europe"	4	2
+1343	"Sweden, Counties: Jämtland"	75202824	752	"Sweden"	924	"Northern Europe"	4	2
+1344	"Sweden, Counties: Jönköping"	75202825	752	"Sweden"	924	"Northern Europe"	4	2
+1345	"Sweden, Counties: Kalmar"	75202826	752	"Sweden"	924	"Northern Europe"	4	2
+1346	"Sweden, Counties: Kronoberg"	75202827	752	"Sweden"	924	"Northern Europe"	4	2
+1347	"Sweden, Counties: Norrbotten"	75202828	752	"Sweden"	924	"Northern Europe"	4	2
+1348	"Sweden, Counties: Örebro"	75202829	752	"Sweden"	924	"Northern Europe"	4	2
+1349	"Sweden, Counties: Östergötland"	75202830	752	"Sweden"	924	"Northern Europe"	4	2
+1350	"Sweden, Counties: Skåne"	75202831	752	"Sweden"	924	"Northern Europe"	4	2
+1351	"Sweden, Counties: Södermanland"	75202832	752	"Sweden"	924	"Northern Europe"	4	2
+1352	"Sweden, Counties: Stockholm"	75202833	752	"Sweden"	924	"Northern Europe"	4	2
+1353	"Sweden, Counties: Uppsala"	75202834	752	"Sweden"	924	"Northern Europe"	4	2
+1354	"Sweden, Counties: Värmland"	75202835	752	"Sweden"	924	"Northern Europe"	4	2
+1355	"Sweden, Counties: Västerbotten"	75202836	752	"Sweden"	924	"Northern Europe"	4	2
+1356	"Sweden, Counties: Västernorrland"	75202837	752	"Sweden"	924	"Northern Europe"	4	2
+1357	"Sweden, Counties: Västmanland"	75202838	752	"Sweden"	924	"Northern Europe"	4	2
+1358	"Sweden, Counties: Västra Götaland"	75202839	752	"Sweden"	924	"Northern Europe"	4	2
+1359	"Suisse, Cantons: Argovie"	75602840	756	"Switzerland"	926	"Western Europe"	4	2
+1360	"Suisse, Cantons: Appenzell Rh. Ext."	75602841	756	"Switzerland"	926	"Western Europe"	4	2
+1361	"Suisse, Cantons: Appenzell Rh. Int."	75602842	756	"Switzerland"	926	"Western Europe"	4	2
+1362	"Suisse, Cantons: Bâle Campagne"	75602843	756	"Switzerland"	926	"Western Europe"	4	2
+1363	"Suisse, Cantons: Bâle-Ville"	75602844	756	"Switzerland"	926	"Western Europe"	4	2
+1364	"Suisse, Cantons: Berne"	75602845	756	"Switzerland"	926	"Western Europe"	4	2
+1365	"Suisse, Cantons: Fribourg"	75602846	756	"Switzerland"	926	"Western Europe"	4	2
+1366	"Suisse, Cantons: Genève"	75602847	756	"Switzerland"	926	"Western Europe"	4	2
+1367	"Suisse, Cantons: Glaris"	75602848	756	"Switzerland"	926	"Western Europe"	4	2
+1368	"Suisse, Cantons: Grisons"	75602849	756	"Switzerland"	926	"Western Europe"	4	2
+1369	"Suisse, Cantons: Jura"	75602850	756	"Switzerland"	926	"Western Europe"	4	2
+1370	"Suisse, Cantons: Lucerne"	75602851	756	"Switzerland"	926	"Western Europe"	4	2
+1371	"Suisse, Cantons: Neuchâtel"	75602852	756	"Switzerland"	926	"Western Europe"	4	2
+1372	"Suisse, Cantons: Nidwald"	75602853	756	"Switzerland"	926	"Western Europe"	4	2
+1373	"Suisse, Cantons: Obwald"	75602854	756	"Switzerland"	926	"Western Europe"	4	2
+1374	"Suisse, Cantons: St-Gall"	75602855	756	"Switzerland"	926	"Western Europe"	4	2
+1375	"Suisse, Cantons: Schaffhouse"	75602856	756	"Switzerland"	926	"Western Europe"	4	2
+1376	"Suisse, Cantons: Schwyz"	75602857	756	"Switzerland"	926	"Western Europe"	4	2
+1377	"Suisse, Cantons: Soleure"	75602858	756	"Switzerland"	926	"Western Europe"	4	2
+1378	"Suisse, Cantons: Turgovie"	75602859	756	"Switzerland"	926	"Western Europe"	4	2
+1379	"Suisse, Cantons: Tessin"	75602860	756	"Switzerland"	926	"Western Europe"	4	2
+1380	"Suisse, Cantons: Uri"	75602861	756	"Switzerland"	926	"Western Europe"	4	2
+1381	"Suisse, Cantons: Valais"	75602862	756	"Switzerland"	926	"Western Europe"	4	2
+1382	"Suisse, Cantons: Vaud"	75602863	756	"Switzerland"	926	"Western Europe"	4	2
+1383	"Suisse, Cantons: Zug"	75602864	756	"Switzerland"	926	"Western Europe"	4	2
+1384	"Suisse, Cantons: Zurich"	75602865	756	"Switzerland"	926	"Western Europe"	4	2
+1385	"Thailand, Regions: Bangkok"	76400010	764	"Thailand"	920	"South-Eastern Asia"	4	2
+1386	"Thailand, Regions: Central"	76400011	764	"Thailand"	920	"South-Eastern Asia"	4	2
+1387	"Thailand, Regions: North"	76400012	764	"Thailand"	920	"South-Eastern Asia"	4	2
+1388	"Thailand, Regions: Northeast"	76400013	764	"Thailand"	920	"South-Eastern Asia"	4	2
+1389	"Thailand, Regions: South"	76400014	764	"Thailand"	920	"South-Eastern Asia"	4	2
+1390	"Turkey, Provinces: Adana"	79200001	792	"Turkey"	922	"Western Asia"	4	2
+1391	"Turkey, Provinces: Adiyaman"	79200002	792	"Turkey"	922	"Western Asia"	4	2
+1392	"Turkey, Provinces: Afyon"	79200003	792	"Turkey"	922	"Western Asia"	4	2
+1393	"Turkey, Provinces: A?ri"	79200004	792	"Turkey"	922	"Western Asia"	4	2
+1394	"Turkey, Provinces: Amasya"	79200005	792	"Turkey"	922	"Western Asia"	4	2
+1395	"Turkey, Provinces: Ankara"	79200006	792	"Turkey"	922	"Western Asia"	4	2
+1396	"Turkey, Provinces: Antalya"	79200007	792	"Turkey"	922	"Western Asia"	4	2
+1397	"Turkey, Provinces: Artvin"	79200008	792	"Turkey"	922	"Western Asia"	4	2
+1398	"Turkey, Provinces: Aydin"	79200009	792	"Turkey"	922	"Western Asia"	4	2
+1399	"Turkey, Provinces: Balikesir"	79200010	792	"Turkey"	922	"Western Asia"	4	2
+1400	"Turkey, Provinces: Bilecik"	79200011	792	"Turkey"	922	"Western Asia"	4	2
+1401	"Turkey, Provinces: Bingöl"	79200012	792	"Turkey"	922	"Western Asia"	4	2
+1402	"Turkey, Provinces: Bitlis"	79200013	792	"Turkey"	922	"Western Asia"	4	2
+1403	"Turkey, Provinces: Bolu"	79200014	792	"Turkey"	922	"Western Asia"	4	2
+1404	"Turkey, Provinces: Burdur"	79200015	792	"Turkey"	922	"Western Asia"	4	2
+1405	"Turkey, Provinces: Bursa"	79200016	792	"Turkey"	922	"Western Asia"	4	2
+1406	"Turkey, Provinces: Çanakkale"	79200017	792	"Turkey"	922	"Western Asia"	4	2
+1407	"Turkey, Provinces: Çankiri"	79200018	792	"Turkey"	922	"Western Asia"	4	2
+1408	"Turkey, Provinces: Çorum"	79200019	792	"Turkey"	922	"Western Asia"	4	2
+1409	"Turkey, Provinces: Denizli"	79200020	792	"Turkey"	922	"Western Asia"	4	2
+1410	"Turkey, Provinces: Diyarbakir"	79200021	792	"Turkey"	922	"Western Asia"	4	2
+1411	"Turkey, Provinces: Edirne"	79200022	792	"Turkey"	922	"Western Asia"	4	2
+1412	"Turkey, Provinces: Elazi?"	79200023	792	"Turkey"	922	"Western Asia"	4	2
+1413	"Turkey, Provinces: Erzincan"	79200024	792	"Turkey"	922	"Western Asia"	4	2
+1414	"Turkey, Provinces: Erzurum"	79200025	792	"Turkey"	922	"Western Asia"	4	2
+1415	"Turkey, Provinces: Eski?ehir"	79200026	792	"Turkey"	922	"Western Asia"	4	2
+1416	"Turkey, Provinces: Gaziantep"	79200027	792	"Turkey"	922	"Western Asia"	4	2
+1417	"Turkey, Provinces: Giresun"	79200028	792	"Turkey"	922	"Western Asia"	4	2
+1418	"Turkey, Provinces: Gümü?hane"	79200029	792	"Turkey"	922	"Western Asia"	4	2
+1419	"Turkey, Provinces: Hakkari"	79200030	792	"Turkey"	922	"Western Asia"	4	2
+1420	"Turkey, Provinces: Hatay"	79200031	792	"Turkey"	922	"Western Asia"	4	2
+1421	"Turkey, Provinces: Isparta"	79200032	792	"Turkey"	922	"Western Asia"	4	2
+1422	"Turkey, Provinces: ?çel"	79200033	792	"Turkey"	922	"Western Asia"	4	2
+1423	"Turkey, Provinces: ?stanbul"	79200034	792	"Turkey"	922	"Western Asia"	4	2
+1424	"Turkey, Provinces: ?zmir"	79200035	792	"Turkey"	922	"Western Asia"	4	2
+1425	"Turkey, Provinces: Kars"	79200036	792	"Turkey"	922	"Western Asia"	4	2
+1426	"Turkey, Provinces: Kastamonu"	79200037	792	"Turkey"	922	"Western Asia"	4	2
+1427	"Turkey, Provinces: Kayseri"	79200038	792	"Turkey"	922	"Western Asia"	4	2
+1428	"Turkey, Provinces: Kirklareli"	79200039	792	"Turkey"	922	"Western Asia"	4	2
+1429	"Turkey, Provinces: Kir?ehir"	79200040	792	"Turkey"	922	"Western Asia"	4	2
+1430	"Turkey, Provinces: Kocaeli"	79200041	792	"Turkey"	922	"Western Asia"	4	2
+1431	"Turkey, Provinces: Konya"	79200042	792	"Turkey"	922	"Western Asia"	4	2
+1432	"Turkey, Provinces: Kütahya"	79200043	792	"Turkey"	922	"Western Asia"	4	2
+1433	"Turkey, Provinces: Malatya"	79200044	792	"Turkey"	922	"Western Asia"	4	2
+1434	"Turkey, Provinces: Manisa"	79200045	792	"Turkey"	922	"Western Asia"	4	2
+1435	"Turkey, Provinces: K. Mara?"	79200046	792	"Turkey"	922	"Western Asia"	4	2
+1436	"Turkey, Provinces: Mardin"	79200047	792	"Turkey"	922	"Western Asia"	4	2
+1437	"Turkey, Provinces: Mu?la"	79200048	792	"Turkey"	922	"Western Asia"	4	2
+1438	"Turkey, Provinces: Mu?"	79200049	792	"Turkey"	922	"Western Asia"	4	2
+1439	"Turkey, Provinces: Nev?ehir"	79200050	792	"Turkey"	922	"Western Asia"	4	2
+1440	"Turkey, Provinces: Ni?de"	79200051	792	"Turkey"	922	"Western Asia"	4	2
+1441	"Turkey, Provinces: Ordu"	79200052	792	"Turkey"	922	"Western Asia"	4	2
+1442	"Turkey, Provinces: Rize"	79200053	792	"Turkey"	922	"Western Asia"	4	2
+1443	"Turkey, Provinces: Sakarya"	79200054	792	"Turkey"	922	"Western Asia"	4	2
+1444	"Turkey, Provinces: Samsun"	79200055	792	"Turkey"	922	"Western Asia"	4	2
+1445	"Turkey, Provinces: Siirt"	79200056	792	"Turkey"	922	"Western Asia"	4	2
+1446	"Turkey, Provinces: Sinop"	79200057	792	"Turkey"	922	"Western Asia"	4	2
+1447	"Turkey, Provinces: Sivas"	79200058	792	"Turkey"	922	"Western Asia"	4	2
+1448	"Turkey, Provinces: Tekirda?"	79200059	792	"Turkey"	922	"Western Asia"	4	2
+1449	"Turkey, Provinces: Tokat"	79200060	792	"Turkey"	922	"Western Asia"	4	2
+1450	"Turkey, Provinces: Trabzon"	79200061	792	"Turkey"	922	"Western Asia"	4	2
+1451	"Turkey, Provinces: Tunceli"	79200062	792	"Turkey"	922	"Western Asia"	4	2
+1452	"Turkey, Provinces: ?anliurfa"	79200063	792	"Turkey"	922	"Western Asia"	4	2
+1453	"Turkey, Provinces: U?ak"	79200064	792	"Turkey"	922	"Western Asia"	4	2
+1454	"Turkey, Provinces: Van"	79200065	792	"Turkey"	922	"Western Asia"	4	2
+1455	"Turkey, Provinces: Yozgat"	79200066	792	"Turkey"	922	"Western Asia"	4	2
+1456	"Turkey, Provinces: Zonguldak"	79200067	792	"Turkey"	922	"Western Asia"	4	2
+1457	"Turkey, Provinces: Aksaray"	79200068	792	"Turkey"	922	"Western Asia"	4	2
+1458	"Turkey, Provinces: Bayburt"	79200069	792	"Turkey"	922	"Western Asia"	4	2
+1459	"Turkey, Provinces: Karaman"	79200070	792	"Turkey"	922	"Western Asia"	4	2
+1460	"Turkey, Provinces: Kirikkale"	79200071	792	"Turkey"	922	"Western Asia"	4	2
+1461	"Turkey, Provinces: Batman"	79200072	792	"Turkey"	922	"Western Asia"	4	2
+1462	"Turkey, Provinces: ?irnak"	79200073	792	"Turkey"	922	"Western Asia"	4	2
+1463	"Turkey, Provinces: Bartin"	79200074	792	"Turkey"	922	"Western Asia"	4	2
+1464	"Turkey, Provinces: Ardahan"	79200075	792	"Turkey"	922	"Western Asia"	4	2
+1465	"Turkey, Provinces: I?dir"	79200076	792	"Turkey"	922	"Western Asia"	4	2
+1466	"Turkey, Provinces: Yalova"	79200077	792	"Turkey"	922	"Western Asia"	4	2
+1467	"Turkey, Provinces: Karabük"	79200078	792	"Turkey"	922	"Western Asia"	4	2
+1468	"Turkey, Provinces: Kilis"	79200079	792	"Turkey"	922	"Western Asia"	4	2
+1469	"Turkey, Provinces: Osmaniye"	79200080	792	"Turkey"	922	"Western Asia"	4	2
+1470	"Turkey, Provinces: Düzce"	79200081	792	"Turkey"	922	"Western Asia"	4	2
+1471	"Ukraina, Regions: Cherkaska oblast"	80403201	804	"Ukraine"	923	"Eastern Europe"	4	2
+1472	"Ukraina, Regions: Chernihivska oblast"	80403202	804	"Ukraine"	923	"Eastern Europe"	4	2
+1473	"Ukraina, Regions: Chernivetska oblast"	80403203	804	"Ukraine"	923	"Eastern Europe"	4	2
+1474	"Ukraina, Regions: Avtonomna Respublika Krym"	80403204	804	"Ukraine"	923	"Eastern Europe"	4	2
+1475	"Ukraina, Regions: Dnipropetrovska oblast"	80403205	804	"Ukraine"	923	"Eastern Europe"	4	2
+1476	"Ukraina, Regions: Donetska oblast"	80403206	804	"Ukraine"	923	"Eastern Europe"	4	2
+1477	"Ukraina, Regions: Ivano-Frankivska oblast"	80403207	804	"Ukraine"	923	"Eastern Europe"	4	2
+1478	"Ukraina, Regions: Kharkivska oblast"	80403208	804	"Ukraine"	923	"Eastern Europe"	4	2
+1479	"Ukraina, Regions: Khersonska oblast"	80403209	804	"Ukraine"	923	"Eastern Europe"	4	2
+1480	"Ukraina, Regions: Khmelnytska oblast"	80403210	804	"Ukraine"	923	"Eastern Europe"	4	2
+1481	"Ukraina, Regions: Misto Kyiv"	80403211	804	"Ukraine"	923	"Eastern Europe"	4	2
+1482	"Ukraina, Regions: Kyivska oblast"	80403212	804	"Ukraine"	923	"Eastern Europe"	4	2
+1483	"Ukraina, Regions: Kirovohradska oblast"	80403213	804	"Ukraine"	923	"Eastern Europe"	4	2
+1484	"Ukraina, Regions: Lvivska oblast"	80403214	804	"Ukraine"	923	"Eastern Europe"	4	2
+1485	"Ukraina, Regions: Luhanska oblast"	80403215	804	"Ukraine"	923	"Eastern Europe"	4	2
+1486	"Ukraina, Regions: Mykolaivska oblast"	80403216	804	"Ukraine"	923	"Eastern Europe"	4	2
+1487	"Ukraina, Regions: Odeska oblast"	80403217	804	"Ukraine"	923	"Eastern Europe"	4	2
+1488	"Ukraina, Regions: Poltavska oblast"	80403218	804	"Ukraine"	923	"Eastern Europe"	4	2
+1489	"Ukraina, Regions: Rivnenska oblast"	80403219	804	"Ukraine"	923	"Eastern Europe"	4	2
+1490	"Ukraina, Regions: Sevastopol (miskrada)"	80403220	804	"Ukraine"	923	"Eastern Europe"	4	2
+1491	"Ukraina, Regions: Sumska oblast"	80403221	804	"Ukraine"	923	"Eastern Europe"	4	2
+1492	"Ukraina, Regions: Ternopilska oblast"	80403222	804	"Ukraine"	923	"Eastern Europe"	4	2
+1493	"Ukraina, Regions: Zakarpatska oblast"	80403223	804	"Ukraine"	923	"Eastern Europe"	4	2
+1494	"Ukraina, Regions: Vinnytska oblast"	80403224	804	"Ukraine"	923	"Eastern Europe"	4	2
+1495	"Ukraina, Regions: Volynska oblast"	80403225	804	"Ukraine"	923	"Eastern Europe"	4	2
+1496	"Ukraina, Regions: Zaporizka oblast"	80403226	804	"Ukraine"	923	"Eastern Europe"	4	2
+1497	"Ukraina, Regions: Zhytomyrska oblast"	80403227	804	"Ukraine"	923	"Eastern Europe"	4	2
+1498	"United Kingdom, England and Wales"	82700827	827	"United Kingdom: England and Wales"	924	"Northern Europe"	4	2
+1499	"United Kingdom, Northern Ireland"	82803237	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1500	"United Kingdom, Scotland"	82903238	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1501	"USA, States: Missouri"	84000541	840	"United States of America"	905	"Northern America"	4	2
+1502	"USA, States: Montana"	84000542	840	"United States of America"	905	"Northern America"	4	2
+1503	"USA, States: Nebraska"	84000543	840	"United States of America"	905	"Northern America"	4	2
+1504	"USA, States: Nevada"	84000544	840	"United States of America"	905	"Northern America"	4	2
+1505	"USA, States: New Hampshire"	84000545	840	"United States of America"	905	"Northern America"	4	2
+1506	"USA, States: New Jersey"	84000546	840	"United States of America"	905	"Northern America"	4	2
+1507	"USA, States: New Mexico"	84000547	840	"United States of America"	905	"Northern America"	4	2
+1508	"USA, States: New York"	84000548	840	"United States of America"	905	"Northern America"	4	2
+1509	"USA, States: North Carolina"	84000549	840	"United States of America"	905	"Northern America"	4	2
+1510	"USA, States: North Dakota"	84000550	840	"United States of America"	905	"Northern America"	4	2
+1511	"USA, States: Ohio"	84000551	840	"United States of America"	905	"Northern America"	4	2
+1512	"USA, States: Oklahoma"	84000552	840	"United States of America"	905	"Northern America"	4	2
+1513	"USA, States: Oregon"	84000553	840	"United States of America"	905	"Northern America"	4	2
+1514	"USA, States: Pennsylvania"	84000554	840	"United States of America"	905	"Northern America"	4	2
+1515	"USA, States: Rhode Island"	84000555	840	"United States of America"	905	"Northern America"	4	2
+1516	"USA, States: South Carolina"	84000556	840	"United States of America"	905	"Northern America"	4	2
+1517	"USA, States: South Dakota"	84000557	840	"United States of America"	905	"Northern America"	4	2
+1518	"USA, States: Tennessee"	84000558	840	"United States of America"	905	"Northern America"	4	2
+1519	"USA, States: Texas"	84000559	840	"United States of America"	905	"Northern America"	4	2
+1520	"USA, States: Utah"	84000560	840	"United States of America"	905	"Northern America"	4	2
+1521	"USA, States: Vermont"	84000561	840	"United States of America"	905	"Northern America"	4	2
+1522	"USA, States: Virginia"	84000562	840	"United States of America"	905	"Northern America"	4	2
+1523	"USA, States: Washington"	84000563	840	"United States of America"	905	"Northern America"	4	2
+1524	"USA, States: West Virginia"	84000564	840	"United States of America"	905	"Northern America"	4	2
+1525	"USA, States: Wisconsin"	84000565	840	"United States of America"	905	"Northern America"	4	2
+1526	"USA, States: Wyoming"	84000566	840	"United States of America"	905	"Northern America"	4	2
+1527	"USA, States: Alabama"	84003240	840	"United States of America"	905	"Northern America"	4	2
+1528	"USA, States: Alaska"	84003241	840	"United States of America"	905	"Northern America"	4	2
+1529	"USA, States: Arizona"	84003242	840	"United States of America"	905	"Northern America"	4	2
+1530	"USA, States: Arkansas"	84003243	840	"United States of America"	905	"Northern America"	4	2
+1531	"USA, States: California"	84003244	840	"United States of America"	905	"Northern America"	4	2
+1532	"USA, States: Colorado"	84003245	840	"United States of America"	905	"Northern America"	4	2
+1533	"USA, States: Connecticut"	84003246	840	"United States of America"	905	"Northern America"	4	2
+1534	"USA, States: Delaware"	84003247	840	"United States of America"	905	"Northern America"	4	2
+1535	"USA, States: District of Columbia"	84003248	840	"United States of America"	905	"Northern America"	4	2
+1536	"USA, States: Florida"	84003249	840	"United States of America"	905	"Northern America"	4	2
+1537	"USA, States: Georgia"	84003250	840	"United States of America"	905	"Northern America"	4	2
+1538	"USA, States: Hawaii"	84003251	840	"United States of America"	905	"Northern America"	4	2
+1539	"USA, States: Idaho"	84003252	840	"United States of America"	905	"Northern America"	4	2
+1540	"USA, States: Illinois"	84003253	840	"United States of America"	905	"Northern America"	4	2
+1541	"USA, States: Indiana"	84003254	840	"United States of America"	905	"Northern America"	4	2
+1542	"USA, States: Iowa"	84003255	840	"United States of America"	905	"Northern America"	4	2
+1543	"USA, States: Kansas"	84003256	840	"United States of America"	905	"Northern America"	4	2
+1544	"USA, States: Kentucky"	84003257	840	"United States of America"	905	"Northern America"	4	2
+1545	"USA, States: Louisiana"	84003258	840	"United States of America"	905	"Northern America"	4	2
+1546	"USA, States: Maine"	84003259	840	"United States of America"	905	"Northern America"	4	2
+1547	"USA, States: Maryland"	84003260	840	"United States of America"	905	"Northern America"	4	2
+1548	"USA, States: Massachusetts"	84003261	840	"United States of America"	905	"Northern America"	4	2
+1549	"USA, States: Michigan"	84003262	840	"United States of America"	905	"Northern America"	4	2
+1550	"USA, States: Minnesota"	84003263	840	"United States of America"	905	"Northern America"	4	2
+1551	"USA, States: Mississippi"	84003264	840	"United States of America"	905	"Northern America"	4	2
+1552	"Uruguay, Departments: Artigas"	85803274	858	"Uruguay"	931	"South America"	4	2
+1553	"Uruguay, Departments: Canelones"	85803275	858	"Uruguay"	931	"South America"	4	2
+1554	"Uruguay, Departments: Cerro Largo"	85803276	858	"Uruguay"	931	"South America"	4	2
+1555	"Uruguay, Departments: Colonia"	85803277	858	"Uruguay"	931	"South America"	4	2
+1556	"Uruguay, Departments: Durazno"	85803278	858	"Uruguay"	931	"South America"	4	2
+1557	"Uruguay, Departments: Flores"	85803279	858	"Uruguay"	931	"South America"	4	2
+1558	"Uruguay, Departments: Florida"	85803280	858	"Uruguay"	931	"South America"	4	2
+1559	"Uruguay, Departments: Lavalleja"	85803281	858	"Uruguay"	931	"South America"	4	2
+1560	"Uruguay, Departments: Maldonado"	85803282	858	"Uruguay"	931	"South America"	4	2
+1561	"Uruguay, Departments: Montevideo"	85803283	858	"Uruguay"	931	"South America"	4	2
+1562	"Uruguay, Departments: Paysandu"	85803284	858	"Uruguay"	931	"South America"	4	2
+1563	"Uruguay, Departments: Rio Negro"	85803285	858	"Uruguay"	931	"South America"	4	2
+1564	"Uruguay, Departments: Riviera"	85803286	858	"Uruguay"	931	"South America"	4	2
+1565	"Uruguay, Departments: Rocha"	85803287	858	"Uruguay"	931	"South America"	4	2
+1566	"Uruguay, Departments: Salto"	85803288	858	"Uruguay"	931	"South America"	4	2
+1567	"Uruguay, Departments: San Jose"	85803289	858	"Uruguay"	931	"South America"	4	2
+1568	"Uruguay, Departments: Soriano"	85803290	858	"Uruguay"	931	"South America"	4	2
+1569	"Uruguay, Departments: Tacuarembó"	85803291	858	"Uruguay"	931	"South America"	4	2
+1570	"Uruguay, Departments: Treinta y Tres"	85803292	858	"Uruguay"	931	"South America"	4	2
+1571	"Venezuela, States: Distrito Capital"	86250101	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1572	"Venezuela, States: Miranda"	86250115	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1573	"Venezuela, States: Vargas"	86250124	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1574	"Venezuela, States: Aragua"	86250205	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1575	"Venezuela, States: Carabobo"	86250208	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1576	"Venezuela, States: Cojedes"	86250209	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1577	"Venezuela, States: Apure"	86250304	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1578	"Venezuela, States: Gußrico"	86250312	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1579	"Venezuela, States: Falc?n"	86250411	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1580	"Venezuela, States: Lara"	86250413	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1581	"Venezuela, States: Portuguesa"	86250418	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1582	"Venezuela, States: Yaracuy"	86250422	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1583	"Venezuela, States: Zulia"	86250523	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1584	"Venezuela, States: Barinas"	86250606	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1585	"Venezuela, States: M?rida"	86250614	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1586	"Venezuela, States: Tßchira"	86250620	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1587	"Venezuela, States: Trujillo"	86250621	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1588	"Venezuela, States: Anzoßtegui"	86250703	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1589	"Venezuela, States: Monagas"	86250716	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1590	"Venezuela, States: Sucre"	86250719	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1591	"Venezuela, States: Nueva Esparta"	86250817	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1592	"Venezuela, States: Dependencias Federales"	86250825	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1593	"Venezuela, States: Amazonas"	86250902	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1594	"Venezuela, States: Bolivar"	86250907	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1595	"Venezuela, States: Delta Amacuro"	86250910	862	"Venezuela (Bolivarian Republic of)"	931	"South America"	4	2
+1596	"UK, Northern Ireland Local Governments [2001 census]: Antrim"	82800353	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1597	"UK, Northern Ireland Local Governments [2001 census]: Ards"	82800354	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1598	"UK, Northern Ireland Local Governments [2001 census]: Armagh"	82800355	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1599	"UK, Northern Ireland Local Governments [2001 census]: Ballymena"	82800356	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1600	"UK, Northern Ireland Local Governments [2001 census]: Ballymoney"	82800357	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1601	"UK, Northern Ireland Local Governments [2001 census]: Banbridge"	82800358	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1602	"UK, Northern Ireland Local Governments [2001 census]: Belfast"	82800359	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1603	"UK, Northern Ireland Local Governments [2001 census]: Carrickfergus"	82800360	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1604	"UK, Northern Ireland Local Governments [2001 census]: Castlereagh"	82800361	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1605	"UK, Northern Ireland Local Governments [2001 census]: Coleraine"	82800362	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1606	"UK, Northern Ireland Local Governments [2001 census]: Cookstown"	82800363	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1607	"UK, Northern Ireland Local Governments [2001 census]: Craigavon"	82800364	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1608	"UK, Northern Ireland Local Governments [2001 census]: Derry"	82800365	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1609	"UK, Northern Ireland Local Governments [2001 census]: Down"	82800366	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1610	"UK, Northern Ireland Local Governments [2001 census]: Dungannon"	82800367	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1611	"UK, Northern Ireland Local Governments [2001 census]: Fermanagh"	82800368	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1612	"UK, Northern Ireland Local Governments [2001 census]: Larne"	82800369	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1613	"UK, Northern Ireland Local Governments [2001 census]: Limavady"	82800370	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1614	"UK, Northern Ireland Local Governments [2001 census]: Lisburn"	82800371	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1615	"UK, Northern Ireland Local Governments [2001 census]: Magherafelt"	82800372	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1616	"UK, Northern Ireland Local Governments [2001 census]: Moyle"	82800373	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1617	"UK, Northern Ireland Local Governments [2001 census]: Newry and Mourne"	82800374	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1618	"UK, Northern Ireland Local Governments [2001 census]: Newtownabbey"	82800375	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1619	"UK, Northern Ireland Local Governments [2001 census]: North Down"	82800376	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1620	"UK, Northern Ireland Local Governments [2001 census]: Omagh"	82800377	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1621	"UK, Northern Ireland Local Governments [2001 census]: Strabane"	82800378	828	"United Kingdom: Northern Ireland"	924	"Northern Europe"	4	2
+1622	"UK, Scotland  Local Governments [2001 census]: Aberdeen City"	82900379	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1623	"UK, Scotland  Local Governments [2001 census]: Aberdeenshire"	82900380	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1624	"UK, Scotland  Local Governments [2001 census]: Angus"	82900381	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1625	"UK, Scotland  Local Governments [2001 census]: Argyll & Bute"	82900382	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1626	"UK, Scotland  Local Governments [2001 census]: Scottish Borders"	82900383	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1627	"UK, Scotland  Local Governments [2001 census]: Clackmannanshire"	82900384	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1628	"UK, Scotland  Local Governments [2001 census]: West Dunbartonshire"	82900385	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1629	"UK, Scotland  Local Governments [2001 census]: Dumfries & Galloway"	82900386	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1630	"UK, Scotland  Local Governments [2001 census]: Dundee City"	82900387	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1631	"UK, Scotland  Local Governments [2001 census]: East Ayrshire"	82900388	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1632	"UK, Scotland  Local Governments [2001 census]: East Dunbartonshire"	82900389	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1633	"UK, Scotland  Local Governments [2001 census]: East Lothian"	82900390	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1634	"UK, Scotland  Local Governments [2001 census]: East Renfrewshire"	82900391	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1635	"UK, Scotland  Local Governments [2001 census]: Edinburgh City of"	82900392	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1636	"UK, Scotland  Local Governments [2001 census]: Falkirk"	82900393	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1637	"UK, Scotland  Local Governments [2001 census]: Fife"	82900394	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1638	"UK, Scotland  Local Governments [2001 census]: Glasgow City"	82900395	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1639	"UK, Scotland  Local Governments [2001 census]: Highland"	82900396	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1640	"UK, Scotland  Local Governments [2001 census]: Inverclyde"	82900397	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1641	"UK, Scotland  Local Governments [2001 census]: Midlothian"	82900398	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1642	"UK, Scotland  Local Governments [2001 census]: Moray"	82900399	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1643	"UK, Scotland  Local Governments [2001 census]: North Ayrshire"	82900400	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1644	"UK, Scotland  Local Governments [2001 census]: North Lanarkshire"	82900401	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1645	"UK, Scotland  Local Governments [2001 census]: Orkney Islands"	82900402	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1646	"UK, Scotland  Local Governments [2001 census]: Perth & Kinross"	82900403	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1647	"UK, Scotland  Local Governments [2001 census]: Renfrewshire"	82900404	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1648	"UK, Scotland  Local Governments [2001 census]: Shetland Islands"	82900405	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1649	"UK, Scotland  Local Governments [2001 census]: South Ayrshire"	82900406	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1650	"UK, Scotland  Local Governments [2001 census]: South Lanarkshire"	82900407	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1651	"UK, Scotland  Local Governments [2001 census]: Stirling"	82900408	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1652	"UK, Scotland  Local Governments [2001 census]: West Lothian"	82900409	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1653	"UK, Scotland  Local Governments [2001 census]: Eilean Siar"	82900410	829	"United Kingdom: Scotland"	924	"Northern Europe"	4	2
+1654	"United Kingdom, England"	8261	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1655	"United Kingdom, Wales"	8262	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+1656	"UK, England Local Governments [2001 census]: Watford"	826100216	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1657	"UK, England Local Governments [2001 census]: City of London & Westminster"	826100001	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1658	"UK, England Local Governments [2001 census]: Barking and Dagenham"	826100002	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1659	"UK, England Local Governments [2001 census]: Barnet"	826100003	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1660	"UK, England Local Governments [2001 census]: Bexley"	826100004	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1661	"UK, England Local Governments [2001 census]: Brent"	826100005	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1662	"UK, England Local Governments [2001 census]: Bromley"	826100006	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1663	"UK, England Local Governments [2001 census]: Camden"	826100007	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1664	"UK, England Local Governments [2001 census]: Croydon"	826100008	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1665	"UK, England Local Governments [2001 census]: Ealing"	826100009	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1666	"UK, England Local Governments [2001 census]: Enfield"	826100010	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1667	"UK, England Local Governments [2001 census]: Greenwich"	826100011	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1668	"UK, England Local Governments [2001 census]: Hackney"	826100012	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1669	"UK, England Local Governments [2001 census]: Hammersmith and Fulh"	826100013	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1670	"UK, England Local Governments [2001 census]: Haringey"	826100014	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1671	"UK, England Local Governments [2001 census]: Harrow"	826100015	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1672	"UK, England Local Governments [2001 census]: Havering"	826100016	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1673	"UK, England Local Governments [2001 census]: Hillingdon"	826100017	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1674	"UK, England Local Governments [2001 census]: Hounslow"	826100018	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1675	"UK, England Local Governments [2001 census]: Islington"	826100019	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1676	"UK, England Local Governments [2001 census]: Kensington and Chels"	826100020	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1677	"UK, England Local Governments [2001 census]: Kingston upon Thames"	826100021	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1678	"UK, England Local Governments [2001 census]: Lambeth"	826100022	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1679	"UK, England Local Governments [2001 census]: Lewisham"	826100023	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1680	"UK, England Local Governments [2001 census]: Merton"	826100024	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1681	"UK, England Local Governments [2001 census]: Newham"	826100025	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1682	"UK, England Local Governments [2001 census]: Redbridge"	826100026	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1683	"UK, England Local Governments [2001 census]: Richmond upon Thames"	826100027	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1684	"UK, England Local Governments [2001 census]: Southwark"	826100028	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1685	"UK, England Local Governments [2001 census]: Sutton"	826100029	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1686	"UK, England Local Governments [2001 census]: Tower Hamlets"	826100030	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1687	"UK, England Local Governments [2001 census]: Waltham Forest"	826100031	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1688	"UK, England Local Governments [2001 census]: Wandsworth"	826100032	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1689	"UK, England Local Governments [2001 census]: Bolton"	826100033	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1690	"UK, England Local Governments [2001 census]: Bury"	826100034	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1691	"UK, England Local Governments [2001 census]: Manchester"	826100035	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1692	"UK, England Local Governments [2001 census]: Oldham"	826100036	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1693	"UK, England Local Governments [2001 census]: Rochdale"	826100037	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1694	"UK, England Local Governments [2001 census]: Salford"	826100038	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1695	"UK, England Local Governments [2001 census]: Stockport"	826100039	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1696	"UK, England Local Governments [2001 census]: Tameside"	826100040	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1697	"UK, England Local Governments [2001 census]: Trafford"	826100041	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1698	"UK, England Local Governments [2001 census]: Wigan"	826100042	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1699	"UK, England Local Governments [2001 census]: Knowsley"	826100043	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1700	"UK, England Local Governments [2001 census]: Liverpool"	826100044	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1701	"UK, England Local Governments [2001 census]: St. Helens"	826100045	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1702	"UK, England Local Governments [2001 census]: Sefton"	826100046	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1703	"UK, England Local Governments [2001 census]: Wirral"	826100047	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1704	"UK, England Local Governments [2001 census]: Barnsley"	826100048	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1705	"UK, England Local Governments [2001 census]: Doncaster"	826100049	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1706	"UK, England Local Governments [2001 census]: Rotherham"	826100050	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1707	"UK, England Local Governments [2001 census]: Sheffield"	826100051	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1708	"UK, England Local Governments [2001 census]: Gateshead"	826100052	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1709	"UK, England Local Governments [2001 census]: Newcastle upon Tyne"	826100053	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1710	"UK, England Local Governments [2001 census]: North Tyneside"	826100054	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1711	"UK, England Local Governments [2001 census]: South Tyneside"	826100055	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1712	"UK, England Local Governments [2001 census]: Sunderland"	826100056	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1713	"UK, England Local Governments [2001 census]: Birmingham"	826100057	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1714	"UK, England Local Governments [2001 census]: Coventry"	826100058	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1715	"UK, England Local Governments [2001 census]: Dudley"	826100059	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1716	"UK, England Local Governments [2001 census]: Sandwell"	826100060	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1717	"UK, England Local Governments [2001 census]: Solihull"	826100061	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1718	"UK, England Local Governments [2001 census]: Walsall"	826100062	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1719	"UK, England Local Governments [2001 census]: Wolverhampton"	826100063	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1720	"UK, England Local Governments [2001 census]: Bradford"	826100064	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1721	"UK, England Local Governments [2001 census]: Calderdale"	826100065	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1722	"UK, England Local Governments [2001 census]: Kirklees"	826100066	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1723	"UK, England Local Governments [2001 census]: Leeds"	826100067	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1724	"UK, England Local Governments [2001 census]: Wakefield"	826100068	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1725	"UK, England Local Governments [2001 census]: Hartlepool"	826100069	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1726	"UK, England Local Governments [2001 census]: Middlesbrough"	826100070	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1727	"UK, England Local Governments [2001 census]: Redcar and Cleveland"	826100071	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1728	"UK, England Local Governments [2001 census]: Stockton-on-Tees"	826100072	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1729	"UK, England Local Governments [2001 census]: Darlington"	826100073	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1730	"UK, England Local Governments [2001 census]: Halton"	826100074	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1731	"UK, England Local Governments [2001 census]: Warrington"	826100075	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1732	"UK, England Local Governments [2001 census]: Blackburn with Darwe"	826100076	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1733	"UK, England Local Governments [2001 census]: Blackpool"	826100077	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1734	"UK, England Local Governments [2001 census]: Kingston upon Hull"	826100078	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1735	"UK, England Local Governments [2001 census]: East Riding of Yorks"	826100079	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1736	"UK, England Local Governments [2001 census]: North East Lincolnsh"	826100080	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1737	"UK, England Local Governments [2001 census]: North Lincolnshire"	826100081	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1738	"UK, England Local Governments [2001 census]: York"	826100082	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1739	"UK, England Local Governments [2001 census]: Derby"	826100083	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1740	"UK, England Local Governments [2001 census]: Leicester"	826100084	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1741	"UK, England Local Governments [2001 census]: Rutland"	826100085	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1742	"UK, England Local Governments [2001 census]: Nottingham"	826100086	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1743	"UK, England Local Governments [2001 census]: Herefordshire Coun"	826100087	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1744	"UK, England Local Governments [2001 census]: Telford and Wrekin"	826100088	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1745	"UK, England Local Governments [2001 census]: Stoke-on-Trent"	826100089	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1746	"UK, England Local Governments [2001 census]: Bath and North East"	826100090	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1747	"UK, England Local Governments [2001 census]: Bristol City of"	826100091	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1748	"UK, England Local Governments [2001 census]: North Somerset"	826100092	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1749	"UK, England Local Governments [2001 census]: South Gloucestershir"	826100093	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1750	"UK, England Local Governments [2001 census]: Plymouth"	826100094	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1751	"UK, England Local Governments [2001 census]: Torbay"	826100095	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1752	"UK, England Local Governments [2001 census]: Bournemouth"	826100096	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1753	"UK, England Local Governments [2001 census]: Poole"	826100097	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1754	"UK, England Local Governments [2001 census]: Swindon"	826100098	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1755	"UK, England Local Governments [2001 census]: Peterborough"	826100099	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1756	"UK, England Local Governments [2001 census]: Luton"	826100100	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1757	"UK, England Local Governments [2001 census]: Southend-on-Sea"	826100101	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1758	"UK, England Local Governments [2001 census]: Thurrock"	826100102	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1759	"UK, England Local Governments [2001 census]: Medway"	826100103	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1760	"UK, England Local Governments [2001 census]: Bracknell Forest"	826100104	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1761	"UK, England Local Governments [2001 census]: West Berkshire"	826100105	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1762	"UK, England Local Governments [2001 census]: Reading"	826100106	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1763	"UK, England Local Governments [2001 census]: Slough"	826100107	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1764	"UK, England Local Governments [2001 census]: Windsor and Maidenhe"	826100108	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1765	"UK, England Local Governments [2001 census]: Wokingham"	826100109	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1766	"UK, England Local Governments [2001 census]: Milton Keynes"	826100110	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1767	"UK, England Local Governments [2001 census]: Brighton and Hove"	826100111	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1768	"UK, England Local Governments [2001 census]: Portsmouth"	826100112	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1769	"UK, England Local Governments [2001 census]: Southampton"	826100113	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1770	"UK, England Local Governments [2001 census]: Isle of Wight"	826100114	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1771	"UK, England Local Governments [2001 census]: Mid Bedfordshire"	826100115	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1772	"UK, England Local Governments [2001 census]: Bedford"	826100116	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1773	"UK, England Local Governments [2001 census]: South Bedfordshire"	826100117	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1774	"UK, England Local Governments [2001 census]: Aylesbury Vale"	826100118	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1775	"UK, England Local Governments [2001 census]: Chiltern"	826100119	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1776	"UK, England Local Governments [2001 census]: South Bucks"	826100120	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1777	"UK, England Local Governments [2001 census]: Wycombe"	826100121	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1778	"UK, England Local Governments [2001 census]: Cambridge"	826100122	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1779	"UK, England Local Governments [2001 census]: East Cambridgeshire"	826100123	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1780	"UK, England Local Governments [2001 census]: Fenland"	826100124	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1781	"UK, England Local Governments [2001 census]: Huntingdonshire"	826100125	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1782	"UK, England Local Governments [2001 census]: South Cambridgeshire"	826100126	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1783	"UK, England Local Governments [2001 census]: Chester"	826100127	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1784	"UK, England Local Governments [2001 census]: Congleton"	826100128	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1785	"UK, England Local Governments [2001 census]: Crewe and Nantwich"	826100129	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1786	"UK, England Local Governments [2001 census]: Ellesmere Port & Nes"	826100130	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1787	"UK, England Local Governments [2001 census]: Macclesfield"	826100131	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1788	"UK, England Local Governments [2001 census]: Vale Royal"	826100132	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1789	"UK, England Local Governments [2001 census]: Caradon"	826100133	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1790	"UK, England Local Governments [2001 census]: Carrick"	826100134	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1791	"UK, England Local Governments [2001 census]: Kerrier"	826100135	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1792	"UK, England Local Governments [2001 census]: North Cornwall"	826100136	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1793	"UK, England Local Governments [2001 census]: Penwith and Isles of Scilly"	826100137	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1794	"UK, England Local Governments [2001 census]: Restormel"	826100138	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1795	"UK, England Local Governments [2001 census]: Allerdale"	826100139	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1796	"UK, England Local Governments [2001 census]: Barrow-in-Furness"	826100140	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1797	"UK, England Local Governments [2001 census]: Carlisle"	826100141	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1798	"UK, England Local Governments [2001 census]: Copeland"	826100142	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1799	"UK, England Local Governments [2001 census]: Eden"	826100143	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1800	"UK, England Local Governments [2001 census]: South Lakeland"	826100144	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1801	"UK, England Local Governments [2001 census]: Amber Valley"	826100145	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1802	"UK, England Local Governments [2001 census]: Bolsover"	826100146	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1803	"UK, England Local Governments [2001 census]: Chesterfield"	826100147	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1804	"UK, England Local Governments [2001 census]: Derbyshire Dales"	826100148	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1805	"UK, England Local Governments [2001 census]: Erewash"	826100149	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1806	"UK, England Local Governments [2001 census]: High Peak"	826100150	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1807	"UK, England Local Governments [2001 census]: North East Derbyshir"	826100151	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1808	"UK, England Local Governments [2001 census]: South Derbyshire"	826100152	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1809	"UK, England Local Governments [2001 census]: East Devon"	826100153	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1810	"UK, England Local Governments [2001 census]: Exeter"	826100154	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1811	"UK, England Local Governments [2001 census]: Mid Devon"	826100155	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1812	"UK, England Local Governments [2001 census]: North Devon"	826100156	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1813	"UK, England Local Governments [2001 census]: South Hams"	826100157	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1814	"UK, England Local Governments [2001 census]: Teignbridge"	826100158	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1815	"UK, England Local Governments [2001 census]: Torridge"	826100159	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1816	"UK, England Local Governments [2001 census]: West Devon"	826100160	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1817	"UK, England Local Governments [2001 census]: Christchurch"	826100161	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1818	"UK, England Local Governments [2001 census]: East Dorset"	826100162	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1819	"UK, England Local Governments [2001 census]: North Dorset"	826100163	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1820	"UK, England Local Governments [2001 census]: Purbeck"	826100164	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1821	"UK, England Local Governments [2001 census]: West Dorset"	826100165	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1822	"UK, England Local Governments [2001 census]: Weymouth and Portlan"	826100166	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1823	"UK, England Local Governments [2001 census]: Chester-le-Street"	826100167	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1824	"UK, England Local Governments [2001 census]: Derwentside"	826100168	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1825	"UK, England Local Governments [2001 census]: Durham"	826100169	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1826	"UK, England Local Governments [2001 census]: Easington"	826100170	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1827	"UK, England Local Governments [2001 census]: Sedgefield"	826100171	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1828	"UK, England Local Governments [2001 census]: Teesdale"	826100172	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1829	"UK, England Local Governments [2001 census]: Wear Valley"	826100173	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1830	"UK, England Local Governments [2001 census]: Eastbourne"	826100174	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1831	"UK, England Local Governments [2001 census]: Hastings"	826100175	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1832	"UK, England Local Governments [2001 census]: Lewes"	826100176	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1833	"UK, England Local Governments [2001 census]: Rother"	826100177	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1834	"UK, England Local Governments [2001 census]: Wealden"	826100178	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1835	"UK, England Local Governments [2001 census]: Basildon"	826100179	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1836	"UK, England Local Governments [2001 census]: Braintree"	826100180	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1837	"UK, England Local Governments [2001 census]: Brentwood"	826100181	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1838	"UK, England Local Governments [2001 census]: Castle Point"	826100182	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1839	"UK, England Local Governments [2001 census]: Chelmsford"	826100183	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1840	"UK, England Local Governments [2001 census]: Colchester"	826100184	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1841	"UK, England Local Governments [2001 census]: Epping Forest"	826100185	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1842	"UK, England Local Governments [2001 census]: Harlow"	826100186	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1843	"UK, England Local Governments [2001 census]: Maldon"	826100187	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1844	"UK, England Local Governments [2001 census]: Rochford"	826100188	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1845	"UK, England Local Governments [2001 census]: Tendring"	826100189	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1846	"UK, England Local Governments [2001 census]: Uttlesford"	826100190	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1847	"UK, England Local Governments [2001 census]: Cheltenham"	826100191	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1848	"UK, England Local Governments [2001 census]: Cotswold"	826100192	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1849	"UK, England Local Governments [2001 census]: Forest of Dean"	826100193	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1850	"UK, England Local Governments [2001 census]: Gloucester"	826100194	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1851	"UK, England Local Governments [2001 census]: Stroud"	826100195	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1852	"UK, England Local Governments [2001 census]: Tewkesbury"	826100196	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1853	"UK, England Local Governments [2001 census]: Basingstoke and Dean"	826100197	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1854	"UK, England Local Governments [2001 census]: East Hampshire"	826100198	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1855	"UK, England Local Governments [2001 census]: Eastleigh"	826100199	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1856	"UK, England Local Governments [2001 census]: Fareham"	826100200	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1857	"UK, England Local Governments [2001 census]: Gosport"	826100201	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1858	"UK, England Local Governments [2001 census]: Hart"	826100202	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1859	"UK, England Local Governments [2001 census]: Havant"	826100203	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1860	"UK, England Local Governments [2001 census]: New Forest"	826100204	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1861	"UK, England Local Governments [2001 census]: Rushmoor"	826100205	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1862	"UK, England Local Governments [2001 census]: Test Valley"	826100206	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1863	"UK, England Local Governments [2001 census]: Winchester"	826100207	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1864	"UK, England Local Governments [2001 census]: Broxbourne"	826100208	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1865	"UK, England Local Governments [2001 census]: Dacorum"	826100209	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1866	"UK, England Local Governments [2001 census]: East Hertfordshire"	826100210	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1867	"UK, England Local Governments [2001 census]: Hertsmere"	826100211	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1868	"UK, England Local Governments [2001 census]: North Hertfordshire"	826100212	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1869	"UK, England Local Governments [2001 census]: St Albans"	826100213	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1870	"UK, England Local Governments [2001 census]: Stevenage"	826100214	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1871	"UK, England Local Governments [2001 census]: Three Rivers"	826100215	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1872	"UK, England Local Governments [2001 census]: Welwyn Hatfield"	826100217	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1873	"UK, England Local Governments [2001 census]: Ashford"	826100218	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1874	"UK, England Local Governments [2001 census]: Canterbury"	826100219	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1875	"UK, England Local Governments [2001 census]: Dartford"	826100220	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1876	"UK, England Local Governments [2001 census]: Dover"	826100221	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1877	"UK, England Local Governments [2001 census]: Gravesham"	826100222	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1878	"UK, England Local Governments [2001 census]: Maidstone"	826100223	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1879	"UK, England Local Governments [2001 census]: Sevenoaks"	826100224	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1880	"UK, England Local Governments [2001 census]: Shepway"	826100225	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1881	"UK, England Local Governments [2001 census]: Swale"	826100226	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1882	"UK, England Local Governments [2001 census]: Thanet"	826100227	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1883	"UK, England Local Governments [2001 census]: Tonbridge and Mallin"	826100228	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1884	"UK, England Local Governments [2001 census]: Tunbridge Wells"	826100229	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1885	"UK, England Local Governments [2001 census]: Burnley"	826100230	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1886	"UK, England Local Governments [2001 census]: Chorley"	826100231	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1887	"UK, England Local Governments [2001 census]: Fylde"	826100232	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1888	"UK, England Local Governments [2001 census]: Hyndburn"	826100233	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1889	"UK, England Local Governments [2001 census]: Lancaster"	826100234	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1890	"UK, England Local Governments [2001 census]: Pendle"	826100235	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1891	"UK, England Local Governments [2001 census]: Preston"	826100236	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1892	"UK, England Local Governments [2001 census]: Ribble Valley"	826100237	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1893	"UK, England Local Governments [2001 census]: Rossendale"	826100238	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1894	"UK, England Local Governments [2001 census]: South Ribble"	826100239	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1895	"UK, England Local Governments [2001 census]: West Lancashire"	826100240	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1896	"UK, England Local Governments [2001 census]: Wyre"	826100241	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1897	"UK, England Local Governments [2001 census]: Blaby"	826100242	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1898	"UK, England Local Governments [2001 census]: Charnwood"	826100243	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1899	"UK, England Local Governments [2001 census]: Harborough"	826100244	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1900	"UK, England Local Governments [2001 census]: Hinckley and Boswort"	826100245	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1901	"UK, England Local Governments [2001 census]: Melton"	826100246	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1902	"UK, England Local Governments [2001 census]: North West Leicester"	826100247	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1903	"UK, England Local Governments [2001 census]: Oadby and Wigston"	826100248	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1904	"UK, England Local Governments [2001 census]: Boston"	826100249	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1905	"UK, England Local Governments [2001 census]: East Lindsey"	826100250	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1906	"UK, England Local Governments [2001 census]: Lincoln"	826100251	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1907	"UK, England Local Governments [2001 census]: North Kesteven"	826100252	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1908	"UK, England Local Governments [2001 census]: South Holland"	826100253	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1909	"UK, England Local Governments [2001 census]: South Kesteven"	826100254	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1910	"UK, England Local Governments [2001 census]: West Lindsey"	826100255	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1911	"UK, England Local Governments [2001 census]: Breckland"	826100256	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1912	"UK, England Local Governments [2001 census]: Broadland"	826100257	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1913	"UK, England Local Governments [2001 census]: Great Yarmouth"	826100258	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1914	"UK, England Local Governments [2001 census]: King's Lynn and West"	826100259	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1915	"UK, England Local Governments [2001 census]: North Norfolk"	826100260	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1916	"UK, England Local Governments [2001 census]: Norwich"	826100261	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1917	"UK, England Local Governments [2001 census]: South Norfolk"	826100262	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1918	"UK, England Local Governments [2001 census]: Corby"	826100263	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1919	"UK, England Local Governments [2001 census]: Daventry"	826100264	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1920	"UK, England Local Governments [2001 census]: East Northamptonshir"	826100265	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1921	"UK, England Local Governments [2001 census]: Kettering"	826100266	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1922	"UK, England Local Governments [2001 census]: Northampton"	826100267	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1923	"UK, England Local Governments [2001 census]: South Northamptonshi"	826100268	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1924	"UK, England Local Governments [2001 census]: Wellingborough"	826100269	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1925	"UK, England Local Governments [2001 census]: Alnwick"	826100270	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1926	"UK, England Local Governments [2001 census]: Berwick-upon-Tweed"	826100271	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1927	"UK, England Local Governments [2001 census]: Blyth Valley"	826100272	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1928	"UK, England Local Governments [2001 census]: Castle Morpeth"	826100273	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1929	"UK, England Local Governments [2001 census]: Tynedale"	826100274	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1930	"UK, England Local Governments [2001 census]: Wansbeck"	826100275	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1931	"UK, England Local Governments [2001 census]: Craven"	826100276	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1932	"UK, England Local Governments [2001 census]: Hambleton"	826100277	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1933	"UK, England Local Governments [2001 census]: Harrogate"	826100278	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1934	"UK, England Local Governments [2001 census]: Richmondshire"	826100279	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1935	"UK, England Local Governments [2001 census]: Ryedale"	826100280	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1936	"UK, England Local Governments [2001 census]: Scarborough"	826100281	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1937	"UK, England Local Governments [2001 census]: Selby"	826100282	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1938	"UK, England Local Governments [2001 census]: Ashfield"	826100283	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1939	"UK, England Local Governments [2001 census]: Bassetlaw"	826100284	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1940	"UK, England Local Governments [2001 census]: Broxtowe"	826100285	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1941	"UK, England Local Governments [2001 census]: Gedling"	826100286	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1942	"UK, England Local Governments [2001 census]: Mansfield"	826100287	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1943	"UK, England Local Governments [2001 census]: Newark and Sherwood"	826100288	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1944	"UK, England Local Governments [2001 census]: Rushcliffe"	826100289	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1945	"UK, England Local Governments [2001 census]: Cherwell"	826100290	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1946	"UK, England Local Governments [2001 census]: Oxford"	826100291	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1947	"UK, England Local Governments [2001 census]: South Oxfordshire"	826100292	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1948	"UK, England Local Governments [2001 census]: Vale of White Horse"	826100293	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1949	"UK, England Local Governments [2001 census]: West Oxfordshire"	826100294	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1950	"UK, England Local Governments [2001 census]: Bridgnorth"	826100295	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1951	"UK, England Local Governments [2001 census]: North Shropshire"	826100296	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1952	"UK, England Local Governments [2001 census]: Oswestry"	826100297	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1953	"UK, England Local Governments [2001 census]: Shrewsbury and Atcha"	826100298	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1954	"UK, England Local Governments [2001 census]: South Shropshire"	826100299	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1955	"UK, England Local Governments [2001 census]: Mendip"	826100300	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1956	"UK, England Local Governments [2001 census]: Sedgemoor"	826100301	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1957	"UK, England Local Governments [2001 census]: South Somerset"	826100302	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1958	"UK, England Local Governments [2001 census]: Taunton Deane"	826100303	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1959	"UK, England Local Governments [2001 census]: West Somerset"	826100304	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1960	"UK, England Local Governments [2001 census]: Cannock Chase"	826100305	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1961	"UK, England Local Governments [2001 census]: East Staffordshire"	826100306	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1962	"UK, England Local Governments [2001 census]: Lichfield"	826100307	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1963	"UK, England Local Governments [2001 census]: Newcastle-under-Lyme"	826100308	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1964	"UK, England Local Governments [2001 census]: South Staffordshire"	826100309	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1965	"UK, England Local Governments [2001 census]: Stafford"	826100310	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1966	"UK, England Local Governments [2001 census]: Staffordshire Moorla"	826100311	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1967	"UK, England Local Governments [2001 census]: Tamworth"	826100312	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1968	"UK, England Local Governments [2001 census]: Babergh"	826100313	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1969	"UK, England Local Governments [2001 census]: Forest Heath"	826100314	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1970	"UK, England Local Governments [2001 census]: Ipswich"	826100315	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1971	"UK, England Local Governments [2001 census]: Mid Suffolk"	826100316	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1972	"UK, England Local Governments [2001 census]: St Edmundsbury"	826100317	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1973	"UK, England Local Governments [2001 census]: Suffolk Coastal"	826100318	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1974	"UK, England Local Governments [2001 census]: Waveney"	826100319	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1975	"UK, England Local Governments [2001 census]: Elmbridge"	826100320	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1976	"UK, England Local Governments [2001 census]: Epsom and Ewell"	826100321	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1977	"UK, England Local Governments [2001 census]: Guildford"	826100322	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1978	"UK, England Local Governments [2001 census]: Mole Valley"	826100323	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1979	"UK, England Local Governments [2001 census]: Reigate and Banstead"	826100324	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1980	"UK, England Local Governments [2001 census]: Runnymede"	826100325	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1981	"UK, England Local Governments [2001 census]: Spelthorne"	826100326	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1982	"UK, England Local Governments [2001 census]: Surrey Heath"	826100327	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1983	"UK, England Local Governments [2001 census]: Tandridge"	826100328	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1984	"UK, England Local Governments [2001 census]: Waverley"	826100329	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1985	"UK, England Local Governments [2001 census]: Woking"	826100330	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1986	"UK, England Local Governments [2001 census]: North Warwickshire"	826100331	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1987	"UK, England Local Governments [2001 census]: Nuneaton and Bedwort"	826100332	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1988	"UK, England Local Governments [2001 census]: Rugby"	826100333	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1989	"UK, England Local Governments [2001 census]: Stratford-on-Avon"	826100334	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1990	"UK, England Local Governments [2001 census]: Warwick"	826100335	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1991	"UK, England Local Governments [2001 census]: Adur"	826100336	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1992	"UK, England Local Governments [2001 census]: Arun"	826100337	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1993	"UK, England Local Governments [2001 census]: Chichester"	826100338	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1994	"UK, England Local Governments [2001 census]: Crawley"	826100339	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1995	"UK, England Local Governments [2001 census]: Horsham"	826100340	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1996	"UK, England Local Governments [2001 census]: Mid Sussex"	826100341	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1997	"UK, England Local Governments [2001 census]: Worthing"	826100342	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1998	"UK, England Local Governments [2001 census]: Kennet"	826100343	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+1999	"UK, England Local Governments [2001 census]: North Wiltshire"	826100344	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+2000	"UK, England Local Governments [2001 census]: Salisbury"	826100345	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+2001	"UK, England Local Governments [2001 census]: West Wiltshire"	826100346	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+2002	"UK, England Local Governments [2001 census]: Bromsgrove"	826100347	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+2003	"UK, England Local Governments [2001 census]: Malvern Hills"	826100348	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+2004	"UK, England Local Governments [2001 census]: Redditch"	826100349	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+2005	"UK, England Local Governments [2001 census]: Worcester"	826100350	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+2006	"UK, England Local Governments [2001 census]: Wychavon"	826100351	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+2007	"UK, England Local Governments [2001 census]: Wyre Forest"	826100352	8261	"United Kingdom: England"	924	"Northern Europe"	4	2
+2008	"UK, Wales Local Governments [2001 census]: Isle of Anglesey"	826200411	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2009	"UK, Wales Local Governments [2001 census]: Gwynedd"	826200412	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2010	"UK, Wales Local Governments [2001 census]: Conwy"	826200413	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2011	"UK, Wales Local Governments [2001 census]: Denbighshire"	826200414	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2012	"UK, Wales Local Governments [2001 census]: Flintshire"	826200415	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2013	"UK, Wales Local Governments [2001 census]: Wrexham"	826200416	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2014	"UK, Wales Local Governments [2001 census]: Powys"	826200417	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2015	"UK, Wales Local Governments [2001 census]: Ceredigion"	826200418	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2016	"UK, Wales Local Governments [2001 census]: Pembrokeshire"	826200419	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2017	"UK, Wales Local Governments [2001 census]: Carmarthenshire"	826200420	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2018	"UK, Wales Local Governments [2001 census]: Swansea"	826200421	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2019	"UK, Wales Local Governments [2001 census]: Neath Port Talbot"	826200422	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2020	"UK, Wales Local Governments [2001 census]: Bridgend"	826200423	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2021	"UK, Wales Local Governments [2001 census]: The Vale of Glamorga"	826200424	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2022	"UK, Wales Local Governments [2001 census]: Rhondda Cynon Taf"	826200425	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2023	"UK, Wales Local Governments [2001 census]: Merthyr Tydfil"	826200426	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2024	"UK, Wales Local Governments [2001 census]: Caerphilly"	826200427	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2025	"UK, Wales Local Governments [2001 census]: Blaenau Gwent"	826200428	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2026	"UK, Wales Local Governments [2001 census]: Torfaen"	826200429	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2027	"UK, Wales Local Governments [2001 census]: Monmouthshire"	826200430	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2028	"UK, Wales Local Governments [2001 census]: Newport"	826200431	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
+2029	"UK, Wales Local Governments [2001 census]: Cardiff"	826200432	8262	"United Kingdom: Wales"	924	"Northern Europe"	4	2
