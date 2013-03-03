@@ -816,7 +816,7 @@ do.write.parameters.summary <- function(pred, output.dir, revision=14, adjusted=
 
 "get.projection.summary.header" <- function(pred, ...) UseMethod("get.projection.summary.header")
 get.projection.summary.header.bayesTFR.prediction <- function(pred, ...) 
-	return (list(revision='RevID', variant='VarID', country='LocID', year='TimeID', tfr='TFR'))
+	return (list(revision='RevID', variant='VarID', country='LocID', year='TimeID', indicator='IndicatorID', sex='SexID', tfr='Value'))
 
 "get.UN.variant.names" <- function(pred, ...) UseMethod("get.UN.variant.names")
 get.UN.variant.names.bayesTFR.prediction <- function(pred, ...) 
@@ -827,7 +827,7 @@ get.UN.variant.names.bayesTFR.prediction <- function(pred, ...)
 get.friendly.variant.names.bayesTFR.prediction <- function(pred, ...)
 	return(c('median', 'lower 80', 'upper 80', 'lower 95', 'upper 95', '-0.5child', '+0.5child', 'constant'))
 
-do.write.projection.summary <- function(pred, output.dir, revision=14, adjusted=FALSE) {
+do.write.projection.summary <- function(pred, output.dir, revision=14, indicator.id=19, sex.id=3, adjusted=FALSE) {
 	cat('Creating summary files ...\n')
 	e <- new.env()
 	data('UN_time', envir=e)
@@ -881,6 +881,8 @@ do.write.projection.summary <- function(pred, output.dir, revision=14, adjusted=
 								   variant=rep(e$UN_variants[e$UN_variants$Vshort==UN.variant.names[ivar],'VarID'], nr.proj.all),
 								   country=rep(country.obj$code, nr.proj.all),
 								   year=e$UN_time[un.time.idx,'TimeID'],
+								   indicator=rep(indicator.id, nr.proj.all),
+  									sex=rep(sex.id, nr.proj.all),
 								   tfr=c(this.tfr, proj.result[ivar,])))
 		}
 	}
@@ -954,6 +956,11 @@ get.tfr.shift <- function(country.code, pred) {
 	return(pred)
 }
 
+tfr.median.reset <- function(sim.dir, countries) {
+	for(country in countries) pred <- tfr.median.shift(sim.dir, country, reset=TRUE)
+	invisible(pred)
+}
+
 tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, to=NULL) {
 	invisible(.bdem.median.shift(type='tfr', sim.dir=sim.dir, country=country, reset=reset, 
 				shift=shift, from=from, to=to))
@@ -1022,7 +1029,7 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 									write.trajectories=FALSE, verbose=FALSE)
 	new.means <- new.pred$traj.mean.sd[,1,2:dim(new.pred$traj.mean.sd)[3]]
 	for(icountry in 1:length(countries)) {
-		tfr.median.set(sim.dir, countries[icountry], new.means[countries.idx[icountry],])
+		tfr.median.set(sim.dir, countries[icountry], new.means[get.country.object(countries[icountry], mcmc.set$meta)$index,])
 	}
 	# reload adjusted prediction
 	invisible(get.tfr.prediction(sim.dir))
