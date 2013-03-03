@@ -223,7 +223,15 @@ do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_g
     nr_countries_estimation <- tfr.with.regions$nr_countries_estimation
                                                    
     # uniform prior for U_c, make lower bound country specific
-    tfr_min_c <- apply(updated.tfr.matrix, 2, min, na.rm = TRUE)
+    if(any(apply(updated.tfr.matrix, 2, function(x) all(is.na(x))))) { # some countries start Phase III before 1950
+    	tfr_min_c <- c()
+ 		# loop over countries to find minimum
+ 		for (country in 1:nr_countries){
+    		data <- get.observed.with.supplemental(country, updated.tfr.matrix, results_tau$suppl.matrix)
+    		tfr_min_c <- c(tfr_min_c, min(data, na.rm=TRUE))
+    	}
+    } else
+    	tfr_min_c <- apply(updated.tfr.matrix, 2, min, na.rm = TRUE)
     lower_U_c <- ifelse(tfr_min_c > meta$U.c.low.base, tfr_min_c, meta$U.c.low.base)
 	prop_cov_gammas <- array(NA, c(nr_countries,3,3))
 	if(use.average.gammas.cov) {

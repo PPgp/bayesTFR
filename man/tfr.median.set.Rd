@@ -2,6 +2,7 @@
 \alias{tfr.median.set}
 \alias{tfr.median.shift}
 \alias{tfr.median.adjust}
+\alias{tfr.median.reset}
 
 \title{
 Editing Medians of the Projection
@@ -16,6 +17,8 @@ tfr.median.shift(sim.dir, country, reset = FALSE, shift = 0,
     from = NULL, to = NULL)
     
 tfr.median.adjust(sim.dir, countries, factor1 = 2/3, factor2 = 1/3, forceAR1 = FALSE)
+
+tfr.median.reset(sim.dir, countries)
 }
 \arguments{
   \item{sim.dir}{Directory containing the prediction object.}
@@ -34,8 +37,9 @@ tfr.median.adjust(sim.dir, countries, factor1 = 2/3, factor2 = 1/3, forceAR1 = F
 \details{
 The function \code{tfr.median.set} can be used to set the medians of the given country to specific values. Function \code{tfr.median.shift} can be used to offset the medians by a specific constant, or to reset the medians to their original BHM values.
 Function \code{tfr.median.adjust} runs the prediction procedure for the given countries with an additional decrement in the model in the first two projection periods. In the first projection period it is computed as \code{factor1*S} where \code{S} is a difference between observed decrement and the expected decrement (by the double logistic function) in the last observed period. In the second projection period, in the formula \code{factor1} is replaced by \code{factor2}. If \code{forceAR1} is set to \code{TRUE}, we recommend to set \code{factor1} and \code{factor2} to 0. The function then calls \code{tfr.median.set} in order to store the new median for each country.
+Function \code{tfr.median.reset} resets medians of the given countries to the original values.
 
-In all three functions, if a median is modified, the corresponding offset is stored in the prediction object (element \code{median.shift}) and the updated prediction object is written back to disk. All functions in the package that use trajectories and trajectory statistics use the \code{median.shift} values to offset the results correspondingly.  
+In all four functions, if a median is modified, the corresponding offset is stored in the prediction object (element \code{median.shift}) and the updated prediction object is written back to disk. All functions in the package that use trajectories and trajectory statistics use the \code{median.shift} values to offset the results correspondingly.  
 }
 \value{
 All three functions return an updated object of class \code{\link{bayesTFR.prediction}}.

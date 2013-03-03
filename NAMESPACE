@@ -12,6 +12,7 @@ export(
 	tfr.predict.extra,
 	tfr.median.shift,
 	tfr.median.set,
+	tfr.median.reset,
 	get.tfr.shift,
 	tfr.median.adjust,
 	get.ar1.parameters,
