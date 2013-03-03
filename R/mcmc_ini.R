@@ -225,7 +225,6 @@ do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_g
     # uniform prior for U_c, make lower bound country specific
     tfr_min_c <- apply(updated.tfr.matrix, 2, min, na.rm = TRUE)
     lower_U_c <- ifelse(tfr_min_c > meta$U.c.low.base, tfr_min_c, meta$U.c.low.base)
-		
 	prop_cov_gammas <- array(NA, c(nr_countries,3,3))
 	if(use.average.gammas.cov) {
 		cov.to.average <- get.cov.gammas(sim.dir=meta$output.dir, burnin=burnin)$values
