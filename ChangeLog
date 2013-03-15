@@ -1,8 +1,22 @@
-3.0-2/3 (2/28/2012)
+3.0-5 (3/14/2013)
+-----
+Revision number in summary files is determined automatically from wpp.year.
+
+Fix of prediction adjustment.
+
+3.0-4 (3/3/2013)
+-----
+Two columns (indicatorID and sexID) added to the projection summary file.
+
+Bug in tfr.median.adjust fixed.
+
+Fixed an issue when Phase III starts before 1950.
+
+3.0-2/3 (2/28/2013)
 -----
 Added start.year into make.tfr.prediction. Now projections that start before (or at) 'present.year' are allowed.
 
-3.0-1 (2/27/2012)
+3.0-1 (2/27/2013)
 -----
 Preliminary wpp 2012 data added.
 

@@ -228,7 +228,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	dimnames(PIs_cqp)[[3]] <- proj.middleyears
 	mean_sd <- array(NA, c(nr_countries, 2, nr_project+1))
 	hasNAs <- rep(FALSE, nr_simu)
-	adjust.true <- if(is.na(adj.factor1)) FALSE else TRUE
+	adjust.true <- !is.na(adj.factor1)
 	if (verbose) cat('Load parameters mean_eps_tau and sd_eps_tau.\n')
     tau.par.names <- c('mean_eps_tau', 'sd_eps_tau')
     tau.par.values <- get.tfr.parameter.traces(load.mcmc.set$mcmc.list, tau.par.names, burnin=0)
@@ -344,8 +344,9 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	}
 	all.tfr <- get.observed.tfr(country, mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
 	lall.tfr <- length(all.tfr)
-	this.T_end <- min(mcmc.set$meta$T_end_c[country], ltfr_matrix.all)
-	nmissing <- ltfr_matrix.all - this.T_end
+	this.T_end <- mcmc.set$meta$T_end_c[country]
+	this.T_end.min <- min(this.T_end, ltfr_matrix.all)
+	nmissing <- ltfr_matrix.all - this.T_end.min # positive only if this.T_end < ltfr_matrix.all
 	this.nr_project <- nr_project + nmissing
 			
 	#### projections might start before 1975 ...
@@ -355,25 +356,28 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
  			# gives number of add. periods with const
  		dummie_c1975[1:sum(const_sd_dummie_Tc[this.T_end:(mcmc.set$meta$T_end+suppl.T),country])] <- 1
 	}            
-	nr_obs_in_phaseIII = (this.T_end - mcmc.set$meta$lambda_c[country])
+	nr_obs_in_phaseIII = (this.T_end.min - mcmc.set$meta$lambda_c[country])
 	sigma_t  = sigmas_all[(nr_obs_in_phaseIII+1):(nr_obs_in_phaseIII+this.nr_project)]
 	if (verbose && nmissing > 0) 
 		cat('\t', nmissing, 'data points reconstructed.\n')
 	# the projections
 	f_ps <- matrix(NA, this.nr_project+1,nr_simu)
 	# fs also includes last estimate!
-	f_ps[1,] <- all.tfr[this.T_end]
+	f_ps[1:(this.T_end-this.T_end.min+1),] <- all.tfr[this.T_end.min:this.T_end]
 	if(has.phase3 && is.element(country, mcmc3$meta$id_phase3)) 
 		m3.par.values.cs <- get.tfr3.parameter.traces.cs(mcmc3$mcmc.list, country.obj=country.obj,
 										par.names=c('mu.c', 'rho.c'), burnin=burnin3, thinning.index=thinning.index)
 	if(adjust.true) D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
  	S11 <- 0
-
+ 	# vector W with the weight for the first two periods:
+    W <- c(adj.factor1, adj.factor2, rep(0, this.nr_project))
+ 	W[is.na(W)] <- 0
+	T.shift <- this.T_end-this.T_end.min
 	for (s in 1:nr_simu){
-		year <- 2
+		year <- 2 + T.shift
 		if(forceAR1) repl_stop <- TRUE
 		else repl_stop <- ifelse(
-  					(mcmc.set$meta$lambda_c[country] != this.T_end) || 
+  					(mcmc.set$meta$lambda_c[country] < this.T_end) || 
                 	((min(all.tfr[1:this.T_end], na.rm=TRUE) <= cs.par.values[s, Triangle_c4.var]) && 
                  	(all.tfr[this.T_end] > all.tfr[this.T_end-1])), TRUE, FALSE)
 		if(adjust.true) {
@@ -400,23 +404,14 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	  			S11 <- D11 - (all.tfr[this.T_end-1] - (mu.c + rho.c*(all.tfr[this.T_end-1]-mu.c)))
 	  		}
 	  	}
-	   	# vector W with the weight for the first two periods:
-        W <- c(adj.factor1, adj.factor2, rep(0, this.nr_project-2))
- 		W[is.na(W)] <- 0
         # first projection year
-        if(nmissing == 0) {
-        	while((this.T_end + year - 2 < lall.tfr) && !is.na(all.tfr[this.T_end + year - 1])) {
-        		f_ps[year,s] <- all.tfr[this.T_end + year - 1]
-        		year = year + 1
-        	}
-        }
 		if (is.element(country, mcmc.set$id_Tistau)){
 				### need to start with sampling eps_tau!!
        			 while(TRUE) {
                  	eps_tmin1 <- rnorm(1, tau.par.values[s, 'mean_eps_tau'], tau.par.values[s, 'sd_eps_tau'])
                     fps <- (f_ps[year -1,s]- DLcurve(theta_si[s,], f_ps[year -1,s], 
                                                         mcmc.set$meta$dl.p1, mcmc.set$meta$dl.p2)+ eps_tmin1 
-                                                        - W[year-1]*S11)
+                                                        - W[year-1-T.shift]*S11)
 
                     #if( fps > 0 && fps <= cs.par.values[s,U.var] ) break
                     if( fps > 0.5 && fps <= cs.par.values[s,U.var] ) break
@@ -435,18 +430,19 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
   				while(TRUE) {
   					eps_tmin1 <- rnorm(1, 0, sigma_eps)
   					fps <- (f_ps[year -1,s]- DLcurve(theta_si[s,], f_ps[year -1,s], 
-  								mcmc.set$meta$dl.p1, mcmc.set$meta$dl.p2)+ eps_tmin1 - W[year-1]*S11)
+  								mcmc.set$meta$dl.p1, mcmc.set$meta$dl.p2)+ eps_tmin1 - W[year-1-T.shift]*S11)
   					#if( fps > 0 && fps <= cs.par.values[s,U.var] ) break
   					if( fps > 0.5 && fps <= cs.par.values[s,U.var] ) break
   				}
   				f_ps[year,s] <- fps
   				if ((min(f_ps[1:year, s]) <= cs.par.values[s, Triangle_c4.var]) && 
-                                                           (f_ps[year, s] > f_ps[year-1, s]))
+                                                           (f_ps[year, s] > f_ps[year-1, s])) {
                 	repl_stop <- TRUE 
-				if(adjust.true && year == 2){
-					# if a country with adjustment enters Phase III in second proj. step (corresponds to year ==3)
-					# then the adjustment needs to be changed, based on observed diff in last proj step and AR(1) decrement
-		  			S11 <- ( f_ps[year-1,s] - f_ps[year,s]) - ( f_ps[year-1,s] - (mu.c + rho.c*( f_ps[year-1,s]-mu.c)))
+					if(adjust.true && (year - T.shift) == 3) {
+						# if a country with adjustment enters Phase III in second proj. step (corresponds to year ==3)
+						# then the adjustment needs to be changed, based on observed diff in last proj step and AR(1) decrement
+		  				S11 <- ( f_ps[year-1,s] - f_ps[year,s]) - ( f_ps[year-1,s] - (mu.c + rho.c*( f_ps[year-1,s]-mu.c)))
+			 		}
 			 	}
 			 	year = year + 1
  			} # end while loop, continue if repl_stop ==TRUE and year<nr_project+2
@@ -472,7 +468,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
  					while (TRUE){
 						f_ps[period,s] <- (mu.c + rho.c*
 								(f_ps[period-1,s] - mu.c) + 
-								rnorm(1, 0, sigma.eps[index_sigma]) - W[period-1]*S11)
+								rnorm(1, 0, sigma.eps[index_sigma]) - W[period-1-T.shift]*S11)
 						if (f_ps[period, s] > 0.0 )   break
 					}
 				}
@@ -751,7 +747,7 @@ convert.tfr.trajectories <- function(dir=file.path(getwd(), 'bayesTFR.output'),
 }
 
 write.projection.summary <- function(dir=file.path(getwd(), 'bayesTFR.output'), 
-									 output.dir=NULL, revision=14, adjusted=FALSE) {
+									 output.dir=NULL, revision=NULL, adjusted=FALSE) {
 # Writes three prediction summary files, one in a user-friendly format, one in a UN-format,
 # and one parameter file.
 	pred <- get.tfr.prediction(sim.dir=dir)
@@ -760,14 +756,14 @@ write.projection.summary <- function(dir=file.path(getwd(), 'bayesTFR.output'),
 	tfr.write.projection.summary.and.parameters(pred, output.dir, revision=revision, adjusted=adjusted)
 }
 
-tfr.write.projection.summary.and.parameters <- function(pred, output.dir, revision=14, adjusted=FALSE) {
+tfr.write.projection.summary.and.parameters <- function(pred, output.dir, revision=NULL, adjusted=FALSE) {
 	# two summary files
 	do.write.projection.summary(pred, output.dir, revision=revision, adjusted=adjusted)
 	# third file about MCMC parameters
-	do.write.parameters.summary(pred, output.dir, revision=revision, adjusted=adjusted)
+	do.write.parameters.summary(pred, output.dir, adjusted=adjusted)
 }
 
-do.write.parameters.summary <- function(pred, output.dir, revision=14, adjusted=FALSE) {
+do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
 	meta <- pred$mcmc.set$meta
 	tfr.years <- get.tfr.periods(meta)
 	tfr <- get.data.imputed(pred)
@@ -827,7 +823,13 @@ get.UN.variant.names.bayesTFR.prediction <- function(pred, ...)
 get.friendly.variant.names.bayesTFR.prediction <- function(pred, ...)
 	return(c('median', 'lower 80', 'upper 80', 'lower 95', 'upper 95', '-0.5child', '+0.5child', 'constant'))
 
-do.write.projection.summary <- function(pred, output.dir, revision=14, indicator.id=19, sex.id=3, adjusted=FALSE) {
+get.wpp.revision.number <- function(pred) {
+	wpps <- seq(2008, pred$mcmc.set$meta$wpp.year, by=2)
+	lwpps <- length(wpps)
+	return(seq(13, length=lwpps)[lwpps])
+}
+
+do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicator.id=19, sex.id=3, adjusted=FALSE) {
 	cat('Creating summary files ...\n')
 	e <- new.env()
 	data('UN_time', envir=e)
@@ -852,6 +854,7 @@ do.write.projection.summary <- function(pred, output.dir, revision=14, indicator
 		header1[[paste('year', i, sep='')]] <- pred.period[i]
 		un.time.idx <- c(un.time.idx, which(un.time.label==pred.period[i]))
 	}
+	if(is.null(revision)) revision <- get.wpp.revision.number(pred)
 	header2 <- get.projection.summary.header(pred)
 	UN.variant.names <- get.UN.variant.names(pred)
 	friendly.variant.names <- get.friendly.variant.names(pred)

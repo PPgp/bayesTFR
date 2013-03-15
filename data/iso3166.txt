@@ -54,10 +54,10 @@ Cook Islands;Cook Islands, Cookinseln, Îles Cook, Islas Cook;CK;COK;184;CW;Cook
 Costa Rica;Costa Rica;CR;CRI;188;CS;Costa Rica;Americas;Central America;56;Wikipedia: Became 99999 after 1997.;10 00 N;84 00 W
 Croatia;Croatia, Kroatien, Croatie, Croacia;HR;HRV;191;HR;Croatia;Europe;Southern Europe;58;HR- is part of the postcode.  Statoids: HR- can be used.;45 10 N;15 30 E
 Cuba;Cuba, Kuba;CU;CUB;192;CU;Cuba;Americas;Caribbean;59;"CP (codigo postal; postal code) is often part of the postcode.";21 30 N;80 00 W
-Curaçao;"Curaçao; Curaçao; Kòrsou";CW;CUW;531;;;;;701;;;
+Curacao;"Curaçao; Curaçao; Kòrsou";CW;CUW;531;;;;;701;;;
 Cyprus;Cyprus, Zypern, Chypre, Chipre;CY;CYP;196;CY;Cyprus;Asia;Western Asia;60;Wikipedia: CY- is part of the postcode.  Statoids: CY- can be used.;35 00 N;33 00 E
 Czech Republic;Czech Republic, Tschechische Republik, République Tchèque, República Checa;CZ;CZE;203;EZ;Czech Republic;Europe;Eastern Europe;61;Wikipedia: CZ- is part of the postcode.  Statoids: CZ- can be used.;49 45 N;15 30 E
-Côte DIvoire;;CI;CIV;384;IV;Côte DIvoire;Africa;Western Africa;57;;8 00 N;5 00 W
+Cote DIvoire;;CI;CIV;384;IV;Côte DIvoire;Africa;Western Africa;57;;8 00 N;5 00 W
 Denmark;Denmark, Dänemark, Danemark, Dinamarca;DK;DNK;208;DA;Denmark;Europe;Northern Europe;62;Wikipedia: DK- is part of the postcode.;56 00 N;10 00 E
 Djibouti;Djibouti;DJ;DJI;262;DJ;Djibouti;Africa;Eastern Africa;63;;11 30 N;43 00 E
 Dominica;Dominica;DM;DMA;212;DO;Dominica;Americas;Caribbean;64;;15 25 N;61 20 W
@@ -182,8 +182,8 @@ Qatar;Qatar, Katar;QA;QAT;634;QA;Qatar;Asia;Western Asia;186;;25 30 N;51 15 E
 Romania;Romania, Rumänien, Roumanie, Rumania;RO;ROU;642;RO;Romania;Europe;Eastern Europe;189;Wikipedia: RO- is part of the postcode.;46 00 N;25 00 E
 Russian Federation;Russia, Russland, Russie, Rusia;RU;RUS;643;RS;Russia;Europe;Eastern Europe;190;Wikipedia: changed as of 5/1/2008.;60 00 N;100 00 E
 Rwanda;Rwanda, Ruanda;RW;RWA;646;RW;Rwanda;Africa;Eastern Africa;191;;2 00 S;30 00 E
-Réunion;Réunion, Réunion, Réunion, Reunión;RE;REU;638;RE;Réunion;Africa;Eastern Africa;187;Overseas Region of France.  Source: CIA Factbook.;;
-Saint Barthélemy;;BL;BLM;652;TB;Saint Barthelemy;Americas;Caribbean;300;Dependent Area of France.  Source: CIA Factbook.;17 90 N;62 85 W
+Reunion;Réunion, Réunion, Réunion, Reunión;RE;REU;638;RE;Réunion;Africa;Eastern Africa;187;Overseas Region of France.  Source: CIA Factbook.;;
+Saint Barthelemy;;BL;BLM;652;TB;Saint Barthelemy;Americas;Caribbean;300;Dependent Area of France.  Source: CIA Factbook.;17 90 N;62 85 W
 Saint Helena, Ascension and Tristan Da Cunha;Saint Helena, Sankt Helena, Sainte Hélène, Santa Helena;SH;SHN;654;SH;Saint Helena;Africa;Western Africa;192;Comprises: Saint Helena Island, Ascension Island, Tristan da Cunha Archipelago (Gough Island, Inaccessible Island, Nightingale Island and Stoltenhoff Island);Saint Helena: 15 57 ;Saint Helena: 5 42 W
 Saint Kitts And Nevis;Saint Kitts and Nevis, Saint Kitts et Nevis, Saint Kitts y Nevis;KN;KNA;659;SC;Saint Kitts and Nevis;Americas;Caribbean;193;;17 20 N;62 45 W
 Saint Lucia;Saint Lucia, Saint-Lucie, Santa Lucía;LC;LCA;662;ST;Saint Lucia;Americas;Caribbean;194;;13 53 N;60 58 W
@@ -247,4 +247,4 @@ Western Sahara;Western Sahara, Westsahara, Sahara Occidental, Sahara Occidental;
 Yemen;Yemen, Jemen, Yémen;YE;YEM;887;YM;Yemen;Asia;Western Asia;252;;15 00 N;48 00 E
 Zambia;Zambia, Sambia, Zambie;ZM;ZMB;894;ZA;Zambia;Africa;Eastern Africa;255;;15 00 S;30 00 E
 Zimbabwe;Zimbabwe, Simbabwe, Zimbabue;ZW;ZWE;716;ZI;Zimbabwe;Africa;Eastern Africa;256;;20 00 S;30 00 E
-Åland Islands;;AX;ALA;248;;;Europe;Northern Europe;3;;;
+Aland Islands;;AX;ALA;248;;;Europe;Northern Europe;3;;;
