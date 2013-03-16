@@ -313,7 +313,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				cs.par.values[,d.var]) 
 	} else { #Tistau countries
              # sample decline parameters from the hier distributions                 
-		Triangle4_tr_s = rnorm(1, mean = cs.par.values_hier[,'Triangle4'], 
+		Triangle4_tr_s = rnorm(nr_simu, mean = cs.par.values_hier[,'Triangle4'], 
 									sd = cs.par.values_hier[, 'delta4'])
 		Triangle_c4_s <- ( mcmc.set$meta$Triangle_c4.up*exp(Triangle4_tr_s) + mcmc.set$meta$Triangle_c4.low)/(1+exp(Triangle4_tr_s))
 
@@ -324,15 +324,15 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		cs.par.values = cbind(cs.par.values, Triangle_c4_s)
 		colnames(cs.par.values) = c(U.var, Triangle_c4.var)
 
-		d_tr_s = rnorm(1, mean = cs.par.values_hier[,'chi'], 
-							sd = cs.par.values_hier[,'psi'])
+		d_tr_s = rnorm(nr_simu, mean = cs.par.values_hier[,'chi'], 
+								sd = cs.par.values_hier[,'psi'])
 		d_s =  (mcmc.set$meta$d.up*(exp(d_tr_s) + mcmc.set$meta$d.low)/(1+exp(d_tr_s)))
 		#print(d_s) # check!
 
 		gamma_si = matrix(NA, nr_simu, 3)
 		for (i in 1:3){
- 			gamma_si[,i] <- rnorm(1, mean = cs.par.values_hier[,alpha.vars[i]], 
- 									sd = cs.par.values_hier[,delta.vars[i]])
+ 			gamma_si[,i] <- rnorm(nr_simu, mean = cs.par.values_hier[,alpha.vars[i]], 
+ 											sd = cs.par.values_hier[,delta.vars[i]])
 		}
 
 		pc_si = matrix(NA, nr_simu, 3)

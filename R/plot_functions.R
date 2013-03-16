@@ -17,10 +17,23 @@ stop.if.country.not.DL <- function(country.obj, meta) {
 
 tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, nr.curves, predictive.distr=FALSE) {
     dlc <- c()
-    U.var <- paste("U_c", country.code, sep = "")
-    d.var <- paste("d_c", country.code, sep = "")
-    Triangle_c4.var <- paste("Triangle_c4_c", country.code, sep = "")
-    gamma.vars <- paste("gamma_", 1:3, "_c", country.code, sep = "")
+    cspec <- TRUE
+    if(!is.element(country.index, mcmc.list[[1]]$meta$id_Tistau)) {
+    	U.var <- paste("U_c", country.code, sep = "")
+    	d.var <- paste("d_c", country.code, sep = "")
+    	Triangle_c4.var <- paste("Triangle_c4_c", country.code, sep = "")
+    	gamma.vars <- paste("gamma_", 1:3, "_c", country.code, sep = "")
+    } else {
+    	U.var <- "U"
+    	d.var <- "d"
+    	Triangle_c4.var <- "Triangle_c4"
+    	gamma.vars <- paste("gamma_", 1:3, sep = "")
+    	alpha.vars <- paste('alpha_',1:3, sep='')
+		delta.vars <- paste('delta_',1:3, sep='')
+		Uvalue = get.observed.tfr(country.index, mcmc.list[[1]]$meta, 
+										'tfr_matrix_all')[mcmc.list[[1]]$meta$tau_c[country.index]]
+    	cspec <- FALSE
+    }
     # Compute the quantiles on a sample of at least 2000.   
     nr.curves.from.mc <- if (!is.null(nr.curves)) ceiling(max(nr.curves, 2000)/length(mcmc.list))
     						else NULL
@@ -28,13 +41,33 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, 
     	th.burnin <- get.thinned.burnin(mcmc,burnin)
     	thincurves.mc <- get.thinning.index(nr.points=nr.curves.from.mc, 
             all.points=mcmc$length - th.burnin)
-        traces <- load.tfr.parameter.traces.cs(mcmc, country.code, 
+        if(cspec) # country specific
+        	traces <- data.frame(load.tfr.parameter.traces.cs(mcmc, country.code, 
         						burnin=th.burnin, 
-								thinning.index=thincurves.mc$index)
+								thinning.index=thincurves.mc$index))
+		else { #Tistau country. Use hierarchical distr.
+			traces <- data.frame(load.tfr.parameter.traces(mcmc, 
+        						burnin=th.burnin, 
+								thinning.index=thincurves.mc$index))
+			ltraces <- nrow(traces)
+			for (i in 1:3){
+				gamma <- rnorm(ltraces, mean = traces[,alpha.vars[i]], 
+ 										sd = traces[,delta.vars[i]])
+				traces <- cbind(traces, gamma)
+				colnames(traces)[ncol(traces)] <- gamma.vars[i]
+			}
+			Triangle4_tr_s <- rnorm(ltraces, mean = traces[,'Triangle4'], sd = traces[, 'delta4'])
+			traces <- cbind(traces, 
+						Triangle_c4=( mcmc$meta$Triangle_c4.up*exp(Triangle4_tr_s) + mcmc$meta$Triangle_c4.low)/(1+exp(Triangle4_tr_s)))
+			d_tr_s <- rnorm(ltraces, mean = traces[,'chi'], sd = traces[,'psi'])
+			traces <- cbind(traces,   d=(mcmc$meta$d.up*(exp(d_tr_s) + mcmc$meta$d.low)/(1+exp(d_tr_s))),
+									U=rep(Uvalue, ltraces))
+		}
         theta <- (traces[, U.var] - traces[, Triangle_c4.var] ) * 
             exp(traces[, gamma.vars, drop=FALSE])/apply(exp(traces[,gamma.vars, drop=FALSE]), 1, sum)
         theta <- cbind(theta, traces[, Triangle_c4.var], traces[, d.var])
         dl <- t(apply(theta, 1, DLcurve, tfr = x, p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2))
+        #stop('')
         if(length(x) == 1) dl <- t(dl)
         if(predictive.distr) {
 			errors <- matrix(NA, nrow=dim(dl)[1], ncol=dim(dl)[2])
@@ -71,15 +104,17 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     mcmc.list <- get.mcmc.list(mcmc.list)
     meta <- mcmc.list[[1]]$meta
     country <- get.country.object(country, meta)
-    stop.if.country.not.DL(country, meta)
+    #stop.if.country.not.DL(country, meta)
     tfr_plot <- seq(0, tfr.max, 0.1)
     dlc <- tfr.get.dlcurves(tfr_plot, mcmc.list, country$code, country$index, burnin, nr.curves, 
     						predictive.distr=predictive.distr)
     miny <- min(dlc)
     maxy <- max(dlc)
-    obs.data <- get.observed.tfr(country$index, meta)[1:meta$T_end_c[country$index]]
+    obs.data <- get.observed.tfr(country$index, meta, 'tfr_matrix_observed', 'tfr_matrix')[1:meta$T_end_c[country$index]]
     decr <- -diff(obs.data)
+    dl.obs.idx <- seq(max(meta$tau_c[country$index],1), meta$lambda_c[country$index])
     maxy <- max(maxy, decr, na.rm=TRUE)
+    miny <- min(miny, decr, na.rm=TRUE)
     thincurves <- get.thinning.index(nr.curves, dim(dlc)[1])
     ltype <- "l"
     if (thincurves$nr.points == 0) {
@@ -109,7 +144,8 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
         lines(dlpi[2, ] ~ tfr_plot, col = "red", lty = lty[i], 
             lwd = 2)
     }
-    points(decr ~ obs.data[-length(obs.data)], pch = 19)
+    points(decr ~ obs.data[-length(obs.data)])
+    points(decr[dl.obs.idx] ~ obs.data[-length(obs.data)][dl.obs.idx], pch = 19)
     legend("topright", legend = c("median", paste("PI", pi)), 
         lty = c(1, lty), bty = "n", col = "red")
 }
