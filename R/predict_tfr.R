@@ -793,7 +793,7 @@ do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
 		sink(type='message')
 		lambda_c <- find.lambda.for.one.country(tfr.and.pred.median, nr.data)
 		result <- rbind(result, c(country.obj$name, country.obj$code, 
-			if(meta$tau_c[country] > 0) tfr.years[meta$tau_c[country]] else -1, #tau_c
+			if(meta$tau_c[country.obj$index] > 0) tfr.years[meta$tau_c[country.obj$index]] else -1, #tau_c
 			round(s$statistics[paste('U_c',country.obj$code, sep=''),1],precision), # TFR at tau_c
 			round(s$statistics[paste('d_c',country.obj$code, sep=''),1],precision),
 			round(s$statistics[paste('Triangle_c4_c',country.obj$code, sep=''),1],precision),

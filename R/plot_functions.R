@@ -6,7 +6,7 @@ DLcurve.plot.all <- function (mcmc.list = NULL, sim.dir = NULL,
 	if(is.null(mcmc.list)) mcmc.list <- get.tfr.mcmc(sim.dir=sim.dir, verbose=verbose, burnin=burnin)
 	mcmc.list <- get.mcmc.list(mcmc.list)
 	meta <- mcmc.list[[1]]$meta
-	.do.plot.all.country.loop(as.character(country.names(meta))[meta$id_DL], meta, output.dir, DLcurve.plot, output.type=output.type, 
+	.do.plot.all.country.loop(as.character(country.names(meta)), meta, output.dir, DLcurve.plot, output.type=output.type, 
 		file.prefix='DLplot', plot.type='DL graph', verbose=verbose, mcmc.list = mcmc.list, burnin = burnin, ...)
 }
 
@@ -110,9 +110,11 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     						predictive.distr=predictive.distr)
     miny <- min(dlc)
     maxy <- max(dlc)
-    obs.data <- get.observed.tfr(country$index, meta, 'tfr_matrix_observed', 'tfr_matrix')[1:meta$T_end_c[country$index]]
+    obs.data <- get.observed.tfr(country$index, meta, 'tfr_matrix_observed', 'tfr_matrix_all')[1:meta$T_end_c[country$index]]
     decr <- -diff(obs.data)
-    dl.obs.idx <- seq(max(meta$tau_c[country$index],1), meta$lambda_c[country$index])
+    dl.obs.idx <- if(max(meta$tau_c[country$index],1) >= meta$lambda_c[country$index]) c()
+    				else seq(max(meta$tau_c[country$index],1), meta$lambda_c[country$index]-1)
+    p3.obs.idx <- if(meta$lambda_c[country$index]>length(decr)) c() else seq(meta$lambda_c[country$index], length(decr))
     maxy <- max(maxy, decr, na.rm=TRUE)
     miny <- min(miny, decr, na.rm=TRUE)
     thincurves <- get.thinning.index(nr.curves, dim(dlc)[1])
@@ -144,10 +146,32 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
         lines(dlpi[2, ] ~ tfr_plot, col = "red", lty = lty[i], 
             lwd = 2)
     }
-    points(decr ~ obs.data[-length(obs.data)])
-    points(decr[dl.obs.idx] ~ obs.data[-length(obs.data)][dl.obs.idx], pch = 19)
-    legend("topright", legend = c("median", paste("PI", pi)), 
-        lty = c(1, lty), bty = "n", col = "red")
+    obs.legend <- list(legend=c(), pch=c(), bg=c())
+    if(length(dl.obs.idx) > 0 && any(!is.na(decr[dl.obs.idx]))) {
+    	points(decr[dl.obs.idx] ~ obs.data[-length(obs.data)][dl.obs.idx], pch = 19)
+    	obs.legend$legend <- c(obs.legend$legend, 'Phase II data')
+    	obs.legend$pch <- c(obs.legend$pch, 19)
+    	#obs.legend$bg <- c(obs.legend$bg, 'black')
+    }
+    endpI <- if(length(dl.obs.idx)==0) max(meta$tau_c[country$index],1) else dl.obs.idx[1]-1
+    if((endpI > 1) && any(!is.na(decr[1:endpI])))  {# draw phase I points
+    	points(decr[1:endpI] ~ obs.data[-length(obs.data)][1:endpI], pch=0)
+    	obs.legend$legend <- c(obs.legend$legend, 'Phase I data')
+    	obs.legend$pch <- c(obs.legend$pch, 0)
+    	#obs.legend$bg <- c(obs.legend$bg, 'white')
+    }
+    if(length(p3.obs.idx)>0) {
+    	points(decr[p3.obs.idx] ~ obs.data[-length(obs.data)][p3.obs.idx], pch = 2, bg = "grey") # draw phase III points
+    	obs.legend$legend <- c(obs.legend$legend, 'Phase III data')
+    	obs.legend$pch <- c(obs.legend$pch, 2)
+    	#obs.legend$bg <- c(obs.legend$bg, 'grey')
+    }
+    legend("topright", legend = c("median", paste("PI", pi), obs.legend$legend), 
+        lty = c(1, lty, rep(0,length(obs.legend$pch))), bty = "n", 
+        col = c(rep("red", 1+length(pi)), rep('black',length(obs.legend$pch))), 
+        pch=c(rep(-1,length(pi)+1), obs.legend$pch),
+        #bg=c(rep(-1,length(pi)+1), obs.legend$bg),
+        )
 }
 
 .get.trajectories.table <- function(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant=FALSE) {

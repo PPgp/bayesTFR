@@ -1,3 +1,14 @@
+3.0-7 (3/17/2013)
+-----
+Change in DLcurve.plot - points from different phases got different shape.
+
+3.0-6 (3/16/2013)
+-----
+DLcurve.plot can be used for countries that did not enter phase II.
+Observed points in DLcurve.plot now also contain points from Phase I (as empty circles).
+
+Bug in tfr.predict fixed affecting countries that did not enter phase II.
+
 3.0-5 (3/14/2013)
 -----
 Revision number in summary files is determined automatically from wpp.year.
