@@ -110,8 +110,8 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 }
 
 read.UNtfr <- function(wpp.year, my.tfr.file=NULL, ...) {
-	un.file.name <- file.path(.find.package("bayesTFR"), "data", paste('UN', wpp.year, '.txt', sep=''))
-	un.suppl.file.name <- file.path(.find.package("bayesTFR"), "data", paste('UN', wpp.year, '_supplemental.txt', sep=''))
+	un.file.name <- file.path(find.package("bayesTFR"), "data", paste('UN', wpp.year, '.txt', sep=''))
+	un.suppl.file.name <- file.path(find.package("bayesTFR"), "data", paste('UN', wpp.year, '_supplemental.txt', sep=''))
 	data <- do.read.un.file(un.file.name, wpp.year, my.file=my.tfr.file, ...)
 	suppl.data<- NULL
 	if(file.exists(un.suppl.file.name)) 
@@ -120,7 +120,7 @@ read.UNtfr <- function(wpp.year, my.tfr.file=NULL, ...) {
 }
 
 read.UNlocations <- function(data, wpp.year, package="bayesTFR", verbose=FALSE) {
-	loc.file.name <- file.path(.find.package(package), "data", 
+	loc.file.name <- file.path(find.package(package), "data", 
 								paste('WPP', wpp.year, '_LOCATIONS', '.txt', sep=''))
 	cat('Reading file ', loc.file.name, '.\n')
 	loc_data <- read.tfr.file(file=loc.file.name)
