@@ -49,7 +49,7 @@ Hana Sevcikova
 \code{\link{country.names}}, \code{\link{UN2008}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
 # all four calls should give the same answer
 get.country.object('China', m$meta)

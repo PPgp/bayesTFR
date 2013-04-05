@@ -36,7 +36,7 @@ Hana Sevcikova
 \code{\link{bayesTFR.prediction}}, \code{\link{get.tfr.prediction}}, \code{\link{tfr.trajectories.table}}, \code{\link{tfr.median.shift}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output") 
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output") 
 pred <- get.tfr.prediction(sim.dir=sim.dir)
 get.tfr.trajectories(pred, "Germany")
 }

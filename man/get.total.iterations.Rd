@@ -35,7 +35,7 @@ Hana Sevcikova
 \code{\link{bayesTFR.mcmc}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 mcmc.set <- get.tfr.mcmc(sim.dir=sim.dir)
 get.total.iterations(mcmc.set$mcmc.list) # 60=1chain x 60iters
 get.total.iterations(mcmc.set$mcmc.list, burnin=20) # 40=1x(60-20)

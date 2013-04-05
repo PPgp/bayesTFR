@@ -62,7 +62,7 @@ Hana Sevcikova
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 tfr.pardensity.plot(sim.dir=sim.dir)
 tfr.pardensity.cs.plot(country="Ireland", sim.dir=sim.dir, bw=0.2)
 }

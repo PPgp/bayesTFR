@@ -53,7 +53,7 @@ Hana Sevcikova
 \code{\link{bayesTFR.mcmc.set}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
 summary(m)
 

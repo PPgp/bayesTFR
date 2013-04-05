@@ -37,7 +37,7 @@ Hana Sevcikova
 \code{\link{bayesTFR.prediction}}, \code{\link{tfr.predict}}, \code{\link{summary.bayesTFR.prediction}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 pred <- get.tfr.prediction(sim.dir=sim.dir)
 summary(pred, country="Canada")
 }

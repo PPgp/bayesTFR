@@ -91,7 +91,7 @@ Hana Sevcikova, Adrian Raftery
 %}
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 pred <- get.tfr.prediction(sim.dir=sim.dir)
 # Uses heat colors and seven categories by default
 tfr.map(pred)

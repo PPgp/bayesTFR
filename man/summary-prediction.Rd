@@ -43,7 +43,7 @@ Hana Sevcikova
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 pred <- tfr.predict(sim.dir=sim.dir, 
                     output.dir=file.path(getwd(), "exampleTFRpred"), 
                     use.tfr3=FALSE, burnin=15, verbose=TRUE)

@@ -56,7 +56,7 @@ Hana Sevcikova
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 tfr.partraces.plot(sim.dir=sim.dir)
 tfr.partraces.cs.plot(country="Netherlands", sim.dir=sim.dir)
 }

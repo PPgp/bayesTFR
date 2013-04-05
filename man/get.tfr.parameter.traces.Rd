@@ -51,7 +51,7 @@ Hana Sevcikova
 }
 
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
 tfr.values <- get.tfr.parameter.traces(m$mcmc.list, burnin=10, par.names="sigma0")
 \dontrun{

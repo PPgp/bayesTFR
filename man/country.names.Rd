@@ -36,7 +36,7 @@ Hana Sevcikova
 \code{\link{UN2008}}, \code{\link{get.country.object}}
 }
 \examples{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
 country.names(m)
 # these two calls should give the same answer

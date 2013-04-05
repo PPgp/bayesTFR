@@ -41,7 +41,7 @@ Hana Sevcikova
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 pred.dir <- file.path(getwd(), "exampleTFRpred")
 
 # stores 10 trajectories out of 35 (1x(60-25)) into 

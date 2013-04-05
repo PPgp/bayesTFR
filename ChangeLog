@@ -1,3 +1,9 @@
+3.0-8 (4/5/2013)
+-----
+.find.package replaced by find.package.
+
+Preliminary wpp2012 data removed (final revision to be added soon). 
+
 3.0-7 (3/17/2013)
 -----
 Change in DLcurve.plot - points from different phases got different shape.

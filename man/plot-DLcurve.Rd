@@ -43,7 +43,7 @@ Hana Sevcikova, Leontine Alkema
 }
 \examples{
 \dontrun{
-sim.dir <- file.path(.find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 mcmc.set <- get.tfr.mcmc(sim.dir=sim.dir)
 DLcurve.plot(country="Burkina Faso", mcmc.set, burnin=15)
 }
