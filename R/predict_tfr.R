@@ -141,7 +141,8 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replace.output=FALSE,
 								nr.traj = NULL, burnin=0, thin = NULL, 
 								use.tfr3=TRUE, mcmc3.set=NULL, burnin3=0,
-								mu=2.1, rho=0.9057, sigmaAR1 = 0.0922, countries = NULL,
+								mu=2.1, rho=0.9057, sigmaAR1 = 0.0922, 
+								use.correlation=FALSE, countries = NULL,
 								adj.factor1=NA, adj.factor2=0, forceAR1=FALSE,
 							    save.as.ascii=1000, output.dir = NULL, write.summary.files=TRUE, 
 							    is.mcmc.set.thinned=FALSE, force.creating.thinned.mcmc=FALSE,
@@ -1036,6 +1037,33 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 	}
 	# reload adjusted prediction
 	invisible(get.tfr.prediction(sim.dir))
+}
+
+tfr.correlation <- function(meta, cor.pred, low.coeffs=c(0.11, 0.26, 0.05, 0.09),
+								high.coeffs=c(0.05, 0.06, 0.00, 0.02)) {
+	nr_countries <- get.nr.countries(meta)
+	low.eps.cor <- matrix(NA,nrow=nr_countries,ncol=nr_countries)
+	high.eps.cor <-  matrix(NA,nrow=nr_countries,ncol=nr_countries)
+	country.codes <- m$meta$regions$country_code
+	
+	for(i in 1:(nr_countries-1)) {
+  		for(j in (i+1):nr_countries) {
+        	pred.row <- which((cor.pred[,1] %in% country.codes[c(i,j)]) & (cor.pred[,2] %in% country.codes[c(i,j)]))
+        	if(length(pred.row) <= 0) {
+        		warning('No records found for countries ', paste(country.codes[c(i,j)], collapse=', '), immediate.=TRUE)
+        		break
+        	}
+        	if(length(pred.row)>1) pred.row <- pred.row[1]
+        	reg.values <- c(1,as.numeric(cor.pred[pred.row,-c(1:2)]))
+        	low.eps.cor[i,j] <- low.eps.cor[j,i] <- sum(reg.values*low.coeffs)
+        	high.eps.cor[i,j] <- high.eps.cor[j,i] <- sum(reg.values*high.coeffs)        
+        	if(is.na(low.eps.cor[i,j]) || is.na(high.eps.cor[i,j]))
+        		warning('Correlation resulted in NA for pair ', paste(country.codes[c(i,j)], collapse=', '), immediate.=TRUE)  
+  		}
+	}
+	diag(low.eps.cor) <- 1
+	diag(high.eps.cor) <- 1
+	return(list(low.cor=low.eps.cor, high.cor=high.eps.cor))
 }
 
 "get.data.imputed" <- function(pred, ...) UseMethod("get.data.imputed")
