@@ -256,125 +256,144 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 								thinning.index=thinning.index, burnin=burnin3)
 		thin3 <- (thinning.index[2]-thinning.index[1])*mcmc3$mcmc.list[[1]]$thin
 		if(dim(m3.par.values)[1] != nr_simu) stop('Mismatch in length of MCMCs for phase 2 and 3.')				
-	} 
-	country.counter <- 0
-	status.for.gui <- paste('out of', length(prediction.countries), 'countries.')
-	gui.options <- list()
-	#########################################
+	}
+	max.nr.project <- nr_project
+	all.T_end.min <- ltfr_matrix.all
+	# load country-specific parameters
+	if (verbose) cat('Load country-specific parameters.\n')
+	cs.par.values.list <- cs.var.names <- theta_si.list <- country.objects <- all.tfr.list <- list()
 	for (country in prediction.countries){
+		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
+		if (is.element(country,mcmc.set$meta$id_DL)){
+			U.var <- paste('U_c', country.obj$code, sep='')
+			d.var <- paste('d_c', country.obj$code, sep='')
+			Triangle_c4.var <- paste("Triangle_c4_c", country.obj$code, sep = "")
+			gamma.vars <- paste('gamma_',1:3,'_c', country.obj$code, sep='')
+			if(country <= mcmc.set$meta$nr_countries_estimation) {
+				cs.par.values <- get.tfr.parameter.traces.cs(load.mcmc.set$mcmc.list, country.obj, 
+									tfr.parameter.names.cs(trans=FALSE), burnin=0)
+			} else {
+				# if it's country that was not included in the estimation, determine the posterior index
+				# again, since the MCMC might be of different length
+				if (is.element(country.obj$code, load.mcmc.set$meta$regions$country_code)) {
+					cs.par.values <- get.tfr.parameter.traces.cs(load.mcmc.set$mcmc.list, country.obj, 
+									tfr.parameter.names.cs(trans=FALSE), burnin=0)
+				} else { # there are no thinned traces for this country, use the full traces 
+					cs.par.values <- get.tfr.parameter.traces.cs(mcmc.set$mcmc.list, country.obj, 
+									tfr.parameter.names.cs(trans=FALSE), burnin=burnin)
+						selected.simu <- get.thinning.index(nr_simu, dim(cs.par.values)[1])
+						if (length(selected.simu$index) < nr_simu)
+							selected.simu$index <- sample(selected.simu$index, nr_simu, replace=TRUE)
+						cs.par.values <- cs.par.values[selected.simu$index,]
+				}
+			}
+			pc_si <- matrix(NA, nr_simu, 3)
+			for (i in 1:3){
+	 			pc_si[,i] <- exp(cs.par.values[,gamma.vars[i]])/
+	 								apply(exp(cs.par.values[,gamma.vars]), 1,sum)
+			}
+			theta_si <- cbind(
+					(cs.par.values[,U.var] - cs.par.values[, Triangle_c4.var])*pc_si[,1],
+					(cs.par.values[,U.var] - cs.par.values[, Triangle_c4.var])*pc_si[,2],
+					(cs.par.values[,U.var] - cs.par.values[, Triangle_c4.var])*pc_si[,3],
+					cs.par.values[, Triangle_c4.var], 
+					cs.par.values[,d.var])
+		} else { #Tistau countries
+             # sample decline parameters from the hier distributions                 
+			Triangle4_tr_s = rnorm(nr_simu, mean = cs.par.values_hier[,'Triangle4'], 
+										sd = cs.par.values_hier[, 'delta4'])
+			Triangle_c4_s <- ( mcmc.set$meta$Triangle_c4.up*exp(Triangle4_tr_s) + mcmc.set$meta$Triangle_c4.low)/(1+exp(Triangle4_tr_s))
+	
+			# need U and Triangle_c4 in cs... later in loop for start of phase III and prior on f_t
+			cs.par.values = rep(get.observed.tfr(country, mcmc.set$meta, 'tfr_matrix_all')[mcmc.set$meta$tau_c[country]], nr_simu)
+			Triangle_c4.var <- 'Triangle_c4'
+			U.var <- 'U'
+			cs.par.values = cbind(cs.par.values, Triangle_c4_s)
+			colnames(cs.par.values) = c(U.var, Triangle_c4.var)
+	
+			d_tr_s = rnorm(nr_simu, mean = cs.par.values_hier[,'chi'], 
+									sd = cs.par.values_hier[,'psi'])
+			d_s =  (mcmc.set$meta$d.up*(exp(d_tr_s) + mcmc.set$meta$d.low)/(1+exp(d_tr_s)))	
+			gamma_si = matrix(NA, nr_simu, 3)
+			for (i in 1:3){
+	 			gamma_si[,i] <- rnorm(nr_simu, mean = cs.par.values_hier[,alpha.vars[i]], 
+	 											sd = cs.par.values_hier[,delta.vars[i]])
+			}
+			pc_si = matrix(NA, nr_simu, 3)
+			for (i in 1:3) pc_si[,i] <- exp(gamma_si[,i])/apply(exp(gamma_si), 1,sum)
+			theta_si <- cbind((cs.par.values[,U.var] - Triangle_c4_s)*pc_si[,1],
+	                          (cs.par.values[,U.var] - Triangle_c4_s)*pc_si[,2],
+	                          (cs.par.values[,U.var] - Triangle_c4_s)*pc_si[,3],
+	                          Triangle_c4_s, d_s) 
+		}
+		cs.var.names[[country]] <- list(U=U.var, Triangle_c4=Triangle_c4.var)
+		cs.par.values.list[[country]] <- cs.par.values[,c(Triangle_c4.var, U.var)]
+		theta_si.list[[country]] <- theta_si
+		country.objects[[country]] <- country.obj
+		
+		all.tfr <- get.observed.tfr(country, mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
+		all.tfr.list[[country]] <- all.tfr
+		lall.tfr <- length(all.tfr)
+		this.T_end <- mcmc.set$meta$T_end_c[country]
+		this.T_end.min <- min(this.T_end, ltfr_matrix.all)
+		all.T_end.min <- min(all.T_end.min, this.T_end.min)
+		nmissing <- ltfr_matrix.all - this.T_end.min # positive only if this.T_end < ltfr_matrix.all
+		this.nr_project <- nr_project + nmissing
+		max.nr.project <- max(max.nr.project, this.nr_project)
+		#### projections might start before 1975 ...
+		dummie_c1975 = rep(0, this.nr_project)
+		# if this.T_end is before 1975, need to add const_sd to sd of distortion terms
+		if (sum(const_sd_dummie_Tc[this.T_end:(mcmc.set$meta$T_end+suppl.T),country]) !=0){
+	 			# gives number of add. periods with const
+	 		dummie_c1975[1:sum(const_sd_dummie_Tc[this.T_end:(mcmc.set$meta$T_end+suppl.T),country])] <- 1
+		}            
+		nr_obs_in_phaseIII = (this.T_end.min - mcmc.set$meta$lambda_c[country])
+		sigma_t  = sigmas_all[(nr_obs_in_phaseIII+1):(nr_obs_in_phaseIII+this.nr_project)]
+		if (verbose && nmissing > 0) 
+			cat('\t', nmissing, 'data points reconstructed.\n')
+		# the projections
+		#f_ps <- matrix(NA, this.nr_project+1,nr_simu)
+		# fs also includes last estimate!
+		#f_ps[1:(this.T_end-this.T_end.min+1),] <- all.tfr[this.T_end.min:this.T_end]
+		if(has.phase3 && is.element(country, mcmc3$meta$id_phase3)) 
+			m3.par.values.cs <- get.tfr3.parameter.traces.cs(mcmc3$mcmc.list, country.obj=country.obj,
+											par.names=c('mu.c', 'rho.c'), burnin=burnin3, thinning.index=thinning.index)
+		if(adjust.true) D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
+	 	S11 <- 0
+	 	# vector W with the weight for the first two periods:
+	    W <- c(adj.factor1, adj.factor2, rep(0, this.nr_project))
+	 	W[is.na(W)] <- 0
+		T.shift <- this.T_end-this.T_end.min
+
+	}
+	eps.correlation <- tfr.correlation(mcmc.set$meta)
+	
+	all.tfr.matrix <- matrix(NA, nrow=nr_countries, ncol=ltfr_matrix.all-all.T_end.min)
+	for (icountry in 1:length(prediction.countries))
+		all.tfr.matrix[icountry,] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min:ltfr_matrix.all]
+	
+	traj.counter <- 0
+	status.for.gui <- paste('out of', nr_simu, 'trajectories.')
+	gui.options <- list()
+	
 	#########################################
+	for (s in 1:nr_simu){ # Iterate over trajectories
 		if(getOption('bDem.TFRpred', default=FALSE)) {
 			# This is to unblock the GUI, if the run is invoked from bayesDem
 			# and pass info about its status
 			# In such a case the gtk libraries are already loaded
-			country.counter <- country.counter + 1
-			gui.options$bDem.TFRpred.status <- paste('finished', country.counter, status.for.gui)
+			traj.counter <- traj.counter + 1
+			gui.options$bDem.TFRpred.status <- paste('finished', traj.counter, status.for.gui)
 			unblock.gtk('bDem.TFRpred', gui.options)
 		}
+		if (verbose) cat('TFR projection trajectory ', s, '\n')
+ 		
+		for (year in 2:max.nr.project) { # Iterate over time
+			for (country in prediction.countries){ # Iterate over countries
+				country.obj <- country.objects[[country]]
 
-		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
-		if (verbose) {			
- 			cat('TFR projection for country', country, country.obj$name, 
- 						'(code', country.obj$code, ')\n')
- 		}
-	cs.par.values <- c()
-	if (is.element(country,mcmc.set$meta$id_DL)){
-		U.var <- paste('U_c', country.obj$code, sep='')
-		d.var <- paste('d_c', country.obj$code, sep='')
-		Triangle_c4.var <- paste("Triangle_c4_c", country.obj$code, sep = "")
-		gamma.vars <- paste('gamma_',1:3,'_c', country.obj$code, sep='')
-		if(country <= mcmc.set$meta$nr_countries_estimation) {
-			cs.par.values <- get.tfr.parameter.traces.cs(load.mcmc.set$mcmc.list, country.obj, 
-								tfr.parameter.names.cs(trans=FALSE), burnin=0)
-		} else {
-			# if it's country that was not included in the estimation, determine the posterior index
-			# again, since the MCMC might be of different length
-			if (is.element(country.obj$code, load.mcmc.set$meta$regions$country_code)) {
-				cs.par.values <- get.tfr.parameter.traces.cs(load.mcmc.set$mcmc.list, country.obj, 
-								tfr.parameter.names.cs(trans=FALSE), burnin=0)
-			} else { # there are no thinned traces for this country, use the full traces 
-				cs.par.values <- get.tfr.parameter.traces.cs(mcmc.set$mcmc.list, country.obj, 
-								tfr.parameter.names.cs(trans=FALSE), burnin=burnin)
-					selected.simu <- get.thinning.index(nr_simu, dim(cs.par.values)[1])
-					if (length(selected.simu$index) < nr_simu)
-						selected.simu$index <- sample(selected.simu$index, nr_simu, replace=TRUE)
-					cs.par.values <- cs.par.values[selected.simu$index,]
-			}
-		}
-		pc_si <- matrix(NA, nr_simu, 3)
-		for (i in 1:3){
- 			pc_si[,i] <- exp(cs.par.values[,gamma.vars[i]])/
- 								apply(exp(cs.par.values[,gamma.vars]), 1,sum)
-		}
-		theta_si <- cbind(
-				(cs.par.values[,U.var] - cs.par.values[, Triangle_c4.var])*pc_si[,1],
-				(cs.par.values[,U.var] - cs.par.values[, Triangle_c4.var])*pc_si[,2],
-				(cs.par.values[,U.var] - cs.par.values[, Triangle_c4.var])*pc_si[,3],
-				cs.par.values[, Triangle_c4.var], 
-				cs.par.values[,d.var]) 
-	} else { #Tistau countries
-             # sample decline parameters from the hier distributions                 
-		Triangle4_tr_s = rnorm(nr_simu, mean = cs.par.values_hier[,'Triangle4'], 
-									sd = cs.par.values_hier[, 'delta4'])
-		Triangle_c4_s <- ( mcmc.set$meta$Triangle_c4.up*exp(Triangle4_tr_s) + mcmc.set$meta$Triangle_c4.low)/(1+exp(Triangle4_tr_s))
 
-		# need U and Triangle_c4 in cs... later in loop for start of phase III and prior on f_t
-		cs.par.values = rep(get.observed.tfr(country, mcmc.set$meta, 'tfr_matrix_all')[mcmc.set$meta$tau_c[country]], nr_simu)
-		Triangle_c4.var <- 'Triangle_c4'
-		U.var <- 'U'
-		cs.par.values = cbind(cs.par.values, Triangle_c4_s)
-		colnames(cs.par.values) = c(U.var, Triangle_c4.var)
-
-		d_tr_s = rnorm(nr_simu, mean = cs.par.values_hier[,'chi'], 
-								sd = cs.par.values_hier[,'psi'])
-		d_s =  (mcmc.set$meta$d.up*(exp(d_tr_s) + mcmc.set$meta$d.low)/(1+exp(d_tr_s)))
-		#print(d_s) # check!
-
-		gamma_si = matrix(NA, nr_simu, 3)
-		for (i in 1:3){
- 			gamma_si[,i] <- rnorm(nr_simu, mean = cs.par.values_hier[,alpha.vars[i]], 
- 											sd = cs.par.values_hier[,delta.vars[i]])
-		}
-
-		pc_si = matrix(NA, nr_simu, 3)
-		for (i in 1:3) pc_si[,i] <- exp(gamma_si[,i])/apply(exp(gamma_si), 1,sum)
-		theta_si <- cbind((cs.par.values[,U.var] - Triangle_c4_s)*pc_si[,1],
-                          (cs.par.values[,U.var] - Triangle_c4_s)*pc_si[,2],
-                          (cs.par.values[,U.var] - Triangle_c4_s)*pc_si[,3],
-                          Triangle_c4_s, d_s) 
-	}
-	all.tfr <- get.observed.tfr(country, mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
-	lall.tfr <- length(all.tfr)
-	this.T_end <- mcmc.set$meta$T_end_c[country]
-	this.T_end.min <- min(this.T_end, ltfr_matrix.all)
-	nmissing <- ltfr_matrix.all - this.T_end.min # positive only if this.T_end < ltfr_matrix.all
-	this.nr_project <- nr_project + nmissing
-			
-	#### projections might start before 1975 ...
-	dummie_c1975 = rep(0, this.nr_project)
-	# if this.T_end is before 1975, need to add const_sd to sd of distortion terms
-	if (sum(const_sd_dummie_Tc[this.T_end:(mcmc.set$meta$T_end+suppl.T),country]) !=0){
- 			# gives number of add. periods with const
- 		dummie_c1975[1:sum(const_sd_dummie_Tc[this.T_end:(mcmc.set$meta$T_end+suppl.T),country])] <- 1
-	}            
-	nr_obs_in_phaseIII = (this.T_end.min - mcmc.set$meta$lambda_c[country])
-	sigma_t  = sigmas_all[(nr_obs_in_phaseIII+1):(nr_obs_in_phaseIII+this.nr_project)]
-	if (verbose && nmissing > 0) 
-		cat('\t', nmissing, 'data points reconstructed.\n')
-	# the projections
-	f_ps <- matrix(NA, this.nr_project+1,nr_simu)
-	# fs also includes last estimate!
-	f_ps[1:(this.T_end-this.T_end.min+1),] <- all.tfr[this.T_end.min:this.T_end]
-	if(has.phase3 && is.element(country, mcmc3$meta$id_phase3)) 
-		m3.par.values.cs <- get.tfr3.parameter.traces.cs(mcmc3$mcmc.list, country.obj=country.obj,
-										par.names=c('mu.c', 'rho.c'), burnin=burnin3, thinning.index=thinning.index)
-	if(adjust.true) D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
- 	S11 <- 0
- 	# vector W with the weight for the first two periods:
-    W <- c(adj.factor1, adj.factor2, rep(0, this.nr_project))
- 	W[is.na(W)] <- 0
-	T.shift <- this.T_end-this.T_end.min
-	for (s in 1:nr_simu){
+	
 		year <- 2 + T.shift
 		if(forceAR1) repl_stop <- TRUE
 		else repl_stop <- ifelse(
@@ -500,7 +519,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
  		mean_sd[country,2,] = apply(f_ps_future, 1, sd, na.rm = TRUE)
  		
 	} # end countries loop
-	
+	}
+	}
 	##############
 	
 	mcmc.set <- remove.tfr.traces(mcmc.set)
@@ -1065,7 +1085,7 @@ tfr.correlation <- function(meta, cor.pred, low.coeffs=c(0.11, 0.26, 0.05, 0.09)
 	}
 	diag(low.eps.cor) <- 1
 	diag(high.eps.cor) <- 1
-	return(list(low.cor=low.eps.cor, high.cor=high.eps.cor))
+	return(list(low=low.eps.cor, high=high.eps.cor))
 }
 
 "get.data.imputed" <- function(pred, ...) UseMethod("get.data.imputed")
