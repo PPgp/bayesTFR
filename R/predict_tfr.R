@@ -929,8 +929,7 @@ get.tfr.shift <- function(country.code, pred) {
 	return(pred$median.shift[[as.character(country.code)]])
 }
 
-.bdem.median.shift <- function(type, sim.dir, country, reset=FALSE, shift=0, from=NULL, to=NULL) {
-	pred <- do.call(paste('get.', type, '.prediction', sep=''), list(sim.dir))
+.bdem.median.shift <- function(pred, type, country, reset=FALSE, shift=0, from=NULL, to=NULL) {
 	meta <- pred$mcmc.set$meta
 	country.obj <- get.country.object(country, meta=meta)
 	if(is.null(country.obj$name)) stop('Country not found.')
@@ -954,7 +953,6 @@ get.tfr.shift <- function(country.code, pred) {
 	}
 	if(sum(bdem.shift) == 0) bdem.shift <- NULL
 	pred$median.shift[[as.character(country.obj$code)]] <- bdem.shift
-	do.call(paste('store.', class(pred), sep=''), list(pred))
 	cat('\nMedian of', country.obj$name, action, 
 		if(all.years) 'for all years' else c('for years', pred.years[which.years]), '.\n')
 	return(pred)
@@ -966,12 +964,14 @@ tfr.median.reset <- function(sim.dir, countries) {
 }
 
 tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, to=NULL) {
-	invisible(.bdem.median.shift(type='tfr', sim.dir=sim.dir, country=country, reset=reset, 
-				shift=shift, from=from, to=to))
+	pred <- get.tfr.prediction(sim.dir)
+	pred <- .bdem.median.shift(pred, type='tfr', country=country, reset=reset, 
+				shift=shift, from=from, to=to)
+	store.bayesTFR.prediction(pred)
+	invisible(pred)
 }
 
-.bdem.median.set <- function(type, sim.dir, country, values, years=NULL) {
-	pred <- do.call(paste('get.', type, '.prediction', sep=''), list(sim.dir))
+.bdem.median.set <- function(pred, type, country, values, years=NULL) {
 	meta <- pred$mcmc.set$meta
 	country.obj <- get.country.object(country, meta=meta)
 	if(is.null(country.obj$name)) stop('Country not found.')
@@ -998,13 +998,15 @@ tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, 
 	bdem.shift[which.years] <- values - medians[which.years]
 	if(sum(bdem.shift) == 0) bdem.shift <- NULL
 	pred$median.shift[[as.character(country.obj$code)]] <- bdem.shift
-	do.call(paste('store.', class(pred), sep=''), list(pred))
 	cat('\nMedian of', country.obj$name, 'modified for years', pred.years[which.years], '\n')
 	return(pred)
 }
 
 tfr.median.set <- function(sim.dir, country, values, years=NULL) {
-	invisible(.bdem.median.set(type='tfr', sim.dir=sim.dir, country=country, values=values, years=years))
+	pred <- get.tfr.prediction(sim.dir)
+	pred <- .bdem.median.set(pred, 'tfr', country=country, values=values, years=years)
+	store.bayesTFR.prediction(pred)
+	invisible(pred)
 }
 
 tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forceAR1=FALSE) {
