@@ -1,4 +1,8 @@
-3.0-8 (4/5/2013)
+3.0-9 (4/19/2013)
+-----
+minor internal changes in adjusting median
+
+3.0-8 (4/5/2013) [CRAN]
 -----
 .find.package replaced by find.package.
 
