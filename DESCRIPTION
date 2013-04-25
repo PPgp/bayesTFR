@@ -4,7 +4,7 @@ Date: 2013-4-19
 Title: Bayesian Fertility Projection
 Author: Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Adrian Raftery <raftery@uw.edu>
 Maintainer: Hana Sevcikova <hanas@uw.edu>
-Depends: R (>= 2.14.2), mvtnorm, coda
+Depends: R (>= 2.14.2), mvtnorm, coda, MASS
 Suggests: rworldmap, fields, snowFT, googleVis
 Description: Making probabilistic projections of total fertility rate for all countries of the world, using a Bayesian hierarchical model.
 License: GPL (>= 2)
