@@ -368,8 +368,6 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	}
 	W[is.na(W)] <- 0
 	mu.c <- rho.c <- rep(NA, nr_countries)
-	is.in.phase3 <- rep(forceAR1, nr_countries_real)
-	S11 <- rep(0, nr_countries_real)
 	sigma.epsAR1 <- list()
 	if(length(sigmas_all) < max.nr.project) {
 		sigmas_all <- c(rep(sigmas_all[1], max.nr.project-length(sigmas_all)), sigmas_all)
@@ -405,6 +403,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				rho.c[country] <- m3.par.values.cs.list[[country]][s,2]
 			}
 		}
+		is.in.phase3 <- rep(forceAR1, nr_countries_real)
+		S11 <- rep(0, nr_countries_real)
 		#########################################
 		for (year in 2:(max.nr.project+1)) { # Iterate over time
 		#########################################
@@ -488,6 +488,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				} else { # Phase III
 					new.tfr <- (mu.c[country] + rho.c[country]*(all.f_ps[icountry,year-1,s] - mu.c[country]) 
 									- W[icountry,year-1]*S11[icountry])
+					if(country==73 && year>11) stop('')
 					if(!use.correlation || is.na(epsilons[country])) {
  						while (TRUE){
  							err <- rnorm(1, 0, sigma.epsAR1[[country]][year-1])
