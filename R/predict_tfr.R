@@ -1096,7 +1096,7 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 	nr_countries <- get.nr.countries(meta)
 	low.eps.cor <- matrix(NA,nrow=nr_countries,ncol=nr_countries)
 	high.eps.cor <-  matrix(NA,nrow=nr_countries,ncol=nr_countries)
-	country.codes <- m$meta$regions$country_code
+	country.codes <- meta$regions$country_code
 	if(is.null(cor.pred)) {
 		e <- new.env()
 		data(correlation_predictors, envir=e)
