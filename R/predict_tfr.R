@@ -359,12 +359,15 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	which.Wsecond <- rep(NA, nr_countries_real)
 	# index of the last period within all.f_ps that is observed
 	fps.end.obs.index <- dim(tfr_matrix_reconstructed)[1] - all.T_end.min + suppl.T + 1
+	first.projection <- rep(1, nr_countries_real)
 	for (icountry in 1:nr_countries_real) {
 		# fill the result array with observed data 
 		for(year in 1:fps.end.obs.index) 
 			all.f_ps[icountry,year,] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min+year-1]
-		which.Wsecond[icountry] <- which(is.na(all.f_ps[icountry,,1]))[2]
-		W[icountry,which(is.na(all.f_ps[icountry,,1]))[1:2]] <- c(adj.factor1, adj.factor2)
+		first.two.na <- which(is.na(all.f_ps[icountry,,1]))[1:2]
+		which.Wsecond[icountry] <- first.two.na[2]
+		W[icountry,first.two.na] <- c(adj.factor1, adj.factor2)
+		first.projection[icountry] <- first.two.na[1]
 	}
 	W[is.na(W)] <- 0
 	mu.c <- rho.c <- rep(NA, nr_countries)
@@ -420,6 +423,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
         		epsilons.no.na <- mvrnorm(1,rep(0,nr.countries.no.na), cor.mat.no.na)
         		epsilons[-cor.mat.na] <- epsilons.no.na
 			}
+			
 			#########################################
 			for (icountry in 1:nr_countries_real){ # Iterate over countries
 			#########################################
@@ -429,7 +433,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				all.tfr <- all.tfr.list[[country]]
 	 			if(!is.in.phase3[icountry]) {
 	 				# check if now in phase 3
-					if(year == 2) { # first projection period
+					if(year == first.projection[icountry]) { # first projection period
 						if(!is.element(country, mcmc.set$id_Tistau)) 
 							is.in.phase3[icountry] <- ((mcmc.set$meta$lambda_c[country] < this.T_end) || 
                 							((min(all.tfr[1:this.T_end], na.rm=TRUE) <= 
@@ -440,7 +444,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
                  									(all.f_ps[icountry, year-1,s] > all.f_ps[icountry,year-2,s]))
                 }
 				if(adjust.true) {
-					if(year == 2) { # first projection period
+					if(year == first.projection[icountry]) { # first projection period
 						D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
 			 			if(!is.in.phase3[icountry]) { # country in Phase II				
 	           				d11 <- DLcurve(theta_si.list[[country]][s,], all.tfr[this.T_end-1], mcmc.set$meta$dl.p1, mcmc.set$meta$dl.p2)
@@ -463,7 +467,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 					new.tfr <- (all.f_ps[icountry,year-1,s]- DLcurve(theta_si.list[[country]][s,], all.f_ps[icountry,year-1,s], 
 	                                mcmc.set$meta$dl.p1, mcmc.set$meta$dl.p2) - W[icountry,year-1]*S11[icountry])
 					# get errors
-					if(is.element(country, mcmc.set$meta$id_Tistau) && year == 2) {
+					if(is.element(country, mcmc.set$meta$id_Tistau) && year == first.projection[icountry]) {
 						eps.mean <- tau.par.values[s, 'mean_eps_tau']
 						sigma_eps <- tau.par.values[s, 'sd_eps_tau']
 						if(use.correlation && !is.na(epsilons[country])) sigma_eps <- rnorm(1, eps.mean, sigma_eps)
