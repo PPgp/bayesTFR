@@ -384,7 +384,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	status.for.gui <- paste('out of', nr_simu, 'trajectories.')
 	gui.options <- list()
 	if (verbose) verbose.iter <- max(1, nr_simu/100)
-	
+	err.test <- c()
 	#########################################
 	for (s in 1:nr_simu){ # Iterate over trajectories
 	#########################################
@@ -502,6 +502,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 						if (new.tfr + err < 0.5) err <- 0.5 - new.tfr # set it to 0.5 rather than repeat the whole thing for all countries
 					}					
 				}
+				#if(country==74 && year == first.projection[icountry]) err.test <- c(err.test, err)
 				all.f_ps[icountry,year,s] <- new.tfr + err
 			} # end countries loop
 		} # end time loop
@@ -516,6 +517,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		all.f_ps[icountry,,isnotNA==0] <- NA
 		# extract the future trajectories (including the present period)
 		f_ps_future <- all.f_ps[icountry,(dim(all.f_ps)[2]-nr_project):dim(all.f_ps)[2],]
+		#if(country==74) stop('')
 		if (nmissing[[country]] > 0) { # data imputation
 			f_ps_future[1,] <- quantile(f_ps_future[1,], 0.5, na.rm = TRUE) # set all trajectories in the first time period to the median
 			tfr_matrix_reconstructed[(ltfr_matrix-fps.end.obs.index+2):ltfr_matrix,country] <- apply(
