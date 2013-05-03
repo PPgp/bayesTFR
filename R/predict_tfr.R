@@ -144,6 +144,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 								mu=2.1, rho=0.9057, sigmaAR1 = 0.0922, 
 								use.correlation=FALSE, countries = NULL,
 								adj.factor1=NA, adj.factor2=0, forceAR1=FALSE,
+								boost.first.period.in.phase2=TRUE,
 							    save.as.ascii=1000, output.dir = NULL, write.summary.files=TRUE, 
 							    is.mcmc.set.thinned=FALSE, force.creating.thinned.mcmc=FALSE,
 							    write.trajectories=TRUE, 
@@ -384,7 +385,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	status.for.gui <- paste('out of', nr_simu, 'trajectories.')
 	gui.options <- list()
 	if (verbose) verbose.iter <- max(1, nr_simu/100)
-	err.test <- c()
+	cl.test <- matrix(NA, nr_simu, max.nr.project)
 	#########################################
 	for (s in 1:nr_simu){ # Iterate over trajectories
 	#########################################
@@ -423,7 +424,12 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
         		epsilons.no.na <- mvrnorm(1,rep(0,nr.countries.no.na), cor.mat.no.na)
         		epsilons[-cor.mat.na] <- epsilons.no.na
 			}
-			
+			stop.country.loop <- FALSE
+			country.loop <- 1
+			tfr.c <- all.f_ps[, year,s]
+			while(!stop.country.loop && country.loop<20) {
+				country.loop <- country.loop + 1
+				stop.country.loop <- TRUE
 			#########################################
 			for (icountry in 1:nr_countries_real){ # Iterate over countries
 			#########################################
@@ -467,7 +473,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 					new.tfr <- (all.f_ps[icountry,year-1,s]- DLcurve(theta_si.list[[country]][s,], all.f_ps[icountry,year-1,s], 
 	                                mcmc.set$meta$dl.p1, mcmc.set$meta$dl.p2) - W[icountry,year-1]*S11[icountry])
 					# get errors
-					if(is.element(country, mcmc.set$meta$id_Tistau) && year == first.projection[icountry]) {
+					if(boost.first.period.in.phase2 && is.element(country, mcmc.set$meta$id_Tistau) && (year == first.projection[icountry])) {
 						eps.mean <- tau.par.values[s, 'mean_eps_tau']
 						sigma_eps <- tau.par.values[s, 'sd_eps_tau']
 						if(use.correlation && !is.na(epsilons[country])) sigma_eps <- rnorm(1, eps.mean, sigma_eps)
@@ -487,7 +493,11 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	                	err <- sigma_eps*epsilons[country]
 	                	# set the error so that the resulting TFR is within its allowable bounds 
 	                	# rather than repeat the whole thing for all countries
-	                	err <- min(max(err, 0.5 - new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
+	                	if(err < 0.5 - new.tfr || err > cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr) {# TFR outside of bounds
+	                		stop.country.loop <- FALSE
+	                		tfr.c[icountry] <- min(max(err + new.tfr, 0.5), cs.par.values.list[[country]][s,cs.var.names[[country]]$U])
+	                		break
+	                	}
 	                }
 				} else { # Phase III
 					new.tfr <- (mu.c[country] + rho.c[country]*(all.f_ps[icountry,year-1,s] - mu.c[country]) 
@@ -499,12 +509,18 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 						}
 					} else { # joint predictions
 						err <- sigma.epsAR1[[country]][year-1]*epsilons[country]
-						if (new.tfr + err < 0.5) err <- 0.5 - new.tfr # set it to 0.5 rather than repeat the whole thing for all countries
-					}					
+						if(err < 0.5 - new.tfr) {
+	                		stop.country.loop <- FALSE
+							tfr.c[icountry] <- 0.5
+							break
+						}
+					}			
 				}
-				#if(country==74 && year == first.projection[icountry]) err.test <- c(err.test, err)
-				all.f_ps[icountry,year,s] <- new.tfr + err
+				tfr.c[icountry] <- new.tfr + err
 			} # end countries loop
+			all.f_ps[,year,s] <- tfr.c
+			}
+			cl.test[s, year-1] <- country.loop
 		} # end time loop
 	} # end simu loop
 	##############
@@ -537,7 +553,13 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
  		mean_sd[country,1,] <- apply(f_ps_future, 1, mean, na.rm = TRUE)
  		mean_sd[country,2,] <- apply(f_ps_future, 1, sd, na.rm = TRUE)
  	}	
-	
+	print(cl.test)
+	print('colsums:')
+	print(colSums(cl.test))
+	print('rowsums:')
+	print(rowSums(cl.test))
+	print('total:')
+	print(sum(cl.test))
 	mcmc.set <- remove.tfr.traces(mcmc.set)
 	bayesTFR.prediction <- structure(list(
 				quantiles = PIs_cqp,
