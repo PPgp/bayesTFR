@@ -525,7 +525,6 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		} # end time loop
 	} # end simu loop
 	##############
-	print(Sys.time()-t1)
 	# Impute missing values if any and compute quantiles
 	for (icountry in 1:nr_countries_real){
 		country <- prediction.countries[icountry]

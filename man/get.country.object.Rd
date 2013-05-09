@@ -1,5 +1,4 @@
 \name{get.country.object}
-\Rdversion{1.1}
 \alias{get.country.object}
 \alias{get.countries.table}
 \alias{get.countries.table.bayesTFR.mcmc.set}
@@ -25,7 +24,7 @@ get.country.object(country, meta = NULL, country.table = NULL, index = FALSE)
   \item{\dots}{Not used.}
 }
 \details{
-Given partial information about a country (i.e. having either name or code or index), the function \code{get.country.object} returns  an object containing all three pieces of information. Only countries are considered that are included in the simulations and predictions. Note that country index is an internal index used in various components of a \code{\link{bayesTFR.mcmc.meta}} object. Thus, it does not relate to the column \dQuote{Index} in \code{\link{UN2008}} or \code{\link{UN2010}}. 
+Given partial information about a country (i.e. having either name or code or index), the function \code{get.country.object} returns  an object containing all three pieces of information. Only countries are considered that are included in the simulations and predictions. Country index is an internal index used in various components of a \code{\link{bayesTFR.mcmc.meta}} object.
 }
 \value{
 Function \code{get.country.object} returns a list with components:
@@ -46,7 +45,7 @@ Hana Sevcikova
 %}
 
 \seealso{
-\code{\link{country.names}}, \code{\link{UN2008}}
+\code{\link{country.names}}
 }
 \examples{
 sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")

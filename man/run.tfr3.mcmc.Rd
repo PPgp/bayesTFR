@@ -38,7 +38,7 @@ continue.tfr3.mcmc(sim.dir, iter, chain.ids=NULL,
   \item{replace.output}{If \code{TRUE}, previously stored results of a phase III simulation will be overwritten.}
   \item{my.tfr.file}{File name containing user-specified TFR time series for one or more countries. See description of this argument in \code{\link{run.tfr.mcmc}}.}
   \item{buffer.size}{Buffer size (in number of iterations) for keeping data in the memory.}
-  \item{use.extra.countries}{By default, only countries are used in the MCMCs that were assigned for estimation (i.e. their \sQuote{include_code} is 2 in \link{WPP2010_LOCATIONS}) and are in phase III at present time (argument \code{present.year} in \code{\link{run.tfr.mcmc}}). If this argument is \code{TRUE}, countries that were added using \code{\link{run.tfr.mcmc.extra}} and are in phase III are also included.}
+  \item{use.extra.countries}{By default, only countries are used in the MCMCs that were assigned for estimation (i.e. their \sQuote{include_code} is 2 in the \link{include}) dataset and are in phase III at present time (argument \code{present.year} in \code{\link{run.tfr.mcmc}}). If this argument is \code{TRUE}, countries that were added using \code{\link{run.tfr.mcmc.extra}} and are in phase III are also included.}
   \item{mu.prior.range, rho.prior.range, sigma.mu.prior.range, sigma.rho.prior.range, sigma.eps.prior.range}{Min and max for the prior (uniform) distribution of these paraemters.}
   \item{mu.ini, rho.ini, sigma.mu.ini, sigma.rho.ini, sigma.eps.ini}{Initial value(s) of the parameters. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the corresponding range. Otherwise, it is uniformly randomly distributed within the range.
 }

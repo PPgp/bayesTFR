@@ -1,6 +1,4 @@
 \name{bayesTFR-internal}
-\Rdversion{1.1}
-
 \alias{burn.and.thin}
 \alias{bdem.map.gvis}
 \alias{bdem.parameter.traces}
@@ -129,8 +127,7 @@
 
 \alias{iso3166}
 \alias{proposal_cov_gammas_cii}
-\alias{UN2008_with_last_obs}
-\alias{UN2010_with_last_obs}
+\alias{correlation_predictors}
 	
 \title{
 Internal Functions and datasets of bayesTFR 

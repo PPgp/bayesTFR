@@ -1,0 +1,233 @@
+"country"	"country_code"	"last.observed"
+"World"	900	NA
+"More developed regions"	901	NA
+"Less developed regions"	902	NA
+"Least developed countries"	941	NA
+"Other less developed countries"	934	NA
+"Less developed regions, excluding China"	948	NA
+"Sub-Saharan Africa"	947	NA
+"Africa"	903	NA
+"Eastern Africa"	910	NA
+"Burundi"	108	2002
+"Comoros"	174	2003
+"Djibouti"	262	2002
+"Eritrea"	232	2002
+"Ethiopia"	231	2007
+"Kenya"	404	2003
+"Madagascar"	450	2003
+"Malawi"	454	2004
+"Mauritius"	480	2007
+"Mayotte"	175	2002
+"Mozambique"	508	2005
+"Reunion"	638	2007
+"Rwanda"	646	2008
+"Somalia"	706	1999
+"Uganda"	800	2006
+"United Republic of Tanzania"	834	2004
+"Zambia"	894	2002
+"Zimbabwe"	716	2002
+"Middle Africa"	911	NA
+"Angola"	24	1996
+"Cameroon"	120	2004
+"Central African Republic"	140	2003
+"Chad"	148	2005
+"Congo"	178	2005
+"Dem. Republic of the Congo"	180	2007
+"Equatorial Guinea"	226	1994
+"Gabon"	266	2000
+"Sao Tome and Principe"	678	2001
+"Northern Africa"	912	NA
+"Algeria"	12	2007
+"Egypt"	818	2005
+"Libyan Arab Jamahiriya"	434	2007
+"Morocco"	504	2008
+"Sudan"	736	2008
+"Tunisia"	788	2008
+"Western Sahara"	732	2004
+"Southern Africa"	913	NA
+"Botswana"	72	2007
+"Lesotho"	426	2004
+"Namibia"	516	2007
+"South Africa"	710	2007
+"Swaziland"	748	2006
+"Western Africa"	914	NA
+"Benin"	204	2006
+"Burkina Faso"	854	2006
+"Cape Verde"	132	2005
+"Cote d'Ivoire"	384	2006
+"Gambia"	270	2006
+"Ghana"	288	2008
+"Guinea"	324	2004
+"Guinea-Bissau"	624	2006
+"Liberia"	430	2008
+"Mali"	466	2006
+"Mauritania"	478	2007
+"Niger"	562	2005
+"Nigeria"	566	2008
+"Senegal"	686	2008
+"Sierra Leone"	694	2007
+"Togo"	768	2006
+"Asia"	935	NA
+"Eastern Asia"	906	NA
+"China"	156	2000
+"China, Hong Kong SAR"	344	2006
+"China, Macao SAR"	446	2006
+"Dem. People's Rep. of Korea"	408	1993
+"Japan"	392	2007
+"Mongolia"	496	2008
+"Republic of Korea"	410	2007
+"Taiwan, Province of China"	158	2005
+"South-Central Asia"	921	NA
+"Central Asia"	5500	NA
+"Kazakhstan"	398	2008
+"Kyrgyzstan"	417	2008
+"Tajikistan"	762	2008
+"Turkmenistan"	795	2006
+"Uzbekistan"	860	2008
+"Southern Asia"	5501	NA
+"Afghanistan"	4	2008
+"Bangladesh"	50	2006
+"Bhutan"	64	2007
+"India"	356	2005
+"Iran (Islamic Republic of)"	364	2005
+"Maldives"	462	2009
+"Nepal"	524	2005
+"Pakistan"	586	2008
+"Sri Lanka"	144	2007
+"South-Eastern Asia"	920	NA
+"Brunei Darussalam"	96	2002
+"Cambodia"	116	2008
+"Indonesia"	360	2002
+"Lao People's Dem. Republic"	418	2006
+"Malaysia"	458	2007
+"Myanmar"	104	2000
+"Philippines"	608	2007
+"Singapore"	702	2006
+"Thailand"	764	2009
+"Timor-Leste"	626	2003
+"Viet Nam"	704	2009
+"Western Asia"	922	NA
+"Armenia"	51	2008
+"Azerbaijan"	31	2008
+"Bahrain"	48	2009
+"Cyprus"	196	2006
+"Georgia"	268	2006
+"Iraq"	368	2006
+"Israel"	376	2009
+"Jordan"	400	2009
+"Kuwait"	414	2008
+"Lebanon"	422	2007
+"Occupied Palestinian Territory"	275	2006
+"Oman"	512	2009
+"Qatar"	634	2008
+"Saudi Arabia"	682	2007
+"Syrian Arab Republic"	760	2010
+"Turkey"	792	2007
+"United Arab Emirates"	784	2008
+"Yemen"	887	2006
+"Europe"	908	NA
+"Eastern Europe"	923	NA
+"Belarus"	112	2008
+"Bulgaria"	100	2006
+"Czech Republic"	203	2008
+"Hungary"	348	2009
+"Poland"	616	2008
+"Republic of Moldova"	498	2008
+"Romania"	642	2009
+"Russian Federation"	643	2008
+"Slovakia"	703	2008
+"Ukraine"	804	2008
+"Northern Europe"	924	NA
+"Channel Islands"	830	1997
+"Denmark"	208	2007
+"Estonia"	233	2007
+"Finland"	246	2007
+"Iceland"	352	2007
+"Ireland"	372	2008
+"Latvia"	428	2007
+"Lithuania"	440	2007
+"Norway"	578	2007
+"Sweden"	752	2007
+"United Kingdom"	826	2006
+"Southern Europe"	925	NA
+"Albania"	8	2003
+"Bosnia and Herzegovina"	70	2008
+"Croatia"	191	2008
+"Greece"	300	2007
+"Italy"	380	2007
+"Malta"	470	2007
+"Montenegro"	499	2008
+"Portugal"	620	2006
+"Serbia"	688	2008
+"Slovenia"	705	2008
+"Spain"	724	2006
+"TFYR Macedonia"	807	2008
+"Western Europe"	926	NA
+"Austria"	40	2008
+"Belgium"	56	2007
+"France"	250	2009
+"Germany"	276	2008
+"Luxembourg"	442	2009
+"Netherlands"	528	2009
+"Switzerland"	756	2009
+"Latin America and the Caribbean"	904	NA
+"Caribbean"	915	NA
+"Aruba"	533	2006
+"Bahamas"	44	2003
+"Barbados"	52	2003
+"Cuba"	192	2006
+"Dominican Republic"	214	2002
+"Grenada"	308	2000
+"Guadeloupe"	312	2007
+"Haiti"	332	2006
+"Jamaica"	388	2005
+"Martinique"	474	2004
+"Netherlands Antilles"	530	2006
+"Puerto Rico"	630	2005
+"Saint Lucia"	662	2004
+"St. Vincent and the Grenadines"	670	2005
+"Trinidad and Tobago"	780	2002
+"United States Virgin Islands"	850	2005
+"Central America"	916	NA
+"Belize"	84	2000
+"Costa Rica"	188	2000
+"El Salvador"	222	2007
+"Guatemala"	320	2002
+"Honduras"	340	1995
+"Mexico"	484	2000
+"Nicaragua"	558	2005
+"Panama"	591	2006
+"South America"	931	NA
+"Argentina"	32	2004
+"Bolivia (Plurinational State of)"	68	2003
+"Brazil"	76	2001
+"Chile"	152	2004
+"Colombia"	170	2005
+"Ecuador"	218	2000
+"French Guiana"	254	2004
+"Guyana"	328	2003
+"Paraguay"	600	2002
+"Peru"	604	2003
+"Suriname"	740	2004
+"Uruguay"	858	2004
+"Venezuela (Bolivarian Republic of)"	862	2004
+"Northern America"	905	NA
+"Canada"	124	2005
+"United States of America"	840	2009
+"Oceania"	909	NA
+"Australia/New Zealand"	927	NA
+"Australia"	36	2006
+"New Zealand"	554	2009
+"Melanesia"	928	NA
+"Fiji"	242	1996
+"New Caledonia"	540	2007
+"Papua New Guinea"	598	2000
+"Solomon Islands"	90	1999
+"Vanuatu"	548	1999
+"Micronesia"	954	NA
+"Guam"	316	2004
+"Micronesia (Fed. States of)"	583	2000
+"Polynesia"	957	NA
+"French Polynesia"	258	2006
+"Samoa"	882	2001
+"Tonga"	776	2006

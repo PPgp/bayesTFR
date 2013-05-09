@@ -60,11 +60,8 @@ For MCMC diagnostics, functions \link{coda.list.mcmc} and \link{coda.list.mcmc3}
 
 Existing simulation results can be accessed using the \link{get.tfr.mcmc} (Phase II) and \link{get.tfr3.mcmc} (Phase III) function.  An existing prediction can be accessed via \link{get.tfr.prediction}. Existing convergence diagnostics can be accessed using the \link{get.tfr.convergence}, \link{get.tfr.convergence.all}, \link{get.tfr3.convergence} and \link{get.tfr3.convergence.all} functions.
 
-There are a few important datasets used as an input into the MCMC simulations, provided by the United Nations Population Division:
-\itemize{
-\item \link{UN2008}, \link{UN2010}: Contains the historical data of total fertility rates as available for WPP 2008 and WPP 2010.
-\item \link{WPP2008_LOCATIONS}, \link{WPP2010_LOCATIONS}: Location dataset (for WPP 2008 and WPP 2010) used as a filter and look-up table.
-}
+The historical TFR data are taken from one of the packages \pkg{wpp2008} or \pkg{wpp2010}.
+
 }
 
 \note{
@@ -72,7 +69,7 @@ There is a directory \code{ex-data} shipped with the package which contains resu
 }
 
 \author{
-Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Adrian Raftery <raftery@uw.edu>
+Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Adrian Raftery <raftery@uw.edu> with code contribution from Bailey Fosdick <bfosdick@uw.edu>
 
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 }

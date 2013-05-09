@@ -1,5 +1,4 @@
 \name{country.names}
-\Rdversion{1.1}
 \alias{country.names}
 
 \title{
@@ -17,7 +16,7 @@ country.names(meta, countries = NULL, index = FALSE)
   \item{index}{Logical indicating if the argument \code{countries} is an index.}
 }
 \details{
-The function considers countries from the \code{\link{UN2008}} dataset that are included in the simulations and predictions. If the argument \code{countries} is not given, all countries are returned in the same order as they are stored in the UN dataset. 
+The function considers countries that are included in the simulations and predictions. If the argument \code{countries} is not given, all countries are returned in the same order as they are stored in the meta object. 
 }
 \value{
 Vector of country names.
@@ -33,7 +32,7 @@ Hana Sevcikova
 %}
 
 \seealso{
-\code{\link{UN2008}}, \code{\link{get.country.object}}
+\code{\link{get.country.object}}
 }
 \examples{
 sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")

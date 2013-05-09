@@ -56,11 +56,19 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2010, m
 	return(suppl.data)
 }
 
+load.bdem.dataset <- function(dataset, wpp.year, verbose=FALSE) {
+	pkg <- paste('wpp', wpp.year, sep='')
+	do.call('require', list(pkg))
+	if(verbose) cat('Loading ', dataset, ' from ', pkg, '.\n')
+	e <- new.env()
+	do.call('data', list(dataset, package=pkg, envir=e))
+	return(e[[dataset]])
+}
+
 read.tfr.file <- function(file) return(read.delim(file=file, comment.char='#', check.names=FALSE))
 
 do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2010, verbose=FALSE) {
-	cat('Reading file ', un.file.name, '.\n')
-	tfr_data <- read.tfr.file(file=un.file.name)
+	tfr_data <- load.bdem.dataset(un.file.name, wpp.year, verbose=verbose)
 	if(!is.element('last.observed', colnames(tfr_data)))
 		tfr_data <- cbind(tfr_data, last.observed=present.year)
 	if(!is.element('include_code', colnames(tfr_data)))
@@ -110,21 +118,19 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 }
 
 read.UNtfr <- function(wpp.year, my.tfr.file=NULL, ...) {
-	un.file.name <- file.path(find.package("bayesTFR"), "data", paste('UN', wpp.year, '.txt', sep=''))
-	un.suppl.file.name <- file.path(find.package("bayesTFR"), "data", paste('UN', wpp.year, '_supplemental.txt', sep=''))
-	data <- do.read.un.file(un.file.name, wpp.year, my.file=my.tfr.file, ...)
+	data <- do.read.un.file('tfr', wpp.year, my.file=my.tfr.file, ...)
 	suppl.data<- NULL
-	if(file.exists(un.suppl.file.name)) 
-		suppl.data <- do.read.un.file(un.suppl.file.name, wpp.year, my.file=my.tfr.file, ...)
+	suppl.data <- try(
+					do.read.un.file('tfr_supplemental', wpp.year, my.file=my.tfr.file, ...),
+					silent = TRUE)
 	return(list(data.object=data, suppl.data.object=suppl.data))
 }
 
 read.UNlocations <- function(data, wpp.year, package="bayesTFR", verbose=FALSE) {
-	loc.file.name <- file.path(find.package(package), "data", 
-								paste('WPP', wpp.year, '_LOCATIONS', '.txt', sep=''))
-	cat('Reading file ', loc.file.name, '.\n')
-	loc_data <- read.tfr.file(file=loc.file.name)
-	
+	loc_data <- load.bdem.dataset('UNlocations', wpp.year, verbose=verbose)
+	include_codes <- read.tfr.file(file.path(.find.package(package), "data", 
+                                       paste('include_', wpp.year, '.txt', sep='')))
+    loc_data <- merge(loc_data, include_codes, by='country_code')
 	# this include some areas that are not in the tfr file
 	# get the include_code from this file to get the countries from the tfr file
 	nr_tfr_outcomes <- length(data[,1])
@@ -135,7 +141,7 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", verbose=FALSE) 
 	for (i in 1:nr_tfr_outcomes){
  		loc_index <- (1:n_loc_data)[loc_data$country_code == data$country_code[i]]
  		if (length(loc_index)<=0)
- 			stop('Country ', data$country_code[i], ' not found in the file ', loc.file.name)
+ 			stop('Country ', data$country_code[i], ' not found in the location dataset of wpp', wpp.year, '.')
  		incl.code <- if(data$include_code[i] >= 0) data$include_code[i] else loc_data$include_code[loc_index]
  		include[i] <- incl.code == 2
  		prediction.only[i] <- incl.code == 1

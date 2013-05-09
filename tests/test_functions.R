@@ -18,7 +18,7 @@ test.load.UNtfr.and.my.tfr.file <- function() {
 	# read the UN TFR input file
 	test.name <- 'loading UN TFR file and my_tfr_file'
 	start.test(test.name)
-	my.tfr.file <- file.path(find.package("bayesTFR"), 'data', 'my_tfr_template.txt')
+	my.tfr.file <- file.path(find.package("bayesTFR"), 'extdata', 'my_tfr_template.txt')
 	tfr <- bayesTFR:::read.UNtfr(2010, my.tfr.file=my.tfr.file)
 	stopifnot(length(dim(tfr$data.object$data))==2)
 	stopifnot(length(dim(tfr$suppl.data.object$data))==2)
@@ -81,7 +81,7 @@ test.run.mcmc.simulation <- function(compression='None') {
 	# run MCMC for an aggregation
 	test.name <- 'running Phase II MCMC for extra areas'
 	start.test(test.name)
-	data.dir <- file.path(find.package("bayesTFR"), 'data')
+	data.dir <- file.path(find.package("bayesTFR"), 'extdata')
 	m <- run.tfr.mcmc.extra(sim.dir=sim.dir, 
 			my.tfr.file=file.path(data.dir, 'my_tfr_template.txt'), burnin=0)
 	stopifnot(is.element(900, m$meta$regions$country_code)) # 'World' should be included
@@ -201,7 +201,7 @@ test.thinned.simulation <- function(compression='None') {
 	# run MCMC for an aggregation
 	test.name <- 'running thinned MCMC for extra areas'
 	start.test(test.name)
-	data.dir <- file.path(find.package("bayesTFR"), 'data')
+	data.dir <- file.path(find.package("bayesTFR"), 'extdata')
 	m <- run.tfr.mcmc.extra(sim.dir=sim.dir, my.tfr.file=file.path(data.dir, 'my_tfr_template.txt'), burnin=0)
 	stopifnot(is.element(900, m$meta$regions$country_code)) # 'World' should be included
 	test.ok(test.name)
@@ -345,7 +345,7 @@ test.imputation <- function() {
 	# run MCMC
 	test.name <- 'running MCMC with missing values'
 	start.test(test.name)
-	my.tfr.file <- file.path(find.package('bayesTFR'), 'data', 'UN2010_with_last_obs.txt')
+	my.tfr.file <- file.path(find.package('bayesTFR'), 'extdata', 'UN2010_last_obs.txt')
 	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, my.tfr.file=my.tfr.file)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
@@ -585,7 +585,7 @@ test.estimate.mcmc.with.suppl.data <- function() {
 	# run MCMC for an aggregation
 	test.name <- 'estimating MCMC for extra areas with supplemental data'
 	start.test(test.name)
-	data.dir <- file.path(find.package("bayesTFR"), 'data')
+	data.dir <- file.path(find.package("bayesTFR"), 'extdata')
 	m <- run.tfr.mcmc.extra(sim.dir=sim.dir, 
                             my.tfr.file=file.path(data.dir, 'my_tfr_template.txt'), burnin=0, verbose=TRUE)
 	stopifnot(is.element(900, m$meta$regions$country_code)) # 'World' should be included
