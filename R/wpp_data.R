@@ -56,27 +56,28 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2010, m
 	return(suppl.data)
 }
 
-load.bdem.dataset <- function(dataset, wpp.year, verbose=FALSE) {
+load.bdem.dataset <- function(dataset, wpp.year, envir=NULL, verbose=FALSE) {
 	pkg <- paste('wpp', wpp.year, sep='')
 	do.call('require', list(pkg))
 	if(verbose) cat('Loading ', dataset, ' from ', pkg, '.\n')
-	e <- new.env()
-	do.call('data', list(dataset, package=pkg, envir=e))
-	return(e[[dataset]])
+	if(is.null(envir)) envir <- new.env()
+	do.call('data', list(dataset, package=pkg, envir=envir))
+	return(envir[[dataset]])
 }
 
 read.tfr.file <- function(file) return(read.delim(file=file, comment.char='#', check.names=FALSE))
 
 do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2010, verbose=FALSE) {
 	tfr_data <- load.bdem.dataset(un.file.name, wpp.year, verbose=verbose)
-	if(!is.element('last.observed', colnames(tfr_data)))
-		tfr_data <- cbind(tfr_data, last.observed=present.year)
-	if(!is.element('include_code', colnames(tfr_data)))
-		tfr_data <- cbind(tfr_data, include_code=rep(-1, nrow(tfr_data)))
-	
+	my.tfr.file <- my.file
+	if(!is.null(tfr_data) || !is.null(my.tfr.file)) {
+		if(!is.element('last.observed', colnames(tfr_data)))
+			tfr_data <- cbind(tfr_data, last.observed=present.year)
+		if(!is.element('include_code', colnames(tfr_data)))
+			tfr_data <- cbind(tfr_data, include_code=rep(-1, nrow(tfr_data)))
+	}
 	replaced <- c()
 	added <- c()
-	my.tfr.file <- my.file
 	# read user-defined TFRs and replace the UN data with it
 	if(!is.null(my.tfr.file)) {
 		cat('Reading file ', my.tfr.file, '.\n')
@@ -119,10 +120,8 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 
 read.UNtfr <- function(wpp.year, my.tfr.file=NULL, ...) {
 	data <- do.read.un.file('tfr', wpp.year, my.file=my.tfr.file, ...)
-	suppl.data<- NULL
-	suppl.data <- try(
-					do.read.un.file('tfr_supplemental', wpp.year, my.file=my.tfr.file, ...),
-					silent = TRUE)
+	suppl.data <- do.read.un.file('tfr_supplemental', wpp.year, my.file=my.tfr.file, ...)
+	if(is.null(suppl.data$data)) suppl.data <- NULL
 	return(list(data.object=data, suppl.data.object=suppl.data))
 }
 

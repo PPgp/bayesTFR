@@ -223,7 +223,7 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 }
 
 get.typical.trajectory.index <- function(trajectories) {
-	med <- apply(trajectories, 1, median)
+	med <- apply(trajectories, 1, median, na.rm=TRUE)
 	sumerrors <- apply(abs(trajectories - med), 2, sum)
 	sorterrors <- order(sumerrors)
 	return(sorterrors[round(length(sorterrors)/2, 0)])
@@ -367,7 +367,8 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 	}
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
-	T_end_c <- pmin(tfr.pred$mcmc.set$meta$T_end_c, tfr.pred$present.year.index.all)
+	T_end_c <- tfr.pred$mcmc.set$meta$T_end_c
+	if(!is.null(tfr.pred$present.year.index.all)) T_end_c <- pmin(T_end_c, tfr.pred$present.year.index.all)
 	tfr_matrix_reconstructed <- get.tfr.reconstructed(tfr.pred$tfr_matrix_reconstructed, tfr.pred$mcmc.set$meta)
 	suppl.T <- length(tfr_observed) - tfr.pred$mcmc.set$meta$T_end
 	y1.part1 <- tfr_observed[1:T_end_c[country$index]]

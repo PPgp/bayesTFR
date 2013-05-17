@@ -1,11 +1,12 @@
 library(bayesTFR)
 source('test_functions.R')
 
-wpp <- 2010
-test.load.UNtfr(wpp)
+for(wpp in c(2008, 2010)) {
+	test.load.UNtfr(wpp)
+	test.load.UNlocations(wpp)
+	test.create.tfr.matrix(wpp)
+}
 test.load.UNtfr.and.my.tfr.file()
-test.load.UNlocations(wpp)
-test.create.tfr.matrix(wpp)
 test.existing.simulation()
 
 ## disable the following tests when submitting to CRAN

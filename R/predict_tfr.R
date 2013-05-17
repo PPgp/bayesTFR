@@ -1,10 +1,11 @@
 tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						sim.dir=file.path(getwd(), 'bayesTFR.output'),
 						replace.output=FALSE,
-						nr.traj = NULL, thin = NULL, burnin=2000, 
+						start.year=NULL, nr.traj = NULL, thin = NULL, burnin=2000, 
 						use.diagnostics=FALSE,
 						use.tfr3=TRUE, burnin3=10000,
 						mu=2.1, rho=0.8859, sigmaAR1=0.1016,
+						use.correlation=FALSE,
 						save.as.ascii=1000, output.dir = NULL,
 						low.memory=TRUE,
 						seed=NULL, verbose=TRUE, ...) {
@@ -60,8 +61,8 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 			cat('\nUsing convergence settings: nr.traj=', nr.traj, ', burnin=', burnin, '\n')
 	}
 	invisible(make.tfr.prediction(mcmc.set, end.year=end.year, replace.output=replace.output,  
-					nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, burnin3=burnin3,
-					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1,
+					start.year=start.year, nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, burnin3=burnin3,
+					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1, use.correlation=use.correlation,
 					save.as.ascii=save.as.ascii,
 					output.dir=output.dir, verbose=verbose, ...))			
 }
@@ -488,11 +489,12 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		  											-var.par.values[s,'a_sd'], var.par.values[s,'b_sd']), mcmc.set$meta$sigma0.min)
 						}
 						if(!use.correlation || is.na(epsilons[country])) {
-		       				while(TRUE) {
+		       				for(i in 1:50) {
 		       					err <- rnorm(1, eps.mean, sigma_eps)
 		                    	if( (new.tfr + err) > 0.5 && 
 		                    		(new.tfr + err) <= cs.par.values.list[[country]][s,cs.var.names[[country]]$U] ) break
 		                	}
+		                	if(i>50) err <- min(max(err, 0.5-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
 		                } else { # joint predictions
 		                	err <- sigma_eps*epsilons[country]
 		                	if(err < 0.5 - new.tfr || err > cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr) {# TFR outside of bounds
@@ -505,10 +507,11 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 						new.tfr <- (mu.c[country] + rho.c[country]*(all.f_ps[icountry,year-1,s] - mu.c[country]) 
 										- W[icountry,year]*S11[icountry])
 						if(!use.correlation || is.na(epsilons[country])) {
-	 						while (TRUE){
+	 						for(i in 1:50){
 	 							err <- rnorm(1, 0, sigma.epsAR1[[country]][year-1])
 	 							if (new.tfr + err > 0.5 )   break
 							}
+							if(i>50) err <- 0.5 - new.tfr
 						} else { # joint predictions
 							err <- sigma.epsAR1[[country]][year-1]*epsilons[country]
 							if(err < 0.5 - new.tfr) {

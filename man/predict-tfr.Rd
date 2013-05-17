@@ -12,11 +12,12 @@ Using the posterior parameter samples simulated by \code{\link{run.tfr.mcmc}} (a
 \usage{
 tfr.predict(mcmc.set = NULL, end.year = 2100, 
     sim.dir = file.path(getwd(), "bayesTFR.output"), 
-    replace.output = FALSE, nr.traj = NULL, thin = NULL, burnin = 2000,
+    replace.output = FALSE, start.year = NULL, 
+    nr.traj = NULL, thin = NULL, burnin = 2000,
     use.diagnostics = FALSE, use.tfr3 = TRUE, burnin3 = 10000,
     mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016,
-    save.as.ascii = 1000, output.dir = NULL, low.memory = TRUE, 
-    seed = NULL, verbose = TRUE, \dots)
+    use.correlation = FALSE, save.as.ascii = 1000, output.dir = NULL, 
+    low.memory = TRUE, seed = NULL, verbose = TRUE, \dots)
 }
 
 \arguments{
@@ -24,6 +25,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
   \item{end.year}{End year of the prediction.}
   \item{sim.dir}{Directory with the MCMC simulation results. It should equal to the \code{output.dir} argument in \code{\link{run.tfr.mcmc}}.}
   \item{replace.output}{Logical. If \code{TRUE}, existing predictions in \code{output.dir} will be replaced by results of this run.}
+  \item{start.year}{Start year of the prediction. By default the prediction is started at the next time period after \code{present.year} set in the estimation step. If \code{start.year} is smaller than the default, projections for countries and time periods that have data available after \code{start.year} are set to those data.}
   \item{nr.traj}{Number of trajectories to be generated. If \code{NULL}, the argument \code{thin} is taken to determine the number of trajectories. If both are \code{NULL}, the number of trajectories corresponds to the size of the parameter sample.}
   \item{thin}{Thinning interval used for determining the number of trajectories. Only relevant, if \code{nr.traj} is \code{NULL}.}
   \item{burnin}{Number of iterations to be discarded from the beginning of the parameter traces.}
@@ -36,6 +38,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
   \item{mu}{Long-term mean \eqn{\mu}{mu} in the AR(1) projection model. Only used if \code{use.tfr3} is \code{FALSE}.}
   \item{rho}{Autoregressive parameter \eqn{\rho}{rho} in AR(1) projection model. If it is \code{NULL} it is estimated from the data. Only used if \code{use.tfr3} is \code{FALSE}.}
   \item{sigmaAR1}{Standard deviation \eqn{s} of AR(1) distortion terms in short-term projections. If it is \code{NULL} it is estimated from the data. It can be a single value or a vector giving the standard deviations for single projections. If the vector is shorter than the number of projections simulated via the AR(1) process, the last value is repeated for the remaining projections. In case of a single value (default), the standard deviation is kept constant over all AR(1) projections. Only used if \code{use.tfr3} is \code{FALSE}.}
+  \item{use.correlation}{Logical. If \code{TRUE} the model errors are sampled jointly for all countries (Fosdick and Raftery, 2012).}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible projections.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{\dots}{Further arguments passed to the underlying functions.}
@@ -72,6 +75,9 @@ L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., H
 
 Raftery, A.E., Alkema, L. and Gerland, P. (2013). Bayesian Population Projections for the United Nations. 
 Statistical Science, in press.
+
+Fosdick, B., Raftery, A.E. (2012). Regional Probabilistic Fertility Forecasting by Modeling Between-Country Correlations. Working paper, CSSS, University of Washington. \url{http://www.csss.washington.edu/Papers} [nr. 126]
+
 }
 \author{
 Hana Sevcikova, Leontine Alkema

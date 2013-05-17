@@ -30,7 +30,7 @@ data(include_2012)
 The package contains also a dataset called \file{my_tfr_template} (in \file{extdata} directory) which is a template for user-specified TFR time series. It has the same structure as the \code{\link[wpp2010:tfr]{tfr}} dataset, except that most of the columns are optional. The only required column is \code{country_code} (see description of the argument \code{my.tfr.file} in \code{\link{run.tfr.mcmc}}).
 }
 \source{
-Data provided by the United Nations Population Division; see also \url{http://esa.un.org/unpd/wpp}.
+Data provided by the United Nations Population Division.
 }
 %\references{
 %%  ~~ possibly secondary sources and usages ~~

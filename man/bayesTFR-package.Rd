@@ -60,7 +60,7 @@ For MCMC diagnostics, functions \link{coda.list.mcmc} and \link{coda.list.mcmc3}
 
 Existing simulation results can be accessed using the \link{get.tfr.mcmc} (Phase II) and \link{get.tfr3.mcmc} (Phase III) function.  An existing prediction can be accessed via \link{get.tfr.prediction}. Existing convergence diagnostics can be accessed using the \link{get.tfr.convergence}, \link{get.tfr.convergence.all}, \link{get.tfr3.convergence} and \link{get.tfr3.convergence.all} functions.
 
-The historical TFR data are taken from one of the packages \pkg{wpp2008} or \pkg{wpp2010}.
+The historical TFR data are taken from one of the packages \pkg{wpp2008}, \pkg{wpp2010} or \pkg{wpp2012}, depending on users settings.
 
 }
 
