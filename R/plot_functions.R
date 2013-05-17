@@ -346,6 +346,7 @@ get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95), 
 								  half.child.variant=TRUE, nr.traj=NULL,
 								  adjusted.only = TRUE, typical.trajectory=FALSE,
+								  mark.estimation.points=FALSE,
 								  xlim=NULL, ylim=NULL, type='b', 
 								  xlab='Year', ylab='TFR', main=NULL, lwd=c(2,2,2,2,2,1), 
 								  col=c('black', 'green', 'red', 'red', 'blue', 'gray'),
@@ -372,7 +373,8 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 	tfr_matrix_reconstructed <- get.tfr.reconstructed(tfr.pred$tfr_matrix_reconstructed, tfr.pred$mcmc.set$meta)
 	suppl.T <- length(tfr_observed) - tfr.pred$mcmc.set$meta$T_end
 	y1.part1 <- tfr_observed[1:T_end_c[country$index]]
-	y1.part1 <- y1.part1[!is.na(y1.part1)]
+	y1.is.not.na <- which(!is.na(y1.part1))
+	y1.part1 <- y1.part1[y1.is.not.na]
 	lpart1 <- length(y1.part1)
 	y1.part2 <- NULL
 	lpart2 <- min(tfr.pred$mcmc.set$meta$T_end, tfr.pred$present.year.index) - T_end_c[country$index] + suppl.T
@@ -389,9 +391,22 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 		if(is.null(xlim)) xlim <- c(min(x1,x2), max(x1,x2))
 		if(is.null(ylim)) ylim <- c(0, max(trajectories$trajectories, y1.part1, y1.part2, na.rm=TRUE))
 		if(is.null(main)) main <- country$name
-		plot(x1[1:lpart1], y1.part1, type=type, xlim=xlim, ylim=ylim, ylab=ylab, xlab=xlab, main=main, 
-					panel.first = grid(), lwd=lwd[1], col=col[1], ...)
-	} else points(x1[1:lpart1], y1.part1, type=type, lwd=lwd[1], col=col[1], ...)
+		plot(xlim, ylim, type='n', xlim=xlim, ylim=ylim, ylab=ylab, xlab=xlab, main=main, 
+					panel.first = grid())
+	}
+	points.x <- x1[1:lpart1]
+	points.y <- y1.part1
+	if (mark.estimation.points) {
+		tfr.est <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix')[1:T_end_c[country$index]][y1.is.not.na]
+		end.na <- which(!is.na(tfr.est))[1]-1
+		if(end.na > 0) {
+			na.idx <- 1:end.na
+			points(points.x[na.idx], points.y[na.idx], type=type, lwd=lwd[1], col=rgb(t(col2rgb(col[1])), alpha=0.1), ...)
+			points.x <- points.x[-na.idx]
+			points.y <- points.y[-na.idx]
+		}
+	}
+	points(points.x, points.y, type=type, lwd=lwd[1], col=col[1], ...)
 	if(lpart2 > 0) { # imputed values
 		lines(x1[(lpart1+1): length(x1)], y1.part2, pch=2, type='b', col=col[2], lwd=lwd[2])
 		lines(x1[lpart1:(lpart1+1)], c(y1.part1[lpart1], y1.part2[1]), col=col[2], lwd=lwd[2]) # connection between the two parts
