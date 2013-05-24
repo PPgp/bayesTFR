@@ -1,3 +1,16 @@
+4.0-0 (5/23/2013)
+-----
+WPP data removed and put in separate packages (wpp2008, wpp2010). The package is now dependent on those.
+	
+Incorporating Bailey Fosdick's method (and code) for joint projections between countires into the tfr.predict function 
+(argument use.correlation). Many internal changes as a result of that.
+
+Patrick Gerland's code used for:
+	changing the projection in tfr.map function to the Robinson world projections,
+	fixing a few UN codes (there is some mismatch in the rworldmaps codes and what the UN is using)
+	
+tfr.trajectories.plot got an argument mark.estimation.points for marking points in phase II and III.
+
 3.0-9 (4/19/2013)
 -----
 minor internal changes in adjusting median

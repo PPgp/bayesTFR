@@ -16,7 +16,7 @@ write.projection.summary(dir = file.path(getwd(), "bayesTFR.output"),
   \item{dir}{Directory containing the prediction object. It should correspond to the \code{output.dir} argument of the \code{\link{tfr.predict}} function.}
   \item{output.dir}{Directory in which the resulting file will be stored. If \code{NULL} the same directory is used as for the prediction.}
   \item{revision}{UN WPP revision number. If \code{NULL} it is determined from the corresponding WPP year: WPP 2008 corresponds to revision 13, every subsequent WPP increases the revision number by one. Used as a constant in the second file only.}
-  \item{adjusted}{Logical. By default the function writes summary using the original BHM projections. If the projection medians are adjusted (using e.g. \code{\link{tfr.median.set}}), setting this argument to \code{TRUE} causes using the adjusted projections.}
+  \item{adjusted}{Logical. By default the function writes summary using the original BHM projections. If the projection medians are adjusted (using e.g. \code{\link{tfr.median.set}}), setting this argument to \code{TRUE} causes writing the adjusted projections.}
 }
 \details{
 The first file that the function creates is called \file{projection_summary_user_friendly.csv} (or \file{projection_summary_user_friendly_adjusted.csv} if \code{adjusted=TRUE}), it is a comma-separated table with the following columns: 

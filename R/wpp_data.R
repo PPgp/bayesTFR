@@ -127,7 +127,7 @@ read.UNtfr <- function(wpp.year, my.tfr.file=NULL, ...) {
 
 read.UNlocations <- function(data, wpp.year, package="bayesTFR", verbose=FALSE) {
 	loc_data <- load.bdem.dataset('UNlocations', wpp.year, verbose=verbose)
-	include_codes <- read.tfr.file(file.path(.find.package(package), "data", 
+	include_codes <- read.tfr.file(file.path(find.package(package), "data", 
                                        paste('include_', wpp.year, '.txt', sep='')))
     loc_data <- merge(loc_data, include_codes, by='country_code')
 	# this include some areas that are not in the tfr file

@@ -908,21 +908,47 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=N
 }
 
 tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE, 
-					projection.index=1,  device='dev.new', main=NULL, device.args=NULL, data.args=NULL, ...
+					projection.index=1,  device='dev.new', main=NULL, 
+					resolution=c("coarse","low","less islands","li","high"),
+					device.args=NULL, data.args=NULL, ...
 				) {
 	require(rworldmap)
+	require(rgdal)
+	resolution <- match.arg(resolution)
+	if(resolution=='high') require(rworldxtra)
 	data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=year, 
 									par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
 	data <- data.period$data
 	period <- data.period$period
 	tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
-	mtfr <- joinCountryData2Map(tfr, joinCode='UN', nameJoinColumn='un')
+	map <- getMap(resolution=resolution)
+	#first get countries excluding Antarctica which crashes spTransform (says the help page for joinCountryData2Map)
+	sPDF <- map[-which(map$ADMIN=='Antarctica'), ]
+	#transform map to the Robinson projection
+	sPDF <- spTransform(sPDF, CRSobj=CRS("+proj=robin +ellps=WGS84"))
+	## recode missing UN codes and UN member states
+	sPDF$UN <- sPDF$ISO_N3
+	## N. Cyprus -> assign to Cyprus
+	sPDF$UN[sPDF$ISO3=="CYN"] <- 196
+	## Kosovo -> assign to Serbia
+	sPDF$UN[sPDF$ISO3=="KOS"] <- 688
+	## W. Sahara -> no UN numerical code assigned in Natural Earth map
+	sPDF$UN[sPDF$ISO3=="SAH"] <- 732
+	## Somaliland -> assign to Somalia
+	sPDF$UN[sPDF$ISO3=="SOL"] <- 706
+
+	#mtfr <- joinCountryData2Map(tfr, joinCode='UN', nameJoinColumn='un')
+	# join sPDF with tfr
+	mtfr <- rep(NA, length(sPDF$UN))
+	valididx <- which(is.element(sPDF$UN, tfr$un))
+	mtfr[valididx] <- tfr$tfr[sapply(sPDF$UN[valididx], function(x,y) which(y==x),  tfr$un)]
+	sPDF$tfr <- mtfr
 	if(is.null(main)) {
 		main <- paste(period, .map.main.default(pred, data.period), quantile)
 	}
 	if (device != 'dev.cur')
 		do.call('mapDevice', c(list(device=device), device.args))
-	mapParams<-mapCountryData(mtfr, nameColumnToPlot='tfr', addLegend=FALSE, mapTitle=main, ...
+	mapParams<-mapCountryData(sPDF, nameColumnToPlot='tfr', addLegend=FALSE, mapTitle=main, ...
 	)
 	do.call(addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all'))
 }

@@ -15,10 +15,10 @@ using a Bayesian hierarchical model (BHM) and the United Nations demographic tim
 \details{
 \tabular{ll}{
 Package: \tab bayesTFR\cr
-Version: \tab 3.0-9\cr
-Date: \tab 2013-4-19\cr
-Depends: \tab R (>= 2.14.2), mvtnorm, coda\cr
-Suggests: \tab rworldmap, fields, snowFT, googleVis \cr
+Version: \tab 4.0-0\cr
+Date: \tab 2013-5-23\cr
+Depends: \tab R (>= 2.14.2), mvtnorm, coda, MASS, wpp2010\cr
+Suggests: \tab rworldmap, fields, snowFT, googleVis, rgdal, rworldxtra, wpp2008 \cr
 License: \tab GPL (>= 2)\cr
 URL: \tab \url{http://bayespop.csss.washington.edu}\cr
 }

@@ -14,6 +14,7 @@ Generates a world map of the total fertility rate for given projection period an
 tfr.map(pred, quantile = 0.5, 
     year = NULL, par.name = NULL, adjusted = FALSE,
     projection.index = 1, device = "dev.new", main = NULL, 
+    resolution=c("coarse","low","less islands","li","high"),
     device.args = NULL, data.args = NULL, \dots)
 	
 tfr.map.all(pred, output.dir, output.type = "png", 
@@ -40,6 +41,7 @@ tfr.map.gvis(pred, year = NULL, quantile = 0.5, pi = 80,
   \item{main}{
 Title for the map. If it is \code{NULL}, a default title is constructed from the projection year and quantile.
 }
+\item{resolution}{Map resolution as implemented in \code{\link[rworldmap]{getMap}}. High resolution requires the \pkg{rworldxtra} package.}
   \item{device.args}{List of 
 additional arguments to be passed to the \code{\link[rworldmap]{mapDevice}} function of the \pkg{rworldmap} package.
 }
@@ -78,7 +80,7 @@ By default, both \code{tfr.map} and \code{tfr.map.gvis} produce maps of TFRs. Al
 %% ~put references to the literature/web site here ~
 %}
 \author{
-Hana Sevcikova, Adrian Raftery
+Hana Sevcikova, Patrick Gerland, Adrian Raftery
 }
 %\note{
 %%  ~~further notes~~

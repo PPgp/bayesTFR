@@ -192,7 +192,7 @@
 "Caribbean Netherlands"	535	2
 "Cayman Islands"	136	2
 "Cuba"	192	2
-"Curaçao"	531	2
+"Curacao"	531	2
 "Dominica"	212	2
 "Dominican Republic"	214	2
 "Grenada"	308	2

@@ -13,6 +13,7 @@ The functions plot/tabulate the posterior distribution of TFR trajectories for a
 tfr.trajectories.plot(tfr.pred, country, pi = c(80, 95), 
     half.child.variant = TRUE, nr.traj = NULL, 
     adjusted.only = TRUE, typical.trajectory = FALSE, 
+    mark.estimation.points = FALSE,
     xlim = NULL, ylim = NULL, type = 'b', xlab = 'Year', ylab = 'TFR', 
     main = NULL, lwd = c(2, 2, 2, 2, 2, 1), 
     col=c('black', 'green', 'red', 'red', 'blue', 'gray'),
@@ -34,6 +35,7 @@ tfr.trajectories.table(tfr.pred, country, pi = c(80, 95),
   \item{nr.traj}{Number of trajectories to be plotted. If \code{NULL}, all trajectories are plotted, otherwise they are thinned evenly.}
   \item{adjusted.only}{Logical. By default, if the projection median is adjusted using e.g. \code{\link{tfr.median.set}}, the function plots the adjusted median. If \code{adjusted.only=FALSE} the original (non-adjusted) median is plotted as well.}
   \item{typical.trajectory}{Logical. If \code{TRUE} one trajectory is shown that has the smallest distance to the median.}
+  \item{mark.estimation.points}{Logical. If \code{TRUE}, points that were not used in the estimation (phase I) are shown in lighter color than points in phase II and III.}
   \item{xlim, ylim, type, xlab, ylab}{Graphical parameters passed to the \code{plot} function.}
     \item{lwd, col}{Vector of six elements giving the line width and color for: 1. observed data, 2. imputed missing data, 3. median, 4. quantiles, 5. half-child variant, 6. trajectories.}
   \item{show.legend}{Logical controlling whether the legend should be drawn.}
