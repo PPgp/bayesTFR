@@ -918,6 +918,9 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
 	if(resolution=='high') require(rworldxtra)
 	data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=year, 
 									par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
+	#data.period.base <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=2013, 
+	#								par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
+	#data <- (data.period$data - data.period.base$data)/1000
 	data <- data.period$data
 	period <- data.period$period
 	tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
@@ -951,6 +954,7 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
 	mapParams<-mapCountryData(sPDF, nameColumnToPlot='tfr', addLegend=FALSE, mapTitle=main, ...
 	)
 	do.call(addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all'))
+	#do.call(addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all', sigFigs=2, legendShrink=0.8, tcl=-0.3, digits=1))
 }
 
 tfr.map.gvis <- function(pred, year=NULL, quantile=0.5, pi=80, par.name=NULL, 

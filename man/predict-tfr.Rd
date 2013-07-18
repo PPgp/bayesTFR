@@ -80,7 +80,7 @@ Fosdick, B., Raftery, A.E. (2012). Regional Probabilistic Fertility Forecasting 
 
 }
 \author{
-Hana Sevcikova, Leontine Alkema
+Hana Sevcikova, Leontine Alkema, Bailey Fosdick
 }
 %\note{
 %%  ~~further notes~~

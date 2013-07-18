@@ -17,7 +17,7 @@ run.tfr.mcmc.extra(sim.dir = file.path(getwd(), "bayesTFR.output"),
   \item{sim.dir}{
 Directory with an existing simulation.
 }
-  \item{countries}{Vector of country codes. These include codes of areas and regions (see column \code{country_code} in \code{\link[wpp2010]{UNlocations}}).
+  \item{countries}{Vector of country codes. These include codes of areas and regions (see column \code{country_code} in \code{\link[wpp2012]{UNlocations}}).
 }
   \item{my.tfr.file}{
 File name containing user-specified TFR time series for countries for which the simulation should run (see Details below).
@@ -46,7 +46,7 @@ Logical switching log messages on and off.
 \details{
 The function can be used to make predictions for countries, areas or regions (further denoted as \sQuote{countries}) that were not included in the MCMC estimation (invoked by \code{\link{run.tfr.mcmc}}). It creates MCMC traces for country-specific parameters. The purpose of this function is to have country-specific parameters available in order to be able to generate projections for additional countries or their aggregations, without having to re-run the often time-expensive MCMC simulation.
 
-The set of countries to be considered by this function can be given either by their codes, using the argument \code{countries}, in which case the countries must be included in the UN WPP \code{\link[wpp2010]{tfr}} dataset. Or, it can be given by a user-specific TFR file, using the argument \code{my.tfr.file}. The function considers a union of both arguments. The function will ignore all countries that were used in the existing MCMC simulation for estimating the hyperparameters. Countries that already own country-specific parameters (e.g. because they were included in \code{my.tfr.file} passed to \code{\link{run.tfr.mcmc}}) get their parameters recomputed. Note that all countries must be included in the \code{\link[wpp2010]{UNlocations}} dataset, but unlike in \code{\link{run.tfr.mcmc}}, their  \code{include_code} is ignored. 
+The set of countries to be considered by this function can be given either by their codes, using the argument \code{countries}, in which case the countries must be included in the UN WPP \code{\link[wpp2012]{tfr}} dataset. Or, it can be given by a user-specific TFR file, using the argument \code{my.tfr.file}. The function considers a union of both arguments. The function will ignore all countries that were used in the existing MCMC simulation for estimating the hyperparameters. Countries that already own country-specific parameters (e.g. because they were included in \code{my.tfr.file} passed to \code{\link{run.tfr.mcmc}}) get their parameters recomputed. Note that all countries must be included in the \code{\link[wpp2012]{UNlocations}} dataset, but unlike in \code{\link{run.tfr.mcmc}}, their  \code{include_code} is ignored. 
 }
 \note{If there is an existing projection for the directory \code{sim.dir}, use \code{\link{tfr.predict.extra}} to obtain projections for the extra countries used in this function.}
 \value{

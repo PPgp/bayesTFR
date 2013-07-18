@@ -1,4 +1,8 @@
-4.0-0 (5/23/2013)
+4.0-1 (7/18/2013)
+-----
+Default for wpp.year set to 2012. Package wpp2012 added to dependencies.
+
+4.0-0 (5/23/2013) [CRAN]
 -----
 WPP data removed and put in separate packages (wpp2008, wpp2010). The package is now dependent on those.
 	

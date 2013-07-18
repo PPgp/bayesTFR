@@ -1,6 +1,6 @@
 # Read in the UN estimates
 
-set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2010, my.tfr.file=NULL, 
+set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, my.tfr.file=NULL, 
 							verbose=FALSE) {
 # outputs:
 # tfr_matrix_all, with each column one countries UN estimates
@@ -67,7 +67,7 @@ load.bdem.dataset <- function(dataset, wpp.year, envir=NULL, verbose=FALSE) {
 
 read.tfr.file <- function(file) return(read.delim(file=file, comment.char='#', check.names=FALSE))
 
-do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2010, verbose=FALSE) {
+do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2012, verbose=FALSE) {
 	tfr_data <- load.bdem.dataset(un.file.name, wpp.year, verbose=verbose)
 	my.tfr.file <- my.file
 	if(!is.null(tfr_data) || !is.null(my.tfr.file)) {

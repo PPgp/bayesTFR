@@ -166,7 +166,8 @@ test.run.mcmc.simulation <- function(compression='None') {
 	test.name <- 'setting the median'
 	start.test(test.name)
 	expert.values <- c(2.3, 2.4, 2.4)
-	shift <- expert.values - pred$quantiles[15, '0.5',4:6] # Uganda has index 15
+	cobj <- get.country.object('Uganda', m$meta)
+	shift <- expert.values - pred$quantiles[cobj$index, '0.5',4:6]
 	mod.pred <- tfr.median.set(sim.dir, country='Uganda', values=expert.values, years=2024)
 	mod.projs <- summary(mod.pred, country='Uganda')$projections
 	stopifnot(all(mod.projs[4:6, c(1,3:dim(projs)[2])]==projs[4:6, c(1,3:dim(projs)[2])]+shift))
@@ -346,7 +347,7 @@ test.imputation <- function() {
 	test.name <- 'running MCMC with missing values'
 	start.test(test.name)
 	my.tfr.file <- file.path(find.package('bayesTFR'), 'extdata', 'UN2010_last_obs.txt')
-	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, my.tfr.file=my.tfr.file)
+	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, my.tfr.file=my.tfr.file, wpp.year=2010)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
 	stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))
