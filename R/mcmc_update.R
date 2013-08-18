@@ -115,7 +115,7 @@ mcmc.update.Triangle_c4 <- function(country, mcmc) {
 # within country loop, updates Triangle_c4
 # thus also the eps
 # (thus also lambda_c and the NAs in the eps!)
-        Triangle_c4_trans <- log((mcmc$Triangle_c4[country] - mcmc$meta$Triangle_c4.low)/
+        Triangle_c4_trans <- log(max(mcmc$Triangle_c4[country] - mcmc$meta$Triangle_c4.low, 1e-7)/
                         max(mcmc$meta$Triangle_c4.up - mcmc$Triangle_c4[country], 1e-7))
         epsT.idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
         lepsT.idx <- length(epsT.idx)
