@@ -84,8 +84,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
     }
 
 	if (parallel) { # run chains in parallel
-		require(snowFT)
-		chain.set <- performParallel(nr.nodes, 1:nr.chains, mcmc3.run.chain, 
+		chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc3.run.chain, 
                                      initfun=init.nodes, meta=meta, 
                                      thin=thin, iter=iter, 
                                      starting.values=starting.values,                                     
@@ -191,10 +190,10 @@ continue.tfr3.mcmc <- function(sim.dir, iter, chain.ids=NULL, parallel=FALSE, nr
 		chain.ids <- names(mcmc.set$mcmc.list)
 	}
 	if (parallel) { # run chains in parallel
-		require(snowFT)
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
-		chain.list <- performParallel(nr.nodes, chain.ids, mcmc3.continue.chain, 
-						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, iter=iter, verbose=verbose, verbose.iter=verbose.iter, ...)
+		chain.list <- bDem.performParallel(nr.nodes, chain.ids, mcmc3.continue.chain, 
+						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, iter=iter, verbose=verbose, 
+						verbose.iter=verbose.iter, ...)
 		for (i in 1:length(chain.ids))
 			mcmc.set$mcmc.list[[chain.ids[i]]] <- chain.list[[i]]
 	} else { # run chains sequentially

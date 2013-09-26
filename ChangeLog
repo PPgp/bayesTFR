@@ -1,4 +1,8 @@
-4.0-1 (7/18/2013)
+4.0-2 ()
+-----
+Setting default cluster type to SOCK if not MPI or SOCK. 
+
+4.0-1 (7/18/2013) [CRAN]
 -----
 Default for wpp.year set to 2012. Package wpp2012 added to dependencies.
 

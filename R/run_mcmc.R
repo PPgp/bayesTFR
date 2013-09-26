@@ -115,12 +115,12 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 			}
 		}
 	if (parallel) { # run chains in parallel
-		require(snowFT)
-		chain.set <- performParallel(nr.nodes, 1:nr.chains, mcmc.run.chain, 
+		chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc.run.chain, 
 						initfun=init.nodes, meta=bayesTFR.mcmc.meta, 
 						thin=thin, iter=iter, S.ini=S.ini, a.ini=a.ini,
                         b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
-                        gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, verbose.iter=verbose.iter, ...)
+                        gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, 
+                        verbose.iter=verbose.iter, ...)
 	} else { # run chains sequentially
 		chain.set <- list()
 		for (chain in 1:nr.chains) {
@@ -211,10 +211,10 @@ continue.tfr.mcmc <- function(iter, chain.ids=NULL, output.dir=file.path(getwd()
 		chain.ids <- names(mcmc.set$mcmc.list)
 	}
 	if (parallel) { # run chains in parallel
-		require(snowFT)
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
-		chain.list <- performParallel(nr.nodes, chain.ids, mcmc.continue.chain, 
-						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, iter=iter, verbose=verbose, verbose.iter=verbose.iter, ...)
+		chain.list <- bDem.performParallel(nr.nodes, chain.ids, mcmc.continue.chain, 
+						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, iter=iter, verbose=verbose, 
+						verbose.iter=verbose.iter, ...)
 		for (i in 1:length(chain.ids))
 			mcmc.set$mcmc.list[[chain.ids[i]]] <- chain.list[[i]]
 	} else { # run chains sequentially
@@ -292,9 +292,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	if (!is.null(mcmc.set$mcmc.list[[1]]$rng.state)) .Random.seed <- mcmc.set$mcmc.list[[1]]$rng.state
 	
 	if (parallel) { # run chains in parallel
-		require(snowFT)
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
-		chain.list <- performParallel(nr.nodes, chain.ids, mcmc.run.chain.extra, 
+		chain.list <- bDem.performParallel(nr.nodes, chain.ids, mcmc.run.chain.extra, 
 						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, countries=Eini$index_DL, 
 						posterior.sample=post.idx, iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, ...)
 		for (i in 1:length(chain.ids))
@@ -332,3 +331,13 @@ init.nodes <- function() {
 	library(bayesTFR)
 }
 
+set.default.cltype <- function() {
+	if(!is.element(getClusterOption("type"), c("MPI", "SOCK")))
+		setDefaultClusterOptions(type="SOCK")
+}
+
+bDem.performParallel <- function(...) {
+	require(snowFT)
+	set.default.cltype()
+	performParallel(...)
+}
