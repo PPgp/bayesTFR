@@ -840,8 +840,8 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=N
 		data <- c()
 		if (par.name == 'lambda') {
 			tfr <- get.data.imputed(pred)
-			tfr.years <- bayesTFR:::get.estimation.years(meta)
-			all.years <- c(tfr.years, bayesTFR:::get.prediction.years(meta, pred$nr.projections+1, pred$present.year.index)[-1])
+			tfr.years <- get.estimation.years(meta)
+			all.years <- c(tfr.years, get.prediction.years(meta, pred$nr.projections+1, pred$present.year.index)[-1])
 			nr.data <- pred$nr.projections+dim(tfr)[1]
 			for (country in 1:get.nr.countries(meta)) {
 				country.obj <- get.country.object(country, meta, index=TRUE)
@@ -871,7 +871,7 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=N
 	} else { # data are TFRs
 		projection <- TRUE
 		if(!is.null(year)) {
-			ind.proj <- bayesTFR:::get.predORest.year.index(pred, year)
+			ind.proj <- get.predORest.year.index(pred, year)
 			projection.index <- ind.proj['index']
 			projection <- ind.proj['is.projection']
 			if(is.null(projection.index)) 

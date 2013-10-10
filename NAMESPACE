@@ -1,6 +1,12 @@
 #exportPattern("^[[:alpha:]]+")
 useDynLib(bayesTFR)
 
+import(mvtnorm)
+import(coda)
+import(wpp2012)
+importFrom(MASS, mvrnorm)
+#importFrom(rworldmap, getMap, mapDevice, addMapLegend, mapCountryData)
+
 # export functions
 export(
 	run.tfr.mcmc,
