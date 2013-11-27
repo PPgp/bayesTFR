@@ -30,22 +30,22 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     psi0 <- mcmc$meta$psi0
     nu_psi0 <- mcmc$meta$nu.psi0
     nu_psiD <- nu_psi0 + nr_DL
-    prod_psi0 <- nu_psi0*psi0^2
+    prod_psi0 <- nu_psi0*mcmc$meta$psi0r^2
 
     mean_eps_tau_0 <- mcmc$meta$mean.eps.tau0
     sd_eps_tau_0 <- mcmc$meta$sd.eps.tau0
     nu_tau0 <- mcmc$meta$nu.tau0
     nu_tauD <- nu_tau0 + nr_notearly
-    prod_tau0 <- nu_tau0*sd_eps_tau_0^2
+    prod_tau0 <- nu_tau0*mcmc$meta$sd.eps.tau0r^2
 
     delta4_0 <- mcmc$meta$delta4.0
     Triangle4_0  <- mcmc$meta$Triangle4.0
     nu4_D <- mcmc$meta$nu4 +  nr_DL
-    prod_delta4_0 <- mcmc$meta$nu4*delta4_0^2
+    prod_delta4_0 <- mcmc$meta$nu4*mcmc$meta$delta4.0r^2
     
     nu_deltaD <- mcmc$meta$nu.delta0 +  nr_DL
     a_delta <- nu_deltaD/2
-    prod_delta0 <- mcmc$meta$nu.delta0*mcmc$meta$delta0^2 
+    prod_delta0 <- mcmc$meta$nu.delta0*mcmc$meta$delta0r^2 
     
     suppl.T <- if(!is.null(mcmc$meta$suppl.data$regions)) mcmc$meta$suppl.data$T_end else 0
     

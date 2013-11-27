@@ -16,9 +16,10 @@ stop.if.country.not.DL <- function(country.obj, meta) {
 }
 
 tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, nr.curves, predictive.distr=FALSE) {
+	# if country.code is null, get world distribution
     dlc <- c()
     cspec <- TRUE
-    if(!is.element(country.index, mcmc.list[[1]]$meta$id_Tistau)) {
+    if(!is.null(country.code) && !is.element(country.index, mcmc.list[[1]]$meta$id_Tistau)) {
     	U.var <- paste("U_c", country.code, sep = "")
     	d.var <- paste("d_c", country.code, sep = "")
     	Triangle_c4.var <- paste("Triangle_c4_c", country.code, sep = "")
@@ -30,8 +31,10 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, 
     	gamma.vars <- paste("gamma_", 1:3, sep = "")
     	alpha.vars <- paste('alpha_',1:3, sep='')
 		delta.vars <- paste('delta_',1:3, sep='')
-		Uvalue = get.observed.tfr(country.index, mcmc.list[[1]]$meta, 
+		if(!is.null(country.code))
+			Uvalue = get.observed.tfr(country.index, mcmc.list[[1]]$meta, 
 										'tfr_matrix_all')[mcmc.list[[1]]$meta$tau_c[country.index]]
+		else Uvalue <- mcmc.list[[1]]$meta$U.c.low.base + (mcmc.list[[1]]$meta$U.up - mcmc.list[[1]]$meta$U.c.low.base)/2
     	cspec <- FALSE
     }
     # Compute the quantiles on a sample of at least 2000.   

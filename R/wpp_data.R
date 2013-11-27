@@ -149,8 +149,9 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", verbose=FALSE) 
 }
 
 
-get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950, 
-										present.year=2010) {
+get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950, present.year=2010, 
+												 datacolnames=c(country.code='country_code', country.name='country', reg.name='reg_name',
+															reg.code='reg_code', area.name='area_name', area.code='area_code')) {
 	tfr_data <- data
 	nr_countries <- length(tfr_data[,1])
 	names.tfr.data <- names(tfr_data)
@@ -185,19 +186,26 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
 	tfr_matrix_all <- tfr_matrix
 
 	reg_name <- reg_code <- area_name <- area_code <- NULL
-	all.na <- rep(NA, nr_countries)
+	has.reg.name <- is.element(datacolnames['reg.name'], colnames(loc_data))
+	has.reg.code <- is.element(datacolnames['reg.code'], colnames(loc_data))
+	has.area.name <- is.element(datacolnames['area.name'], colnames(loc_data))
+	has.area.code <- is.element(datacolnames['area.code'], colnames(loc_data))
+	all.na <- na.array <- rep(NA, nr_countries)
 	for (i in 1:nr_countries){
-		loc_index <- which.max(loc_data$country_code == tfr_data$country_code[i])
- 		reg_name <- c(reg_name, paste(loc_data$reg_name[loc_index]))
- 		reg_code <- c(reg_code, loc_data$reg_code[loc_index])
- 		area_name <- c(area_name, paste(loc_data$area_name[loc_index]))
- 		area_code <- c(area_code, loc_data$area_code[loc_index])
+		loc_index <- which.max(loc_data[[datacolnames['country.code']]] == tfr_data[[datacolnames['country.code']]][i])
+ 		if(has.reg.name) reg_name <- c(reg_name, paste(loc_data$reg_name[loc_index]))
+ 		if(has.reg.code) reg_code <- c(reg_code, loc_data$reg_code[loc_index])
+ 		if(has.area.name) area_name <- c(area_name, paste(loc_data$area_name[loc_index]))
+ 		if(has.area.code) area_code <- c(area_code, loc_data$area_code[loc_index])
 		# set NAs for entries that are not observed data (after last.observed) 
 		tfr_matrix[(tfr_data[i,'last.observed'] < mid.years), i] <- NA
 		all.na[i] <- all(is.na(tfr_matrix[,i]))
 	}
-	regions <- list(name=reg_name, code=reg_code, area_name=area_name, area_code=area_code,
-				country_name=tfr_data$country, country_code=tfr_data$country_code)
+	regions <- list(name=if(has.reg.name) reg_name else na.array, 
+					code=if(has.reg.code) reg_code else na.array, 
+					area_name=if(has.area.name) area_name else na.array, 
+					area_code=if(has.area.code) area_code else na.array,
+				country_name=tfr_data[[datacolnames['country.name']]], country_code=tfr_data[[datacolnames['country.code']]])
 	return(list(obs_matrix=tfr_matrix, obs_matrix_all=tfr_matrix_all, regions=regions, all.na=all.na))
 }
 
@@ -300,4 +308,53 @@ set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, verbose=FALSE)
 		extra.wpp$suppl.data <- .get.suppl.data.list(suppl.wpp)
 	}							
 	return(extra.wpp)
+}
+
+create.sublocation.dataset <- function(data) {
+	loc.idx <- which(is.element(colnames(data), c('name',  'country_code', 'include_code', 'reg_code')))
+	loc_data <- data[, loc.idx]
+	include <- data$include_code == 2
+	prediction.only <- data$include_code == 1
+	return(list(loc_data=loc_data, include=data$include_code == 2, 
+				prediction.only=data$include_code == 1, include.code=data$include_code))
+}
+
+do.read.subnat.file <- function(file.name, present.year=2012) {
+	tfr_data <- read.tfr.file(file=file.name)
+	if(!is.element('last.observed', colnames(tfr_data)))
+		tfr_data <- cbind(tfr_data, last.observed=present.year)
+	if(!is.element('include_code', colnames(tfr_data)))
+		tfr_data <- cbind(tfr_data, include_code=rep(2, nrow(tfr_data)))
+	return(tfr_data)
+}
+
+set.wpp.subnat <- function(country, start.year=1950, present.year=2010, my.tfr.file=NULL, verbose=FALSE) {
+	tfr_data <- do.read.subnat.file(my.tfr.file)
+	tfr_data <- tfr_data[tfr_data$country_code == country,]
+	locations <- create.sublocation.dataset(tfr_data)
+	loc_data <- locations$loc_data
+	include <- locations$include
+	prediction.only <- locations$prediction.only
+
+	tfr_data_countries <- tfr_data[include,]
+	nr_countries_estimation <- length(tfr_data_countries[,1])
+	if(any(!is.na(prediction.only))) { # move prediction countries at the end of tfr_data
+		tfr_data_prediction <- tfr_data[prediction.only,]
+		tfr_data_countries <- rbind(tfr_data_countries, tfr_data_prediction)
+	}
+	
+	TFRmatrix.regions <- get.TFRmatrix.and.regions(tfr_data_countries, loc_data, 
+												start.year=start.year, 
+												present.year=present.year,
+												datacolnames=c(country.code='reg_code', country.name='name', reg.name='reg_name',
+															reg.code='NA', area.name='country', area.code='country_code'),
+												verbose=verbose)
+									
+	return(list(tfr_matrix=TFRmatrix.regions$tfr_matrix, 
+				tfr_matrix_all=TFRmatrix.regions$tfr_matrix_all, 
+				regions=TFRmatrix.regions$regions, 
+				nr_countries_estimation=nr_countries_estimation,
+				suppl.data=.get.suppl.data.list(NULL)
+				))
+
 }

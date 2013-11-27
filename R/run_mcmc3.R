@@ -73,6 +73,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 								), class='bayesTFR.mcmc.meta')	
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
 	meta <- bayesTFR.mcmc.meta
+	if(meta$nr.countries <= 0) return(NULL)
 	meta$parent <- mc$meta
 	meta$regions <- mc$meta$regions
 	# propagate initial values for all chains if needed
@@ -232,4 +233,27 @@ mcmc3.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbo
 
 	mcmc <- tfr3.mcmc.sampling(mcmc, thin=mcmc$thin, start.iter=mcmc$finished.iter+1, verbose=verbose, verbose.iter=verbose.iter)
 	return(mcmc)
+}
+
+run.tfr3.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+								countries = NULL, use.world.posterior = TRUE,
+								post.burnin = 2000, verbose=FALSE, ...) {
+	output.dir <- file.path(sim.dir, 'subnat')
+	world.mcmc.set <- get.tfr.mcmc(sim.dir)
+	mu.prior.range <- c(1.515, 2.1) #min(mu)
+	rho.prior.range <- c(0.365,1-.Machine$double.xmin)
+	#sigma.eps.prior.range <- c(0.05, 0.146) # min, max
+	sigma.eps.prior.range <- c(0.05, 0.3)
+	results <- list()
+	for (country in countries) {
+		country.obj <- get.country.object(country, world.mcmc.set$meta)	
+		if(verbose) 
+			cat('\nSimulating Phase III for', country.obj$name, '\n')	
+		this.output.dir <- file.path(output.dir, paste0('c', country.obj$code))
+		mcmc.set <- get.tfr.mcmc(this.output.dir)
+		results[[as.character(country.obj$code)]] <- run.tfr3.mcmc(sim.dir=this.output.dir, 
+						mu.prior.range=mu.prior.range, rho.prior.range=rho.prior.range, 
+						sigma.eps.prior.range=sigma.eps.prior.range, verbose=verbose, ...)
+	}
+	invisible(results)	
 }

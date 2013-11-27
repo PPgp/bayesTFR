@@ -53,8 +53,10 @@ get.tfr3.mcmc <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), ...) {
 	mc <- get.tfr.mcmc(file.path(sim.dir, 'phaseIII'), ...)
 	mc$meta$parent <- parent.mc$meta
 	mc$meta$regions <- parent.mc$meta$regions
-	for(chain in 1:length(mc$mcmc.list)) {
-		mc$mcmc.list[[chain]]$meta <- mc$meta
+	if(length(mc$mcmc.list) > 0) { 
+		for(chain in 1:length(mc$mcmc.list)) {
+			mc$mcmc.list[[chain]]$meta <- mc$meta
+		}
 	}
 	return(mc)					
 }

@@ -183,7 +183,7 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
 
 mcmc.meta.ini <- function(...,
 						U.c.low,
-						start.year=1950, present.year=2005, 
+						start.year=1950, present.year=2010, 
 						wpp.year=2008, my.tfr.file = NULL, 
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						verbose=FALSE
@@ -196,6 +196,8 @@ mcmc.meta.ini <- function(...,
 	mcmc.input$start.year <- start.year
 	mcmc.input$present.year <- present.year
 	mcmc.input$wpp.year <- wpp.year
+	for(par in c('psi0', 'delta0', 'delta4.0', 'sd.eps.tau0'))
+		mcmc.input[[paste0(par,'r')]] <- mcmc.input[[par]]
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
 										my.tfr.file = my.tfr.file, verbose=verbose)
 
@@ -206,7 +208,7 @@ mcmc.meta.ini <- function(...,
 	
 	
 do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_gammas = NULL, 
-						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE) {
+						average.gammas.cov=FALSE, use.default.gammas.cov=FALSE, burnin=200, verbose=FALSE) {
 	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
 	tfr_matrix_observed <- tfr.with.regions$tfr_matrix
@@ -234,11 +236,16 @@ do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_g
     	tfr_min_c <- apply(updated.tfr.matrix, 2, min, na.rm = TRUE)
     lower_U_c <- ifelse(tfr_min_c > meta$U.c.low.base, tfr_min_c, meta$U.c.low.base)
 	prop_cov_gammas <- array(NA, c(nr_countries,3,3))
-	if(use.average.gammas.cov) {
-		cov.to.average <- get.cov.gammas(sim.dir=meta$output.dir, burnin=burnin)$values
-		if (all(is.na(cov.to.average))) {
-			warning('Covariance of gamma is NA for all countries. Average from default covariance will be used.', 
+	if(average.gammas.cov) {
+		cov.to.average <- NULL
+		if(!use.default.gammas.cov) {
+			cov.to.average <- get.cov.gammas(sim.dir=meta$output.dir, burnin=burnin)$values
+			if (all(is.na(cov.to.average))) {
+				warning('Covariance of gamma is NA for all countries. Average from default covariance will be used.', 
 						immediate.=TRUE)
+			}
+		}
+		if(use.default.gammas.cov || is.null(cov.to.average)) {
 			e <- new.env()
 			data('proposal_cov_gammas_cii', envir=e)
 			cov.to.average <- e$proposal_cov_gammas_cii$values
@@ -427,7 +434,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	}
 	Emeta <- do.meta.ini(meta, tfr.with.regions=tfr.with.regions, 
 								my.tfr.file=my.tfr.file, 
-								use.average.gammas.cov=TRUE, burnin=burnin,
+								average.gammas.cov=TRUE, burnin=burnin,
 						 		verbose=verbose)
 			 		
 	# join the new meta with the existing one
@@ -545,4 +552,20 @@ mcmc.ini.extra <- function(mcmc, countries, index.replace=NULL) {
 		mcmc[[item]] <- mcmc.update[[item]]
 	}
 	return(mcmc)
+}
+
+mcmc.meta.ini.subnat <- function(meta, country,
+						start.year=1950, present.year=2010, 
+						my.tfr.file = NULL, buffer.size=1000,
+						verbose=FALSE
+					 ) {
+	# Initialize meta parameters - those that are common to all chains.
+	meta$start.year <- start.year
+	meta$present.year <- present.year
+	meta$buffer.size <- buffer.size
+	tfr.with.regions <- set.wpp.subnat(country=country, start.year=start.year, present.year=present.year,  
+										my.tfr.file = my.tfr.file, verbose=verbose)
+	this.meta <- do.meta.ini(meta, tfr.with.regions, my.tfr.file=my.tfr.file, average.gammas.cov=TRUE,
+						use.default.gammas.cov=TRUE, verbose=verbose)
+	return(structure(c(this.meta, meta), class='bayesTFR.mcmc.meta'))
 }
