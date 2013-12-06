@@ -167,8 +167,8 @@ tfr.predict.subnat <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'b
 		stop('Either nr.traj or thin must be given or use.diagnostics must be TRUE.')
 	result <- cor.mat <- NULL
 	for(country in names(mcmc.set.list)){
-		if(verbose) cat('\nCompute correlation for country', country, '...')
 		if(use.correlation) {
+			if(verbose) cat('\nCompute correlation for country', country, '...')
 			snr.traj <- nr.traj
 			sburnin <- burnin
 			if(use.diagnostics) {
@@ -186,16 +186,14 @@ tfr.predict.subnat <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'b
 				}
 			}
 			if(!has.phase3) {
-				if (is.null(rho) || is.na(rho)) {
+				if (is.null(rho) || is.na(rho)) 
 					ar1pars <- get.ar1.parameters(mu = mu, mcmc.set.list[[country]]$meta)
-					ar1pars$mu <- mu
-				}
 			}
 			cor.mat <- tfr.correlation.subnat(mcmc.set.list[[country]], burnin=sburnin, 
 							burnin3=burnin3, use.external.phase3=use.external.phase3, use.phase3.from = use.phase3.from, 
 							ar1pars=ar1pars, verbose=verbose)
-		}
-		if(verbose) cat(' done.\n')
+			if(verbose) cat(' done.\n')
+		}		
 		result[[country]] <- tfr.predict(mcmc.set=mcmc.set.list[[country]], nr.traj=nr.traj, thin=thin, burnin=burnin, 
 										use.tfr3=use.tfr3, burnin3=burnin3, 
 										mu=mu, rho=rho, use.phase3.from = use.phase3.from,
@@ -496,9 +494,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			ALLtfr.prev <- all.f_ps[,year-1,s]
 			if(use.correlation) {
 				cor.mat <- eps.correlation$low
-				hiTFR <- which(ALLtfr.prev > kappa)
+				hiTFR <- which(ALLtfr.prev >= kappa)
+				# this leaves low on spots where both countries are low
 				cor.mat[hiTFR,] <- eps.correlation$high[hiTFR,]
-        		cor.mat[,hiTFR] <- eps.correlation$high[,hiTFR]        		
+        		cor.mat[,hiTFR] <- eps.correlation$high[,hiTFR]		
         		cor.mat.no.na <- if(length(cor.mat.na)==0) cor.mat else cor.mat[-cor.mat.na, -cor.mat.na]
         		if(det(cor.mat.no.na)<1e-10) 
         			cor.mat.no.na <- zero.neg.evals(cor.mat.no.na)
@@ -1237,37 +1236,48 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 tfr.correlation.subnat <- function(mcmc.set, burnin=0, thin=1, burnin3=0, use.external.phase3=FALSE, use.phase3.from = NULL, 
 									ar1pars=NULL, kappa=5, verbose=FALSE) {
 	meta <- mcmc.set$meta
-	errs <- errs.low <- matrix(NA, nrow=meta$T_end, ncol=meta$nr_countries, 
+	errs <- is.low <- matrix(NA, nrow=meta$T_end, ncol=meta$nr_countries, 
 						dimnames=list(dimnames(meta$tfr_matrix)[[1]], meta$regions$country_code))
-	has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
 	m3 <- NULL
-	if(use.external.phase3) m3 <- get.tfr3.mcmc(sim.dir=use.phase3.from)
-	else if(has.phase3) m3 <-  get.tfr3.mcmc(sim.dir=mcmc.set$meta$output.dir)	
+	has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
+	if(has.phase3) {
+		m3 <-  get.tfr3.mcmc(sim.dir=mcmc.set$meta$output.dir)
+		if(length(m3$mcmc.list)==0) {
+			m3 <- NULL
+			has.phase3 <- FALSE
+		}
+	}
+	if(!has.phase3 && use.external.phase3) m3 <- get.tfr3.mcmc(sim.dir=use.phase3.from)	
 	if(!is.null(m3)) { 
 		iter3 <- get.total.iterations(m3$mcmc.list, burnin3)
 		thin3 <- max(floor(iter3/2000),1)			
 	}
+	.get.err <- function(i, mu, rho, sigma) return((tfr.all[i]-mu-rho*(tfr.all[i-1]-mu))/sigma)
+	.get.err.distr <- function(i, traces) 
+						return(apply(traces, 1, function(x) return(.get.err(i, x[1], x[2], x[3]))))
 	# get prediction errors
 	for (country in 1:meta$nr_countries) {
 		country.obj <- get.country.object(country, meta, index=TRUE)
+		tfr.all <- bayesTFR:::get.observed.tfr(country, meta, 'tfr_matrix_observed')
+		is.low[,country] <- tfr.all < kappa
 		dl.obs.idx <- if(max(meta$tau_c[country],1) >= meta$lambda_c[country]) c() 
 						else seq(max(meta$tau_c[country],1), meta$lambda_c[country])
-		tfr.all <- bayesTFR:::get.observed.tfr(country, meta, 'tfr_matrix_observed')
-		tfr <- tfr.all[dl.obs.idx]
-		not.na.idx <- which(!is.na(tfr))
-		tfr <- tfr[not.na.idx]
-		decr <- -diff(tfr)		
-		dlc <- tfr.get.dlcurves(tfr, mcmc.set$mcmc.list, country.obj$code, country, 
-									burnin=burnin, nr.curves=0)
-		mean.dl <- apply(dlc, 2, mean)
-		res.idx <- dl.obs.idx[not.na.idx]
-		res.idx <- res.idx[-length(res.idx)]
-		idx.high <- which(tfr[-length(tfr)] >= kappa)
-		errs.high[res.idx[idx.high],country] <- abs(decr[idx.high]-mean.dl[idx.high])
-		idx.low <- which(tfr[-length(tfr)] < kappa)
-		errs.low[res.idx[idx.low],country] <- abs(decr[idx.low]-mean.dl[idx.low])
-		if(meta$lambda_c[country] < meta$T_end_c[country])  { # points in phase III
-			p3.idx <- seq(meta$lambda_c[country]+1, meta$T_end_c[country])			
+		if(length(dl.obs.idx) > 0) { # Phase II
+			tfr <- tfr.all[dl.obs.idx]
+			not.na.idx <- which(!is.na(tfr))
+			if(length(not.na.idx) > 1) { # needs at least two points for decrements
+				tfr <- tfr[not.na.idx]
+				decr <- -diff(tfr)
+				dlc.sigma <- tfr.get.dlcurves(tfr, mcmc.set$mcmc.list, country.obj$code, country, 
+									burnin=burnin, nr.curves=0, return.sigma=TRUE)
+				dl.err <- t(apply(-dlc.sigma$dl[,-1], 1, "+", decr))/dlc.sigma$sigma[,-1]
+				res.idx <- dl.obs.idx[not.na.idx]
+				errs[res.idx[-1],country] <- apply(dl.err, 2, mean)
+				#if(country.obj$code==549) stop('')
+			}
+		}
+		if(meta$lambda_c[country] < meta$T_end_c[country])  { # Phase III
+			p3.idx <- seq(meta$lambda_c[country]+1, meta$T_end_c[country])		
 			if(!is.null(m3)) {
 				if(!use.external.phase3 && is.element(country, m3$meta$id_phase3))
 					tr <- get.tfr3.parameter.traces.cs(m3$mcmc.list, country.obj, c('mu.c', 'rho.c'), 
@@ -1275,22 +1285,43 @@ tfr.correlation.subnat <- function(mcmc.set, burnin=0, thin=1, burnin3=0, use.ex
 				else 
 					tr <- get.tfr3.parameter.traces(m3$mcmc.list, c('mu', 'rho'), 
 								burnin=burnin3, thin=thin3)
-				tr.avgs <- apply(tr, 2, mean)
+				tr <- cbind(tr, get.tfr3.parameter.traces(m3$mcmc.list, c('sigma.eps'), 
+										burnin=burnin3, thin=thin3))
+				eps.k <- NULL 
+				for(j in 1:length(p3.idx)) 
+					eps.k <- cbind(eps.k, .get.err.distr(p3.idx[j], tr))
+				errs[p3.idx, country] <- apply(eps.k, 2, mean)
 			} else  # use fixed parameters
-				tr.avgs <- c(ar1pars$mu, ar1pars$rho)
-			exp.values <- tr.avgs[1] + tr.avgs[2]*(tfr.all[p3.idx-1] - tr.avgs[1])
-			errs.low[p3.idx, country] <- abs(tfr.all[p3.idx]-exp.values)				
+				errs[p3.idx, country] <- sapply(p3.idx, .get.err, mu=ar1pars$mu, rho=ar1pars$rho, sigma=ar1pars$sigmaAR1)
 		}
 	}
-	corm.high <- cor(errs.high, use="pairwise.complete.obs")
+	corm <- cor(errs, use="pairwise.complete.obs")
+	corm[corm<0] <- 0 # truncate
+	corm <- corm - diag(nrow=nrow(corm), ncol=ncol(corm)) # subtract diagonal
+	errs.low <- errs
+	errs.low[!is.low] <- NA
 	corm.low <- cor(errs.low, use="pairwise.complete.obs")
-	avg.cor.high <- mean(corm.high-diag(nrow=nrow(corm.high), ncol=ncol(corm.high)), na.rm=TRUE)
-	avg.cor.low <- mean(corm.low-diag(nrow=nrow(corm.low), ncol=ncol(corm.low)), na.rm=TRUE)
+	corm.low[corm.low<0] <- 0 # truncate
+	corm.low <- corm.low - diag(nrow=nrow(corm.low), ncol=ncol(corm.low)) # subtract diagonal
+	errs.high <- errs
+	# This way of doing the high correlation is wrong but ok, because it affects only a few subregions.
+	# Right way is to filter out pairs that are both low. 
+	errs.high[is.low] <- NA
+	corm.high <- cor(errs.high, use="pairwise.complete.obs")
+	corm.high[corm.high<0] <- 0 # truncate
+	corm.high <- corm.high - diag(nrow=nrow(corm.high), ncol=ncol(corm.high)) # subtract diagonal
+	avg.cor.high <- if(sum(is.na(corm.high))>= length(corm.high)-nrow(corm.high)) NA else mean(corm.high, na.rm=TRUE)
+	avg.cor.low <- if(sum(is.na(corm.low))>= length(corm.low)-nrow(corm.low)) NA else mean(corm.low, na.rm=TRUE)
+	if(verbose) {
+		diag(corm.high) <- NA
+		diag(corm.low) <- NA
+		cat('\nCor: high =', round(avg.cor.high,2), ', low =', round(avg.cor.low,2))
+		cat('\nObs: high =', sum(!is.na(corm.high)), ', low =', sum(!is.na(corm.low)))
+	}
 	corm.high[] <- avg.cor.high
 	corm.low[] <- avg.cor.low
 	diag(corm.high) <- 1
 	diag(corm.low) <- 1
-	if(verbose) cat('high =', round(avg.cor.high,2), ', low =', round(avg.cor.low,2))
 	return(list(low=corm.low, high=corm.high, kappa=kappa))
 }
 

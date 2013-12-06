@@ -15,9 +15,15 @@ stop.if.country.not.DL <- function(country.obj, meta) {
     	stop('Country ', country.obj$name, ' not estimated because no decline observed.')
 }
 
-tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, nr.curves, predictive.distr=FALSE) {
+tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, nr.curves, predictive.distr=FALSE,
+								return.sigma=FALSE) {
 	# if country.code is null, get world distribution
-    dlc <- c()
+	.get.sig <- function(i, sigma, S, a, b) return(sigma + (x[i] - S)*ifelse(x[i] > S, -a, b))
+	.get.sig.distr <- function(i, traces) 
+						return(apply(traces, 1, function(y) 
+								return(pmax(.get.sig(i, y['sigma0'], y['S_sd'], y['a_sd'], y['b_sd']), mcmc$meta$sigma0.min))))
+
+    dlc <- sigma.all <- c()
     cspec <- TRUE
     if(!is.null(country.code) && !is.element(country.index, mcmc.list[[1]]$meta$id_Tistau)) {
     	U.var <- paste("U_c", country.code, sep = "")
@@ -72,25 +78,34 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, 
         dl <- t(apply(theta, 1, DLcurve, tfr = x, p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2))
         #stop('')
         if(length(x) == 1) dl <- t(dl)
-        if(predictive.distr) {
-			errors <- matrix(NA, nrow=dim(dl)[1], ncol=dim(dl)[2])
+        if(predictive.distr || return.sigma) {			
 			wp.traces <- load.tfr.parameter.traces(mcmc, 
         						burnin=th.burnin, 
 								thinning.index=thincurves.mc$index,
 								par.names=c('sigma0', 'S_sd', 'a_sd', 'b_sd'))
-  			#sigma_eps <- pmax(sigma_eps, mcmc$meta$sigma0.min)
-			n <- ncol(errors)
-			for(i in 1:nrow(errors)) {
-				sigma_eps <- pmax(wp.traces[i,'sigma0'] + (x - wp.traces[i,'S_sd'])*
-  						ifelse(x > wp.traces[i,'S_sd'], -wp.traces[i,'a_sd'], wp.traces[i,'b_sd']),
-  						mcmc$meta$sigma0.min)
-				errors[i,] <- rnorm(n, mean=0, sd=sigma_eps)
+			sigma_eps <- NULL 
+			for(j in 1:length(x)) 
+				sigma_eps <- cbind(sigma_eps, .get.sig.distr(j, wp.traces))
+			if(predictive.distr) {
+				errors <- matrix(NA, nrow=dim(dl)[1], ncol=dim(dl)[2])
+				n <- ncol(errors)
+				errors <- t(apply(sigma_eps, 1, function(sig) rnorm(n,0,sig)))
+				dlc <- rbind(dlc, dl+errors)
+			} else {
+				dlc <- rbind(dlc, dl)
+				sigma.all <- rbind(sigma.all, sigma_eps)	
 			}
-        	dlc <- rbind(dlc, dl+errors)
+			#for(i in 1:nrow(errors)) {
+			#	sigma_eps <- pmax(wp.traces[i,'sigma0'] + (x - wp.traces[i,'S_sd'])*
+  			#			ifelse(x > wp.traces[i,'S_sd'], -wp.traces[i,'a_sd'], wp.traces[i,'b_sd']),
+  			#			mcmc$meta$sigma0.min)
+			#	errors[i,] <- rnorm(n, mean=0, sd=sigma_eps)
+			#}
+        	
         } else dlc <- rbind(dlc, dl)
     }
     
-    return (dlc)
+    return (if(!return.sigma) dlc else list(dl=dlc, sigma=sigma.all))
 }
 
 DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 10, 
