@@ -195,7 +195,7 @@ tfr.predict.subnat <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'b
 			if(verbose) cat(' done.\n')
 		}		
 		result[[country]] <- tfr.predict(mcmc.set=mcmc.set.list[[country]], nr.traj=nr.traj, thin=thin, burnin=burnin, 
-										use.tfr3=use.tfr3, burnin3=burnin3, 
+										use.tfr3=use.tfr3, burnin3=burnin3, use.diagnostics=use.diagnostics,
 										mu=mu, rho=rho, use.phase3.from = use.phase3.from,
 										use.correlation=use.correlation, 
 										correlation.matrices=cor.mat, verbose=verbose, ...)
@@ -1270,7 +1270,9 @@ tfr.correlation.subnat <- function(mcmc.set, burnin=0, thin=1, burnin3=0, use.ex
 				decr <- -diff(tfr)
 				dlc.sigma <- tfr.get.dlcurves(tfr, mcmc.set$mcmc.list, country.obj$code, country, 
 									burnin=burnin, nr.curves=0, return.sigma=TRUE)
-				dl.err <- t(apply(-dlc.sigma$dl[,-1], 1, "+", decr))/dlc.sigma$sigma[,-1]
+				terr <- apply(-dlc.sigma$dl[,-1, drop=FALSE], 1, "+", decr)
+				if(length(decr) > 1) terr <- t(terr)
+				dl.err <- terr/dlc.sigma$sigma[,-1, drop=FALSE]
 				res.idx <- dl.obs.idx[not.na.idx]
 				errs[res.idx[-1],country] <- apply(dl.err, 2, mean)
 				#if(country.obj$code==549) stop('')
@@ -1297,29 +1299,39 @@ tfr.correlation.subnat <- function(mcmc.set, burnin=0, thin=1, burnin3=0, use.ex
 	}
 	corm <- cor(errs, use="pairwise.complete.obs")
 	corm[corm<0] <- 0 # truncate
-	corm <- corm - diag(nrow=nrow(corm), ncol=ncol(corm)) # subtract diagonal
+	diag(corm) <- NA
+	#corm <- corm - diag(nrow=nrow(corm), ncol=ncol(corm)) # subtract diagonal
 	errs.low <- errs
 	errs.low[!is.low] <- NA
 	corm.low <- cor(errs.low, use="pairwise.complete.obs")
 	corm.low[corm.low<0] <- 0 # truncate
-	corm.low <- corm.low - diag(nrow=nrow(corm.low), ncol=ncol(corm.low)) # subtract diagonal
+	diag(corm.low) <- NA
+	#corm.low <- corm.low - diag(nrow=nrow(corm.low), ncol=ncol(corm.low)) # subtract diagonal
 	errs.high <- errs
 	# This way of doing the high correlation is wrong but ok, because it affects only a few subregions.
 	# Right way is to filter out pairs that are both low. 
 	errs.high[is.low] <- NA
 	corm.high <- cor(errs.high, use="pairwise.complete.obs")
 	corm.high[corm.high<0] <- 0 # truncate
-	corm.high <- corm.high - diag(nrow=nrow(corm.high), ncol=ncol(corm.high)) # subtract diagonal
-	avg.cor.high <- if(sum(is.na(corm.high))>= length(corm.high)-nrow(corm.high)) NA else mean(corm.high, na.rm=TRUE)
-	avg.cor.low <- if(sum(is.na(corm.low))>= length(corm.low)-nrow(corm.low)) NA else mean(corm.low, na.rm=TRUE)
+	diag(corm.high) <- NA
+	#corm.high <- corm.high - diag(nrow=nrow(corm.high), ncol=ncol(corm.high)) # subtract diagonal
+	#avg.cor <- median(corm, na.rm=TRUE)
+	avg.cor <- mean(corm, na.rm=TRUE)
+	#avg.cor.high <- if(sum(is.na(corm.high))>= length(corm.high)-nrow(corm.high)) NA else median(corm.high, na.rm=TRUE)
+	#avg.cor.high <- median(corm.high, na.rm=TRUE)
+	avg.cor.high <- mean(corm.high, na.rm=TRUE)
+	#avg.cor.low <- if(sum(is.na(corm.low))>= length(corm.low)-nrow(corm.low)) NA else median(corm.low, na.rm=TRUE)
+	#avg.cor.low <- median(corm.low, na.rm=TRUE)
+	avg.cor.low <- mean(corm.low, na.rm=TRUE)
+	#stop('')
 	if(verbose) {
-		diag(corm.high) <- NA
-		diag(corm.low) <- NA
-		cat('\nCor: high =', round(avg.cor.high,2), ', low =', round(avg.cor.low,2))
+		cat('\nCor Avg: high =', round(avg.cor.high,2), ', low =', round(avg.cor.low,2), ', all = ', round(avg.cor,2))
+		#cat('\nCor Avg: high =', round(mean(corm.high, na.rm=TRUE),2), ', low =', round(mean(corm.low, na.rm=TRUE),2), ', all = ', round(mean(corm, na.rm=TRUE),2))
+		cat('\nCor Med: high =', round(median(corm.high, na.rm=TRUE),2), ', low =', round(median(corm.low, na.rm=TRUE),2), ', all = ', round(median(corm, na.rm=TRUE),2))
 		cat('\nObs: high =', sum(!is.na(corm.high)), ', low =', sum(!is.na(corm.low)))
 	}
-	corm.high[] <- avg.cor.high
-	corm.low[] <- avg.cor.low
+	corm.high[] <- if(is.na(avg.cor.high)) avg.cor else avg.cor.high
+	corm.low[] <- if(is.na(avg.cor.low)) avg.cor else avg.cor.low
 	diag(corm.high) <- 1
 	diag(corm.low) <- 1
 	return(list(low=corm.low, high=corm.high, kappa=kappa))

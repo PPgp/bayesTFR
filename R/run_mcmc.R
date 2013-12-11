@@ -333,10 +333,11 @@ init.nodes <- function() {
 
 run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								countries = NULL, start.year=1950, present.year=2010, 
-								nr.chains=3, iter=2000, thin=1,
+								nr.chains=3, iter=2000, thin=10,
 								my.tfr.file = NULL, use.world.posterior = TRUE,
 								post.burnin = 2000,
 								parallel=FALSE, nr.nodes=nr.chains, 
+								auto.conf = list(max.loops=5, iter=30000, iter.incr=10000, nr.chains=3, thin=40, burnin=2000),
 								verbose=FALSE, verbose.iter=100, ...) {
 	mcmc.set <- get.tfr.mcmc(sim.dir)
 	meta <- mcmc.set$meta
@@ -467,6 +468,15 @@ run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 			}
 		}
 	}
+	default.auto.conf <- formals(run.tfr.mcmc.subnat)$auto.conf
+	for (par in names(default.auto.conf))
+		if(is.null(auto.conf[[par]])) auto.conf[[par]] <- default.auto.conf[[par]]
+	auto.run <- FALSE
+	if(iter == 'auto') { # defaults for auto-run (includes convergence diagnostics)
+		iter <- auto.conf$iter
+		nr.chains <- auto.conf$nr.chains
+		auto.run <- TRUE		
+	}
 	results <- list()
 	for (country in countries) {
 		country.obj <- get.country.object(country, mcmc.set$meta)	
@@ -504,6 +514,22 @@ run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		results[[as.character(country.obj$code)]] <- structure(list(meta=bayesTFR.mcmc.meta, mcmc.list=chain.set), 
 																			class='bayesTFR.mcmc.set')
 		cat('\nResults stored in', this.output.dir,'\n')
+		if(auto.run) {
+			diag <- try(tfr.diagnose(sim.dir=this.output.dir, keep.thin.mcmc=TRUE, 
+						thin=auto.conf$thin, burnin=auto.conf$burnin,
+						verbose=verbose))
+			if(auto.conf$max.loops>1) {
+				for(loop in 2:auto.conf$max.loops) {
+					if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
+					results[[as.character(country.obj$code)]] <- continue.tfr.mcmc(
+								iter=auto.conf$iter.incr, output.dir=this.output.dir, nr.nodes=nr.nodes,
+								parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
+					diag <- try(tfr.diagnose(sim.dir=this.output.dir, keep.thin.mcmc=TRUE, 
+								thin=auto.conf$thin, burnin=auto.conf$burnin,
+								verbose=verbose))
+				}
+			}
+		}
 	}
 	if (verbose)
 		cat('\nSimulation successfully finished!!!\n')
