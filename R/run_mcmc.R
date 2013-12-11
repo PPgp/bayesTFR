@@ -439,6 +439,15 @@ run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		meta$sd.eps.tau0r <- sqrt(gfit$estimate['rate']/gfit$estimate['shape'])
 		meta$nu.tau <- gfit$estimate['shape']*2
 	}
+	default.auto.conf <- formals(run.tfr.mcmc.subnat)$auto.conf
+	for (par in names(default.auto.conf))
+		if(is.null(auto.conf[[par]])) auto.conf[[par]] <- default.auto.conf[[par]]
+	auto.run <- FALSE
+	if(iter == 'auto') { # defaults for auto-run (includes convergence diagnostics)
+		iter <- auto.conf$iter
+		nr.chains <- auto.conf$nr.chains
+		auto.run <- TRUE		
+	}
 	# starting values (length of 1 or nr.chains)
 	S.ini <- with(meta, ifelse(rep(nr.chains==1, nr.chains), 
 					 		(S.low+S.up)/2, seq(S.low, to=S.up, length=nr.chains))) 
@@ -467,15 +476,6 @@ run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 			assign(var, rep(get(var)[1], nr.chains))
 			}
 		}
-	}
-	default.auto.conf <- formals(run.tfr.mcmc.subnat)$auto.conf
-	for (par in names(default.auto.conf))
-		if(is.null(auto.conf[[par]])) auto.conf[[par]] <- default.auto.conf[[par]]
-	auto.run <- FALSE
-	if(iter == 'auto') { # defaults for auto-run (includes convergence diagnostics)
-		iter <- auto.conf$iter
-		nr.chains <- auto.conf$nr.chains
-		auto.run <- TRUE		
 	}
 	results <- list()
 	for (country in countries) {
