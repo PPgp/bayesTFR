@@ -237,13 +237,15 @@ mcmc3.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbo
 
 run.tfr3.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								countries = NULL, use.world.posterior = TRUE,
-								post.burnin = 2000, verbose=FALSE, ...) {
+								post.burnin = 2000, 
+								auto.conf = list(max.loops=5, iter=30000, iter.incr=10000, nr.chains=3, thin=40, burnin=2000),
+								verbose=FALSE, ...) {
 	output.dir <- file.path(sim.dir, 'subnat')
 	world.mcmc.set <- get.tfr.mcmc(sim.dir)
 	mu.prior.range <- c(1.515, 2.1) #min(mu)
 	rho.prior.range <- c(0.365,1-.Machine$double.xmin)
 	#sigma.eps.prior.range <- c(0.05, 0.146) # min, max
-	sigma.eps.prior.range <- c(0.05, 0.3)
+	sigma.eps.prior.range <- c(0.05, 0.5)
 	results <- list()
 	for (country in countries) {
 		country.obj <- get.country.object(country, world.mcmc.set$meta)	
@@ -253,7 +255,7 @@ run.tfr3.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		mcmc.set <- get.tfr.mcmc(this.output.dir)
 		results[[as.character(country.obj$code)]] <- run.tfr3.mcmc(sim.dir=this.output.dir, 
 						mu.prior.range=mu.prior.range, rho.prior.range=rho.prior.range, 
-						sigma.eps.prior.range=sigma.eps.prior.range, verbose=verbose, ...)
+						sigma.eps.prior.range=sigma.eps.prior.range, auto.conf=auto.conf, verbose=verbose, ...)
 	}
 	invisible(results)	
 }

@@ -151,8 +151,9 @@ tfr.predict.subnat <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'b
 								countries = NULL, nr.traj = NULL, thin = NULL, burnin=2000,  use.diagnostics=FALSE,
 								use.tfr3=TRUE, burnin3=10000,
 								mu=2.1, rho=0.8859,
-								use.phase3.from = NULL, use.correlation=FALSE, 
-								 ..., verbose=TRUE) {
+								use.phase3.from = NULL, use.correlation=FALSE, cor.method=c('bayes', 'median', 'mean'),
+								cor.start.year=NULL,
+								output.dir = NULL, ..., verbose=TRUE) {
 	if(is.null(mcmc.set.list)) {
 		cdirs <- list.files(file.path(sim.dir, 'subnat'), pattern='^c[0-9]+', full.names=TRUE)
 		for(i in 1:length(cdirs)) {
@@ -166,6 +167,7 @@ tfr.predict.subnat <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'b
 	if(is.null(nr.traj) && is.null(thin) && !use.diagnostics)
 		stop('Either nr.traj or thin must be given or use.diagnostics must be TRUE.')
 	result <- cor.mat <- NULL
+	outdir <- NULL
 	for(country in names(mcmc.set.list)){
 		if(use.correlation) {
 			if(verbose) cat('\nCompute correlation for country', country, '...')
@@ -189,16 +191,19 @@ tfr.predict.subnat <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'b
 				if (is.null(rho) || is.na(rho)) 
 					ar1pars <- get.ar1.parameters(mu = mu, mcmc.set.list[[country]]$meta)
 			}
-			cor.mat <- tfr.correlation.subnat(mcmc.set.list[[country]], burnin=sburnin, 
+			cor.mat <- tfr.correlation.subnat(mcmc.set.list[[country]], method=cor.method, burnin=sburnin, 
 							burnin3=burnin3, use.external.phase3=use.external.phase3, use.phase3.from = use.phase3.from, 
-							ar1pars=ar1pars, verbose=verbose)
+							ar1pars=ar1pars, cor.start.year=cor.start.year, verbose=verbose)
 			if(verbose) cat(' done.\n')
+		}
+		if(!is.null(output.dir)) {
+			outdir <- file.path(output.dir, 'subnat', paste0('c', country))
 		}		
 		result[[country]] <- tfr.predict(mcmc.set=mcmc.set.list[[country]], nr.traj=nr.traj, thin=thin, burnin=burnin, 
 										use.tfr3=use.tfr3, burnin3=burnin3, use.diagnostics=use.diagnostics,
 										mu=mu, rho=rho, use.phase3.from = use.phase3.from,
 										use.correlation=use.correlation, 
-										correlation.matrices=cor.mat, verbose=verbose, ...)
+										correlation.matrices=cor.mat, output.dir=outdir, verbose=verbose, ...)
 	}
 	return(result)
 }
@@ -499,7 +504,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				cor.mat[hiTFR,] <- eps.correlation$high[hiTFR,]
         		cor.mat[,hiTFR] <- eps.correlation$high[,hiTFR]		
         		cor.mat.no.na <- if(length(cor.mat.na)==0) cor.mat else cor.mat[-cor.mat.na, -cor.mat.na]
-        		if(det(cor.mat.no.na)<1e-10) 
+        		if(!is.cor.positive.definite(cor.mat.no.na))
         			cor.mat.no.na <- zero.neg.evals(cor.mat.no.na)
         	} 
         	stop.country.loop <- FALSE
@@ -665,25 +670,31 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	invisible(bayesTFR.prediction)
 }
 
+is.cor.positive.definite <- function(m, tol = 1e-06) {
+	E <- eigen(m, symmetric=TRUE)
+	ev <- E$values
+    return(all(ev >= -tol * abs(ev[1L])))
+}
+
 zero.neg.evals <- function(eps.cor)
 {
 	zero <- 1e-10 
-        E <- eigen(eps.cor,symmetric=TRUE)
+	E <- eigen(eps.cor,symmetric=TRUE)
 
     # compute eigenvectors/-values
-        V   <- E$vectors
-        D   <- E$values
+	V   <- E$vectors
+	D   <- E$values
 
-        # replace negative eigenvalues by zero
-        D   <- pmax(D,zero)
+	# replace negative eigenvalues by zero
+	D   <- pmax(D,zero)
 
-        # reconstruct correlation matrix
-        new.cor.mat  <- V %*% diag(D) %*% t(V)
+	# reconstruct correlation matrix
+	new.cor.mat  <- V %*% diag(D) %*% t(V)
 
-        # rescale correlation matrix
-        T   <- 1/sqrt(diag(new.cor.mat))
-        TT  <- outer(T,T)
-        return(new.cor.mat * TT)
+	# rescale correlation matrix
+	T   <- 1/sqrt(diag(new.cor.mat))
+	TT  <- outer(T,T)
+	return(new.cor.mat * TT)
 }
 
 
@@ -1233,9 +1244,13 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 	return(list(low=low.eps.cor, high=high.eps.cor, kappa=kappa))
 }
 
-tfr.correlation.subnat <- function(mcmc.set, burnin=0, thin=1, burnin3=0, use.external.phase3=FALSE, use.phase3.from = NULL, 
-									ar1pars=NULL, kappa=5, verbose=FALSE) {
+tfr.correlation.subnat <- function(mcmc.set, 
+								method=c('meth10', 'meth9', 'meth8', 'meth7', 'meth6', 'meth5', 'bayes.mean', 'bayes.mode', 'median', 'mean'), 
+									burnin=0, thin=1, burnin3=0, 
+									use.external.phase3=FALSE, use.phase3.from = NULL, 
+									ar1pars=NULL, kappa=5, cor.start.year=NULL, verbose=FALSE, ...) {
 	meta <- mcmc.set$meta
+	method <- match.arg(method)
 	errs <- is.low <- matrix(NA, nrow=meta$T_end, ncol=meta$nr_countries, 
 						dimnames=list(dimnames(meta$tfr_matrix)[[1]], meta$regions$country_code))
 	m3 <- NULL
@@ -1262,6 +1277,8 @@ tfr.correlation.subnat <- function(mcmc.set, burnin=0, thin=1, burnin3=0, use.ex
 		is.low[,country] <- tfr.all < kappa
 		dl.obs.idx <- if(max(meta$tau_c[country],1) >= meta$lambda_c[country]) c() 
 						else seq(max(meta$tau_c[country],1), meta$lambda_c[country])
+		start.idx <- if(is.null(cor.start.year)) 1 else which(as.integer(names(tfr.all)) >= cor.start.year)[1]
+		dl.obs.idx <- dl.obs.idx[dl.obs.idx>=start.idx]
 		if(length(dl.obs.idx) > 0) { # Phase II
 			tfr <- tfr.all[dl.obs.idx]
 			not.na.idx <- which(!is.na(tfr))
@@ -1279,7 +1296,8 @@ tfr.correlation.subnat <- function(mcmc.set, burnin=0, thin=1, burnin3=0, use.ex
 			}
 		}
 		if(meta$lambda_c[country] < meta$T_end_c[country])  { # Phase III
-			p3.idx <- seq(meta$lambda_c[country]+1, meta$T_end_c[country])		
+			p3.idx <- seq(meta$lambda_c[country]+1, meta$T_end_c[country])
+			p3.idx <- p3.idx[p3.idx >= start.idx]		
 			if(!is.null(m3)) {
 				if(!use.external.phase3 && is.element(country, m3$meta$id_phase3))
 					tr <- get.tfr3.parameter.traces.cs(m3$mcmc.list, country.obj, c('mu.c', 'rho.c'), 
@@ -1297,44 +1315,21 @@ tfr.correlation.subnat <- function(mcmc.set, burnin=0, thin=1, burnin3=0, use.ex
 				errs[p3.idx, country] <- sapply(p3.idx, .get.err, mu=ar1pars$mu, rho=ar1pars$rho, sigma=ar1pars$sigmaAR1)
 		}
 	}
-	corm <- cor(errs, use="pairwise.complete.obs")
-	corm[corm<0] <- 0 # truncate
-	diag(corm) <- NA
-	#corm <- corm - diag(nrow=nrow(corm), ncol=ncol(corm)) # subtract diagonal
-	errs.low <- errs
-	errs.low[!is.low] <- NA
-	corm.low <- cor(errs.low, use="pairwise.complete.obs")
-	corm.low[corm.low<0] <- 0 # truncate
-	diag(corm.low) <- NA
-	#corm.low <- corm.low - diag(nrow=nrow(corm.low), ncol=ncol(corm.low)) # subtract diagonal
-	errs.high <- errs
-	# This way of doing the high correlation is wrong but ok, because it affects only a few subregions.
-	# Right way is to filter out pairs that are both low. 
-	errs.high[is.low] <- NA
-	corm.high <- cor(errs.high, use="pairwise.complete.obs")
-	corm.high[corm.high<0] <- 0 # truncate
-	diag(corm.high) <- NA
-	#corm.high <- corm.high - diag(nrow=nrow(corm.high), ncol=ncol(corm.high)) # subtract diagonal
-	#avg.cor <- median(corm, na.rm=TRUE)
-	avg.cor <- mean(corm, na.rm=TRUE)
-	#avg.cor.high <- if(sum(is.na(corm.high))>= length(corm.high)-nrow(corm.high)) NA else median(corm.high, na.rm=TRUE)
-	#avg.cor.high <- median(corm.high, na.rm=TRUE)
-	avg.cor.high <- mean(corm.high, na.rm=TRUE)
-	#avg.cor.low <- if(sum(is.na(corm.low))>= length(corm.low)-nrow(corm.low)) NA else median(corm.low, na.rm=TRUE)
-	#avg.cor.low <- median(corm.low, na.rm=TRUE)
-	avg.cor.low <- mean(corm.low, na.rm=TRUE)
-	#stop('')
-	if(verbose) {
-		cat('\nCor Avg: high =', round(avg.cor.high,2), ', low =', round(avg.cor.low,2), ', all = ', round(avg.cor,2))
-		#cat('\nCor Avg: high =', round(mean(corm.high, na.rm=TRUE),2), ', low =', round(mean(corm.low, na.rm=TRUE),2), ', all = ', round(mean(corm, na.rm=TRUE),2))
-		cat('\nCor Med: high =', round(median(corm.high, na.rm=TRUE),2), ', low =', round(median(corm.low, na.rm=TRUE),2), ', all = ', round(median(corm, na.rm=TRUE),2))
-		cat('\nObs: high =', sum(!is.na(corm.high)), ', low =', sum(!is.na(corm.low)))
-	}
-	corm.high[] <- if(is.na(avg.cor.high)) avg.cor else avg.cor.high
-	corm.low[] <- if(is.na(avg.cor.low)) avg.cor else avg.cor.low
-	diag(corm.high) <- 1
-	diag(corm.low) <- 1
-	return(list(low=corm.low, high=corm.high, kappa=kappa))
+	ind <- apply(errs, 1, function(x) all(is.na(x)))
+	errs <- errs[!ind,]
+	is.low <- is.low[!ind,]
+	cormat <- switch(method,
+				bayes.mean = cor.bayes(errs, is.low, method='mean', verbose=verbose, ...),
+				bayes.mode = cor.bayes(errs, is.low, method='mode', verbose=verbose, ...),
+				meth5 = cor.bayes(errs, is.low, method='mean', scale.errors=TRUE, verbose=verbose, ...),
+				meth6 = cor.bayes(errs, is.low, method='mode', scale.errors=TRUE, verbose=verbose, ...),
+				meth7 = cor.modified(errs, is.low, verbose=verbose, ...),
+				meth8 = cor.moments2(errs, is.low, verbose=verbose, ...),
+				meth9 = cor.method9(errs, is.low, verbose=verbose, ...),
+				meth10 = cor.bayes.meth10(errs, is.low, verbose=verbose, ...),
+				cor.moments(errs, is.low, method=method, verbose=verbose, ...)
+				)
+	return(c(cormat, list(kappa=kappa)))
 }
 
 "get.data.imputed" <- function(pred, ...) UseMethod("get.data.imputed")
