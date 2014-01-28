@@ -1,5 +1,4 @@
 \name{tfr.predict}
-\Rdversion{1.1}
 \alias{tfr.predict}
 \alias{bayesTFR.prediction}
 
@@ -7,7 +6,7 @@
 Generating Posterior Trajectories of the Total Fertility Rate
 }
 \description{
-Using the posterior parameter samples simulated by \code{\link{run.tfr.mcmc}} (and possibly \code{\link{run.tfr3.mcmc}}) the function  generates posterior trajectories for the total fertility rate for all countries of the world.
+Using the posterior parameter samples simulated by \code{\link{run.tfr.mcmc}} (and possibly \code{\link{run.tfr3.mcmc}}) the function  generates posterior trajectories of the total fertility rate for all countries of the world.
 }
 \usage{
 tfr.predict(mcmc.set = NULL, end.year = 2100, 

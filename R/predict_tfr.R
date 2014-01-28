@@ -149,7 +149,7 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 
 tfr.predict.subnat <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								countries = NULL, nr.traj = NULL, thin = NULL, burnin=2000,  use.diagnostics=FALSE,
-								use.tfr3=TRUE, burnin3=10000,
+								use.tfr3=TRUE, burnin3=2000,
 								mu=2.1, rho=0.8859,
 								use.phase3.from = NULL, use.correlation=FALSE, cor.method=c('bayes', 'median', 'mean'),
 								cor.start.year=NULL,
@@ -327,7 +327,9 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		if((is.null(mcmc3) || length(mcmc3$meta$id_phase3)<=0) && !is.null(use.phase3.from)) {
 			mcmc3 <- get.tfr3.mcmc(use.phase3.from) # use external phase3 parameters
 			mcmc3$meta$id_phase3 <- c()             # only hierarchical pars. to be used
-			if (verbose) cat('Using Phase III model from\n', use.phase3.from, '\n')
+			if (has.tfr.prediction(sim.dir=use.phase3.from)) 
+				burnin3 <- get.tfr.prediction(use.phase3.from)$burnin3
+			if (verbose) cat('Using Phase III model (with burnin=', burnin3, ') from\n', use.phase3.from, '\n')
 		}
 					
 		total.iter <- get.stored.mcmc.length(mcmc3$mcmc.list, burnin3)
@@ -1262,7 +1264,11 @@ tfr.correlation.subnat <- function(mcmc.set,
 			has.phase3 <- FALSE
 		}
 	}
-	if(!has.phase3 && use.external.phase3) m3 <- get.tfr3.mcmc(sim.dir=use.phase3.from)	
+	if(!has.phase3 && use.external.phase3) {
+		m3 <- get.tfr3.mcmc(sim.dir=use.phase3.from)
+		if (has.tfr.prediction(sim.dir=use.phase3.from)) 
+			burnin3 <- get.tfr.prediction(use.phase3.from)$burnin3
+	}	
 	if(!is.null(m3)) { 
 		iter3 <- get.total.iterations(m3$mcmc.list, burnin3)
 		thin3 <- max(floor(iter3/2000),1)			

@@ -24,7 +24,6 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 				runif(nr.chains, range[1], range[2])
 				)
 	}
-
 	mc <- get.tfr.mcmc(sim.dir)
 	output.dir <- file.path(sim.dir, 'phaseIII')
 	if(file.exists(output.dir)) {
@@ -235,27 +234,55 @@ mcmc3.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbo
 	return(mcmc)
 }
 
-run.tfr3.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-								countries = NULL, use.world.posterior = TRUE,
-								post.burnin = 2000, 
+run.tfr3.mcmc.subnat <- function(countries, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+								iter = 30000,
+								use.world.posterior = FALSE, world.sim.dir = sim.dir,
+								post.burnin = 10000, 
 								auto.conf = list(max.loops=5, iter=30000, iter.incr=10000, nr.chains=3, thin=40, burnin=2000),
 								verbose=FALSE, ...) {
 	output.dir <- file.path(sim.dir, 'subnat')
-	world.mcmc.set <- get.tfr.mcmc(sim.dir)
-	mu.prior.range <- c(1.515, 2.1) #min(mu)
-	rho.prior.range <- c(0.365,1-.Machine$double.xmin)
-	#sigma.eps.prior.range <- c(0.05, 0.146) # min, max
-	sigma.eps.prior.range <- c(0.05, 0.5)
+	if(is.null(world.sim.dir)) world.sim.dir <- sim.dir
+	world.mcmc.set <- get.tfr.mcmc(world.sim.dir)
+	meta <- list()
+	meta$sigma.mu.prior.range <- eval(formals(run.tfr3.mcmc)$sigma.mu.prior.range)
+	meta$sigma.rho.prior.range <- eval(formals(run.tfr3.mcmc)$sigma.rho.prior.range)
+	if(!use.world.posterior) {
+		meta$mu.prior.range <- c(1.515, 2.1) #min(mu)
+		meta$rho.prior.range <- c(0.365,1-.Machine$double.xmin)
+		#meta$sigma.eps.prior.range <- c(0.05, 0.146) # min, max
+		meta$sigma.eps.prior.range <- c(0.05, 0.5)
+	} else {
+		mcmc.set <- get.tfr3.mcmc(world.sim.dir)
+		if(has.tfr.prediction(sim.dir=world.sim.dir)) {
+			p <- get.tfr.prediction(sim.dir=world.sim.dir)
+			post.burnin <- p$burnin3
+		}
+		l <- mcmc.set$mcmc.list[[1]]$finished.iter
+		if(post.burnin > l) {
+			post.burnin <- as.integer(l/2)
+			warning('post.burnin larger than MCMC length. Adjusted to ', post.burnin)
+		}
+		m <- get.tfr3.mcmc(world.sim.dir)
+		ml <- get.mcmc.list(m)
+		tr <- as.vector(get.tfr3.parameter.traces(ml, 'mu', burnin=post.burnin))
+		meta$mu.prior.range <- c(min(tr), 2.1)
+		tr <- as.vector(get.tfr3.parameter.traces(ml, 'rho', burnin=post.burnin))
+		meta$rho.prior.range <- c(min(tr),1-.Machine$double.xmin)
+		tr <- as.vector(get.tfr3.parameter.traces(ml, 'sigma.eps', burnin=post.burnin))
+		meta$sigma.eps.prior.range <- c(min(tr), 0.5)
+	}
+	if(verbose)
+		print(tfr3.priors(meta))
+		
 	results <- list()
 	for (country in countries) {
 		country.obj <- get.country.object(country, world.mcmc.set$meta)	
 		if(verbose) 
 			cat('\nSimulating Phase III for', country.obj$name, '\n')	
 		this.output.dir <- file.path(output.dir, paste0('c', country.obj$code))
-		mcmc.set <- get.tfr.mcmc(this.output.dir)
-		results[[as.character(country.obj$code)]] <- run.tfr3.mcmc(sim.dir=this.output.dir, 
-						mu.prior.range=mu.prior.range, rho.prior.range=rho.prior.range, 
-						sigma.eps.prior.range=sigma.eps.prior.range, auto.conf=auto.conf, verbose=verbose, ...)
+		results[[as.character(country.obj$code)]] <- run.tfr3.mcmc(sim.dir=this.output.dir, iter=iter, 
+						mu.prior.range=meta$mu.prior.range, rho.prior.range=meta$rho.prior.range, 
+						sigma.eps.prior.range=meta$sigma.eps.prior.range, auto.conf=auto.conf, verbose=verbose, ...)
 	}
 	invisible(results)	
 }

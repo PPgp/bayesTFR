@@ -49,7 +49,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{nr.chains}{Number of MCMC chains to run.}
-  \item{iter}{Number of iterations to run in each chain. In addition to a single value, it can have the value \sQuote{auto} in which case the function runs for the number of iterations given in the \code{auto.conf} list (see below), then checks if the MCMCs converged (using the \code{auto.conf} settings). If it did not converge, the procedure is repeated until convergence is reached or the number of repetition exceeded \code{auto.conf$max.loops}.}
+  \item{iter}{Number of iterations to run in each chain. In addition to a single value, it can have the value \sQuote{auto} in which case the function runs for the number of iterations given in the \code{auto.conf} list (see below), then checks if the MCMCs converged (using the \code{auto.conf} settings). If it did not converge, the procedure is repeated until convergence is reached or the number of repetitions exceeded \code{auto.conf$max.loops}.}
   \item{output.dir}{Directory which the simulation output should be written into.}
   \item{thin}{Thinning interval between consecutive observations to be stored on disk.}
   \item{replace.output}{If \code{TRUE}, existing outputs in \code{output.dir} will be replaced by results of this simulation.}

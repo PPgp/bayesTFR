@@ -185,17 +185,24 @@ cor.bayes.meth10 <- function(errs, is.low, verbose=FALSE, ...) {
 				ss[2] <- sum(err[idx,s]^2)
 				ss[3] <- sum(err[idx,r] * err[idx,s])
 				n <- sum(idx)
-				cor.res[[what]][r,s] <- integrate(rhofcn.nom, 0, 1, ss=ss, n=n)$value / integrate(rhofcn.denom, 0, 1, ss=ss, n=n)$value
+				integ <- try(integrate(rhofcn.nom, 0, 1, ss=ss, n=n)$value / integrate(rhofcn.denom, 0, 1, ss=ss, n=n)$value)
+				cor.res[[what]][r,s] <- if(!inherits(integ, "try-error")) integ else NA
 				cor.res[[what]][s,r] <- cor.res[[what]][r,s] 
 			}
 		}
-		m <- mean(cor.res[[what]], na.rm=TRUE)
-		diag(cor.res[[what]]) <- 1
-		cor.res[[what]][is.na(cor.res[[what]])] <- m
+		diag(cor.res[[what]]) <- NA
+		if(all(is.na(cor.res[[what]]))) cor.res[[what]] <- NULL
+		else {
+			m <- mean(cor.res[[what]], na.rm=TRUE)
+			if(what == 'low')
+				med <- median(cor.res$low, na.rm=TRUE)
+			diag(cor.res[[what]]) <- 1
+			cor.res[[what]][is.na(cor.res[[what]])] <- m	
+		}
 	}
 	if(verbose) 
-		cat('\nCor 10: ', round(median(cor.res$low, na.rm=TRUE),2))
-	return(list(low=cor.res$low, high=cor.res$high, corcoef=median(cor.res$low, na.rm=TRUE)))
+		cat('\nCor 10: ', round(med,2))
+	return(list(low=cor.res$low, high=if(is.null(cor.res$high)) cor.res$low else cor.res$high, corcoef=med))
 }
 
 rhofcn.nom <- function(rho, ss, n) {

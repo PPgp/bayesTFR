@@ -331,18 +331,19 @@ init.nodes <- function() {
 	library(bayesTFR)
 }
 
-run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-								countries = NULL, start.year=1950, present.year=2010, 
-								nr.chains=3, iter=2000, thin=10,
-								my.tfr.file = NULL, use.world.posterior = TRUE,
-								post.burnin = 2000,
-								parallel=FALSE, nr.nodes=nr.chains, 
+run.tfr.mcmc.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+								nr.chains=3, iter=30000, thin=10,
+								start.year=1950, present.year=2010, 								
+								use.world.posterior = FALSE, world.sim.dir = sim.dir,
+								post.burnin = 2000, buffer.size=100,
+								seed = NULL, parallel=FALSE, nr.nodes=nr.chains, compression.type='None',
 								auto.conf = list(max.loops=5, iter=30000, iter.incr=10000, nr.chains=3, thin=40, burnin=2000),
 								verbose=FALSE, verbose.iter=100, ...) {
-	mcmc.set <- get.tfr.mcmc(sim.dir)
+	if(is.null(world.sim.dir)) world.sim.dir <- sim.dir
+	mcmc.set <- get.tfr.mcmc(world.sim.dir)
 	meta <- mcmc.set$meta
 	output.dir <- file.path(sim.dir, 'subnat')
-	if(!file.exists(output.dir)) dir.create(output.dir)
+	if(!file.exists(output.dir)) dir.create(output.dir, recursive=TRUE)
 	# modify priors of hyper-paramters using posterior of a world-country simulation
 	if(!use.world.posterior) {
 		meta$S.low <- 3.503
@@ -372,16 +373,16 @@ run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		meta$sd.eps.tau0r <- 0.364
 		meta$nu.tau0 <- 142.914
 	} else {
-		has.pred <- has.tfr.prediction(mcmc.set)
-		if(has.pred) 
-			m <- get.tfr.prediction(sim.dir)$mcmc.set
+		library(MASS)
+		if(has.tfr.prediction(sim.dir=world.sim.dir))
+			m <- get.tfr.prediction(world.sim.dir)$mcmc.set
 		else {
 			l <- mcmc.set$mcmc.list[[1]]$finished.iter
 			if(post.burnin > l) {
 				post.burnin <- as.integer(l/2)
 				warning('post.burnin larger than MCMC length. Adjusted to ', post.burnin)
 			}
-			m <- get.tfr.mcmc(sim.dir, burnin=post.burnin)
+			m <- get.tfr.mcmc(world.sim.dir, burnin=post.burnin)
 		}
 		ml <- get.mcmc.list(m)
 		
@@ -407,8 +408,8 @@ run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		meta$chi0 <- mean(tr)
 		meta$psi0 <- sd(tr)
 		tr <- get.tfr.parameter.traces(ml, 'alpha')
-		meta$alpha0.p <- apply(tr1, 2, mean)
-		meta$delta0 <- max(apply(tr1, 2, sd))
+		meta$alpha0.p <- apply(tr, 2, mean)
+		meta$delta0 <- max(apply(tr, 2, sd))
 		tr <- as.vector(get.tfr.parameter.traces(ml, 'Triangle4'))
 		meta$Triangle4.0 <- mean(tr)
 		meta$delta4.0 <- sd(tr)
@@ -428,8 +429,8 @@ run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 			dr <- c(dr, sqrt(gfit$estimate['rate']/gfit$estimate['shape']))
 			nur <- c(nur, gfit$estimate['shape']*2)
 		}
-		meta$delta0r <- max(dr)
-		meta$nu.delta0 <- max(nur)
+		meta$delta0r <- min(dr)
+		meta$nu.delta0 <- min(nur)
 		tr <- as.vector(get.tfr.parameter.traces(ml, 'delta4'))
 		gfit <- fitdistr(1/(tr)^2, 'gamma')
 		meta$delta4.0r <- sqrt(gfit$estimate['rate']/gfit$estimate['shape'])
@@ -437,8 +438,14 @@ run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		tr <- as.vector(get.tfr.parameter.traces(ml, 'sd_eps_tau'))
 		gfit <- fitdistr(1/(tr)^2, 'gamma')
 		meta$sd.eps.tau0r <- sqrt(gfit$estimate['rate']/gfit$estimate['shape'])
-		meta$nu.tau <- gfit$estimate['shape']*2
+		meta$nu.tau0 <- gfit$estimate['shape']*2
 	}
+	if(verbose)
+		print(tfr.priors(meta))
+	
+	meta$buffer.size <- buffer.size
+	meta$compression.type <- compression.type
+
 	default.auto.conf <- formals(run.tfr.mcmc.subnat)$auto.conf
 	for (par in names(default.auto.conf))
 		if(is.null(auto.conf[[par]])) auto.conf[[par]] <- default.auto.conf[[par]]
@@ -448,6 +455,7 @@ run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		nr.chains <- auto.conf$nr.chains
 		auto.run <- TRUE		
 	}
+	if(!is.null(seed)) set.seed(seed)
 	# starting values (length of 1 or nr.chains)
 	S.ini <- with(meta, ifelse(rep(nr.chains==1, nr.chains), 
 					 		(S.low+S.up)/2, seq(S.low, to=S.up, length=nr.chains))) 
@@ -484,9 +492,6 @@ run.tfr.mcmc.subnat <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 			cat('\nSimulating Phase II for', country.obj$name, '\n')							
 		ini <- mcmc.meta.ini.subnat(meta, country=country.obj$code, my.tfr.file=my.tfr.file, 
 									start.year=start.year, present.year=present.year, verbose=verbose)
-		# setting priors
-		s <- summary(coda.list.mcmc(mcmc.set, country=country.obj$code, par.names=tfr.parameter.names(trans=FALSE), 
-						par.names.cs=tfr.parameter.names.cs(trans=FALSE)))
 		this.output.dir <- file.path(output.dir, paste0('c', country.obj$code))
 		ini$output.dir <- this.output.dir
 		if(file.exists(this.output.dir)) unlink(this.output.dir, recursive=TRUE)
