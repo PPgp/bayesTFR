@@ -318,6 +318,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	mid.years <- as.integer(c(if(suppl.T > 0) rownames(mcmc.set$meta$suppl.data$tfr_matrix) else c(), rownames(tfr_matrix_reconstructed)))
 	thin3 <- NA
 	has.phase3 <- use.tfr3
+	mu.c.mean <- rho.c.mean <- NULL
 	if(has.phase3) {
 		mcmc3 <- NULL
 		if(is.null(mcmc3.set)) {
@@ -339,7 +340,12 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		m3.par.values <- get.tfr3.parameter.traces(mcmc3$mcmc.list, par.names=c('mu', 'rho', 'sigma.eps'), 
 								thinning.index=thinning.index, burnin=burnin3)
 		thin3 <- (thinning.index[2]-thinning.index[1])*mcmc3$mcmc.list[[1]]$thin
-		if(dim(m3.par.values)[1] != nr_simu) stop('Mismatch in length of MCMCs for phase 2 and 3.')				
+		if(dim(m3.par.values)[1] != nr_simu) stop('Mismatch in length of MCMCs for phase 2 and 3.')
+		# used for the resulting prediction object
+		mu <- mean(m3.par.values[,'mu'])
+		rho <- mean(m3.par.values[,'rho'])
+		sigmaAR1 <- mean(m3.par.values[,'sigma.eps'])
+		mu.c.mean <- rho.c.mean <- rep(NA, nr_countries)
 	}
 	max.nr.project <- nr_project
 	all.T_end.min <- ltfr_matrix.all
@@ -424,9 +430,12 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		max.nr.project <- max(max.nr.project, nr_project + nmissing[[country]])
 		
 		# load phase3 country-specific parameter traces
-		if(has.phase3 && is.element(country, mcmc3$meta$id_phase3)) 
+		if(has.phase3 && is.element(country, mcmc3$meta$id_phase3)) {
 			m3.par.values.cs.list[[country]] <- get.tfr3.parameter.traces.cs(mcmc3$mcmc.list, country.obj=country.obj,
 											par.names=c('mu.c', 'rho.c'), burnin=burnin3, thinning.index=thinning.index)
+			mu.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,1])
+			rho.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,2])
+		}
 	} # end country prep loop
 	
 	if(use.correlation) {
@@ -471,7 +480,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	country.loop.max <- 20
 	status.for.gui <- paste('out of', nr_simu, 'trajectories.')
 	gui.options <- list()
-	if (verbose) verbose.iter <- max(1, nr_simu/100)
+	if (verbose) verbose.iter <- as.integer(max(1, nr_simu/100))
 	#########################################
 	for (s in 1:nr_simu){ # Iterate over trajectories
 	#########################################
@@ -593,13 +602,14 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		                }
 					} else { # Phase III
 						new.tfr <- (mu.c[country] + rho.c[country]*(all.f_ps[icountry,year-1,s] - mu.c[country]) 
-										- W[icountry,year]*S11[icountry])
+										- W[icountry,year]*S11[icountry])						
 						if(!use.correlation || is.na(epsilons[country])) {
+							passed <- FALSE
 	 						for(i in 1:50){
 	 							err <- rnorm(1, 0, sigma.epsAR1[[country]][year-1])
-	 							if (new.tfr + err > 0.5 )   break
+	 							if (new.tfr + err > 0.5 ) {passed <- TRUE; break}
 							}
-							if(i>50) err <- 0.5 - new.tfr
+							if(!passed) err <- 0.5 - new.tfr
 						} else { # joint predictions
 							err <- sigma.epsAR1[[country]][year-1]*epsilons[country]
 							if(err < 0.5 - new.tfr) {
@@ -656,7 +666,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				nr.projections=nr_project,
 				burnin=burnin, thin=thin,
 				end.year=end.year, use.tfr3=has.phase3, burnin3=burnin3, thin3=thin3,
-				mu=mu, rho=rho,  sigma_t = sigmas_all, sigmaAR1 = sigmaAR1,
+				mu=mu, rho=rho, sigmaAR1 = sigmaAR1, mu.c=mu.c.mean, rho.c=rho.c.mean,
 				use.correlation=use.correlation, start.year=start.year,
 				present.year.index=present.year.index,
 				present.year.index.all=ltfr_matrix.all),
@@ -1247,7 +1257,7 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 }
 
 tfr.correlation.subnat <- function(mcmc.set, 
-								method=c('meth10', 'meth9', 'meth8', 'meth7', 'meth6', 'meth5', 'bayes.mean', 'bayes.mode', 'median', 'mean'), 
+								method=c('meth11', 'meth10', 'meth9', 'meth8', 'meth7', 'meth6', 'meth5', 'bayes.mean', 'bayes.mode', 'median', 'mean'), 
 									burnin=0, thin=1, burnin3=0, 
 									use.external.phase3=FALSE, use.phase3.from = NULL, 
 									ar1pars=NULL, kappa=5, cor.start.year=NULL, verbose=FALSE, ...) {
@@ -1332,7 +1342,8 @@ tfr.correlation.subnat <- function(mcmc.set,
 				meth7 = cor.modified(errs, is.low, verbose=verbose, ...),
 				meth8 = cor.moments2(errs, is.low, verbose=verbose, ...),
 				meth9 = cor.method9(errs, is.low, verbose=verbose, ...),
-				meth10 = cor.bayes.meth10(errs, is.low, verbose=verbose, ...),
+				meth10 = cor.bayes.meth10(errs, is.low, arcsin.prior=FALSE, verbose=verbose, ...),
+				meth11 = cor.bayes.meth10(errs, is.low, arcsin.prior=TRUE, verbose=verbose, ...),
 				cor.moments(errs, is.low, method=method, verbose=verbose, ...)
 				)
 	return(c(cormat, list(kappa=kappa)))

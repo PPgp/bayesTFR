@@ -161,7 +161,7 @@ cor.bayes <- function(errs, is.low, method=c('mean', 'mode'), scale.errors=FALSE
 	return(list(low=cormat[['low']], high=cormat[['high']], corcoef=cor.res$low[[meth]]))
 }
 
-cor.bayes.meth10 <- function(errs, is.low, verbose=FALSE, ...) {
+cor.bayes.meth10 <- function(errs, is.low, arcsin.prior=FALSE, verbose=FALSE, ...) {
 	years <- rep(rownames(errs), each=ncol(errs))
 	errs <- errs/sqrt(mean(errs^2, na.rm=TRUE)) 
 	errs.high <- errs.low <- errs
@@ -185,6 +185,7 @@ cor.bayes.meth10 <- function(errs, is.low, verbose=FALSE, ...) {
 				ss[2] <- sum(err[idx,s]^2)
 				ss[3] <- sum(err[idx,r] * err[idx,s])
 				n <- sum(idx)
+				if(arcsin.prior) n <- n+1
 				integ <- try(integrate(rhofcn.nom, 0, 1, ss=ss, n=n)$value / integrate(rhofcn.denom, 0, 1, ss=ss, n=n)$value)
 				cor.res[[what]][r,s] <- if(!inherits(integ, "try-error")) integ else NA
 				cor.res[[what]][s,r] <- cor.res[[what]][r,s] 
