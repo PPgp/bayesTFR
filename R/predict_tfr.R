@@ -586,12 +586,13 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		  											-var.par.values[s,'a_sd'], var.par.values[s,'b_sd']), mcmc.set$meta$sigma0.min)
 						}
 						if(!use.correlation || is.na(epsilons[country])) {
+							passed <- FALSE
 		       				for(i in 1:50) {
 		       					err <- rnorm(1, eps.mean, sigma_eps)
 		                    	if( (new.tfr + err) > 0.5 && 
-		                    		(new.tfr + err) <= cs.par.values.list[[country]][s,cs.var.names[[country]]$U] ) break
+		                    		(new.tfr + err) <= cs.par.values.list[[country]][s,cs.var.names[[country]]$U] ) {passed <- TRUE; break}
 		                	}
-		                	if(i>50) err <- min(max(err, 0.5-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
+		                	if(!passed) err <- min(max(err, 0.5-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
 		                } else { # joint predictions
 		                	err <- sigma_eps*epsilons[country]
 		                	if(err < 0.5 - new.tfr || err > cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr) {# TFR outside of bounds
@@ -630,7 +631,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	for (icountry in 1:nr_countries_real){
 		country <- prediction.countries[icountry]
 		# Ignore trajectories that go below 0.5 
-		isnotNA <- apply(1-(all.f_ps[icountry,,]<0.5), 2, prod) 
+		isnotNA <- apply(1-(all.f_ps[icountry,,] < 0.5), 2, prod) 
 		isnotNA <- ifelse(is.na(isnotNA),0,isnotNA)
 		all.f_ps[icountry,,isnotNA==0] <- NA
 		# extract the future trajectories (including the present period)
@@ -652,7 +653,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
   		# compute quantiles
  		PIs_cqp[country,,] <- apply(f_ps_future, 1, quantile, quantiles.to.keep, na.rm = TRUE)
  		mean_sd[country,1,] <- apply(f_ps_future, 1, mean, na.rm = TRUE)
- 		mean_sd[country,2,] <- apply(f_ps_future, 1, sd, na.rm = TRUE)
+ 		mean_sd[country,2,] <- apply(f_ps_future, 1, sd, na.rm = TRUE) 		
  	}
 	mcmc.set <- remove.tfr.traces(mcmc.set)
 	bayesTFR.prediction <- structure(list(
