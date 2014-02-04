@@ -1258,7 +1258,7 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 }
 
 tfr.correlation.subnat <- function(mcmc.set, 
-								method=c('meth11', 'meth10', 'meth9', 'meth8', 'meth7', 'meth6', 'meth5', 'bayes.mean', 'bayes.mode', 'median', 'mean'), 
+								method=c('meth12', 'meth11', 'meth10', 'meth9', 'meth8', 'meth7', 'meth6', 'meth5', 'bayes.mean', 'bayes.mode', 'median', 'mean'), 
 									burnin=0, thin=1, burnin3=0, 
 									use.external.phase3=FALSE, use.phase3.from = NULL, 
 									ar1pars=NULL, kappa=5, cor.start.year=NULL, verbose=FALSE, ...) {
@@ -1345,6 +1345,7 @@ tfr.correlation.subnat <- function(mcmc.set,
 				meth9 = cor.method9(errs, is.low, verbose=verbose, ...),
 				meth10 = cor.bayes.meth10(errs, is.low, arcsin.prior=FALSE, verbose=verbose, ...),
 				meth11 = cor.bayes.meth10(errs, is.low, arcsin.prior=TRUE, verbose=verbose, ...),
+				meth12 = cor.bayes.meth10(errs, is.low, arcsin.prior=TRUE, standardize=FALSE, verbose=verbose, ...),
 				cor.moments(errs, is.low, method=method, verbose=verbose, ...)
 				)
 	return(c(cormat, list(kappa=kappa)))

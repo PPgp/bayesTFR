@@ -163,15 +163,14 @@ cor.bayes <- function(errs, is.low, method=c('mean', 'mode'), scale.errors=FALSE
 	return(list(low=cormat[['low']], high=cormat[['high']], corcoef=cor.res$low[[meth]]))
 }
 
-cor.bayes.meth10 <- function(errs, is.low, arcsin.prior=FALSE, verbose=FALSE, ...) {
+cor.bayes.meth10 <- function(errs, is.low, arcsin.prior=FALSE, standardize=TRUE, verbose=FALSE, ...) {
 	years <- rep(rownames(errs), each=ncol(errs))
-	errs <- errs/sqrt(mean(errs^2, na.rm=TRUE)) 
+	if(standardize)
+		errs <- errs/sqrt(mean(errs^2, na.rm=TRUE)) 
 	errs.high <- errs.low <- errs
 	errs.high[is.low] <- NA
 	errs.low[!is.low] <- NA
 	errs.list <- list(high=errs.high, low=errs.low)
-	#errs.all <- as.vector(t(errs))
-	#keep.all <- which(!is.na(errs.all))
 	cor.res <- obs <- cormat <- list()
 	ncountries <- ncol(errs)
 	ss <- rep(NA, 3)
