@@ -1345,7 +1345,7 @@ tfr.correlation.subnat <- function(mcmc.set,
 				meth9 = cor.method9(errs, is.low, verbose=verbose, ...),
 				meth10 = cor.bayes.meth10(errs, is.low, arcsin.prior=FALSE, verbose=verbose, ...),
 				meth11 = cor.bayes.meth10(errs, is.low, arcsin.prior=TRUE, verbose=verbose, ...),
-				meth12 = cor.bayes.meth10(errs, is.low, arcsin.prior=TRUE, standardize=FALSE, verbose=verbose, ...),
+				meth12 = cor.constant(errs, verbose=verbose, ...),
 				cor.moments(errs, is.low, method=method, verbose=verbose, ...)
 				)
 	return(c(cormat, list(kappa=kappa)))

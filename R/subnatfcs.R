@@ -309,6 +309,17 @@ cor.moments2 <- function(errs, is.low, verbose=FALSE) {
 				high=if(is.null(corm$high$corm)) corm$low$corm else corm$high$corm, corcoef=corm$low$corcoef))
 }
 
+cor.constant <- function(errs, constant=0.99, verbose=FALSE) {
+##################################################################
+# Method 12
+	ncountries <- ncol(errs)
+	cormat <- list()
+	cormat[['high']] <- cormat[['low']] <- matrix(constant, nrow=ncountries, ncol=ncountries)
+	diag(cormat[['high']]) <- 1
+	diag(cormat[['low']]) <- 1
+	return(list(low=cormat[['low']], high=cormat[['high']], corcoef=constant))
+}
+
 .get.cor.meth8 <- function(corm, errs, verbose=FALSE) {
 	corm[corm<0] <- 0 # truncate
 	diag(corm) <- 1
