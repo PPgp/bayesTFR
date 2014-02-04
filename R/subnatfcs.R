@@ -301,7 +301,8 @@ cor.moments2 <- function(errs, is.low, verbose=FALSE) {
 		cormat <- cor(errs.list[[what]], use="pairwise.complete.obs")
 		corm[[what]] <- .get.cor.meth8(cormat, errs.list[[what]], verbose=verbose && what=='low')
 	}
-	return(list(low=corm$low$corm, high=if(is.null(corm$high$corm)) corm$low$corm else corm$high$corm, corcoef=corm$low$corcoef))
+	return(list(low=if(is.null(corm$low$corm)) corm$high$corm else corm$low$corm, 
+				high=if(is.null(corm$high$corm)) corm$low$corm else corm$high$corm, corcoef=corm$low$corcoef))
 }
 
 .get.cor.meth8 <- function(corm, errs, verbose=FALSE) {
@@ -367,5 +368,6 @@ cor.method9 <- function(errs, is.low, verbose=FALSE) {
 		cormat[has.data] <- (nom[has.data]/counter[has.data])/(sqrt(denom1[has.data]/counter[has.data])*sqrt(denom2[has.data]/counter[has.data]))
 		corm[[what]] <- .get.cor.meth8(cormat, err, verbose=verbose && what=='low')
 	}
-	return(list(low=corm$low$corm, high=if(is.null(corm$high$corm)) corm$low$corm else corm$high$corm, corcoef=corm$low$corcoef))
+	return(list(low=if(is.null(corm$low$corm)) corm$high$corm else corm$low$corm, 
+				high=if(is.null(corm$high$corm)) corm$low$corm else corm$high$corm, corcoef=corm$low$corcoef))
 }
