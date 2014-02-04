@@ -158,6 +158,8 @@ cor.bayes <- function(errs, is.low, method=c('mean', 'mode'), scale.errors=FALSE
 		cat('\nObservations: high =', length(obs[['high']]), ', low =', length(obs[['low']]), '\n')
 	}
 	#stop('')
+	if(is.na(cor.res[['high']][[meth]])) cormat[['high']] <- cormat[['low']]
+	if(is.na(cor.res[['low']][[meth]])) cormat[['low']] <- cormat[['high']]
 	return(list(low=cormat[['low']], high=cormat[['high']], corcoef=cor.res$low[[meth]]))
 }
 
@@ -286,6 +288,9 @@ cor.modified <- function(errs, is.low, verbose=FALSE, ...) {
 		cat('\nCor meth7: high =', round(cor.res[['high']],2), ', low =', round(cor.res[['low']],2))
 		cat('\nObservations: high =', obs[['high']], ', low =', obs[['low']], '\n')
 	}
+	if(is.na(cor.res[['high']])) cormat[['high']] <- cormat[['low']]
+	if(is.na(cor.res[['low']])) cormat[['low']] <- cormat[['high']]
+
 	return(list(low=cormat[['low']], high=cormat[['high']], corcoef=cor.res$low))
 }
 
