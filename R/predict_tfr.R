@@ -489,12 +489,13 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		  											-var.par.values[s,'a_sd'], var.par.values[s,'b_sd']), mcmc.set$meta$sigma0.min)
 						}
 						if(!use.correlation || is.na(epsilons[country])) {
+							passed <- FALSE
 		       				for(i in 1:50) {
 		       					err <- rnorm(1, eps.mean, sigma_eps)
 		                    	if( (new.tfr + err) > 0.5 && 
-		                    		(new.tfr + err) <= cs.par.values.list[[country]][s,cs.var.names[[country]]$U] ) break
+		                    		(new.tfr + err) <= cs.par.values.list[[country]][s,cs.var.names[[country]]$U] ) {passed <- TRUE; break}
 		                	}
-		                	if(i>50) err <- min(max(err, 0.5-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
+		                	if(!passed) err <- min(max(err, 0.5-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
 		                } else { # joint predictions
 		                	err <- sigma_eps*epsilons[country]
 		                	if(err < 0.5 - new.tfr || err > cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr) {# TFR outside of bounds
@@ -507,11 +508,12 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 						new.tfr <- (mu.c[country] + rho.c[country]*(all.f_ps[icountry,year-1,s] - mu.c[country]) 
 										- W[icountry,year]*S11[icountry])
 						if(!use.correlation || is.na(epsilons[country])) {
+							passed <- FALSE
 	 						for(i in 1:50){
 	 							err <- rnorm(1, 0, sigma.epsAR1[[country]][year-1])
-	 							if (new.tfr + err > 0.5 )   break
+	 							if (new.tfr + err > 0.5 )   {passed <- TRUE; break}
 							}
-							if(i>50) err <- 0.5 - new.tfr
+							if(!passed) err <- 0.5 - new.tfr
 						} else { # joint predictions
 							err <- sigma.epsAR1[[country]][year-1]*epsilons[country]
 							if(err < 0.5 - new.tfr) {

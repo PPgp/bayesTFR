@@ -92,7 +92,7 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, 
 
 DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 10, 
     nr.curves = NULL, predictive.distr=FALSE, ylim = NULL, xlab = "TFR (reversed)", ylab = "TFR decrement", 
-    main = NULL, ...
+    main = NULL, show.legend=TRUE, ...
     ) 
 {	
 	if(class(mcmc.list) == 'bayesTFR.prediction') {
@@ -166,12 +166,13 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     	obs.legend$pch <- c(obs.legend$pch, 2)
     	#obs.legend$bg <- c(obs.legend$bg, 'grey')
     }
-    legend("topright", legend = c("median", paste("PI", pi), obs.legend$legend), 
-        lty = c(1, lty, rep(0,length(obs.legend$pch))), bty = "n", 
-        col = c(rep("red", 1+length(pi)), rep('black',length(obs.legend$pch))), 
-        pch=c(rep(-1,length(pi)+1), obs.legend$pch),
-        #bg=c(rep(-1,length(pi)+1), obs.legend$bg),
-        )
+    if(show.legend)
+    	legend("topright", legend = c("median", paste("PI", pi), obs.legend$legend), 
+        	lty = c(1, lty, rep(0,length(obs.legend$pch))), bty = "n", 
+        	col = c(rep("red", 1+length(pi)), rep('black',length(obs.legend$pch))), 
+        	pch=c(rep(-1,length(pi)+1), obs.legend$pch),
+        	#bg=c(rep(-1,length(pi)+1), obs.legend$bg),
+        	)
 }
 
 .get.trajectories.table <- function(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant=FALSE) {
