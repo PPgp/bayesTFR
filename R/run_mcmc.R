@@ -346,16 +346,16 @@ run.tfr.mcmc.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(
 	if(!file.exists(output.dir)) dir.create(output.dir, recursive=TRUE)
 	# modify priors of hyper-paramters using posterior of a world-country simulation
 	if(!use.world.posterior) {
-		meta$S.low <- 3.503
-		meta$S.up <- 5.474
-		meta$a.low <- 0.001
-		meta$a.up <- 0.057
-		meta$b.low <- 0.014
-		meta$b.up <- 0.062
-		meta$sigma0.low <- 0.221
-		meta$sigma0.up <- 0.301
-		meta$const.low <- 1.188
-		meta$const.up <- 1.59
+		#meta$S.low <- 3.503
+		#meta$S.up <- 5.474
+		#meta$a.low <- 0.001
+		#meta$a.up <- 0.057
+		#meta$b.low <- 0.014
+		#meta$b.up <- 0.062
+		#meta$sigma0.low <- 0.221
+		#meta$sigma0.up <- 0.301
+		#meta$const.low <- 1.188
+		#meta$const.up <- 1.59
 		meta$chi0 <- -1.571
 		meta$psi0 <- 0.126
 		meta$alpha0.p <- c(-0.853, 0.459, 1.596)
