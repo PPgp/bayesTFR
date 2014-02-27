@@ -12,7 +12,8 @@ The functions plot the posterior distribution of the double logistic function us
 \usage{
 DLcurve.plot(mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 10, 
     nr.curves = NULL, predictive.distr = FALSE, ylim = NULL, 
-    xlab = 'TFR (reversed)', ylab = 'TFR decrement', main = NULL, \dots)
+    xlab = 'TFR (reversed)', ylab = 'TFR decrement', main = NULL, 
+    show.legend = TRUE, \dots)
 	
 DLcurve.plot.all(mcmc.list = NULL, sim.dir = NULL, 
     output.dir = file.path(getwd(), 'DLcurves'),
@@ -27,6 +28,7 @@ DLcurve.plot.all(mcmc.list = NULL, sim.dir = NULL,
   \item{nr.curves}{Number of curves to be plotted. If \code{NULL}, all curves are plotted.}
   \item{predictive.distr}{Logical. If \code{TRUE}, an error term is added to each trajectory.}
   \item{ylim, xlab, ylab, main}{Graphical parameters passed to the \code{plot} function.}
+  \item{show.legend}{Logical determining if the legend should be shown.}
   \item{\dots}{Additional graphical parameters. For \code{DLcurve.plot.all}, \code{\dots} contains also arguments
   		\code{pi}, \code{tfr.max} and \code{nr.curves}.}
   \item{sim.dir}{Directory with the simulation results. Only relevant, if \code{mcmc.list} is \code{NULL}.}

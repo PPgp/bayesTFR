@@ -1,4 +1,14 @@
-4.0-2/3 (10/9/2013)
+4.0-4/5 (02/07/2014)
+-------
+Added an option for switching the method for finding the beginning of phase II (tau_c) 
+to the method prior version 2.0 (for reproducibility of former experiments). To turn it on, use 
+options(TFRphase2.pre.v2=TRUE)
+
+DLcurve.plot got an argument show.legend (thanks to Guy Abel).
+
+In tfr.predict fixed a situation when after 50 iterations tfr is still falling below 0.5. 
+
+4.0-2/3 (10/9/2013) [CRAN]
 -----
 Setting default cluster type to SOCK if not MPI or SOCK. 
 

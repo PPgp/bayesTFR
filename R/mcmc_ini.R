@@ -110,6 +110,15 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
 # and divides those into early and not early
 # find lambda_c's based on definition tfr increased twice, below 2
 {
+	post.v2 <- TRUE
+	if(!is.null(getOption("TFRphase2.pre.v2", NULL)) && getOption("TFRphase2.pre.v2")==TRUE) {
+		# This is for backward-compatibility to make some publications reproducible.
+		min.TFRlevel.for.start.after.1950 = 5.5
+		max.diff.local.and.global.max.for.start.at.loc = 0.5
+		delta.for.local.max = 0
+		post.v2 <- FALSE
+		warning("Phase II is searched for using pre-v2.0 methodology. To switch to the current method set 'options(TFRphase2.pre.v2=FALSE)'.")
+	}
     T_end <- dim(tfr_matrix)[1]
     nr_countries <- dim(tfr_matrix)[2]
     T_end_c <- lambda_c <-rep(T_end, nr_countries)
@@ -137,15 +146,19 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
  						ifelse(data[T.start:T_end_c[country]] >
             				value_global_max - max.diff.local.and.global.max.for.start.at.loc, 1, 0))
         # move the point to the right if there are more recent points with the same values
-        is.same <- c(0, ifelse(abs(d) < delta.for.local.max, 1, 0), 0)
-        cs.same <- cumsum(is.same[(max_index-T.start+1):(lT+1)])
-        max_index <- max_index + cs.same[min(which(diff(cs.same)==0))]
+        if(post.v2) {
+        	is.same <- c(0, ifelse(abs(d) < delta.for.local.max, 1, 0), 0)
+        	cs.same <- cumsum(is.same[(max_index-T.start+1):(lT+1)])
+        	max_index <- max_index + cs.same[min(which(diff(cs.same)==0))]
+        }
         tau_c[country] <- max_index
         start_c[country] <- tau_c[country]
 
-        if (as.integer(names(data)[T.start]) > 1855 && (data[tau_c[country]] < min.TFRlevel.for.start.after.1950)) {
-        	tau_c[country] <- -1
-        	start_c[country] <- which(!is.na(data))[1] # first data point that is not NA
+		if(data[tau_c[country]] < min.TFRlevel.for.start.after.1950) {
+        	if ((post.v2 && as.integer(names(data)[T.start]) > 1855) || !post.v2) {
+        		tau_c[country] <- -1
+        		start_c[country] <- which(!is.na(data))[1] # first data point that is not NA
+        	}
         }
         if (tau_c[country] > 1 && T.suppl > 0 && has.suppl) 
         	suppl.data$tfr_matrix[1:min(tau_c[country] - 1, T.suppl),suppl.data$index.from.all.countries[country]] <- NA

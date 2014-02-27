@@ -608,7 +608,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 							passed <- FALSE
 	 						for(i in 1:50){
 	 							err <- rnorm(1, 0, sigma.epsAR1[[country]][year-1])
-	 							if (new.tfr + err > 0.5 ) {passed <- TRUE; break}
+	 							if (new.tfr + err > 0.5 )   {passed <- TRUE; break}
 							}
 							if(!passed) err <- 0.5 - new.tfr
 						} else { # joint predictions
