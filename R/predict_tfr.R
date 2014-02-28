@@ -211,7 +211,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		bayesTFR.prediction <- structure(list(
 				quantiles = PIs_cqp,
 				traj.mean.sd = mean_sd,
-				nr.traj=wpred$nr.traj,
+				nr.traj=nr.traj,
 				tfr_matrix_reconstructed = meta$tfr_matrix_all,
 				output.directory=outdir,
 				na.index=wpred$na.index,
