@@ -170,8 +170,10 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		country.obj <- get.country.object(country, wmeta)
 		if(verbose) 
 			cat('\nPredicting TFR for ', country.obj$name, '\n')
+		start.year <- if(is.null(wpred$start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+5
+						else wpred$start.year
 		meta <- mcmc.meta.ini.subnat(wmeta, country=country.obj$code, my.tfr.file=my.tfr.file, 
-									start.year=1750, present.year=wpred$start.year-5, verbose=verbose)
+									start.year=1750, present.year=start.year-5, verbose=verbose)
 		this.output.dir <- file.path(output.dir, 'subnat', paste0('c', country.obj$code))
 		outdir <- file.path(this.output.dir, 'predictions')
 		meta$output.dir <- this.output.dir
