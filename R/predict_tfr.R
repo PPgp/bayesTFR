@@ -147,19 +147,28 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	invisible(bayesTFR.prediction)
 }
 
-estimate.scale.and.sd <- function(wmeta, meta, country.index, reg.index) {
+estimate.scale.and.sd <- function(wmeta, meta, country.index, reg.index, intercept=FALSE) {
 	wtfr <- get.observed.tfr(country.index, wmeta, 'tfr_matrix_all')
 	regtfr <- get.observed.tfr(reg.index, meta, 'tfr_matrix_all')
 	# get only common years that are not NA
 	regtfr <- regtfr[!is.na(regtfr)]
 	regtfr <- regtfr[names(regtfr) %in%names(wtfr)]
     wtfr <- wtfr[names(wtfr) %in%names(regtfr)]
-    lmfit <- lm(regtfr ~ -1 + wtfr)
-    return(list(scale=lmfit$coef, sd=sqrt(mean(lmfit$residuals^2)), last.tfr=regtfr[length(regtfr)]))
+    f <- "regtfr ~ wtfr"
+    if (!intercept) f <- paste0(f, ' - 1')
+    lmfit <- lm(formula(f))
+    if(intercept) {
+    	alpha <- lmfit$coef[1]
+    	scale <- lmfit$coef[2]
+    } else {
+    	alpha <- 0
+    	scale <- lmfit$coef[1]
+    }
+    return(list(scale=scale, alpha=alpha, sd=sqrt(mean(lmfit$residuals^2)), last.tfr=regtfr[length(regtfr)]))
 }
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
-								output.dir = NULL, nr.traj=NULL, seed = NULL, verbose=TRUE) {
+								output.dir = NULL, nr.traj=NULL, seed = NULL, intercept=FALSE, verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
@@ -195,10 +204,11 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		meta$T_end_c <- rep(nrow(meta$tfr_matrix_all), nr.reg)
 		for(region in 1:nr.reg) {
 			reg.obj <- get.country.object(region, meta, index=TRUE)			
-			scale.sd <- estimate.scale.and.sd(wmeta, meta, country.obj$index, reg.obj$index)
+			scale.sd <- estimate.scale.and.sd(wmeta, meta, country.obj$index, reg.obj$index, intercept=intercept)
+			alpha <- scale.sd$alpha
 			scale <- scale.sd$scale
 			c.sd <- scale.sd$sd
-			freg <- wtrajs * scale + matrix(rnorm(length(wtrajs), sd=c.sd), nrow=nrow(wtrajs), ncol=ncol(wtrajs))
+			freg <- alpha + wtrajs * scale + matrix(rnorm(length(wtrajs), sd=c.sd), nrow=nrow(wtrajs), ncol=ncol(wtrajs))
 			freg <- rbind(rep(scale.sd$last.tfr, ncol(wtrajs)), freg)
 			trajectories <- freg
 			save(trajectories, file = file.path(outdir, paste0('traj_country', reg.obj$code, '.rda')))
