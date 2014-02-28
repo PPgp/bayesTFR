@@ -147,7 +147,93 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	invisible(bayesTFR.prediction)
 }
 
-tfr.predict.subnat <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+estimate.scale.and.sd <- function(wmeta, meta, country.index, reg.index) {
+	wtfr <- get.observed.tfr(country.index, wmeta, 'tfr_matrix_all')
+	regtfr <- get.observed.tfr(reg.index, meta, 'tfr_matrix_all')
+	# get only common years that are not NA
+	regtfr <- regtfr[!is.na(regtfr)]
+	regtfr <- regtfr[names(regtfr) %in%names(wtfr)]
+    wtfr <- wtfr[names(wtfr) %in%names(regtfr)]
+    lmfit <- lm(regtfr ~ -1 + wtfr)
+    return(list(scale=lmfit$coef, sd=sqrt(mean(lmfit$residuals^2)), last.tfr=regtfr[length(regtfr)]))
+}
+
+tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
+								output.dir = NULL, nr.traj=NULL, seed = NULL, verbose=TRUE) {
+	wpred <- get.tfr.prediction(sim.dir)
+	wmeta <- wpred$mcmc.set$meta
+	if(!is.null(seed)) set.seed(seed)
+	if (is.null(output.dir)) output.dir <- wmeta$output.dir
+	quantiles.to.keep <- as.numeric(dimnames(wpred$quantiles)[[2]])
+	result <- list()
+	for (country in countries) {
+		country.obj <- get.country.object(country, wmeta)
+		if(verbose) 
+			cat('\nPredicting TFR for ', country.obj$name, '\n')
+		meta <- mcmc.meta.ini.subnat(wmeta, country=country.obj$code, my.tfr.file=my.tfr.file, 
+									start.year=1750, present.year=wpred$start.year-5, verbose=verbose)
+		this.output.dir <- file.path(output.dir, 'subnat', paste0('c', country.obj$code))
+		outdir <- file.path(this.output.dir, 'predictions')
+		meta$output.dir <- this.output.dir
+		
+		if(file.exists(this.output.dir)) unlink(this.output.dir, recursive=TRUE)
+		dir.create(outdir, recursive=TRUE)
+		bayesTFR.mcmc.meta <- meta
+		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
+		wtrajs <- get.tfr.trajectories(wpred, country.obj$code)
+		wtrajs <- wtrajs[2:nrow(wtrajs),]
+		if(is.null(nr.traj)) nr.traj <- ncol(wtrajs)
+		thinning.index <- unique(round(seq(1, ncol(wtrajs), length=nr.traj)))
+		nr.trajs <- length(thinning.index)
+		wtrajs <- wtrajs[,thinning.index]
+		nr.reg <- get.nr.countries(meta)
+		PIs_cqp <- array(NA, c(nr.reg, length(quantiles.to.keep), nrow(wtrajs)+1),
+						dimnames=list(NULL, dimnames(wpred$quantiles)[[2]], dimnames(wpred$quantiles)[[3]]))
+		mean_sd <- array(NA, c(nr.reg, 2, nrow(wtrajs)+1))
+		meta$T_end_c <- rep(nrow(meta$tfr_matrix_all), nr.reg)
+		for(region in 1:nr.reg) {
+			reg.obj <- get.country.object(region, meta, index=TRUE)			
+			scale.sd <- estimate.scale.and.sd(wmeta, meta, country.obj$index, reg.obj$index)
+			scale <- scale.sd$scale
+			c.sd <- scale.sd$sd
+			freg <- wtrajs * scale + matrix(rnorm(length(wtrajs), sd=c.sd), nrow=nrow(wtrajs), ncol=ncol(wtrajs))
+			freg <- rbind(rep(scale.sd$last.tfr, ncol(wtrajs)), freg)
+			trajectories <- freg
+			save(trajectories, file = file.path(outdir, paste0('traj_country', reg.obj$code, '.rda')))
+			# compute quantiles
+			PIs_cqp[region,,] <- apply(trajectories, 1, quantile, quantiles.to.keep, na.rm = TRUE)
+ 			mean_sd[region,1,] <- apply(trajectories, 1, mean, na.rm = TRUE)
+ 			mean_sd[region,2,] <- apply(trajectories, 1, sd, na.rm = TRUE) 	
+  		}
+  		present.year.index <- which(rownames(meta$tfr_matrix_all) == rownames(wmeta$tfr_matrix_all)[wpred$present.year.index])
+		bayesTFR.prediction <- structure(list(
+				quantiles = PIs_cqp,
+				traj.mean.sd = mean_sd,
+				nr.traj=wpred$nr.traj,
+				tfr_matrix_reconstructed = meta$tfr_matrix_all,
+				output.directory=outdir,
+				na.index=wpred$na.index,
+				mcmc.set=list(meta=meta, mcmc.list=list()),
+				nr.projections=wpred$nr.projection,
+				burnin=NA, thin=NA,
+				end.year=wpred$end.year, use.tfr3=NA, burnin3=NA, thin3=NA,
+				mu=NA, rho=NA, sigmaAR1 = NA, mu.c=NA, rho.c=NA,
+				use.correlation=NA, start.year=wpred$start.year,
+				present.year.index=present.year.index,
+				present.year.index.all=present.year.index),
+				class='bayesTFR.prediction')
+			
+		store.bayesTFR.prediction(bayesTFR.prediction, outdir)
+		#do.convert.trajectories(pred=bayesTFR.prediction, n=save.as.ascii, output.dir=outdir, verbose=verbose)
+		#if(write.summary.files)
+		#	tfr.write.projection.summary.and.parameters(pred=bayesTFR.prediction, output.dir=outdir)
+		result[[as.character(country.obj$code)]] <- bayesTFR.prediction
+	}
+	cat('\nPrediction stored into', output.dir, '\n')
+	invisible(result)
+}
+
+tfr.predict.subnat.cor <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								countries = NULL, nr.traj = NULL, thin = NULL, burnin=2000,  use.diagnostics=FALSE,
 								use.tfr3=TRUE, burnin3=2000,
 								mu=2.1, rho=0.8859,

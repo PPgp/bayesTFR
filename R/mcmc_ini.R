@@ -580,5 +580,7 @@ mcmc.meta.ini.subnat <- function(meta, country,
 										my.tfr.file = my.tfr.file, verbose=verbose)
 	this.meta <- do.meta.ini(meta, tfr.with.regions, my.tfr.file=my.tfr.file, average.gammas.cov=TRUE,
 						use.default.gammas.cov=TRUE, verbose=verbose)
-	return(structure(c(this.meta, meta), class='bayesTFR.mcmc.meta'))
+	for (item in names(meta))
+		if(!(item %in% names(this.meta))) this.meta[[item]] <- meta[[item]]
+	return(structure(this.meta, class='bayesTFR.mcmc.meta'))
 }

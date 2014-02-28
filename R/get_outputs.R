@@ -188,7 +188,7 @@ has.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL) {
 	return(FALSE)
 }
 
-get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
+get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL, no.mcmc=FALSE) {
 	############
 	# Returns an object of class bayesTFR.prediction
 	# Set mcmc.dir to NA, if the prediction object should not have a pointer 
@@ -208,6 +208,7 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
 	
 	pred <- bayesTFR.prediction
 	# re-route mcmcs if necessary
+	if(!no.mcmc) {
 	if(!is.null(mcmc.dir) || !has.tfr.mcmc(pred$mcmc.set$meta$output.dir)) {
 		if((!is.null(mcmc.dir) && !is.na(mcmc.dir)) || is.null(mcmc.dir)) {
 			new.path <- file.path(sim.dir, basename(pred$mcmc.set$meta$output.dir))
@@ -217,6 +218,7 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
 				pred$mcmc.set <- get.tfr.mcmc(est.dir)
 			}
 		}
+	}
 	}
 	return(pred)
 }
