@@ -320,8 +320,8 @@ tfr.predict.subnat1BHM <- function(countries, my.tfr.file, sim.dir=file.path(get
 	stored.iter <- get.stored.mcmc.length(wmcmc.set$mcmc.list, burnin=0)		
 	if(is.null(nr.traj)) nr.traj <- min(stored.iter, 2000)
 	nr.traj <- min(nr.traj, stored.iter)
-	is.mcmc.set.thinned <- nr.traj >= stored.iter
-	if(!is.mcmc.set.thinned) {
+	do.not.thin <- nr.traj >= stored.iter-1
+	if(!do.not.thin) {
 		mcthin <- max(sapply(wmcmc.set$mcmc.list, function(x) x$thin))
 		thin <- floor(stored.iter/nr.traj * mcthin)
 		thinned.mcmc <- get.thinned.tfr.mcmc(wmcmc.set, thin=thin, burnin=0)
@@ -367,7 +367,7 @@ tfr.predict.subnat1BHM <- function(countries, my.tfr.file, sim.dir=file.path(get
 		}
 		tmp.mcset$meta <- meta
 		result[[as.character(country)]] <- make.tfr.prediction(mcmc.set=tmp.mcset, start.year=start.year,
-										use.correlation=use.correlation, mcmc3.set=mcmc3,
+										use.correlation=use.correlation, use.tfr3=has.p3, mcmc3.set=mcmc3, burnin3=wpred$burnin3,
 										correlation.matrices=cor.mat, output.dir=this.output.dir, 
 										is.mcmc.set.thinned=TRUE, nr.traj=nr.traj, burnin=0, verbose=verbose, ...)
 	}
