@@ -87,11 +87,6 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	mcthin <- max(sapply(mcmc.set$mcmc.list, function(x) x$thin))
 	thin <- max(c(thin, mcthin))
 	meta <- mcmc.set$meta
-	meta$output.dir <- file.path(
-			if(is.null(output.dir)) meta$output.dir else output.dir, 
-			paste('thinned_mcmc', thin, burnin, sep='_'))
-	if(!file.exists(meta$output.dir)) 
-		dir.create(meta$output.dir, recursive=TRUE)
 	total.iter <- get.stored.mcmc.length(mcmc.set$mcmc.list, burnin=burnin)
 	meta$is.thinned <- TRUE
 	meta$parent.iter <- get.total.iterations(mcmc.set$mcmc.list, burnin)
@@ -100,8 +95,12 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	
 	if(verbose) cat('\nStoring thinned mcmc:')
 	# store the meta object
+	meta$output.dir <- file.path(
+			if(is.null(output.dir)) meta$output.dir else output.dir, 
+				paste('thinned_mcmc', thin, burnin, sep='_'))
+	if(!file.exists(meta$output.dir)) 
+		dir.create(meta$output.dir, recursive=TRUE)
 	store.bayesTFR.meta.object(meta, meta$output.dir)
-
 	
 	thin.index <- if(thin > mcthin) unique(round(seq(1, total.iter, by=thin/mcthin))) else 1:total.iter
 	nr.points <- length(thin.index)
@@ -115,10 +114,9 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	thinned.mcmc$length <- nr.points
 	thinned.mcmc$finished.iter <- nr.points
 	thinned.mcmc$compression.type <- meta$compression.type
-	
+	thinned.mcmc$output.dir <- 'mc1'
 	outdir.thin.mcmc <- file.path(meta$output.dir, 'mc1')
 	if(!file.exists(outdir.thin.mcmc)) dir.create(outdir.thin.mcmc)
-	thinned.mcmc$output.dir <- 'mc1'
 	store.bayesTFR.object(thinned.mcmc, outdir.thin.mcmc)
 	
 	if(verbose) cat('\nStoring country-independent parameters ...')
