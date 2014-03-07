@@ -286,8 +286,8 @@ tfr.predict.subnat.cor <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd()
 				}
 			}
 			if(!has.phase3) {
-				if (is.null(rho) || is.na(rho)) 
-					ar1pars <- get.ar1.parameters(mu = mu, mcmc.set.list[[country]]$meta)
+				ar1pars <- if (is.null(rho) || is.na(rho)) get.ar1.parameters(mu = mu, mcmc.set.list[[country]]$meta)
+							else list(mu=mu, rho=rho)
 			}
 			cor.mat <- tfr.correlation.subnat(mcmc.set.list[[country]], method=cor.method, burnin=sburnin, 
 							burnin3=burnin3, use.external.phase3=use.external.phase3, use.phase3.from = use.phase3.from, 
@@ -309,7 +309,7 @@ tfr.predict.subnat.cor <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd()
 tfr.predict.subnat1BHM <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								 nr.traj = NULL, #thin = NULL, burnin=2000,  use.diagnostics=FALSE,
 								 start.year=NULL,
-								#use.tfr3=TRUE, burnin3=2000,
+								burnin3=2000, mu=2.1, rho=0.8859,
 								use.correlation=FALSE, cor.method=c('meth12'),
 								cor.start.year=NULL,
 								output.dir = NULL, ..., verbose=TRUE) {
@@ -354,12 +354,20 @@ tfr.predict.subnat1BHM <- function(countries, my.tfr.file, sim.dir=file.path(get
 		bayesTFR.mcmc.meta <- meta
 		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
 		nr.reg <- get.nr.countries(meta)
+		ar1pars <- NULL
 		if(use.correlation) {
 			cor.mat <- list()
-			for(w in c('low', 'high')) {
-				cor.mat[[w]] <- matrix(0.99, nrow=nr.reg, ncol=nr.reg)
-				diag(cor.mat[[w]]) <- 1
+			#for(w in c('low', 'high')) {
+			#	cor.mat[[w]] <- matrix(0.99, nrow=nr.reg, ncol=nr.reg)
+			#	diag(cor.mat[[w]]) <- 1
+			#}
+			if(!has.p3) {
+				ar1pars <- if (is.null(rho) || is.na(rho)) get.ar1.parameters(mu = mu, wmeta)
+							else list(mu=mu, rho=rho)
 			}
+			cor.mat <- tfr.correlation.subnat2(wmcmc.set, meta=meta, mcmc3.set=mcmc3, country=country, method=cor.method, burnin=0, 
+							burnin3=burnin3, 
+							ar1pars=ar1pars, cor.start.year=cor.start.year, verbose=verbose)
 		}
 		meta[['use.mcmc.from']] <- country.obj$code
 		meta[['use.mcmc.meta']] <- wmeta
@@ -1454,7 +1462,7 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 }
 
 tfr.correlation.subnat <- function(mcmc.set, 
-								method=c('meth12', 'meth11', 'meth10', 'meth9', 'meth8', 'meth7', 'meth6', 'meth5', 'bayes.mean', 'bayes.mode', 'median', 'mean'), 
+									method=c('meth12', 'meth11', 'meth10', 'meth9', 'meth8', 'meth7', 'meth6', 'meth5', 'bayes.mean', 'bayes.mode', 'median', 'mean'), 
 									burnin=0, thin=1, burnin3=0, 
 									use.external.phase3=FALSE, use.phase3.from = NULL, 
 									ar1pars=NULL, kappa=5, cor.start.year=NULL, verbose=FALSE, ...) {
@@ -1546,6 +1554,94 @@ tfr.correlation.subnat <- function(mcmc.set,
 				)
 	return(c(cormat, list(kappa=kappa)))
 }
+
+tfr.correlation.subnat2 <- function(mcmc.set, mcmc3.set, meta, country,
+									method=c('meth12', 'meth11', 'meth10', 'meth9', 'meth8'), 
+									burnin=0, thin=1, burnin3=0, 
+									ar1pars=NULL, kappa=5, cor.start.year=NULL, verbose=FALSE, ...) {
+	wmeta <- mcmc.set$meta
+	method <- match.arg(method)
+	errs <- is.low <- matrix(NA, nrow=meta$T_end, ncol=meta$nr_countries, 
+						dimnames=list(dimnames(meta$tfr_matrix)[[1]], meta$regions$country_code))
+	country.obj <- get.country.object(country, wmeta)
+	has.phase3 <- !is.null(mcmc3.set)
+	if(has.phase3) {
+		if(length(mcmc3.set$mcmc.list)==0) {
+			mcmc3.set <- NULL
+			has.phase3 <- FALSE
+		} else {
+			iter3 <- get.total.iterations(mcmc3.set$mcmc.list, burnin3)
+			thin3 <- max(floor(iter3/2000),1)
+		}
+		if(is.element(country.obj$index, mcmc3.set$meta$id_phase3))
+			tr3 <- get.tfr3.parameter.traces.cs(mcmc3.set$mcmc.list, country.obj, c('mu.c', 'rho.c'), 
+								burnin=burnin3, thin=thin3)
+		else 
+			tr3 <- get.tfr3.parameter.traces(mcmc3.set$mcmc.list, c('mu', 'rho'), 
+								burnin=burnin3, thin=thin3)
+		tr3 <- cbind(tr3, get.tfr3.parameter.traces(mcmc3.set$mcmc.list, c('sigma.eps'), 
+										burnin=burnin3, thin=thin3))
+	}
+											
+	.get.err <- function(i, mu, rho, sigma) return((tfr.all[i]-mu-rho*(tfr.all[i-1]-mu))/sigma)
+	.get.err.distr <- function(i, traces) 
+						return(apply(traces, 1, function(x) return(.get.err(i, x[1], x[2], x[3]))))
+	# get prediction errors
+	for (reg in 1:meta$nr_countries) {
+		reg.obj <- get.country.object(reg, meta, index=TRUE)
+		tfr.all <- bayesTFR:::get.observed.tfr(reg, meta, 'tfr_matrix_observed')
+		is.low[,reg] <- tfr.all < kappa
+		dl.obs.idx <- if(max(meta$tau_c[reg],1) >= meta$lambda_c[reg]) c() 
+						else seq(max(meta$tau_c[reg],1), meta$lambda_c[reg])
+		start.idx <- if(is.null(cor.start.year)) 1 else which(as.integer(names(tfr.all)) >= cor.start.year)[1]
+		dl.obs.idx <- dl.obs.idx[dl.obs.idx >= start.idx]
+		if(length(dl.obs.idx) > 0) { # Phase II
+			tfr <- tfr.all[dl.obs.idx]
+			not.na.idx <- which(!is.na(tfr))
+			if(length(not.na.idx) > 1) { # needs at least two points for decrements
+				tfr <- tfr[not.na.idx]
+				decr <- -diff(tfr)
+				dlc.sigma <- tfr.get.dlcurves(tfr, mcmc.set$mcmc.list, country.obj$code, country.obj$index, 
+									burnin=burnin, nr.curves=0, return.sigma=TRUE)
+				terr <- apply(-dlc.sigma$dl[,-1, drop=FALSE], 1, "+", decr)
+				if(length(decr) > 1) terr <- t(terr)
+				dl.err <- terr/dlc.sigma$sigma[,-1, drop=FALSE]
+				res.idx <- dl.obs.idx[not.na.idx]
+				errs[res.idx[-1],reg] <- apply(dl.err, 2, mean)
+				#if(country.obj$code==549) stop('')
+			}
+		}
+		if(meta$lambda_c[reg] < meta$T_end_c[reg])  { # Phase III
+			p3.idx <- seq(meta$lambda_c[reg]+1, meta$T_end_c[reg])
+			p3.idx <- p3.idx[p3.idx >= start.idx]		
+			if(has.phase3) {			
+				eps.k <- NULL 
+				for(j in 1:length(p3.idx)) 
+					eps.k <- cbind(eps.k, .get.err.distr(p3.idx[j], tr3))
+				errs[p3.idx, reg] <- apply(eps.k, 2, mean)
+			} else  # use fixed parameters
+				errs[p3.idx, reg] <- sapply(p3.idx, .get.err, mu=ar1pars$mu, rho=ar1pars$rho, sigma=ar1pars$sigmaAR1)
+		}
+	}
+	ind <- apply(errs, 1, function(x) all(is.na(x)))
+	errs <- errs[!ind,]
+	is.low <- is.low[!ind,]
+	cormat <- switch(method,
+				bayes.mean = cor.bayes(errs, is.low, method='mean', verbose=verbose, ...),
+				bayes.mode = cor.bayes(errs, is.low, method='mode', verbose=verbose, ...),
+				meth5 = cor.bayes(errs, is.low, method='mean', scale.errors=TRUE, verbose=verbose, ...),
+				meth6 = cor.bayes(errs, is.low, method='mode', scale.errors=TRUE, verbose=verbose, ...),
+				meth7 = cor.modified(errs, is.low, verbose=verbose, ...),
+				meth8 = cor.moments2(errs, is.low, verbose=verbose, ...),
+				meth9 = cor.method9(errs, is.low, verbose=verbose, ...),
+				meth10 = cor.bayes.meth10(errs, is.low, arcsin.prior=FALSE, verbose=verbose, ...),
+				meth11 = cor.bayes.meth10(errs, is.low, arcsin.prior=TRUE, verbose=verbose, ...),
+				meth12 = cor.constant(errs, verbose=verbose, ...),
+				cor.moments(errs, is.low, method=method, verbose=verbose, ...)
+				)
+	return(c(cormat, list(kappa=kappa)))
+}
+
 
 "get.data.imputed" <- function(pred, ...) UseMethod("get.data.imputed")
 
