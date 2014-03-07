@@ -193,6 +193,7 @@ cor.bayes.meth10 <- function(errs, is.low, arcsin.prior=FALSE, standardize=TRUE,
 			}
 		}
 		diag(cor.res[[what]]) <- NA
+		med <- NA
 		if(all(is.na(cor.res[[what]]))) cor.res[[what]] <- NULL
 		else {
 			m <- mean(cor.res[[what]], na.rm=TRUE)
@@ -204,7 +205,8 @@ cor.bayes.meth10 <- function(errs, is.low, arcsin.prior=FALSE, standardize=TRUE,
 	}
 	if(verbose) 
 		cat('\nCor 10: ', round(med,2))
-	return(list(low=cor.res$low, high=if(is.null(cor.res$high)) cor.res$low else cor.res$high, corcoef=med))
+	return(list(low=if(is.null(cor.res$low)) cor.res$high else cor.res$low, 
+				high=if(is.null(cor.res$high)) cor.res$low else cor.res$high, corcoef=med))
 }
 
 rhofcn.nom <- function(rho, ss, n) {
