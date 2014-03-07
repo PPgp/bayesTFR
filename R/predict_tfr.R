@@ -3,7 +3,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						replace.output=FALSE,
 						start.year=NULL, nr.traj = NULL, thin = NULL, burnin=2000, 
 						use.diagnostics=FALSE,
-						use.tfr3=TRUE, burnin3=10000,
+						use.tfr3=TRUE, mcmc3.set=NULL, burnin3=10000,
 						mu=2.1, rho=0.8859, sigmaAR1=0.1016,
 						use.phase3.from = NULL,
 						use.correlation=FALSE,
@@ -14,12 +14,15 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 		if (class(mcmc.set) != 'bayesTFR.mcmc.set') {
 			stop('Wrong type of mcmc.set. Must be of type bayesTFR.mcmc.set.')
 			}
+		mcmc.set.passed <- TRUE
 	} else {		
 		mcmc.set <- get.tfr.mcmc(sim.dir, low.memory=low.memory, verbose=verbose)
+		mcmc.set.passed <- FALSE
 	}
 	has.phase3 <- FALSE
 	if(use.tfr3) {
-		has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
+		has.phase3 <- !is.null(mcmc3.set)
+		if(!has.phase3) has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
 		if(!has.phase3 && !is.null(use.phase3.from) && has.tfr3.mcmc(use.phase3.from)) has.phase3 <- TRUE
 		if(!has.phase3)
 			warning('No Phase III MCMCs available. Switching to constant AR(1) parameters.', immediate. = TRUE)
@@ -48,7 +51,8 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 			cat('\nUsing convergence settings: nr.traj=', nr.traj, ', burnin=', burnin, '\n')
 	}
 	invisible(make.tfr.prediction(mcmc.set, end.year=end.year, replace.output=replace.output,  
-					start.year=start.year, nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, burnin3=burnin3,
+					start.year=start.year, nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, 
+					mcmc3.set=mcmc3.set, burnin3=burnin3,
 					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1, use.phase3.from=use.phase3.from, 
 					use.correlation=use.correlation,
 					save.as.ascii=save.as.ascii,
@@ -505,7 +509,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	mid.years <- as.integer(c(if(suppl.T > 0) rownames(meta$suppl.data$tfr_matrix) else c(), rownames(tfr_matrix_reconstructed)))
 	thin3 <- NA
 	has.phase3 <- use.tfr3
-	mu.c.mean <- rho.c.mean <- NULL
+	mu.c.mean <- rho.c.mean <- meta3 <- meta3.pointer <- mc.meta3.pointer <- mcmc3.list.pointer <- NULL
 	if(has.phase3) {
 		mcmc3 <- NULL
 		if(is.null(mcmc3.set)) {
@@ -533,6 +537,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		rho <- mean(m3.par.values[,'rho'])
 		sigmaAR1 <- mean(m3.par.values[,'sigma.eps'])
 		mu.c.mean <- rho.c.mean <- rep(NA, nr_countries)
+		meta3 <- if(is.null(data3.meta)) mcmc3$meta else data3.meta
+		meta3.pointer <- newPointer(meta3)
+		mc.meta3.pointer <- newPointer(mcmc3$meta)
+		mcmc3.list.pointer <- newPointer(mcmc3$mcmc.list)
 	}
 	max.nr.project <- nr_project
 	all.T_end.min <- ltfr_matrix.all
@@ -540,15 +548,12 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	if (verbose) cat('Load country-specific parameters.\n')
 	cs.par.values.list <- cs.var.names <- theta_si.list <- country.objects <- all.tfr.list <- m3.par.values.cs.list <- list()
 	nmissing <- list()
-	meta3 <- if(is.null(data3.meta)) mcmc3$meta else data3.meta
-	meta3.pointer <- newPointer(meta3)
-	mc.meta3.pointer <- newPointer(mcmc3$meta)
 	mc.meta.pointer <- newPointer(mc.meta)
 	meta.pointer <- newPointer(meta)
 	mcmc.list.pointer <- newPointer(mcmc.set$mcmc.list)
 	load.mcmc.list.pointer <- newPointer(load.mcmc.set$mcmc.list)
 	load.meta.pointer <- newPointer(load.mcmc.set$meta)
-	mcmc3.list.pointer <- newPointer(mcmc3$mcmc.list)
+	
 	# country loop for preparing data for projections
 	if(!is.null(meta$use.mcmc.from)) {
 		country.obj <- get.country.object(meta$use.mcmc.from, mc.meta)
@@ -561,7 +566,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		country.obj <- get.country.object(country, meta, index=TRUE)
 		if(is.null(meta$use.mcmc.from)) {
 			dprep <- .prepare.country.spec.pars.for.predictions(country, country.obj, meta.pointer, mcmc.list.pointer, 
-														load.meta.pointer, load.mcmc.set.pointer, nr_simu, burnin,
+														load.meta.pointer, load.mcmc.list.pointer, nr_simu, burnin,
 														alpha.vars, delta.vars, has.phase3, mc.meta3.pointer, mcmc3.list.pointer, burnin3, thinning.index,
 														cs.par.values_hier)
 		}
