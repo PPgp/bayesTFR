@@ -885,8 +885,8 @@ getValue <- function(pointer)
 					cs.par.values[,d.var])
 	} else { #Tistau countries
     	# sample decline parameters from the hier distributions                 
-		Triangle4_tr_s <- rnorm(nr_simu, mean = cs.par.values_hier[,'Triangle4'], 
-										sd = cs.par.values_hier[, 'delta4'])
+		Triangle4_tr_s <- rnorm(nr_simu, mean = getValue(cs.par.values_hier)[,'Triangle4'], 
+										sd = getValue(cs.par.values_hier)[, 'delta4'])
 		Triangle_c4_s <- (meta$Triangle_c4.up*exp(Triangle4_tr_s) + meta$Triangle_c4.low)/(1+exp(Triangle4_tr_s))
 	
 		# need U and Triangle_c4 in cs... later in loop for start of phase III and prior on f_t
