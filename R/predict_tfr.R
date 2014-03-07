@@ -887,7 +887,7 @@ getValue <- function(pointer)
     	# sample decline parameters from the hier distributions                 
 		Triangle4_tr_s <- rnorm(nr_simu, mean = getValue(cs.par.values_hier)[,'Triangle4'], 
 										sd = getValue(cs.par.values_hier)[, 'delta4'])
-		Triangle_c4_s <- (meta$Triangle_c4.up*exp(Triangle4_tr_s) + meta$Triangle_c4.low)/(1+exp(Triangle4_tr_s))
+		Triangle_c4_s <- (getValue(meta)$Triangle_c4.up*exp(Triangle4_tr_s) + getValue(meta)$Triangle_c4.low)/(1+exp(Triangle4_tr_s))
 	
 		# need U and Triangle_c4 in cs... later in loop for start of phase III and prior on f_t
 		cs.par.values = rep(get.observed.tfr(country, getValue(meta), 'tfr_matrix_all')[getValue(meta)$tau_c[country]], nr_simu)
