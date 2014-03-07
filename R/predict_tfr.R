@@ -831,16 +831,16 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	}
 	invisible(bayesTFR.prediction)
 }
-
-newPointer <- function(inputValue) {
-	object <- new.env(parent=globalenv()) 
+newPointer <- function(inputValue){
+	object <- new.env(parent=globalenv())
 	object$value <- inputValue
-	class(object)='pointer'
+	class(object) <- 'pointer'
 	return(object)
-} 
+}
+
 getValue <- function(pointer)
 	return(pointer$value)
-	
+
 
 .prepare.country.spec.pars.for.predictions <- function(country, country.obj, meta, mcmc.list, load.meta, load.mcmc.list, nr_simu, burnin,
 														alpha.vars, delta.vars, has.phase3, meta3, mcmc3.list, burnin3, thinning.index,
