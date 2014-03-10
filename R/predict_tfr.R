@@ -808,8 +808,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
  		mean_sd[country,1,] <- apply(f_ps_future, 1, mean, na.rm = TRUE)
  		mean_sd[country,2,] <- apply(f_ps_future, 1, sd, na.rm = TRUE) 		
  	}
-	mcmc.set <- remove.tfr.traces(mcmc.set)
-	if(!is.null(data.meta)) mcmc.set$meta <- data.meta
+	load.mcmc.set <- remove.tfr.traces(load.mcmc.set)
+	if(!is.null(data.meta)) load.mcmc.set$meta <- data.meta
 	bayesTFR.prediction <- structure(list(
 				quantiles = PIs_cqp,
 				traj.mean.sd = mean_sd,
