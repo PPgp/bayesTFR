@@ -342,15 +342,16 @@ tfr.predict.subnat1BHM <- function(countries, my.tfr.file, sim.dir=file.path(get
 	mcmc3 <- if(has.p3) get.tfr3.mcmc(sim.dir) else NULL
 	result <- cor.mat <- NULL
 	for(country in countries){
-		#tmp.mcset <- wmcmc.set
 		country.obj <- get.country.object(country, wmeta)
 		if(verbose) 
 			cat('\nPredicting TFR for ', country.obj$name, '\n')
-		if(is.null(start.year)) start.year <- if(is.null(wpred$start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+5
+		if(is.null(start.year)) 
+			start.year <- if(is.null(wpred$start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+5
 						else wpred$start.year
 
 		meta <- mcmc.meta.ini.subnat(wmeta, country=country.obj$code, my.tfr.file=my.tfr.file, 
-									start.year=wmeta$start.year, present.year=wmeta$present.year, verbose=verbose)
+									start.year=min(if(is.null(cor.start.year)) wmeta$start.year else cor.start.year, wmeta$start.year),
+									present.year=wmeta$present.year, verbose=verbose)
 		this.output.dir <- file.path(output.dir, 'subnat', paste0('c', country.obj$code))
 		meta$output.dir <- this.output.dir		
 		if(file.exists(this.output.dir)) unlink(this.output.dir, recursive=TRUE)
@@ -374,17 +375,15 @@ tfr.predict.subnat1BHM <- function(countries, my.tfr.file, sim.dir=file.path(get
 							ar1pars=ar1pars, cor.start.year=cor.start.year, verbose=verbose)
 		}
 		meta[['use.mcmc.from']] <- country.obj$code
-		#meta[['use.mcmc.meta']] <- wmeta
-		meta$lambda_c[] <- wmeta$lambda_c[country.obj$index]
-		meta$id_Tistau <- if(country.obj$index %in% wmeta$id_Tistau) 1:nr.reg else c()
+		#meta$lambda_c[] <- wmeta$lambda_c[country.obj$index]
+		#meta$id_Tistau <- if(country.obj$index %in% wmeta$id_Tistau) 1:nr.reg else c()
 		data3.meta <- NULL	
 		if(has.p3) {
-			#meta[['use.mcmc.meta3']] <- mcmc3$meta
 			data3.meta <- mcmc3$meta
-			data3.meta$id_phase3 <-  if(country.obj$index %in% mcmc3$meta$id_phase3) 1:nr.reg  else c()
+			# All sub-regions set as phase3 in order for all of them to draw from country-specific PIII parameters
+			data3.meta$id_phase3 <- if(country.obj$index %in% mcmc3$meta$id_phase3) 1:nr.reg  else c()
 			data3.meta$nr.countries <- length(mcmc3$meta$id_phase3)
 		}
-		#tmp.mcset$meta <- meta
 		result[[as.character(country)]] <- make.tfr.prediction(mcmc.set=wmcmc.set, start.year=start.year,
 										use.correlation=use.correlation, use.tfr3=has.p3, mcmc3.set=mcmc3, burnin3=wpred$burnin3,
 										correlation.matrices=cor.mat, output.dir=this.output.dir, 
@@ -509,7 +508,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	mid.years <- as.integer(c(if(suppl.T > 0) rownames(meta$suppl.data$tfr_matrix) else c(), rownames(tfr_matrix_reconstructed)))
 	thin3 <- NA
 	has.phase3 <- use.tfr3
-	mu.c.mean <- rho.c.mean <- meta3 <- meta3.pointer <- mc.meta3.pointer <- mcmc3.list.pointer <- NULL
+	mu.c.mean <- rho.c.mean <- meta3 <- mc.meta3.pointer <- mcmc3.list.pointer <- NULL
 	if(has.phase3) {
 		mcmc3 <- NULL
 		if(is.null(mcmc3.set)) {
@@ -538,7 +537,6 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		sigmaAR1 <- mean(m3.par.values[,'sigma.eps'])
 		mu.c.mean <- rho.c.mean <- rep(NA, nr_countries)
 		meta3 <- if(is.null(data3.meta)) mcmc3$meta else data3.meta
-		meta3.pointer <- newPointer(meta3)
 		mc.meta3.pointer <- newPointer(mcmc3$meta)
 		mcmc3.list.pointer <- newPointer(mcmc3$mcmc.list)
 	}
@@ -723,6 +721,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			  									all.f_ps[icountry,year-2,s]-mu.c[country])))
 				 		}
 		  			}
+		  			#if(s==5) {
+		  			#	cobj <- get.country.object(country, meta, index=TRUE)
+		  			#	print(c(year, cobj$name, c('II', 'III')[is.in.phase3[icountry]+1]))
+		  			#}
 		  			# Simulate projection
 					if (!is.in.phase3[icountry]){ # Phase II
 						new.tfr <- (all.f_ps[icountry,year-1,s]- DLcurve(theta_si.list[[country]][s,], all.f_ps[icountry,year-1,s], 
@@ -1589,11 +1591,10 @@ tfr.correlation.subnat2 <- function(mcmc.set, mcmc3.set, meta, country,
 									method=c('meth12', 'meth11', 'meth10', 'meth9', 'meth8'), 
 									burnin=0, thin=1, burnin3=0, 
 									ar1pars=NULL, kappa=5, cor.start.year=NULL, verbose=FALSE, ...) {
-	wmeta <- mcmc.set$meta
 	method <- match.arg(method)
 	errs <- is.low <- matrix(NA, nrow=meta$T_end, ncol=meta$nr_countries, 
 						dimnames=list(dimnames(meta$tfr_matrix)[[1]], meta$regions$country_code))
-	country.obj <- get.country.object(country, wmeta)
+	country.obj <- get.country.object(country, mcmc.set$meta) # from world meta
 	has.phase3 <- !is.null(mcmc3.set)
 	if(has.phase3) {
 		if(length(mcmc3.set$mcmc.list)==0) {
