@@ -165,9 +165,8 @@ cor.bayes <- function(errs, is.low, method=c('mean', 'mode'), scale.errors=FALSE
 
 cor.bayes.meth10 <- function(errs, is.low, arcsin.prior=FALSE, standardize=TRUE, verbose=FALSE, ...) {
 	years <- rep(rownames(errs), each=ncol(errs))
-	if(standardize)
-		errs <- errs/sqrt(mean(errs^2, na.rm=TRUE)) 
-	errs.high <- errs.low <- errs
+	errs.st <- if(standardize) errs/sqrt(mean(errs^2, na.rm=TRUE))  else errs
+	errs.high <- errs.low <- errs.st
 	errs.high[is.low] <- NA
 	errs.low[!is.low] <- NA
 	errs.list <- list(high=errs.high, low=errs.low)
@@ -205,6 +204,10 @@ cor.bayes.meth10 <- function(errs, is.low, arcsin.prior=FALSE, standardize=TRUE,
 	}
 	if(verbose) 
 		cat('\nCor 10: ', round(med,2))
+	if(is.null(cor.res$low) && is.null(cor.res$high)) {
+		warning('Correlation method failed. Switching to method 9.')
+		return(cor.method9(errs, is.low, verbose=verbose)
+	}
 	return(list(low=if(is.null(cor.res$low)) cor.res$high else cor.res$low, 
 				high=if(is.null(cor.res$high)) cor.res$low else cor.res$high, corcoef=med))
 }
