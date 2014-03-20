@@ -206,7 +206,7 @@ cor.bayes.meth10 <- function(errs, is.low, arcsin.prior=FALSE, standardize=TRUE,
 		cat('\nCor 10: ', round(med,2))
 	if(is.null(cor.res$low) && is.null(cor.res$high)) {
 		warning('Correlation method failed. Switching to method 9.')
-		return(cor.method9(errs, is.low, verbose=verbose)
+		return(cor.method9(errs, is.low, verbose=verbose))
 	}
 	return(list(low=if(is.null(cor.res$low)) cor.res$high else cor.res$low, 
 				high=if(is.null(cor.res$high)) cor.res$low else cor.res$high, corcoef=med))
