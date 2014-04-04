@@ -726,9 +726,13 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		  			#	print(c(year, cobj$name, c('II', 'III')[is.in.phase3[icountry]+1]))
 		  			#}
 		  			# Simulate projection
-					if (!is.in.phase3[icountry]){ # Phase II
-						new.tfr <- (all.f_ps[icountry,year-1,s]- DLcurve(theta_si.list[[country]][s,], all.f_ps[icountry,year-1,s], 
-		                                meta$dl.p1, meta$dl.p2) - W[icountry,year]*S11[icountry])
+					if (!is.in.phase3[icountry]){ # Phase II						
+						old.tfr <- all.f_ps[icountry,year-1,s]
+						# for subnational TFR get decrements based on U_c as maximum (for TFR larger than U_c the decrements would be close to zero)
+						if(!is.null(meta$use.mcmc.from) && all.f_ps[icountry,year-1,s] > sum(theta_si.list[[country]][s,1:4]))
+							old.tfr <- sum(theta_si.list[[country]][s,1:4])
+						new.tfr <- (all.f_ps[icountry,year-1,s]- DLcurve(theta_si.list[[country]][s,], old.tfr, meta$dl.p1, meta$dl.p2) - 
+										W[icountry,year]*S11[icountry])
 						# get errors
 						if(boost.first.period.in.phase2 && is.element(country, meta$id_Tistau) && (year == first.projection[icountry])) {
 							eps.mean <- tau.par.values[s, 'mean_eps_tau']
