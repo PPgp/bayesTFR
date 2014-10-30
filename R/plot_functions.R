@@ -913,10 +913,8 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
 					resolution=c("coarse","low","less islands","li","high"),
 					device.args=NULL, data.args=NULL, ...
 				) {
-	require(rworldmap)
-	require(rgdal)
 	resolution <- match.arg(resolution)
-	if(resolution=='high') require(rworldxtra)
+	#if(resolution=='high') require(rworldxtra)
 	data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=year, 
 									par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
 	#data.period.base <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=2013, 
@@ -925,11 +923,13 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
 	data <- data.period$data
 	period <- data.period$period
 	tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
-	map <- getMap(resolution=resolution)
+	map <- rworldmap::getMap(resolution=resolution)
 	#first get countries excluding Antarctica which crashes spTransform (says the help page for joinCountryData2Map)
-	sPDF <- map[-which(map$ADMIN=='Antarctica'), ]
-	#transform map to the Robinson projection
-	sPDF <- spTransform(sPDF, CRSobj=CRS("+proj=robin +ellps=WGS84"))
+	sPDF <- map[-which(map$ADMIN=='Antarctica'), ]	
+	if(requireNamespace("rgdal", quietly=TRUE)) {
+		#transform map to the Robinson projection
+		sPDF <- sp::spTransform(sPDF, CRSobj=sp::CRS("+proj=robin +ellps=WGS84"))
+	}
 	## recode missing UN codes and UN member states
 	sPDF$UN <- sPDF$ISO_N3
 	## N. Cyprus -> assign to Cyprus
@@ -951,10 +951,10 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
 		main <- paste(period, .map.main.default(pred, data.period), quantile)
 	}
 	if (device != 'dev.cur')
-		do.call('mapDevice', c(list(device=device), device.args))
-	mapParams<-mapCountryData(sPDF, nameColumnToPlot='tfr', addLegend=FALSE, mapTitle=main, ...
+		do.call(rworldmap::mapDevice, c(list(device=device), device.args))
+	mapParams<-rworldmap::mapCountryData(sPDF, nameColumnToPlot='tfr', addLegend=FALSE, mapTitle=main, ...
 	)
-	do.call(addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all'))
+	do.call(rworldmap::addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all'))
 	#do.call(addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all', sigFigs=2, legendShrink=0.8, tcl=-0.3, digits=1))
 }
 
@@ -974,7 +974,6 @@ bdem.map.gvis.bayesTFR.prediction <- function(pred, year=NULL, quantile=0.5, pi=
 
 .do.gvis.bdem.map <- function(what, title, pred, year=NULL, quantile=0.5, pi=80, 
 									par.name=NULL, adjusted=FALSE, ...) {
-	require(googleVis)
 	data.period <- get.data.for.worldmap(pred, quantile, year=year, 
 									par.name=par.name, projection.index=1, adjusted=adjusted, pi=pi, ...)
 	mapdata <- data.period$data
@@ -1010,14 +1009,14 @@ bdem.map.gvis.bayesTFR.prediction <- function(pred, year=NULL, quantile=0.5, pi=
 		hovervar <- ''
 	}
 	col <- c('0x0000CC', '0x00CCFF', '0x33FF66', '0xFFFF66', '0xFF9900', '0xFF3300')
-	geo <- gvisGeoMap(data, locationvar="iso", numvar=what, hovervar=hovervar, 
+	geo <- googleVis::gvisGeoMap(data, locationvar="iso", numvar=what, hovervar=hovervar, 
 				options=list(height=500, width=900, dataMode='regions',
 				colors=paste('[', paste(col, collapse=', '), ']')))
 
     #geo$html$caption <- paste(title, 'in', period,'<br>\n')
     geo$html$caption <- paste(title, period, .map.main.default(pred, data.period), quantile)
     bdem.data <- data[,c('un', 'iso', 'name', what, lower.name, upper.name)]
-	gvis.table <- gvisTable(bdem.data, 
+	gvis.table <- googleVis::gvisTable(bdem.data, 
 							options=list(width=600, height=600, page='disable', pageSize=198))
 	page <- list(type="MapTable", 
  			 	 chartid=format(Sys.time(), "BdemMap-%Y-%m-%d-%H-%M-%S"), 

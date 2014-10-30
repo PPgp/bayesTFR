@@ -1,3 +1,7 @@
+4.0-8 (10/30/2014)
+------
+Removed 'require' calls.
+
 4.0-7 (10/29/2014)
 ------
 Accept 'name' as a column name in the tfr dataset. 

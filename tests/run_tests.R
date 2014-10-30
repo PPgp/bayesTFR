@@ -11,7 +11,7 @@ test.existing.simulation()
 
 ## disable the following tests when submitting to CRAN
 ## to speed-up the checking procedure
-t# est.DLcurve()
+# test.DLcurve()
 # test.TFRtrajectories()
 # test.plot.density()
 # test.get.parameter.traces()
@@ -24,5 +24,5 @@ t# est.DLcurve()
 # test.thinned.simulation()
 # test.thinned.simulation(compression='bz')
 # test.run.mcmc.simulation.auto()
- test.run.mcmc.simulation.auto.parallel()
+# test.run.mcmc.simulation.auto.parallel()
 # test.plot.all()
