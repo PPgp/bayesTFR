@@ -143,7 +143,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 			for(loop in 2:auto.conf$max.loops) {
 				if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
 				mcmc.set <- continue.tfr.mcmc(iter=auto.conf$iter.incr, output.dir=output.dir, nr.nodes=nr.nodes,
-										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
+										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter, ...)
 				diag <- try(tfr.diagnose(sim.dir=output.dir, keep.thin.mcmc=TRUE, 
 							thin=auto.conf$thin, burnin=auto.conf$burnin,
 							verbose=verbose))
@@ -232,7 +232,7 @@ continue.tfr.mcmc <- function(iter, chain.ids=NULL, output.dir=file.path(getwd()
 			for(loop in 2:auto.conf$max.loops) {
 				if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
 				mcmc.set <- continue.tfr.mcmc(iter=auto.conf$iter.incr, output.dir=output.dir, nr.nodes=nr.nodes,
-										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
+										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter, ...)
 				diag <- try(tfr.diagnose(sim.dir=output.dir, keep.thin.mcmc=TRUE, 
 							thin=auto.conf$thin, burnin=auto.conf$burnin,
 							verbose=verbose))
@@ -332,7 +332,7 @@ init.nodes <- function() {
 }
 
 set.default.cltype <- function() {
-	if(!is.element(getClusterOption("type"), c("MPI", "SOCK")))
+	if(!is.element(getClusterOption("type"), c("MPI", "SOCK"))) 
 		setDefaultClusterOptions(type="SOCK")
 }
 

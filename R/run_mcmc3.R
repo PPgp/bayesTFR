@@ -73,6 +73,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 								), class='bayesTFR.mcmc.meta')	
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
 	meta <- bayesTFR.mcmc.meta
+	if(meta$nr.countries <= 0) return(NULL)
 	meta$parent <- mc$meta
 	meta$regions <- mc$meta$regions
 	# propagate initial values for all chains if needed
@@ -109,7 +110,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 			for(loop in 2:auto.conf$max.loops) {
 				if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
 				mcmc.set <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=auto.conf$iter.incr, nr.nodes=nr.nodes,
-										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
+										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter, ...)
 				diag <- try(tfr3.diagnose(sim.dir=sim.dir, express=TRUE, 
 							thin=auto.conf$thin, burnin=auto.conf$burnin,
 							verbose=verbose))

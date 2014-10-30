@@ -340,6 +340,46 @@ test.run.mcmc.simulation.auto <- function() {
 	unlink(sim.dir, recursive=TRUE)
 }
 
+test.run.mcmc.simulation.auto.parallel <- function() {
+	sim.dir <- tempfile()
+	# run MCMC
+	test.name <- 'running auto Phase II MCMC in parallel'
+	start.test(test.name)
+	m <- run.tfr.mcmc(iter='auto', output.dir=sim.dir, parallel=TRUE, cltype='SOCK',
+					auto.conf=list(iter=10, iter.incr=5, max.loops=3, nr.chains=2, thin=1, burnin=5))
+	stopifnot(get.total.iterations(m$mcmc.list, 0) == 40)
+	test.ok(test.name)
+
+	test.name <- 'continuing auto Phase II MCMC in parallel'
+	start.test(test.name)
+	m <- continue.tfr.mcmc(iter='auto', output.dir=sim.dir, auto.conf=list(max.loops=2), parallel=TRUE, cltype='SOCK')
+	stopifnot(get.total.iterations(m$mcmc.list, 0) == 60)
+	test.ok(test.name)
+	
+	test.name <- 'running auto Phase III MCMC in parallel'
+	start.test(test.name)
+	m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter='auto', thin=1, parallel=TRUE, cltype='SOCK',
+					auto.conf=list(iter=10, iter.incr=5, max.loops=3, nr.chains=2, thin=1, burnin=5))
+	stopifnot(get.total.iterations(m3$mcmc.list, 0) == 40)
+	test.ok(test.name)
+
+	test.name <- 'continuing auto Phase III MCMC in parallel'
+	start.test(test.name)
+	m3 <- continue.tfr3.mcmc(sim.dir=sim.dir, iter='auto', auto.conf=list(max.loops=2), parallel=TRUE, cltype='SOCK' )
+	stopifnot(get.total.iterations(m$mcmc.list, 0) == 60)
+	test.ok(test.name)
+
+	test.name <- 'running auto Phase II MCMC in parallel with ClusterOptions'
+	start.test(test.name)
+	setDefaultClusterOptions(type='SOCK')
+	m <- run.tfr.mcmc(iter='auto', output.dir=sim.dir, parallel=TRUE, replace.output=TRUE,
+					auto.conf=list(iter=10, iter.incr=5, max.loops=3, nr.chains=2, thin=1, burnin=5))
+	stopifnot(get.total.iterations(m$mcmc.list, 0) == 40)
+	test.ok(test.name)
+
+	unlink(sim.dir, recursive=TRUE)
+}
+
 test.imputation <- function() {
 	sim.dir <- tempfile()
 

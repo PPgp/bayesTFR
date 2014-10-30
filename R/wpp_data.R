@@ -75,6 +75,7 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 			tfr_data <- cbind(tfr_data, last.observed=present.year)
 		if(!is.element('include_code', colnames(tfr_data)))
 			tfr_data <- cbind(tfr_data, include_code=rep(-1, nrow(tfr_data)))
+		colnames(tfr_data)[colnames(tfr_data)=='name'] <- 'country'
 	}
 	replaced <- c()
 	added <- c()
@@ -83,6 +84,7 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 		cat('Reading file ', my.tfr.file, '.\n')
 		my.tfr_data <- read.tfr.file(file=my.tfr.file)
 		cols.to.use <- colnames(my.tfr_data)[is.element(colnames(my.tfr_data), colnames(tfr_data))]
+		colnames(my.tfr_data)[colnames(my.tfr_data)=='name'] <- 'country'
 		# don't overwrite country_name
 		cols.wo.name <- setdiff(cols.to.use, 'country')
 		if (!is.element('country_code', cols.to.use))

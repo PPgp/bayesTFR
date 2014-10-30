@@ -1,3 +1,13 @@
+4.0-7 (10/29/2014)
+------
+Accept 'name' as a column name in the tfr dataset. 
+
+4.0-6 (10/28/2014)
+------
+Bug fixed that caused parameters for parallel processing not being passed to continue.tfr.mcmc if iter='auto'.
+
+run.tfr3.mcmc returns NULL if no country is in phase III (before it failed with error). 
+
 4.0-4/5 (02/07/2014)
 -------
 Added an option for switching the method for finding the beginning of phase II (tau_c) 
