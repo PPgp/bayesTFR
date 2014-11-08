@@ -53,7 +53,7 @@ get.tfr3.mcmc <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), ...) {
 	mc <- get.tfr.mcmc(file.path(sim.dir, 'phaseIII'), ...)
 	mc$meta$parent <- parent.mc$meta
 	mc$meta$regions <- parent.mc$meta$regions
-	if(length(mc$mcmc.list) > 0) { 
+	if(length(mc$mcmc.list) > 0) {
 		for(chain in 1:length(mc$mcmc.list)) {
 			mc$mcmc.list[[chain]]$meta <- mc$meta
 		}
@@ -96,8 +96,8 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	if(verbose) cat('\nStoring thinned mcmc:')
 	# store the meta object
 	meta$output.dir <- file.path(
-			if(is.null(output.dir)) meta$output.dir else output.dir, 
-				paste('thinned_mcmc', thin, burnin, sep='_'))
+		if(is.null(output.dir)) meta$output.dir else output.dir, 
+			paste('thinned_mcmc', thin, burnin, sep='_'))
 	if(!file.exists(meta$output.dir)) 
 		dir.create(meta$output.dir, recursive=TRUE)
 	store.bayesTFR.meta.object(meta, meta$output.dir)
@@ -114,9 +114,10 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	thinned.mcmc$length <- nr.points
 	thinned.mcmc$finished.iter <- nr.points
 	thinned.mcmc$compression.type <- meta$compression.type
-	thinned.mcmc$output.dir <- 'mc1'
+	thinned.mcmc$output.dir <- 'mc1'	
 	outdir.thin.mcmc <- file.path(meta$output.dir, 'mc1')
 	if(!file.exists(outdir.thin.mcmc)) dir.create(outdir.thin.mcmc)
+
 	store.bayesTFR.object(thinned.mcmc, outdir.thin.mcmc)
 	
 	if(verbose) cat('\nStoring country-independent parameters ...')

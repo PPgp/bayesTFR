@@ -109,7 +109,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 			for(loop in 2:auto.conf$max.loops) {
 				if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
 				mcmc.set <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=auto.conf$iter.incr, nr.nodes=nr.nodes,
-										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
+										  parallel=parallel, verbose=verbose, verbose.iter=verbose.iter, ...)
 				diag <- try(tfr3.diagnose(sim.dir=sim.dir, express=TRUE, 
 							thin=auto.conf$thin, burnin=auto.conf$burnin,
 							verbose=verbose))

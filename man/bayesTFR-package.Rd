@@ -15,8 +15,8 @@ using a Bayesian hierarchical model (BHM) and the United Nations demographic tim
 \details{
 \tabular{ll}{
 Package: \tab bayesTFR\cr
-Version: \tab 4.0-5\cr
-Date: \tab 2014-02-07\cr
+Version: \tab 4.0-9\cr
+Date: \tab 2014-11-6\cr
 License: \tab GPL (>= 2)\cr
 URL: \tab \url{http://bayespop.csss.washington.edu}\cr
 }
