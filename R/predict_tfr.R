@@ -543,7 +543,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			f_ps_future[1,] <- quantile(f_ps_future[1,], 0.5, na.rm = TRUE) # set all trajectories in the first time period to the median
 			tfr_matrix_reconstructed[(ltfr_matrix-fps.end.obs.index+2):ltfr_matrix,country] <- apply(
 											all.f_ps[icountry,2:fps.end.obs.index,,drop=FALSE],
-												1, quantile, 0.5, na.rm = TRUE)
+												c(1,2), quantile, 0.5, na.rm = TRUE)
 			if (verbose) 
 				cat('\t', nmissing[[country]], 'data points reconstructed for', country.objects[[country]]$name,'\n')
 		}
