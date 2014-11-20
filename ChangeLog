@@ -1,4 +1,10 @@
-4.0-8 (10/30/2014)
+4.0-10 (11/19/2014)
+------
+Fixed bug in imputing values.
+
+Added South Sudan to iso3166; UN code for Sudan updated. 
+
+4.0-8/9 (10/30/2014)
 ------
 Removed 'require' calls.
 
