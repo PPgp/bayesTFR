@@ -332,11 +332,11 @@ init.nodes <- function() {
 }
 
 set.default.cltype <- function() {
-	if(!is.element(snow::getClusterOption("type"), c("MPI", "SOCK"))) 
-		snow::setDefaultClusterOptions(type="SOCK")
+#	if(!is.element(snow::getClusterOption("type"), c("MPI", "SOCK"))) 
+#		snow::setDefaultClusterOptions(type="SOCK")
 }
 
-bDem.performParallel <- function(...) {
+bDem.performParallel <- function(..., cltype='SOCK') {
 	set.default.cltype()
-	snowFT::performParallel(...)
+	snowFT::performParallel(..., cltype=cltype)
 }

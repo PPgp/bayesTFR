@@ -371,7 +371,7 @@ test.run.mcmc.simulation.auto.parallel <- function() {
 
 	test.name <- 'running auto Phase II MCMC in parallel with ClusterOptions'
 	start.test(test.name)
-	snow::setDefaultClusterOptions(type='SOCK')
+	#snow::setDefaultClusterOptions(type='SOCK')
 	m <- run.tfr.mcmc(iter='auto', output.dir=sim.dir, parallel=TRUE, replace.output=TRUE,
 					auto.conf=list(iter=10, iter.incr=5, max.loops=3, nr.chains=2, thin=1, burnin=5))
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 40)

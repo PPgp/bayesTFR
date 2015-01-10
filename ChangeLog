@@ -1,3 +1,7 @@
+4.0.11 (11/21/2014)
+------
+Removed usage of snow functions since CRAN doesn't like them.
+
 4.0-10 (11/19/2014)
 ------
 Fixed bug in imputing values.
