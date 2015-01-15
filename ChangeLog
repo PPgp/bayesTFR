@@ -1,4 +1,9 @@
-4.0.11 (11/21/2014)
+4.1.0/1 (1/14/2015) [CRAN]
+------
+Added option of overwriting UNlocations file, i.e. easily include new countries in simulations. 
+For this, function run.tfr.mcmc got an argument "my.locations.file".
+
+4.0.11 (11/21/2014) [CRAN]
 ------
 Removed usage of snow functions since CRAN doesn't like them.
 
@@ -8,11 +13,11 @@ Fixed bug in imputing values.
 
 Added South Sudan to iso3166; UN code for Sudan updated. 
 
-4.0-8/9 (10/30/2014)
+4.0-8/9 (10/30/2014) [CRAN]
 ------
 Removed 'require' calls.
 
-4.0-7 (10/29/2014)
+4.0-7 (10/29/2014) 
 ------
 Accept 'name' as a column name in the tfr dataset. 
 
@@ -22,7 +27,7 @@ Bug fixed that caused parameters for parallel processing not being passed to con
 
 run.tfr3.mcmc returns NULL if no country is in phase III (before it failed with error). 
 
-4.0-4/5 (02/07/2014)
+4.0-4/5 (02/07/2014) [CRAN]
 -------
 Added an option for switching the method for finding the beginning of phase II (tau_c) 
 to the method prior version 2.0 (for reproducibility of former experiments). To turn it on, use 

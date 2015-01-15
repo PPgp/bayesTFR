@@ -32,16 +32,35 @@ test.load.UNtfr.and.my.tfr.file <- function() {
 	test.ok(test.name)
 }
 
-test.load.UNlocations <- function(wpp.year=2008) {
+test.load.UNlocations <- function(wpp.year=2012) {
 	test.name <- 'loading WPP location file'
 	start.test(test.name)
-	tfr <- bayesTFR:::read.UNtfr(wpp.year)
+	tfr <- suppressWarnings(bayesTFR:::read.UNtfr(wpp.year)) # if wpp.year=2008, there are warnings about non-existent tfr_supplemental dataset
 	locs <- bayesTFR:::read.UNlocations(tfr$data.object$data, wpp.year)
 	stopifnot(length(dim(locs$loc_data)) == 2)
 	stopifnot(all(is.element(c('country_code', 'include_code'), colnames(locs$loc_data))))
 	stopifnot(dim(locs$loc_data)[1] > 200)
 	stopifnot(all(is.element(intersect(c(0,1,2), locs$loc_data[,'include_code']), c(0,1,2))))
 	test.ok(test.name)
+	test.name <- 'loading WPP location file with my.locations.file'
+	start.test(test.name)
+	new.locations <- data.frame(country_code=9999, name='my location', reg_code=9999, area_code=8888, reg_name='my region', area_name='my area', location_type=4)
+	f <- tempfile()
+	write.table(new.locations, file=f, sep='\t', row.names=FALSE)
+	mylocs <- bayesTFR:::read.UNlocations(tfr$data.object$data, wpp.year, my.locations.file=f)
+	# stopifnot(dim(mylocs$loc_data)[1] == dim(locs$loc_data)[1]+1) # has one country more
+	# stopifnot(is.element(9999, mylocs$loc_data$country_code))
+	e <- new.env()
+	do.call("data", list("UNlocations", package=paste0("wpp", wpp.year), envir=e))
+	# this for some reason causes a warning "‘match’ requires vector arguments"
+	#data("UNlocations", package=paste0("wpp", wpp.year), envir=e) 
+	my.locations <- e$UNlocations[1:100,]
+	my.locations[my.locations$country_code==392,'area_code'] <- 123456
+	write.table(my.locations, file=f, sep='\t', row.names=FALSE)
+	mylocs <- bayesTFR:::read.UNlocations(tfr$data.object$data, wpp.year, my.locations.file=f)
+	stopifnot(is.element(123456, mylocs$loc_data$area_code))
+	test.ok(test.name)
+	unlink(f)
 }
 
 test.create.tfr.matrix <- function(wpp.year=2008) {
@@ -644,4 +663,3 @@ test.estimate.mcmc.with.suppl.data <- function() {
 	test.ok(test.name)
 	unlink(sim.dir, recursive=TRUE)
 }
-	

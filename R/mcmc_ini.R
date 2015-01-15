@@ -197,7 +197,7 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
 mcmc.meta.ini <- function(...,
 						U.c.low,
 						start.year=1950, present.year=2010, 
-						wpp.year=2008, my.tfr.file = NULL, 
+						wpp.year=2008, my.tfr.file = NULL, my.locations.file = NULL,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						verbose=FALSE
 					 ) {
@@ -210,15 +210,15 @@ mcmc.meta.ini <- function(...,
 	mcmc.input$present.year <- present.year
 	mcmc.input$wpp.year <- wpp.year
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
-										my.tfr.file = my.tfr.file, verbose=verbose)
+										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose)
 
-	meta <- do.meta.ini(mcmc.input, tfr.with.regions, my.tfr.file=my.tfr.file, 
+	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
 						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose)
 	return(structure(c(mcmc.input, meta), class='bayesTFR.mcmc.meta'))
 }
 	
 	
-do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_gammas = NULL, 
+do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
 						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE) {
 	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
@@ -407,7 +407,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 }
 
 mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL, 
-									burnin = 200, verbose=FALSE) {
+									my.locations.file=NULL, burnin = 200, verbose=FALSE) {
 	update.regions <- function(reg, ereg, id.replace, is.new, is.old) {
 		nreg <- list()
 		for (name in c('code', 'area_code', 'country_code')) {
@@ -424,7 +424,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	meta <- mcmc.set$meta
 	#create tfr matrix only for the extra countries
 	tfr.with.regions <- set.wpp.extra(meta, countries=countries, 
-									  my.tfr.file = my.tfr.file, verbose=verbose)
+									  my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose)
 	if(is.null(tfr.with.regions)) return(list(meta=meta, index=c()))
 	has.mock.suppl <- FALSE
 	if(is.null(tfr.with.regions$suppl.data$regions) && !is.null(meta$suppl.data$regions)) {
@@ -439,7 +439,6 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 		has.mock.suppl <- TRUE
 	}
 	Emeta <- do.meta.ini(meta, tfr.with.regions=tfr.with.regions, 
-								my.tfr.file=my.tfr.file, 
 								use.average.gammas.cov=TRUE, burnin=burnin,
 						 		verbose=verbose)
 			 		
