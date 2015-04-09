@@ -160,8 +160,8 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
  		if (length(loc_index)<=0)
  			stop('Country ', data$country_code[i], ' not found in the location dataset of wpp', wpp.year, '.')
  		incl.code <- if(data$include_code[i] >= 0) data$include_code[i] else loc_data$include_code[loc_index]
- 		include[i] <- incl.code == 2
  		prediction.only[i] <- incl.code == 1
+ 		include[i] <- incl.code == 2 | prediction.only[i] 		
 	}
 	return(list(loc_data=loc_data, include=include, prediction.only=prediction.only, include.code=incl.code))
 }
