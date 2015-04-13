@@ -23,17 +23,19 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
                                   min(var.value + (1-v)*var.width,var.up))
 
         add_to_sd_Tc_prop <- matrix(NA, nrow(mcmc$add_to_sd_Tc), ncol(mcmc$add_to_sd_Tc))
-        while (TRUE){
+        
+        #while (TRUE){
+        for(i in 1:50) {
                 var_prop <- runif(1,interval[1], interval[2])
                 abS.values[[what]] <- var_prop
                 for (country in 1:mcmc$meta$nr_countries){
-                		data <- get.observed.tfr(country, mcmc$meta)
-                        add_to_sd_Tc_prop[,country] <- (data[-mcmc$meta$T_end_c[country]] - abS.values$S)*
-                                ifelse(data[-mcmc$meta$T_end_c[country]] > abS.values$S, 
+                        add_to_sd_Tc_prop[,country] <- (mcmc$data.list[[country]][-mcmc$meta$T_end_c[country]] - abS.values$S)*
+                                ifelse(mcmc$data.list[[country]][-mcmc$meta$T_end_c[country]] > abS.values$S, 
                                 -abS.values$a, abS.values$b)
-                }       
-                if (log_cond_abf_sd(add_to_sd_Tc_prop, mcmc$const_sd, mcmc$sigma0, eps_Tc_temp, 
-                                         mcmc$const_sd_dummie_Tc, mcmc$meta$sigma0.min) >= z) {
+                }  
+                like <- log_cond_abf_sd(add_to_sd_Tc_prop, mcmc$const_sd, mcmc$sigma0, eps_Tc_temp, 
+                                         mcmc$const_sd_dummie_Tc, mcmc$meta$sigma0.min)     
+                if (like >= z) {
                         mcmc[[var.name]] <- var_prop
                         mcmc$add_to_sd_Tc <- add_to_sd_Tc_prop
                         return()
@@ -44,8 +46,13 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
                         } else {
                                 interval[2] <- var_prop
                         }
+                        if(abs(interval[1]-interval[2]) < 1e-10) break
                 } # end else
         }
+        mcmc[[var.name]] <- var_prop
+        mcmc$add_to_sd_Tc <- add_to_sd_Tc_prop
+        warning("Cannot find likelihood increase for ", what, ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
+        			"New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
 }
 
 mcmc.update.sigma0const <- function(what, log.like.func, eps_Tc_temp, mcmc) {
@@ -64,11 +71,13 @@ mcmc.update.sigma0const <- function(what, log.like.func, eps_Tc_temp, mcmc) {
         interval <- c(max(var.value - v*var.width, var.low),
                                   min(var.value + (1-v)*var.width,var.up))
 
-        while (TRUE){
+        #while (TRUE){
+        for(i in 1:50) {
                 var_prop <- runif(1,interval[1], interval[2])
                 var.values[[what]] <- var_prop
-                if (eval(call(log.like.func, mcmc$add_to_sd_Tc, var.values[['const']], var.values[['sigma0']], 
-                                 eps_Tc_temp, mcmc$const_sd_dummie_Tc, mcmc$meta$sigma0.min)) >= z) {
+                like <- eval(call(log.like.func, mcmc$add_to_sd_Tc, var.values[['const']], var.values[['sigma0']], 
+                                 eps_Tc_temp, mcmc$const_sd_dummie_Tc, mcmc$meta$sigma0.min))
+                if (like >= z) {
                         mcmc[[var.name]] <- var_prop
                         return()
                 } else {
@@ -78,8 +87,12 @@ mcmc.update.sigma0const <- function(what, log.like.func, eps_Tc_temp, mcmc) {
                         } else {
                                 interval[2] <- var_prop
                         }
+                        if(abs(interval[1]-interval[2]) < 1e-10) break
                 } # end else
         }
+        mcmc[[var.name]] <- var_prop
+        warning("Cannot find likelihood increase for ", what, ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
+        			"New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
 }
 
 mcmc.update.abSsigma0const <- function(mcmc, id.not.early.index) {
@@ -136,7 +149,8 @@ mcmc.update.Triangle_c4 <- function(country, mcmc) {
         interval <- c(Triangle_c4_trans - v*mcmc$meta$Triangle_c4.trans.width, 
                                   Triangle_c4_trans + (1-v)*mcmc$meta$Triangle_c4.trans.width)
         
-        while (TRUE){
+        #while (TRUE){
+        for(i in 1:50) {
                 Triangle_c4_trans_prop <- runif(1,interval[1], interval[2])
                 Triangle_c4_prop <- (mcmc$meta$Triangle_c4.up*exp(Triangle_c4_trans_prop) +mcmc$meta$Triangle_c4.low)/
                                                 (1+exp(Triangle_c4_trans_prop))
@@ -146,12 +160,11 @@ mcmc.update.Triangle_c4 <- function(country, mcmc) {
                                                                 Triangle_c4_prop, 
                                                 mcmc$d_c[country])
                   eps_T_prop <- get.eps.T(theta_prop,country, mcmc$meta)
-                  if (.C("log_cond_Triangle_c4_trans", Triangle_c4_trans_prop, eps_T_prop,
+                  like <- .C("log_cond_Triangle_c4_trans", Triangle_c4_trans_prop, eps_T_prop,
                 			mcmc$sd_Tc[epsT.idx,country],
                 			mcmc$mean_eps_Tc[epsT.idx,country], lepsT.idx, mcmc$Triangle4, mcmc$delta4,
-                			log_cond=log_cond)$log_cond 
-                                 >= z) {
-
+                			log_cond=log_cond)$log_cond
+                  if (like >= z) {
                         mcmc$eps_Tc[epsT.idx, country] <- eps_T_prop
                         mcmc$Triangle_c4[country] <- Triangle_c4_prop
                         return()
@@ -162,8 +175,13 @@ mcmc.update.Triangle_c4 <- function(country, mcmc) {
                         } else {
                                 interval[2] <- Triangle_c4_trans_prop
                         }
+                        if(abs(interval[1]-interval[2]) < 1e-10) break
                 } # end else
         }
+        mcmc$eps_Tc[epsT.idx, country] <- eps_T_prop
+        mcmc$Triangle_c4[country] <- Triangle_c4_prop
+        warning("Cannot find likelihood increase for Triangle_c4.\n Final interval: [", interval[1], ',', interval[2], ']\n',
+        			"New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
 }
 
 
