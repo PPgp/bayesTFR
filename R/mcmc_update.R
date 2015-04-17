@@ -29,8 +29,8 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
                 var_prop <- runif(1,interval[1], interval[2])
                 abS.values[[what]] <- var_prop
                 for (country in 1:mcmc$meta$nr_countries){
-                        add_to_sd_Tc_prop[,country] <- (mcmc$data.list[[country]][-mcmc$meta$T_end_c[country]] - abS.values$S)*
-                                ifelse(mcmc$data.list[[country]][-mcmc$meta$T_end_c[country]] > abS.values$S, 
+                        add_to_sd_Tc_prop[1:length(mcmc$data.list[[country]]), country] <- (mcmc$data.list[[country]] - abS.values$S)*
+                                ifelse(mcmc$data.list[[country]] > abS.values$S, 
                                 -abS.values$a, abS.values$b)
                 }  
                 like <- log_cond_abf_sd(add_to_sd_Tc_prop, mcmc$const_sd, mcmc$sigma0, eps_Tc_temp, 

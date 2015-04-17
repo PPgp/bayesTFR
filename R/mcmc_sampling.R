@@ -70,9 +70,10 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     mcenv$data.list <- list()
     for (country in 1:nr_countries_all){
     	# could exclude 1:(tau_c-1) here
-    	mcenv$data.list[[country]] <- get.observed.tfr(country, mcenv$meta)
-    	this.data <- mcenv$data.list[[country]][-mcenv$meta$T_end_c[country]]
-        mcenv$add_to_sd_Tc[-mcenv$meta$T_end_c[country],country] <- (
+    	this.data <- get.observed.tfr(country, mcenv$meta)
+    	this.data <- this.data[1:(mcenv$meta$T_end_c[country]-1)]
+    	mcenv$data.list[[country]] <- this.data
+        mcenv$add_to_sd_Tc[1:(mcenv$meta$T_end_c[country]-1),country] <- (
         				this.data - mcenv$S_sd)*ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
 	}
 	mcenv$const_sd_dummie_Tc <- matrix(0, mcenv$meta$T_end-1+suppl.T, nr_countries_all)
@@ -274,9 +275,10 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
         mcenv$data.list() <- list()
     	for (icountry in 1:length(countries)){
     		country <- countries[icountry]
-    		mcenv$data.list[[country]] <- get.observed.tfr(country, mcenv$meta)
-    		this.data <- mcenv$data.list[[country]][-mcenv$meta$T_end_c[country]]
-			add_to_sd_Tc_extra[-mcenv$meta$T_end_c[country],icountry] <- (
+    		this.data <- get.observed.tfr(country, mcenv$meta)
+    		this.data <- this.data[1:(mcenv$meta$T_end_c[country]-1)]
+    		mcenv$data.list[[country]] <- this.data
+			add_to_sd_Tc_extra[1:(mcenv$meta$T_end_c[country]-1),icountry] <- (
 						this.data - mcenv$S_sd)*ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
 		}
 		mcenv$mean_eps_Tc <- matrix(0, mcenv$meta$T_end -1 + suppl.T, nr_countries_all)
