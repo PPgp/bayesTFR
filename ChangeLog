@@ -1,9 +1,13 @@
-4.1.0/1 (1/14/2015) [CRAN]
+4.1-3
+-----
+Bug fix in creating thinned MCMCs for extra countries.
+
+4.1-0/1 (1/14/2015) [CRAN]
 ------
 Added option of overwriting UNlocations file, i.e. easily include new countries in simulations. 
 For this, function run.tfr.mcmc got an argument "my.locations.file".
 
-4.0.11 (11/21/2014) [CRAN]
+4.0-11 (11/21/2014) [CRAN]
 ------
 Removed usage of snow functions since CRAN doesn't like them.
 

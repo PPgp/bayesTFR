@@ -149,6 +149,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	# thin mcmc for extra countries (they can have different length than the other countries)
 	par.names.cs <- tfr.parameter.names.cs(trans=FALSE)
 	for (country in country.index){
+		if(!(country %in% mcmc.set$meta$id_DL) next
 		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
 		for (par in par.names.cs) {
 			values <- get.tfr.parameter.traces.cs(mcmc.set$mcmc.list, country.obj, par, 
