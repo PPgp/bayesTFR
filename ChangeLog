@@ -2,6 +2,9 @@
 -----
 Bug fix in creating thinned MCMCs for extra countries.
 
+Default of b.width in run.tfr.mcmc changed to 0.05
+(previous value of 0.02 caused some chains to be stuck)
+
 4.1-0/1 (1/14/2015) [CRAN]
 ------
 Added option of overwriting UNlocations file, i.e. easily include new countries in simulations. 
