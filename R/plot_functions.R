@@ -403,7 +403,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 		end.na <- if(length(end.na)==0) length(tfr.est) else end.na[1]
 		if(end.na > 1) {
 			na.idx <- 1:end.na
-			points(points.x[na.idx], points.y[na.idx], type=type, lwd=lwd[1], col=rgb(t(col2rgb(col[1])), alpha=0.1), ...)
+			points(points.x[na.idx], points.y[na.idx], type=type, lwd=lwd[1], col=rgb(t(col2rgb(col[1])/255), alpha=0.1), ...)
 			points.x <- points.x[-na.idx[-end.na]]
 			points.y <- points.y[-na.idx[-end.na]]
 		}
