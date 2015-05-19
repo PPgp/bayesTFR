@@ -1,7 +1,7 @@
 # Read in the UN estimates
 
 set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, my.tfr.file=NULL, 
-							verbose=FALSE) {
+							my.locations.file=NULL, verbose=FALSE) {
 # outputs:
 # tfr_matrix_all, with each column one countries UN estimates
 # tfr_matrix with NAs after last observed data point
@@ -15,7 +15,7 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, m
 	tfr_data <- un.object$data.object$data
 	# not just countries, includes areas etc as well
 	# get region and area data
-	locations <- read.UNlocations(tfr_data, wpp.year=wpp.year, verbose=verbose)
+	locations <- read.UNlocations(tfr_data, wpp.year=wpp.year, my.locations.file=my.locations.file, verbose=verbose)
 	loc_data <- locations$loc_data
 	include <- locations$include
 	prediction.only <- locations$prediction.only
@@ -127,11 +127,27 @@ read.UNtfr <- function(wpp.year, my.tfr.file=NULL, ...) {
 	return(list(data.object=data, suppl.data.object=suppl.data))
 }
 
-read.UNlocations <- function(data, wpp.year, package="bayesTFR", verbose=FALSE) {
+read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.file=NULL, verbose=FALSE) {
 	loc_data <- load.bdem.dataset('UNlocations', wpp.year, verbose=verbose)
+	if(!is.null(my.locations.file)) {
+		my.locations <- read.tfr.file(file=my.locations.file)
+		if(!all(colnames(loc_data) %in% colnames(my.locations)))
+			stop('my.locations.file must contain columns: ', paste(colnames(loc_data), collapse=', '))
+		my.locations <- my.locations[,colnames(loc_data)]
+		overlap <- my.locations$country_code %in% loc_data$country_code
+		if(any(overlap)) { # overwrite UN locations
+			woverlap <- which(overlap)
+			loc_data[sapply(my.locations$country_code[woverlap], function(x) which(loc_data$country_code == x)),] <- my.locations[woverlap,]
+		}
+		wnoverlap <- which(!overlap)
+		if(length(wnoverlap)>0) { # add to UN locations
+			loc_data <- rbind(loc_data, my.locations[wnoverlap,])
+		}
+	}
+		
 	include_codes <- read.tfr.file(file.path(find.package(package), "data", 
                                        paste('include_', wpp.year, '.txt', sep='')))
-    loc_data <- merge(loc_data, include_codes, by='country_code')
+    loc_data <- merge(loc_data, include_codes, by='country_code', all.x=TRUE)
 	# this include some areas that are not in the tfr file
 	# get the include_code from this file to get the countries from the tfr file
 	nr_tfr_outcomes <- length(data[,1])
@@ -145,9 +161,10 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", verbose=FALSE) 
  			stop('Country ', data$country_code[i], ' not found in the location dataset of wpp', wpp.year, '.')
  		incl.code <- if(data$include_code[i] >= 0) data$include_code[i] else loc_data$include_code[loc_index]
  		include[i] <- incl.code == 2
- 		prediction.only[i] <- incl.code == 1
+ 		prediction.only[i] <- incl.code == 1	
 	}
-	return(list(loc_data=loc_data, include=include, prediction.only=prediction.only, include.code=incl.code))
+	return(list(loc_data=loc_data, include=include, prediction.only=prediction.only#, include.code=incl.code)
+			))
 }
 
 
@@ -297,14 +314,14 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 	return(NULL)
 }
 
-set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, verbose=FALSE) {
+set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, my.locations.file=NULL, verbose=FALSE) {
 	#'countries' is a vector of country or region codes 
 	un.object <- read.UNtfr(wpp.year=meta$wpp.year, my.tfr.file=my.tfr.file, 
 							present.year=meta$present.year, verbose=verbose)
 	data <- un.object$data.object
 	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, verbose=verbose)
 	if(!is.null(extra.wpp)) {
-		locations <- read.UNlocations(data$data, wpp.year=meta$wpp.year, verbose=verbose)
+		locations <- read.UNlocations(data$data, wpp.year=meta$wpp.year, my.locations.file=my.locations.file, verbose=verbose)
 		suppl.wpp <- .get.suppl.matrix.and.regions(un.object, extra.wpp, locations$loc_data, 
 									meta$start.year, meta$present.year)
 		extra.wpp$suppl.data <- .get.suppl.data.list(suppl.wpp)

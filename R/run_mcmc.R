@@ -3,7 +3,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 						thin=1, replace.output=FALSE,
 						# meta parameters
 						start.year=1750, present.year=2010, wpp.year=2012,
-						my.tfr.file = NULL, buffer.size=100,
+						my.tfr.file = NULL, my.locations.file = NULL, buffer.size=100,
 					 	U.c.low=5.5, U.up=8.8, U.width=3,
 					 	mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2,                                                
         				Triangle_c4.low = 1, Triangle_c4.up = 2.5,
@@ -11,7 +11,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
         				delta4.0 = 0.8, nu4 = 2,
 					 	S.low=3.5, S.up=6.5, S.width=0.5,
 					 	a.low=0, a.up=0.2, a.width=0.02,
-					 	b.low=a.low, b.up=a.up, b.width=0.02,
+					 	b.low=a.low, b.up=a.up, b.width=0.05,
 					 	sigma0.low=0.01, sigma0.up=0.6, sigma0.width=0.1,
 					 	sigma0.min=0.001, 
 					 	const.low=0.8, const.up=2, const.width=0.3,
@@ -79,7 +79,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	bayesTFR.mcmc.meta <- mcmc.meta.ini(
 						nr.chains=nr.chains,
 						start.year=start.year, present.year=present.year, 
-						wpp.year=wpp.year, my.tfr.file = my.tfr.file,
+						wpp.year=wpp.year, my.tfr.file = my.tfr.file, my.locations.file=my.locations.file,
 						output.dir=output.dir, phase=2,
 					 	U.c.low=U.c.low, U.up=U.up, U.width=U.width,
 					 	mean.eps.tau0=mean.eps.tau0, sd.eps.tau0 = sd.eps.tau0, nu.tau0 = nu.tau0,                                            
@@ -258,11 +258,12 @@ mcmc.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbos
 run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								countries = NULL, my.tfr.file = NULL, iter = NULL,
 								thin=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
+								my.locations.file = NULL,
 								verbose=FALSE, verbose.iter=100, ...) {
 									
 	mcmc.set <- get.tfr.mcmc(sim.dir)
 	Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, 
-												burnin=burnin, verbose=verbose)
+												my.locations.file=my.locations.file, burnin=burnin, verbose=verbose)
 	meta <- Eini$meta
 	if(length(Eini$index) <= 0) {
 		cat('\nNothing to be done.\n')
@@ -543,11 +544,11 @@ run.tfr.mcmc.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(
 }
 
 set.default.cltype <- function() {
-	if(!is.element(snow::getClusterOption("type"), c("MPI", "SOCK"))) 
-		snow::setDefaultClusterOptions(type="SOCK")
+#	if(!is.element(snow::getClusterOption("type"), c("MPI", "SOCK"))) 
+#		snow::setDefaultClusterOptions(type="SOCK")
 }
 
-bDem.performParallel <- function(...) {
+bDem.performParallel <- function(..., cltype='SOCK') {
 	set.default.cltype()
-	snowFT::performParallel(...)
+	snowFT::performParallel(..., cltype=cltype)
 }

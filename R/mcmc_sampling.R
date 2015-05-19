@@ -67,9 +67,12 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     # the non-constant variance is sum of sigma0 and add_to_sd_Tc
     # matrix with each column one country
     mcenv$add_to_sd_Tc <- matrix(NA, mcenv$meta$T_end-1+suppl.T, nr_countries_all)
+    mcenv$data.list <- list()
     for (country in 1:nr_countries_all){
     	# could exclude 1:(tau_c-1) here
-    	this.data <- get.observed.tfr(country, mcenv$meta)[1:(mcenv$meta$T_end_c[country]-1)]
+    	this.data <- get.observed.tfr(country, mcenv$meta)
+    	this.data <- this.data[1:(mcenv$meta$T_end_c[country]-1)]
+    	mcenv$data.list[[country]] <- this.data
         mcenv$add_to_sd_Tc[1:(mcenv$meta$T_end_c[country]-1),country] <- (
         				this.data - mcenv$S_sd)*ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
 	}
@@ -269,9 +272,12 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
         if(is.null(mcenv$eps_Tc)) mcenv$eps_Tc <- get_eps_T_all(mcenv)
          	
         add_to_sd_Tc_extra <- matrix(NA, mcenv$meta$T_end-1 + suppl.T, nr_countries)
+        mcenv$data.list() <- list()
     	for (icountry in 1:length(countries)){
     		country <- countries[icountry]
-    		this.data <- get.observed.tfr(country, mcenv$meta)[1:(mcenv$meta$T_end_c[country]-1)]
+    		this.data <- get.observed.tfr(country, mcenv$meta)
+    		this.data <- this.data[1:(mcenv$meta$T_end_c[country]-1)]
+    		mcenv$data.list[[country]] <- this.data
 			add_to_sd_Tc_extra[1:(mcenv$meta$T_end_c[country]-1),icountry] <- (
 						this.data - mcenv$S_sd)*ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
 		}

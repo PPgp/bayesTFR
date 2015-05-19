@@ -208,7 +208,7 @@ South Africa;South Africa, Republik Südafrika, Afrique du Sud, República de Su
 South Georgia and the South Sandwich Islands;;GS;SGS;239;SX;South Georgia and the South Sandwich Islands;Americas;South America;211;Single code used for all addresses.;54 30 S;37 00 W
 Spain;Spain, Spanien, Espagne, España;ES;ESP;724;SP;Spain;Europe;Southern Europe;212;Wikipedia: E- or ES- is part of the postcode.;40 00 N;4 00 W
 Sri Lanka;Sri Lanka;LK;LKA;144;CE;Sri Lanka;Asia;Southern Asia;213;;7 00 N;81 00 E
-Sudan;Sudan, Soudan, Sudán;SD;SDN;736;SU;Sudan;Africa;Northern Africa;214;;15 00 N;30 00 E
+Sudan;Sudan, Soudan, Sudán;SD;SDN;729;SU;Sudan;Africa;Northern Africa;214;;15 00 N;30 00 E
 Suriname;Suriname, Surinam;SR;SUR;740;NS;Suriname;Americas;South America;215;;4 00 N;56 00 W
 Svalbard And Jan Mayen;Svalbard and Jan Mayen, Svalbard und Jan Mayen, Îles Svalbard et Jan Mayen, Islas Svalbard y Jan Mayen;SJ;SJM;744;SV;Svalbard;Europe;Northern Europe;216;;78 00 N;20 00 E
 Swaziland;Swaziland, Swasiland, Swaziland, Suazilandia;SZ;SWZ;748;WZ;Swaziland;Africa;Southern Africa;217;;26 30 S;31 30 E
@@ -248,3 +248,4 @@ Yemen;Yemen, Jemen, Yémen;YE;YEM;887;YM;Yemen;Asia;Western Asia;252;;15 00 N;48
 Zambia;Zambia, Sambia, Zambie;ZM;ZMB;894;ZA;Zambia;Africa;Eastern Africa;255;;15 00 S;30 00 E
 Zimbabwe;Zimbabwe, Simbabwe, Zimbabue;ZW;ZWE;716;ZI;Zimbabwe;Africa;Eastern Africa;256;;20 00 S;30 00 E
 Aland Islands;;AX;ALA;248;;;Europe;Northern Europe;3;;;
+South Sudan;Sudan, Soudan, Sudán;SS;SSD;728;SU;Sudan;Africa;Northern Africa;214;;15 00 N;30 00 E

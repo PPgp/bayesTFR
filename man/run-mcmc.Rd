@@ -16,7 +16,7 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     output.dir = file.path(getwd(), "bayesTFR.output"), 
     thin = 1, replace.output = FALSE, 
     start.year = 1750, present.year = 2010, wpp.year = 2012, 
-    my.tfr.file = NULL, buffer.size = 100, 
+    my.tfr.file = NULL, my.locations.file = NULL, buffer.size = 100, 
     U.c.low = 5.5, U.up = 8.8, U.width = 3,
     mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2, 
     Triangle_c4.low = 1, Triangle_c4.up = 2.5, 
@@ -57,6 +57,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{present.year}{End year for using historical data.}
   \item{wpp.year}{Year for which WPP data is used. The functions loads a package called \pkg{wpp}\eqn{x} where \eqn{x} is the \code{wpp.year} and uses the \code{tfr*} datasets.}
   \item{my.tfr.file}{File name containing user-specified TFR time series for one or more countries. See Details below.}
+  \item{my.locations.file}{File name containing user-specified locations. See Details below.}
   \item{buffer.size}{Buffer size (in number of iterations) for keeping data in the memory. The smaller the \code{buffer.size} the more often will the process access the hard disk and thus, the slower the run. On the other hand, the smaller the \code{buffer.size} the less data will be lost in case of failure.}
   \item{U.c.low, U.up}{Lower and upper bound of the parameter \eqn{U_c}, the start level of the fertility transition. The lower bound is set for each country as the maximum of \code{U.c.low} and the minimum of historical TFR for that country.}
   \item{U.width}{Width for slice sampling used when updating the \eqn{U_c} parameter.}
@@ -94,14 +95,14 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{gamma.ini}{Initial value for the \eqn{\gamma_c}{gamma_c} parameter. The same value is used for all countries.}
   \item{proposal_cov_gammas}{Proposal for the gamma covariance matrices for each country. It should be a list with two values: \code{values} and \code{country_codes}. The structure corresponds to the object returned by the function \code{\link{get.cov.gammas}}. By default the covariance matrices are obtained using \code{data(proposal_cov_gammas_cii)}. This argument overwrite the defaults for countries contained the argument.}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible results.}
-  \item{parallel}{Logical determining if the simulation should run multiple chains in parallel. If it is \code{TRUE}, the package \pkg{\link[snowFT]{snowFT}} is required.}
+  \item{parallel}{Logical determining if the simulation should run multiple chains in parallel. If it is \code{TRUE}, the package \pkg{\link[snowFT]{snowFT}} is required. In such a case further arguments can be passed, see description of \dots.}
   \item{nr.nodes}{Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes for running the simulation in parallel. By default it equals to the number of chains.}
   \item{save.all.parameters}{If \code{TRUE}, the distortion terms \eqn{\epsilon_{c,t}}{eps_ct} for all \eqn{t} are stored on disk, otherwise not.}
   \item{compression.type}{One of \sQuote{None}, \sQuote{gz}, \sQuote{xz}, \sQuote{bz}, determining type of a compression of the MCMC files.}
   \item{auto.conf}{List containing a configuration for an \sQuote{automatic} run (see description of argument \code{iter}). Item \code{iter} gives the number of iterations in the first chunk of the MCMC simulation; item \code{iter.incr} gives the number of iterations in the following chunks; \code{nr.chains} gives the number of chains in all chunks of the MCMC simulation; items \code{thin} and \code{burnin} are used in the convergence diagnostics following each chunk; \code{max.loops} controls the maximum number of chunks. All items must be integer values. This argument is only used if the function argument \code{iter} is set to \sQuote{auto}.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{verbose.iter}{Integer determining how often (in number of iterations) log messages are outputted during the estimation.}
-  \item{\dots}{Additional parameters to be passed to the function \code{\link[snowFT]{performParallel}}, if \code{parallel} is \code{TRUE}.}
+  \item{\dots}{Additional parameters to be passed to the function \code{\link[snowFT]{performParallel}}, if \code{parallel} is \code{TRUE}. For example \code{cltype} which is \sQuote{SOCK} by default but can be set to \sQuote{MPI}.}
   \item{chain.ids}{Array of chain identifiers that should be resumed. If it is \code{NULL}, all existing chains in \code{output.dir} are resumed.}
   }
 \details{
@@ -110,7 +111,9 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
 Using the function \code{continue.tfr.mcmc} one can continue simulating an existing MCMCs by \code{iter} iterations for either all or selected chains.
 
 The function loads observed data (further denoted as WPP dataset) from the \code{\link[wpp2012]{tfr}} and \code{\link[wpp2012]{tfr_supplemental}} datasets in a \pkg{wpp}\eqn{x} package where \eqn{x} is the \code{wpp.year}. It is then merged with the  \code{\link{include}} dataset that corresponds to the same \code{wpp.year}. The argument \code{my.tfr.file} can be used to overwrite those default data. Such a file can include a subset of countries contained in the WPP dataset, as well as a set of new countries. In the former case,
-  	the function replaces the corresponding country data from the WPP dataset by values in this file. Only columns are replaced that match column names of the WPP dataset, and in addition, columns \sQuote{last.observed} and \sQuote{include_code} are used, if present. Countries are merged with WPP using the column \sQuote{country_code}. In addition, in order the countries to be included in the simulation, in both cases (whether they are included in the WPP dataset or not), they must be contained in the UN table of locations (\code{\link[wpp2012]{UNlocations}}). In addition, their corresponding \code{\link[=include]{include_code}} must be set to 2. If the column \sQuote{include_code} is present in \code{my.tfr.file}, its value overwrites the default include code, unless is -1.  
+  	the function replaces the corresponding country data from the WPP dataset by values in this file. Only columns are replaced that match column names of the WPP dataset, and in addition, columns \sQuote{last.observed} and \sQuote{include_code} are used, if present. Countries are merged with WPP using the column \sQuote{country_code}. In addition, in order the countries to be included in the simulation, in both cases (whether they are included in the WPP dataset or not), they must be contained in the table of locations (\code{\link[wpp2012]{UNlocations}}). In addition, their corresponding \code{\link[=include]{include_code}} must be set to 2. If the column \sQuote{include_code} is present in \code{my.tfr.file}, its value overwrites the default include code, unless is -1.  
+ 
+ The default UN table of locations mentioned above can be overwritten/extended by using a file passed as the \code{my.locations.file} argument. Such a file must have the same structure as the \code{\link[wpp2012]{UNlocations}} dataset. Entries in this file will overwrite corresponding entries in \code{\link[wpp2012]{UNlocations}} matched by the column \sQuote{country_code}. If there is no such entry in the default dataset, it will be appended. This option of appending new locations is especially useful in cases when \code{my.tfr.file} contains new countries/regions that are not included in \code{\link[wpp2012]{UNlocations}}. In such a case, one must provide a \code{my.locations.file} with a definition of those countries/regions.
 	
 For simulation of the hyperparameters of the Bayesian hierarchical model, all countries are used that are included in the WPP dataset, possibly complemented by the \code{my.tfr.file}, that have \code{include_code} equal to 2. The hyperparameters are used to simulate country-specific parameters, which is done for all countries with \code{include_code} equal 1 or 2. The following values of \code{include_code} in \code{my.tfr.file} are recognized: -1 (do not overwrite the default include code), 0 (ignore), 1 (include in prediction but not estimation), 2 (include in both, estimation and prediction). Thus, the set of countries included in the estimation and prediction can be fully user-specific.
 
