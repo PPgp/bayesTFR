@@ -128,7 +128,7 @@ The package contains a dataset called \file{my_tfr_template} (in \file{extdata} 
 	\item{mcmc.list}{A list of objects of class \code{\link{bayesTFR.mcmc}}, one for each MCMC.}
 }
 \references{
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. (A Working Paper version at \url{http://www.csss.washington.edu/Papers} [nr. 97])
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
 }
 \author{
 	Hana Sevcikova, Leontine Alkema
