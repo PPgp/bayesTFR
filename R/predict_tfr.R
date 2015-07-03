@@ -909,8 +909,11 @@ get.wpp.revision.number <- function(pred) {
 do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicator.id=19, sex.id=3, adjusted=FALSE) {
 	cat('Creating summary files ...\n')
 	e <- new.env()
-	data('UN_time', envir=e)
-	data('UN_variants', envir=e)
+	# R check does not like the two lines below; not sure why
+	#data('UN_time', envir=e)
+	#data('UN_variants', envir=e)
+	do.call("data", list('UN_time', envir=e))
+	do.call("data", list('UN_variants', envir=e))
 	nr.proj <- pred$nr.projections+1
 	tfr <- get.data.imputed(pred)
 	tfr.years <- get.tfr.periods(pred$mcmc.set$meta)
@@ -1125,7 +1128,9 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 	country.codes <- meta$regions$country_code
 	if(is.null(cor.pred)) {
 		e <- new.env()
-		data(correlation_predictors, envir=e)
+		# the following code causes a NOTE in R check; not sure why
+		#data("correlation_predictors", envir=e)
+		do.call("data", list("correlation_predictors", envir=e))
 		cor.pred <- e$correlation_predictors
 	}
 	for(i in 1:(nr_countries-1)) {

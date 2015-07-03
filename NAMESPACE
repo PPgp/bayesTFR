@@ -7,6 +7,11 @@ import(wpp2012)
 importFrom(MASS, mvrnorm)
 #importFrom(rworldmap, getMap, mapDevice, addMapLegend, mapCountryData)
 
+importFrom("graphics", "grid", "hist", "legend", "lines", "par", "plot", "plot.default", "points")
+importFrom("grDevices", "col2rgb", "dev.off", "rainbow", "rgb")
+importFrom("stats", "cov", "dnorm", "dunif", "lm", "mahalanobis", "median", "pgamma", "pnorm", "qgamma", "quantile", "rexp", "rgamma", "rnorm", "runif", "sd")
+importFrom("utils", "read.delim", "read.table", "write.table")
+
 # export functions
 export(
 	run.tfr.mcmc,

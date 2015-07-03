@@ -1,5 +1,9 @@
-4.1-3
+4.2-0 (7/2/2015)
 -----
+Imports fixed to comply with the new CRAN policy.
+
+In the manual, a few citations updated.
+
 In tfr.trajectories.plot input to rgb divided by 255 
 (it was not working for other color than black - 
 thanks to Patrick Gerland for finding the bug and fixing it).
