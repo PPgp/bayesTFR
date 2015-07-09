@@ -588,7 +588,6 @@ test.median.adjust <- function() {
 	test.name <- 'adjusting median'
 	start.test(test.name)
 	sim.dir <- file.path(find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
-	pred.dir <- tempfile()
 	m <- get.tfr.mcmc(sim.dir)
 	pred.dir <- tempfile()
 	pred <- tfr.predict(m, burnin=0, output.dir=pred.dir, nr.traj=10, save.as.ascii=0, verbose=FALSE, use.tfr3=FALSE)
@@ -616,8 +615,8 @@ test.median.adjust <- function() {
 
 	test.name <- 'writing summary files'
 	start.test(test.name)
-	write.projection.summary(sim.dir, adjusted=FALSE)
-	write.projection.summary(sim.dir, adjusted=TRUE)
+	write.projection.summary(sim.dir, adjusted=FALSE, output.dir=pred.dir)
+	write.projection.summary(sim.dir, adjusted=TRUE, output.dir=pred.dir)
 	test.ok(test.name)
 
 	unlink(pred.dir)

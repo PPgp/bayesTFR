@@ -837,7 +837,7 @@ tfr.write.projection.summary.and.parameters <- function(pred, output.dir, revisi
 	# two summary files
 	do.write.projection.summary(pred, output.dir, revision=revision, adjusted=adjusted)
 	# third file about MCMC parameters
-	do.write.parameters.summary(pred, output.dir, adjusted=adjusted)
+	do.write.parameters.summary(pred, output.dir, adjusted=adjusted, ...)
 }
 
 do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
@@ -865,7 +865,7 @@ do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
 												country.obj$code, adjusted=adjusted)[-1])
 		sink(con, type='message')
 		s <- summary(coda.list.mcmc(pred$mcmc.set, country=country.obj$code, 
-					par.names=NULL, par.names.cs=tfr.parameter.names.cs(trans=FALSE), 
+					par.names=NULL, par.names.cs=tfr.parameter.names.cs(trans=FALSE, back.trans=FALSE), 
 					thin=1, burnin=0))
 		sink(type='message')
 		lambda_c <- find.lambda.for.one.country(tfr.and.pred.median, nr.data)

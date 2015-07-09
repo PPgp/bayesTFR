@@ -125,14 +125,14 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     }
     if (is.null(main)) main <- country$name
     if (is.null(ylim)) ylim <- c(miny, maxy)
-    plot(dlc[thincurves$index[1], ] ~ tfr_plot, col = "grey", 
+    plot(dlc[thincurves$index[1], ] ~ tfr_plot, col = "#00000020", 
         type = ltype, 
         xlim = c(max(tfr_plot), min(tfr_plot)), 
         ylim = ylim, ylab = ylab, xlab = xlab, main = main, ...
         )
     if (thincurves$nr.points > 1) {
         for (i in 2:thincurves$nr.points) {
-            lines(dlc[thincurves$index[i], ] ~ tfr_plot, col = "grey")
+            lines(dlc[thincurves$index[i], ] ~ tfr_plot, col = "#00000020")
         }
     }
     dl50 <- apply(dlc, 2, quantile, 0.5)
@@ -350,7 +350,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 								  mark.estimation.points=FALSE,
 								  xlim=NULL, ylim=NULL, type='b', 
 								  xlab='Year', ylab='TFR', main=NULL, lwd=c(2,2,2,2,2,1), 
-								  col=c('black', 'green', 'red', 'red', 'blue', 'gray'),
+								  col=c('black', 'green', 'red', 'red', 'blue', '#00000020'),
 								  show.legend=TRUE, add=FALSE, ...
 								  ) {
 	# lwd/col is a vector of 6 line widths/colors for: 
@@ -365,7 +365,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 	if(length(col) < 6) {
 		lcol <- length(col)
 		col <- rep(col, 6)
-		col[(lcol+1):6] <- c('black', 'green', 'red', 'red', 'blue', 'gray')[(lcol+1):6]
+		col[(lcol+1):6] <- c('black', 'green', 'red', 'red', 'blue', '#00000020')[(lcol+1):6]
 	}
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
