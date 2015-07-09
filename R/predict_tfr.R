@@ -837,7 +837,7 @@ tfr.write.projection.summary.and.parameters <- function(pred, output.dir, revisi
 	# two summary files
 	do.write.projection.summary(pred, output.dir, revision=revision, adjusted=adjusted)
 	# third file about MCMC parameters
-	do.write.parameters.summary(pred, output.dir, adjusted=adjusted, ...)
+	do.write.parameters.summary(pred, output.dir, adjusted=adjusted)
 }
 
 do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
