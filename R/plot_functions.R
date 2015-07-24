@@ -90,9 +90,18 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, 
     return (dlc)
 }
 
+.match.colors.with.default <- function(col, default.col) {
+	ldcol <- length(default.col)
+	lcol <- length(col)
+	if(lcol >= ldcol) return(col)	
+	col <- rep(col, ldcol)
+	col[(lcol+1):ldcol] <- default.col[(lcol+1):ldcol]
+	return(col)
+}
+
 DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 10, 
     nr.curves = NULL, predictive.distr=FALSE, ylim = NULL, xlab = "TFR (reversed)", ylab = "TFR decrement", 
-    main = NULL, show.legend=TRUE, ...
+    main = NULL, show.legend=TRUE, col=c('black', 'red', "#00000020"), ...
     ) 
 {	
 	if(class(mcmc.list) == 'bayesTFR.prediction') {
@@ -100,6 +109,7 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
 			warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin)
 		burnin <- 0 # because burnin was already cut of the traces
 	}
+	col <- .match.colors.with.default(col, c('black', 'red', "#00000020"))
 	if(is.null(burnin)) burnin <- 0
     mcmc.list <- get.mcmc.list(mcmc.list)
     meta <- mcmc.list[[1]]$meta
@@ -125,51 +135,57 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     }
     if (is.null(main)) main <- country$name
     if (is.null(ylim)) ylim <- c(miny, maxy)
-    plot(dlc[thincurves$index[1], ] ~ tfr_plot, col = "#00000020", 
+    # plot trajectories
+    plot(dlc[thincurves$index[1], ] ~ tfr_plot, col = col[3], 
         type = ltype, 
         xlim = c(max(tfr_plot), min(tfr_plot)), 
         ylim = ylim, ylab = ylab, xlab = xlab, main = main, ...
         )
     if (thincurves$nr.points > 1) {
         for (i in 2:thincurves$nr.points) {
-            lines(dlc[thincurves$index[i], ] ~ tfr_plot, col = "#00000020")
+            lines(dlc[thincurves$index[i], ] ~ tfr_plot, col = col[3])
         }
     }
+    # plot quantiles
     dl50 <- apply(dlc, 2, quantile, 0.5)
-    lines(dl50 ~ tfr_plot, col = "red", lwd = 2)
+    lines(dl50 ~ tfr_plot, col = col[2], lwd = 2)
     lty <- 2:(length(pi) + 1)
     for (i in 1:length(pi)) {
         al <- (1 - pi[i]/100)/2
         dlpi <- apply(dlc, 2, quantile, c(al, 1 - al))
-        lines(dlpi[1, ] ~ tfr_plot, col = "red", lty = lty[i], 
+        lines(dlpi[1, ] ~ tfr_plot, col = col[2], lty = lty[i], 
             lwd = 2)
-        lines(dlpi[2, ] ~ tfr_plot, col = "red", lty = lty[i], 
+        lines(dlpi[2, ] ~ tfr_plot, col = col[2], lty = lty[i], 
             lwd = 2)
     }
-    obs.legend <- list(legend=c(), pch=c(), bg=c())
+    # plot observed data
+    obs.legend <- list(legend=c(), pch=c(), bg=c(), col=c())
     if(length(dl.obs.idx) > 0 && any(!is.na(decr[dl.obs.idx]))) {
-    	points(decr[dl.obs.idx] ~ obs.data[-length(obs.data)][dl.obs.idx], pch = 19)
+    	points(decr[dl.obs.idx] ~ obs.data[-length(obs.data)][dl.obs.idx], pch = 19, col=col[1])
     	obs.legend$legend <- c(obs.legend$legend, 'Phase II data')
     	obs.legend$pch <- c(obs.legend$pch, 19)
-    	#obs.legend$bg <- c(obs.legend$bg, 'black')
+    	obs.legend$col <- c(obs.legend$col, col[1])
+    	#obs.legend$bg <- c(obs.legend$bg, col[1])
     }
     endpI <- if(length(dl.obs.idx)==0) max(meta$tau_c[country$index],1) else dl.obs.idx[1]-1
     if((endpI > 1) && any(!is.na(decr[1:endpI])))  {# draw phase I points
-    	points(decr[1:endpI] ~ obs.data[-length(obs.data)][1:endpI], pch=0)
+    	points(decr[1:endpI] ~ obs.data[-length(obs.data)][1:endpI], pch=0, col=col[1])
     	obs.legend$legend <- c(obs.legend$legend, 'Phase I data')
     	obs.legend$pch <- c(obs.legend$pch, 0)
-    	#obs.legend$bg <- c(obs.legend$bg, 'white')
+    	obs.legend$col <- c(obs.legend$col, col[1])
+    	#obs.legend$bg <- c(obs.legend$bg, col[1])
     }
     if(length(p3.obs.idx)>0) {
-    	points(decr[p3.obs.idx] ~ obs.data[-length(obs.data)][p3.obs.idx], pch = 2, bg = "grey") # draw phase III points
+    	points(decr[p3.obs.idx] ~ obs.data[-length(obs.data)][p3.obs.idx], pch = 2, col=col[1]) # draw phase III points
     	obs.legend$legend <- c(obs.legend$legend, 'Phase III data')
     	obs.legend$pch <- c(obs.legend$pch, 2)
+    	obs.legend$col <- c(obs.legend$col, col[1])
     	#obs.legend$bg <- c(obs.legend$bg, 'grey')
     }
     if(show.legend)
     	legend("topright", legend = c("median", paste("PI", pi), obs.legend$legend), 
         	lty = c(1, lty, rep(0,length(obs.legend$pch))), bty = "n", 
-        	col = c(rep("red", 1+length(pi)), rep('black',length(obs.legend$pch))), 
+        	col = c(rep(col[2], 1+length(pi)), obs.legend$col), 
         	pch=c(rep(-1,length(pi)+1), obs.legend$pch),
         	#bg=c(rep(-1,length(pi)+1), obs.legend$bg),
         	)
@@ -362,11 +378,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 		lwd <- rep(lwd, 6)
 		lwd[6] <- 1
 	}
-	if(length(col) < 6) {
-		lcol <- length(col)
-		col <- rep(col, 6)
-		col[(lcol+1):6] <- c('black', 'green', 'red', 'red', 'blue', '#00000020')[(lcol+1):6]
-	}
+	col <- .match.colors.with.default(col, c('black', 'green', 'red', 'red', 'blue', '#00000020'))
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
 	T_end_c <- tfr.pred$mcmc.set$meta$T_end_c
