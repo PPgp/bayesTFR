@@ -28,3 +28,4 @@ env:
     - RVERSION=oldrel
     - RVERSION=release
     - RVERSION=devel
+    - _R_CHECK_FORCE_SUGGESTS_=false
