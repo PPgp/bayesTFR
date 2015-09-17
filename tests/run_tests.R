@@ -1,7 +1,7 @@
 library(bayesTFR)
 source('test_functions.R')
 
-for(wpp in c(2008, 2010, 2012)) {
+for(wpp in c(2010, 2012)) {
 	test.load.UNtfr(wpp)
 	test.load.UNlocations(wpp)
 	test.create.tfr.matrix(wpp)
