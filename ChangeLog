@@ -1,4 +1,4 @@
-4.2-1
+4.3-0
 -----
 DLcurve.plot got an argument "col" for modifying colors.
 
@@ -6,6 +6,8 @@ The following defaults in run.tfr.mcmc changed:
 	start.year=1950 (from 1750)
 	present.year=2015 (from 2010)
 	wpp.year=2015 (from 2012)
+	
+Example directory re-created using wpp2015.
 
 4.2-0 (7/9/2015)
 -----

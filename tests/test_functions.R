@@ -171,8 +171,8 @@ test.run.mcmc.simulation <- function(compression='None') {
 	tfr.median.shift(sim.dir, country='Uganda', shift=1.5, from=2051, to=2080)
 	shifted.pred <- get.tfr.prediction(sim.dir)
 	shifted.projs <- summary(shifted.pred, country='Uganda')$projections
-	stopifnot(all(projs[10:15,c(1,3:dim(projs)[2])]+1.5 == shifted.projs[10:15,c(1,3:dim(projs)[2])]))
-	stopifnot(all(projs[c(1:9, 16:19),c(1,3:dim(projs)[2])] == shifted.projs[c(1:9, 16:19),c(1,3:dim(projs)[2])]))
+	stopifnot(all(projs[9:14,c(1,3:dim(projs)[2])]+1.5 == shifted.projs[9:14,c(1,3:dim(projs)[2])]))
+	stopifnot(all(projs[c(1:8, 15:18),c(1,3:dim(projs)[2])] == shifted.projs[c(1:8, 15:18),c(1,3:dim(projs)[2])]))
 	test.ok(test.name)
 
 	test.name <- 'resetting the median'
@@ -186,11 +186,11 @@ test.run.mcmc.simulation <- function(compression='None') {
 	start.test(test.name)
 	expert.values <- c(2.3, 2.4, 2.4)
 	cobj <- get.country.object('Uganda', m$meta)
-	shift <- expert.values - pred$quantiles[cobj$index, '0.5',4:6]
+	shift <- expert.values - pred$quantiles[cobj$index, '0.5',3:5]
 	mod.pred <- tfr.median.set(sim.dir, country='Uganda', values=expert.values, years=2024)
 	mod.projs <- summary(mod.pred, country='Uganda')$projections
-	stopifnot(all(mod.projs[4:6, c(1,3:dim(projs)[2])]==projs[4:6, c(1,3:dim(projs)[2])]+shift))
-	stopifnot(all(mod.projs[c(1:3,7:19), c(1,3:dim(projs)[2])]==projs[c(1:3,7:19), c(1,3:dim(projs)[2])]))
+	stopifnot(all(mod.projs[3:5, c(1,3:dim(projs)[2])]==projs[3:5, c(1,3:dim(projs)[2])]+shift))
+	stopifnot(all(mod.projs[c(1:2,6:18), c(1,3:dim(projs)[2])]==projs[c(1:2,6:18), c(1,3:dim(projs)[2])]))
 	test.ok(test.name)
 	
 	unlink(sim.dir, recursive=TRUE)
@@ -406,7 +406,7 @@ test.imputation <- function() {
 	test.name <- 'running MCMC with missing values'
 	start.test(test.name)
 	my.tfr.file <- file.path(find.package('bayesTFR'), 'extdata', 'UN2010_last_obs.txt')
-	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, my.tfr.file=my.tfr.file, wpp.year=2010)
+	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, my.tfr.file=my.tfr.file, wpp.year=2010, present.year=2010)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
 	stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))

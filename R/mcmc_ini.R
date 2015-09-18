@@ -196,8 +196,8 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
 
 mcmc.meta.ini <- function(...,
 						U.c.low,
-						start.year=1950, present.year=2010, 
-						wpp.year=2008, my.tfr.file = NULL, my.locations.file = NULL,
+						start.year=1950, present.year=2015, 
+						wpp.year=2015, my.tfr.file = NULL, my.locations.file = NULL,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						verbose=FALSE
 					 ) {
@@ -209,6 +209,7 @@ mcmc.meta.ini <- function(...,
 	mcmc.input$start.year <- start.year
 	mcmc.input$present.year <- present.year
 	mcmc.input$wpp.year <- wpp.year
+	if(present.year-3 > wpp.year) warning("present.year is much larger then wpp.year. Make sure WPP data for present.year are available.")
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
 										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose)
 

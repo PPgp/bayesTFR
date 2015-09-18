@@ -386,7 +386,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	country.loop.max <- 20
 	status.for.gui <- paste('out of', nr_simu, 'trajectories.')
 	gui.options <- list()
-	if (verbose) verbose.iter <- max(1, nr_simu/100)
+	if (verbose) {
+		verbose.iter <- max(1, nr_simu/100)
+		if(interactive()) cat('\n')
+	}
 	#########################################
 	for (s in 1:nr_simu){ # Iterate over trajectories
 	#########################################
@@ -398,7 +401,13 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			gui.options$bDem.TFRpred.status <- paste('finished', traj.counter, status.for.gui)
 			unblock.gtk('bDem.TFRpred', gui.options)
 		}
-		if (verbose && s %% verbose.iter == 0) cat('TFR projection trajectory ', s, '\n')
+		if (verbose) {
+			if(interactive()) cat('\rProjecting TFR trajectories ... ', round(s/nr_simu * 100), ' %')
+			else {
+				if (s %% verbose.iter == 0) 
+					cat('TFR projection trajectory ', s, '\n')
+				}
+		}
 		if(has.phase3) { # set country-spec parameters for phase 3 - time-invariant
 			mu.c[-mcmc3$meta$id_phase3] <- m3.par.values[s,'mu']
 			rho.c[-mcmc3$meta$id_phase3] <- m3.par.values[s,'rho']
@@ -529,6 +538,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			all.f_ps[,year,s] <- tfr.c
 		} # end time loop
 	} # end simu loop
+	if(verbose && interactive()) cat('\n')
 	##############
 	# Impute missing values if any and compute quantiles
 	for (icountry in 1:nr_countries_real){

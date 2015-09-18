@@ -3,7 +3,7 @@ useDynLib(bayesTFR)
 
 import(mvtnorm)
 import(coda)
-import(wpp2012)
+import(wpp2015)
 importFrom(MASS, mvrnorm)
 #importFrom(rworldmap, getMap, mapDevice, addMapLegend, mapCountryData)
 
