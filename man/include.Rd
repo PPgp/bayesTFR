@@ -3,6 +3,7 @@
 \alias{include_2008}
 \alias{include_2010}
 \alias{include_2012}
+\alias{include_2015}
 
 \docType{data}
 \title{
@@ -15,6 +16,7 @@ Data sets containing codes that determine which countries are to be included int
 data(include_2008)
 data(include_2010)
 data(include_2012)
+data(include_2015)
 }
 
 \format{
@@ -25,7 +27,7 @@ data(include_2012)
     \item{include_code}{Entries for which \code{include_code=2} are included in MCMC simulations (i.e. estimation of the model parameters). Entries for which \code{include_code} is 1 or 2 are included in the prediction.}}
 }
 \details{
-	In a simulation, an \code{include_*} dataset is selected that corresponds to the given \code{wpp.year} passed to the function \code{\link{run.tfr.mcmc}}. It is merged with a \code{\link[wpp2012:tfr]{tfr}} dataset from the corresponding wpp package using the \code{country_code} column. Thus, the country entries in this dataset should correspond to entries in the \code{tfr} dataset.
+	In a simulation, an \code{include_*} dataset is selected that corresponds to the given \code{wpp.year} passed to the function \code{\link{run.tfr.mcmc}}. It is merged with a \code{\link[wpp2015:tfr]{tfr}} dataset from the corresponding wpp package using the \code{country_code} column. Thus, the country entries in this dataset should correspond to entries in the \code{tfr} dataset.
 
 The package contains also a dataset called \file{my_tfr_template} (in \file{extdata} directory) which is a template for user-specified TFR time series. It has the same structure as the \code{\link[wpp2012:tfr]{tfr}} dataset, except that most of the columns are optional. The only required column is \code{country_code} (see description of the argument \code{my.tfr.file} in \code{\link{run.tfr.mcmc}}).
 }
@@ -36,7 +38,7 @@ Data provided by the United Nations Population Division.
 %%  ~~ possibly secondary sources and usages ~~
 %}
 \examples{
-data(include_2012)
-head(include_2012)
+data(include_2015)
+head(include_2015)
 }
 \keyword{datasets}

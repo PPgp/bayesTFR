@@ -272,7 +272,7 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
         if(is.null(mcenv$eps_Tc)) mcenv$eps_Tc <- get_eps_T_all(mcenv)
          	
         add_to_sd_Tc_extra <- matrix(NA, mcenv$meta$T_end-1 + suppl.T, nr_countries)
-        mcenv$data.list() <- list()
+        mcenv$data.list <- list()
     	for (icountry in 1:length(countries)){
     		country <- countries[icountry]
     		this.data <- get.observed.tfr(country, mcenv$meta)

@@ -1,5 +1,4 @@
 \name{run.tfr.mcmc}
-\Rdversion{1.1}
 \alias{run.tfr.mcmc}
 \alias{continue.tfr.mcmc}
 \alias{bayesTFR.mcmc.set}
@@ -15,7 +14,7 @@ Runs (or continues running) MCMCs for simulating the total fertility rate of all
 run.tfr.mcmc(nr.chains = 3, iter = 62000, 
     output.dir = file.path(getwd(), "bayesTFR.output"), 
     thin = 1, replace.output = FALSE, 
-    start.year = 1750, present.year = 2010, wpp.year = 2012, 
+    start.year = 1950, present.year = 2015, wpp.year = 2015, 
     my.tfr.file = NULL, my.locations.file = NULL, buffer.size = 100, 
     U.c.low = 5.5, U.up = 8.8, U.width = 3,
     mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2, 
@@ -24,7 +23,7 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     Triangle4.0 = 0.3, delta4.0 = 0.8, nu4 = 2,
     S.low = 3.5, S.up = 6.5, S.width = 0.5, 
     a.low = 0, a.up = 0.2, a.width = 0.02, 
-    b.low = a.low, b.up = a.up, b.width = 0.02, 
+    b.low = a.low, b.up = a.up, b.width = 0.05, 
     sigma0.low = 0.01, sigma0.up = 0.6, sigma0.width = 0.1, 
     sigma0.min = 0.001, 
     const.low = 0.8, const.up = 2, const.width = 0.3, 
@@ -98,7 +97,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{parallel}{Logical determining if the simulation should run multiple chains in parallel. If it is \code{TRUE}, the package \pkg{\link[snowFT]{snowFT}} is required. In such a case further arguments can be passed, see description of \dots.}
   \item{nr.nodes}{Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes for running the simulation in parallel. By default it equals to the number of chains.}
   \item{save.all.parameters}{If \code{TRUE}, the distortion terms \eqn{\epsilon_{c,t}}{eps_ct} for all \eqn{t} are stored on disk, otherwise not.}
-  \item{compression.type}{One of \sQuote{None}, \sQuote{gz}, \sQuote{xz}, \sQuote{bz}, determining type of a compression of the MCMC files.}
+  \item{compression.type}{One of \sQuote{None}, \sQuote{gz}, \sQuote{xz}, \sQuote{bz}, determining type of a compression of the MCMC files. Important: Do not use this option for a long MCMC simulation as this tends to cause very long run times due to slow reading!}
   \item{auto.conf}{List containing a configuration for an \sQuote{automatic} run (see description of argument \code{iter}). Item \code{iter} gives the number of iterations in the first chunk of the MCMC simulation; item \code{iter.incr} gives the number of iterations in the following chunks; \code{nr.chains} gives the number of chains in all chunks of the MCMC simulation; items \code{thin} and \code{burnin} are used in the convergence diagnostics following each chunk; \code{max.loops} controls the maximum number of chunks. All items must be integer values. This argument is only used if the function argument \code{iter} is set to \sQuote{auto}.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{verbose.iter}{Integer determining how often (in number of iterations) log messages are outputted during the estimation.}
@@ -110,10 +109,10 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
 	
 Using the function \code{continue.tfr.mcmc} one can continue simulating an existing MCMCs by \code{iter} iterations for either all or selected chains.
 
-The function loads observed data (further denoted as WPP dataset) from the \code{\link[wpp2012]{tfr}} and \code{\link[wpp2012]{tfr_supplemental}} datasets in a \pkg{wpp}\eqn{x} package where \eqn{x} is the \code{wpp.year}. It is then merged with the  \code{\link{include}} dataset that corresponds to the same \code{wpp.year}. The argument \code{my.tfr.file} can be used to overwrite those default data. Such a file can include a subset of countries contained in the WPP dataset, as well as a set of new countries. In the former case,
-  	the function replaces the corresponding country data from the WPP dataset by values in this file. Only columns are replaced that match column names of the WPP dataset, and in addition, columns \sQuote{last.observed} and \sQuote{include_code} are used, if present. Countries are merged with WPP using the column \sQuote{country_code}. In addition, in order the countries to be included in the simulation, in both cases (whether they are included in the WPP dataset or not), they must be contained in the table of locations (\code{\link[wpp2012]{UNlocations}}). In addition, their corresponding \code{\link[=include]{include_code}} must be set to 2. If the column \sQuote{include_code} is present in \code{my.tfr.file}, its value overwrites the default include code, unless is -1.  
+The function loads observed data (further denoted as WPP dataset) from the \code{\link[wpp2015]{tfr}} and \code{\link[wpp2015]{tfr_supplemental}} datasets in a \pkg{wpp}\eqn{x} package where \eqn{x} is the \code{wpp.year}. It is then merged with the  \code{\link{include}} dataset that corresponds to the same \code{wpp.year}. The argument \code{my.tfr.file} can be used to overwrite those default data. Such a file can include a subset of countries contained in the WPP dataset, as well as a set of new countries. In the former case,
+  	the function replaces the corresponding country data from the WPP dataset by values in this file. Only columns are replaced that match column names of the WPP dataset, and in addition, columns \sQuote{last.observed} and \sQuote{include_code} are used, if present. Countries are merged with WPP using the column \sQuote{country_code}. In addition, in order the countries to be included in the simulation, in both cases (whether they are included in the WPP dataset or not), they must be contained in the table of locations (\code{\link[wpp2015]{UNlocations}}). In addition, their corresponding \code{\link[=include]{include_code}} must be set to 2. If the column \sQuote{include_code} is present in \code{my.tfr.file}, its value overwrites the default include code, unless is -1.  
  
- The default UN table of locations mentioned above can be overwritten/extended by using a file passed as the \code{my.locations.file} argument. Such a file must have the same structure as the \code{\link[wpp2012]{UNlocations}} dataset. Entries in this file will overwrite corresponding entries in \code{\link[wpp2012]{UNlocations}} matched by the column \sQuote{country_code}. If there is no such entry in the default dataset, it will be appended. This option of appending new locations is especially useful in cases when \code{my.tfr.file} contains new countries/regions that are not included in \code{\link[wpp2012]{UNlocations}}. In such a case, one must provide a \code{my.locations.file} with a definition of those countries/regions.
+ The default UN table of locations mentioned above can be overwritten/extended by using a file passed as the \code{my.locations.file} argument. Such a file must have the same structure as the \code{\link[wpp2015]{UNlocations}} dataset. Entries in this file will overwrite corresponding entries in \code{\link[wpp2015]{UNlocations}} matched by the column \sQuote{country_code}. If there is no such entry in the default dataset, it will be appended. This option of appending new locations is especially useful in cases when \code{my.tfr.file} contains new countries/regions that are not included in \code{\link[wpp2015]{UNlocations}}. In such a case, one must provide a \code{my.locations.file} with a definition of those countries/regions.
 	
 For simulation of the hyperparameters of the Bayesian hierarchical model, all countries are used that are included in the WPP dataset, possibly complemented by the \code{my.tfr.file}, that have \code{include_code} equal to 2. The hyperparameters are used to simulate country-specific parameters, which is done for all countries with \code{include_code} equal 1 or 2. The following values of \code{include_code} in \code{my.tfr.file} are recognized: -1 (do not overwrite the default include code), 0 (ignore), 1 (include in prediction but not estimation), 2 (include in both, estimation and prediction). Thus, the set of countries included in the estimation and prediction can be fully user-specific.
 
@@ -128,7 +127,7 @@ The package contains a dataset called \file{my_tfr_template} (in \file{extdata} 
 	\item{mcmc.list}{A list of objects of class \code{\link{bayesTFR.mcmc}}, one for each MCMC.}
 }
 \references{
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. (A Working Paper version at \url{http://www.csss.washington.edu/Papers} [nr. 97])
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
 }
 \author{
 	Hana Sevcikova, Leontine Alkema

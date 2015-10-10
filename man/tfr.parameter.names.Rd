@@ -15,7 +15,7 @@ Functions for accessing names of the MCMC parameters, either country-independent
 }
 \usage{
 tfr.parameter.names(trans = NULL)
-tfr.parameter.names.cs(country.code = NULL, trans = NULL)
+tfr.parameter.names.cs(country.code = NULL, trans = NULL, back.trans = TRUE)
 tfr.parameter.names.extended()
 tfr.parameter.names.cs.extended(country.code = NULL)
 
@@ -24,9 +24,10 @@ tfr3.parameter.names.cs(country.code = NULL)
 }
 \arguments{
   \item{trans}{It can be \code{NULL} or logical. If \code{TRUE},
-	 names of the transformable parameters (i.e. \sQuote{alpha} and \sQuote{delta} in case of country-independent parameters, or \sQuote{gamma} in case of country-specific parameters) are replaced by the names of the transformed parameters (i.e. \sQuote{alphat}, \sQuote{deltat}, or \sQuote{gammat}). If \code{trans=FALSE}, there is no such replacement. If \code{trans=NULL}, all parameter names, 
+	 names of the transformable parameters (i.e. \sQuote{alpha} in case of country-independent parameters, or \sQuote{gamma} in case of country-specific parameters) are replaced by the names of the transformed parameters (i.e. \sQuote{alphat}, or \sQuote{gammat}). If \code{trans=FALSE}, there is no such replacement. If \code{trans=NULL}, all parameter names, 
 including the transformable parameters are returned.}
 \item{country.code}{Country code. If it is given, the country-specific parameter names contain the postfix \sQuote{_c\eqn{x}} where \eqn{x} is the \code{country.code}.}
+\item{back.trans}{Logical indicating if back-transformable parameter names (i.e. \sQuote{Triangle_c1}, \dots, \sQuote{Triangle_c3}) should be returned.}
 }
 
 

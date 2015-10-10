@@ -630,7 +630,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	country.loop.max <- 20
 	status.for.gui <- paste('out of', nr_simu, 'trajectories.')
 	gui.options <- list()
-	if (verbose) verbose.iter <- as.integer(max(1, nr_simu/100))
+	if (verbose) {
+		verbose.iter <- as.integer(max(1, nr_simu/100))
+		if(interactive()) cat('\n')
+	}
 	#########################################
 	for (s in 1:nr_simu){ # Iterate over trajectories
 	#########################################
@@ -642,7 +645,13 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			gui.options$bDem.TFRpred.status <- paste('finished', traj.counter, status.for.gui)
 			unblock.gtk('bDem.TFRpred', gui.options)
 		}
-		if (verbose && s %% verbose.iter == 0) cat('TFR projection trajectory ', s, '\n')
+		if (verbose) {
+			if(interactive()) cat('\rProjecting TFR trajectories ... ', round(s/nr_simu * 100), ' %')
+			else {
+				if (s %% verbose.iter == 0) 
+					cat('TFR projection trajectory ', s, '\n')
+				}
+		}
 		if(has.phase3) { # set country-spec parameters for phase 3 - time-invariant
 			mu.c[] <- m3.par.values[s,'mu']
 			rho.c[] <- m3.par.values[s,'rho']
@@ -785,6 +794,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			all.f_ps[,year,s] <- tfr.c
 		} # end time loop
 	} # end simu loop
+	if(verbose && interactive()) cat('\n')
 	##############
 	# Impute missing values if any and compute quantiles
 	for (icountry in 1:nr_countries_real){
@@ -1208,7 +1218,7 @@ do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
 												country.obj$code, adjusted=adjusted)[-1])
 		sink(con, type='message')
 		s <- summary(coda.list.mcmc(pred$mcmc.set, country=country.obj$code, 
-					par.names=NULL, par.names.cs=tfr.parameter.names.cs(trans=FALSE), 
+					par.names=NULL, par.names.cs=tfr.parameter.names.cs(trans=FALSE, back.trans=FALSE), 
 					thin=1, burnin=0))
 		sink(type='message')
 		lambda_c <- find.lambda.for.one.country(tfr.and.pred.median, nr.data)
@@ -1252,8 +1262,11 @@ get.wpp.revision.number <- function(pred) {
 do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicator.id=19, sex.id=3, adjusted=FALSE) {
 	cat('Creating summary files ...\n')
 	e <- new.env()
-	data('UN_time', envir=e)
-	data('UN_variants', envir=e)
+	# R check does not like the two lines below; not sure why
+	#data('UN_time', envir=e)
+	#data('UN_variants', envir=e)
+	do.call("data", list('UN_time', envir=e))
+	do.call("data", list('UN_variants', envir=e))
 	nr.proj <- pred$nr.projections+1
 	tfr <- get.data.imputed(pred)
 	tfr.years <- get.tfr.periods(pred$mcmc.set$meta)
@@ -1469,7 +1482,9 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 	country.codes <- meta$regions$country_code
 	if(is.null(cor.pred)) {
 		e <- new.env()
-		data(correlation_predictors, envir=e)
+		# the following code causes a NOTE in R check; not sure why
+		#data("correlation_predictors", envir=e)
+		do.call("data", list("correlation_predictors", envir=e))
 		cor.pred <- e$correlation_predictors
 	}
 	for(i in 1:(nr_countries-1)) {

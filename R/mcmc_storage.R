@@ -4,7 +4,7 @@ store.mcmc <- local({
 	# Writes parameter values into ascii files - one file per parameter and country (if country-specific)
 	##########################
 	par.names <- c(tfr.parameter.names(trans=FALSE))
-	par.cs.names <- c(tfr.parameter.names.cs(trans=FALSE), 'eps_T')
+	par.cs.names <- c(tfr.parameter.names.cs(trans=FALSE, back.trans=FALSE), 'eps_T')
 	var.names <- list(gamma='gamma_ci', d='d_c', Triangle_c4='Triangle_c4', eps_T='eps_Tc', U='U_c')
 	
 	default.buffer.size <- 10

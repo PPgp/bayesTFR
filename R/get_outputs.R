@@ -285,43 +285,50 @@ get.burned.tfr.traces <- function(mcmc, par.names, burnin=0, thinning.index=NULL
 "bdem.parameter.traces" <- function(mcmc, ...) UseMethod("bdem.parameter.traces")
 
 bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
-	tran.names <- totran.names <- all.standard.names <- c()
+	tran.names <- totran.names <- all.standard.names <- backtran.names <- tobacktran.names <- c()
 	# Load traces from the disk
 	if(is.null(mcmc$meta$phase) || mcmc$meta$phase == 2) {
 		all.standard.names <- c(tfr.parameter.names(), get.trans.parameter.names(), 
 							tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE))
 		tran.names <- c(get.trans.parameter.names(), get.trans.parameter.names(cs=TRUE))
 		totran.names <- c(get.totrans.parameter.names(), get.totrans.parameter.names(cs=TRUE))
+		backtran.names <- get.backtrans.parameter.names(cs=TRUE)
+		tobacktran.names <- get.tobacktrans.parameter.names(cs=TRUE)
 	} else {
 		if(mcmc$meta$phase == 3) all.standard.names <- c(tfr3.parameter.names(), tfr3.parameter.names.cs())
 	}
 	return(.do.get.traces(mcmc, par.names=par.names, ..., 
 							all.standard.names=all.standard.names,
-							tran.names=tran.names, totran.names=totran.names))
+							tran.names=tran.names, totran.names=totran.names,
+							backtran.names=backtran.names, tobacktran.names=tobacktran.names))
 }
 
 .do.get.traces <- function(mcmc, par.names, file.postfix='', par.names.postfix='', burnin=0, 
-							thinning.index=NULL, all.standard.names=c(), tran.names=c(), totran.names=c()) {
+							thinning.index=NULL, all.standard.names=c(), tran.names=c(), totran.names=c(), 
+							backtran.names=c(), tobacktran.names=c()) {
 	if (length(par.names) == 0) return (NULL)
 	tran.names.l <- nchar(tran.names)
 	ltran.names <- length(tran.names)
 	totran.names.l <- nchar(totran.names)
 	has.tran <- rep(FALSE, ltran.names)
+	lbacktran.names <- length(backtran.names)
+	backtran.names.l <- nchar(backtran.names)
+	has.backtran <- rep(FALSE, lbacktran.names)
 	values <- c()
  	valnames <- c()
  	loaded.files <- c()
  	compr.settings <- .get.compression.settings(mcmc$compression.type)
  	for(name in par.names) {
- 		nextit <- FALSE
- 		if(ltran.names > 0) 
- 			for (i in 1:ltran.names){
- 				if (substr(name,1,tran.names.l[i]) == tran.names[i]) {
- 					has.tran[i] <- TRUE
- 					nextit <- TRUE
- 					break
- 				}
- 			}
- 		if (nextit) next # name is a transformation variable, therefore skip to next one
+ 		if(lbacktran.names > 0) {
+ 			new.has.backtran <- backtran.names %in% sapply(backtran.names.l, function(x) substr(name, 1, x))
+ 			has.backtran <- has.backtran | new.has.backtran
+ 			if(any(new.has.backtran)) next  # name is a back-transformation variable, therefore skip to next one
+ 		} 
+ 		if(ltran.names > 0) {
+ 			new.has.tran <- tran.names %in% sapply(tran.names.l, function(x) substr(name, 1, x))
+ 			has.tran <- has.tran | new.has.tran
+ 			if(any(new.has.tran)) next  # name is a transformation variable, therefore skip to next one
+ 		}
  		if (any(name == valnames)) next # name already loaded
  			
  		if (!any(name==all.standard.names)) {
@@ -368,28 +375,74 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 			vals <- vals[thinning.index,,drop=FALSE]
 		values <- cbind(values, vals)
 	} # end of loading loop
+	#stop('')
 	colnames(values) <- valnames
-	if(ltran.names == 0) return(values)
+	if(ltran.names == 0 && lbacktran.names == 0 ) return(values)
 	# get transformed variables (alpha, delta, gamma)
-	for (i in 1:ltran.names) {
-		if (!has.tran[i]) next
-		full.names <- grep(paste(totran.names[i],'_', sep=''), valnames, value=TRUE)
-		if (length(grep(paste('^', totran.names[i], '(_|$)', sep=''), valnames)) == 0) { # load alpha/delta/gamma
-			vals <- bdem.parameter.traces(mcmc, c(totran.names[i]), 
-							file.postfix=file.postfix, par.names.postfix=par.names.postfix,
-							burnin=burnin, thinning.index=thinning.index)
-			full.names <- grep(paste(totran.names[i],'_', sep=''), c(valnames, colnames(vals)), value=TRUE)
-		} else {
-			vals <- values[, full.names, drop=FALSE]
+	if(ltran.names > 0 && any(has.tran)) {
+		for (i in which(has.tran)) {
+			full.names <- grep(paste0(totran.names[i],'_'), valnames, value=TRUE)
+			if (length(grep(paste0('^', totran.names[i], '(_|$)'), valnames)) == 0) { # load alpha/delta/gamma
+				vals <- bdem.parameter.traces(mcmc, c(totran.names[i]), 
+								file.postfix=file.postfix, par.names.postfix=par.names.postfix,
+								burnin=burnin, thinning.index=thinning.index)
+				full.names <- grep(paste0(totran.names[i],'_'), c(valnames, colnames(vals)), value=TRUE)
+			} else {
+				vals <- values[, full.names, drop=FALSE]
+			}
+			vals <- exp(vals)/apply(exp(vals),1,sum)
+			values <- cbind(values, vals)
+			valnames <- c(valnames, paste0(tran.names[i],'_', 
+											substr(full.names, totran.names.l[i]+2, nchar(full.names))))
+			colnames(values) <- valnames
 		}
-		vals <- exp(vals)/apply(exp(vals),1,sum)
+	}
+	#stop('')
+	# get back-transformed variables (Triangle_c1-3)
+	if(lbacktran.names > 0 && any(has.backtran)) {
+		vals <- c()
+		for(i in 1:length(tobacktran.names)) {		
+			full.names <- grep(paste0(tobacktran.names[i],'_'), valnames, value=TRUE)
+			if (length(grep(paste0('^', tobacktran.names[i], '(_|$)'), valnames)) == 0) { # load gamma, U, Triangle_c4
+				vals <- cbind(vals, bdem.parameter.traces(mcmc, c(tobacktran.names[i]), 
+								file.postfix=file.postfix, par.names.postfix=par.names.postfix,
+								burnin=burnin, thinning.index=thinning.index))
+				full.names <- grep(paste0(tobacktran.names[i],'_'), c(valnames, colnames(vals)), value=TRUE)
+			} else {
+				vals <- cbind(vals, values[, full.names, drop=FALSE])
+			}
+		}
+		vals <- .get.backtransformed.Triangles(vals, backtran.names[has.backtran])
 		values <- cbind(values, vals)
-		valnames <- c(valnames, paste(tran.names[i],'_', substr(full.names, totran.names.l[i]+2, 
-										nchar(full.names)), sep=''))
-		colnames(values) <- valnames
 	}
 	return(values)
 }
+
+.get.backtransformed.Triangles <- function(data, par.names) {
+	data.par.names <- colnames(data)
+	# set names of the parameter columns for this country
+	U.var <- grep('^U_c', data.par.names, value=TRUE) 
+	d.var <- grep('^d_c', data.par.names, value=TRUE) 
+	Triangle_c4.var <- grep("^Triangle_c4_c", data.par.names, value=TRUE) 
+	gamma.vars <- sapply(paste0('^gammat_',1:3), function(x) grep(x, data.par.names, value=TRUE))
+	# transform gamma_ci into Triangle_ci 
+	# compute p_ci 
+	#p_ci <- matrix(NA, nrow(data), 3) 
+	#p_ci_denominator <- apply(exp(data[,gamma.vars]), 1, sum) 
+	#for (i in 1:3) p_ci[,i] <- exp(data[,gamma.vars[i]])/p_ci_denominator 
+	Delta <- data.frame(
+    	Triangle_c1 = (data[,U.var] - data[,Triangle_c4.var])*data[,gamma.vars[1]],
+    	Triangle_c2 = (data[,U.var] - data[,Triangle_c4.var])*data[,gamma.vars[2]],
+    	Triangle_c3 = (data[,U.var] - data[,Triangle_c4.var])*data[,gamma.vars[3]]
+    ) 
+    Delta <- Delta[,par.names, drop=FALSE]
+    suffix <- strsplit(data.par.names, "_")[[1]]
+    suffix <- suffix[length(suffix)]
+    colnames(Delta) <- paste(colnames(Delta), suffix, sep="_")
+	return(as.matrix(Delta))
+	
+}
+
 
 get.all.parameter.names <- function() {
     # First element in each tuple indicates if the parameter is transformable, 
@@ -403,19 +456,33 @@ get.all.parameter.names <- function() {
 get.all.parameter.names.cs <- function() {
     # First element in each tuple indicates if the parameter is transformable, 
     # the second how many values it has.
-	return(list(gamma=c(TRUE, 3), U=c(FALSE, 1), d=c(FALSE, 1), Triangle_c4=c(FALSE, 1)))
+	return(list(gamma=c(1, 3), U=c(0, 1), d=c(0, 1), Triangle_c4=c(0, 1), 
+				Triangle_c1=c(2, 1), Triangle_c2=c(2, 1), Triangle_c3=c(2, 1)))
 }
 
 get.totrans.parameter.names <- function(cs=FALSE) {
 	pars <- if(cs) get.all.parameter.names.cs() else get.all.parameter.names() 
-	is.trans <- sapply(pars, function(x) return(x[1]))
+	is.trans <- sapply(pars, function(x) return(x[1] == 1))
 	return(names(pars)[is.trans])
 }
 
 get.trans.parameter.names <- function(cs=FALSE) return(paste(get.totrans.parameter.names(cs), 't', sep=''))
+
+get.backtrans.parameter.names <- function(cs=FALSE) {
+	if(!cs) return (c())
+	pars <- get.all.parameter.names.cs()
+	is.backtrans <- sapply(pars, function(x) return(x[1] == 2))
+	return(names(pars)[is.backtrans])
+}
+
+get.tobacktrans.parameter.names <- function(cs=FALSE) {
+	if(!cs) return (c())
+	return(c("U", "gammat", "Triangle_c4"))
+}
+
 get.other.parameter.names <- function(cs=FALSE) {
 	pars <- if(cs) get.all.parameter.names.cs() else get.all.parameter.names()
-	is.trans <- sapply(pars, function(x) return(x[1]))
+	is.trans <- sapply(pars, function(x) return(x[1]) > 0)
 	return(names(pars)[!is.trans])
 }
 
@@ -452,7 +519,7 @@ tfr.parameter.names <- function(trans=NULL) {
 	# Return all country-independent parameter names. 
 	# trans can be NULL or logical.
 	# If 'trans' is TRUE,
-	# names of the transformable parameters (alpha, delta) are replaced by the names 
+	# names of the transformable parameters (alpha) are replaced by the names 
 	# of the transformed parameters.
 	# If 'trans' is NULL, all parameter names, 
 	# including the transformable parameters are returned.
@@ -462,15 +529,18 @@ tfr.parameter.names <- function(trans=NULL) {
 	return (c(get.totrans.parameter.names(), other.pars))
 }
 	
-tfr.parameter.names.cs <- function(country.code=NULL, trans=NULL) {
+tfr.parameter.names.cs <- function(country.code=NULL, trans=NULL, back.trans=TRUE) {
 	#Return all country-specific parameter names. 
 	# See comments in tfr.parameter.names(). Transformable parameter is gamma.
 	#If country is not NULL, it must be a country code.
 	#It is attached to the parameter name.
 	par.names <- get.other.parameter.names(cs=TRUE)
-	if (is.null(trans)) par.names <- c(par.names, get.totrans.parameter.names(cs=TRUE), 
+	backtrans.names <- if(back.trans) get.backtrans.parameter.names(cs=TRUE) else c()
+	if (is.null(trans)) par.names <- c(par.names, backtrans.names,
+										get.totrans.parameter.names(cs=TRUE), 										
 										get.trans.parameter.names(cs=TRUE))
-	else par.names <- c(par.names, if (trans) get.trans.parameter.names(cs=TRUE) 
+	else par.names <- c(par.names, backtrans.names,
+								if (trans) get.trans.parameter.names(cs=TRUE) 
 									else get.totrans.parameter.names(cs=TRUE))
 	if (is.null(country.code))
 		return(par.names)
@@ -745,11 +815,12 @@ filter.traces <- function(values, par.names) {
     		include[idx] <- TRUE
     		next
     	}
-    	idx <- grep(paste('^', par.names[i], '_', sep=''), valuenames) # partial match
+    	idx <- grep(paste0('^', par.names[i], '_'), valuenames) # partial match
     	if (length(idx) > 0) include[idx] <- TRUE
     }
-	v <- array(values[,include], c(nrow(values), sum(include)))
-	colnames(v) <- colnames(values)[include]
+	#v <- array(values[,include], c(nrow(values), sum(include)))
+	v <- values[,which(include), drop=FALSE]
+	#colnames(v) <- colnames(values)[include]
     return(v)
 }
 

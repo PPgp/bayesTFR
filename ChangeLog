@@ -1,5 +1,28 @@
-4.1-3
+4.3-0
 -----
+DLcurve.plot got an argument "col" for modifying colors.
+
+The following defaults in run.tfr.mcmc changed:
+	start.year=1950 (from 1750)
+	present.year=2015 (from 2010)
+	wpp.year=2015 (from 2012)
+	
+Example directory re-created using wpp2015.
+
+4.2-0 (7/9/2015)
+-----
+MCMC outputs now also for back-transformed parameters Triangle_c1-3.
+
+Plotted trajectories are shown in a transparent color.
+
+Imports fixed to comply with the new CRAN policy.
+
+In the manual, a few citations updated.
+
+In tfr.trajectories.plot input to rgb divided by 255 
+(it was not working for other color than black - 
+thanks to Patrick Gerland for finding the bug and fixing it).
+
 Bug fix in creating thinned MCMCs for extra countries.
 
 Default of b.width in run.tfr.mcmc changed to 0.05

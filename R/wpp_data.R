@@ -131,8 +131,15 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
 	loc_data <- load.bdem.dataset('UNlocations', wpp.year, verbose=verbose)
 	if(!is.null(my.locations.file)) {
 		my.locations <- read.tfr.file(file=my.locations.file)
-		if(!all(colnames(loc_data) %in% colnames(my.locations)))
-			stop('my.locations.file must contain columns: ', paste(colnames(loc_data), collapse=', '))
+		#if(!all(colnames(loc_data) %in% colnames(my.locations)))
+		required.columns <- c("country_code", "name", "location_type")
+		if(!all(required.columns %in% colnames(my.locations)))
+			stop('my.locations.file must contain columns: ', paste(required.columns, collapse=', '))
+		col.not.present <- colnames(loc_data)[!colnames(loc_data)%in%colnames(my.locations)]
+		if(length(col.not.present) > 0) {
+			my.locations <- cbind(my.locations, as.data.frame(matrix(NA, nrow=nrow(my.locations), 
+							ncol=length(col.not.present), dimnames=list(NULL, col.not.present))))
+		}
 		my.locations <- my.locations[,colnames(loc_data)]
 		overlap <- my.locations$country_code %in% loc_data$country_code
 		if(any(overlap)) { # overwrite UN locations
@@ -149,6 +156,7 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
                                        paste('include_', wpp.year, '.txt', sep='')))
     loc_data <- merge(loc_data, include_codes, by='country_code', all.x=TRUE)
 	# this include some areas that are not in the tfr file
+	loc_data[is.na(loc_data$include_code),"include_code"] <- 0
 	# get the include_code from this file to get the countries from the tfr file
 	nr_tfr_outcomes <- length(data[,1])
 	include <- rep(NA, nr_tfr_outcomes)
