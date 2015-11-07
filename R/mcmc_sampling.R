@@ -253,6 +253,7 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 
 	updated.var.names <- c('gamma_ci', 'd_c', 'Triangle_c4', 'U_c')
 	idx.tau_c.id.notearly <- matrix(c(mcmc$meta$tau_c[id_notearly], id_notearly), ncol=2)
+	#stop('')
     ################################################################### 
     # Start MCMC
 	############

@@ -38,7 +38,7 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, 
     	alpha.vars <- paste('alpha_',1:3, sep='')
 		delta.vars <- paste('delta_',1:3, sep='')
 		if(!is.null(country.code))
-			Uvalue = get.observed.tfr(country.index, mcmc.list[[1]]$meta, 
+			Uvalue <- get.observed.tfr(country.index, mcmc.list[[1]]$meta, 
 										'tfr_matrix_all')[mcmc.list[[1]]$meta$tau_c[country.index]]
 		else Uvalue <- mcmc.list[[1]]$meta$U.c.low.base + (mcmc.list[[1]]$meta$U.up - mcmc.list[[1]]$meta$U.c.low.base)/2
     	cspec <- FALSE
