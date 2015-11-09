@@ -346,17 +346,17 @@ run.tfr.mcmc.subnat.extra <- function(countries, my.tfr.file, sim.dir=file.path(
 	output.dir <- file.path(sim.dir, 'subnat')
 	if(!file.exists(output.dir)) dir.create(output.dir, recursive=TRUE)
 	
-	if(has.tfr.prediction(sim.dir=world.sim.dir)) {
-		m <- get.tfr.prediction(world.sim.dir)$mcmc.set
-		post.burnin <- 0
-	} else {
+	#if(has.tfr.prediction(sim.dir=world.sim.dir)) {
+	#	m <- get.tfr.prediction(world.sim.dir)$mcmc.set
+	#	post.burnin <- 0
+	#} else {
 		l <- mcmc.set$mcmc.list[[1]]$finished.iter
 		if(post.burnin > l) {
 			post.burnin <- as.integer(l/2)
 			warning('post.burnin larger than MCMC length. Adjusted to ', post.burnin)
 		}
-		m <- get.tfr.mcmc(world.sim.dir)
-	}
+		m <- mcmc.set
+	#}
 	total.iter <- m$mcmc.list[[1]]$length - get.thinned.burnin(m$mcmc.list[[1]], post.burnin)
 	if(is.null(iter)) iter <- total.iter
 	if(iter > total.iter) post.idx <- sample(1:total.iter, iter, replace=TRUE)
