@@ -385,7 +385,7 @@ run.tfr.mcmc.subnat.extra <- function(countries, my.tfr.file, sim.dir=file.path(
 	
 	results <- list()
 	for (country in countries) {
-		country.obj <- get.country.object(country, mcmc.set$meta)	
+		country.obj <- get.country.object(country, m$meta)	
 		if(verbose) 
 			cat('\nSimulating Phase II for', country.obj$name, '\n')							
 		ini <- mcmc.meta.ini.subnat(meta, country=country.obj$code, my.tfr.file=my.tfr.file, 
@@ -399,7 +399,7 @@ run.tfr.mcmc.subnat.extra <- function(countries, my.tfr.file, sim.dir=file.path(
 		new.m <- m
 		new.m$meta <- ini
 		nrc <- get.nr.countries.est(ini)
-		for(i in 1:length(mcmc.set$mcmc.list)) {
+		for(i in 1:length(m$mcmc.list)) {
 			new.m$mcmc.list[[i]]$meta <- ini
 			hyperpars.from.country.pars(new.m$mcmc.list[[i]], m$mcmc.list[[i]], country.obj, posterior.idx=post.idx, burnin=post.burnin)
 		}
