@@ -209,7 +209,7 @@ unblock.gtk <- function(option, options.list=NULL) {
 }
 
 tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample,
-											 iter=NULL, burnin=2000, verbose=FALSE, verbose.iter=100) {
+											 iter=NULL, burnin=2000, do.sample.posterior=TRUE, verbose=FALSE, verbose.iter=100) {
 	#run mcmc sampling for countries given by the index 'countries'
 	nr_simu <- iter
 	if (is.null(iter))
@@ -233,7 +233,8 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 	# get values of the hyperparameters (sample from the posterior)
     hyperparameter.names <- tfr.parameter.names(trans=FALSE)
     hyperparameters <- list()
-    sampled.index <- sample(posterior.sample, nr_simu, replace=TRUE)
+    sampled.index <- if(do.sample.posterior) sample(posterior.sample, nr_simu, replace=TRUE)
+    				else posterior.sample[1:nr_simu]
     th.burnin <- get.thinned.burnin(mcmc, burnin)
     for (par in hyperparameter.names) {
     	hyperparameters[[par]] <- c()
