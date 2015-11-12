@@ -234,6 +234,77 @@ mcmc3.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbo
 	return(mcmc)
 }
 
+run.tfr3.mcmc.subnat.extra <- function(countries, sim.dir=file.path(getwd(), 'bayesTFR.output'),
+										iter=5000, world.sim.dir = sim.dir, post.burnin = 10000, verbose=FALSE) {
+	if(is.null(world.sim.dir)) world.sim.dir <- sim.dir
+	if(!has.tfr3.mcmc(world.sim.dir)) stop('No phase III available in ', world.sim.dir)
+	output.dir <- file.path(sim.dir, 'subnat')
+	mcmc2 <- get.tfr.mcmc(world.sim.dir)	
+	mcmc3 <- get.tfr3.mcmc(world.sim.dir)
+	if(has.tfr.prediction(sim.dir=world.sim.dir)) {
+		p <- get.tfr.prediction(sim.dir=world.sim.dir)
+		post.burnin <- p$burnin3
+	}
+	l <- mcmc3$mcmc.list[[1]]$finished.iter
+	if(post.burnin > l) {
+		post.burnin <- as.integer(l/2)
+		warning('post.burnin larger than MCMC length. Adjusted to ', post.burnin)
+	}
+	total.iter <- mcmc3$mcmc.list[[1]]$length - get.thinned.burnin(mcmc3$mcmc.list[[1]], post.burnin)
+	if(is.null(iter)) iter <- total.iter
+	if(iter > total.iter) post.idx <- sample(1:total.iter, iter, replace=TRUE)
+	else {
+		post.idx <- get.thinning.index(iter, total.iter)
+		iter <- post.idx$nr.points
+		post.idx <- post.idx$index
+	}
+	result <- list()
+	for (country in countries) {
+		country.obj <- get.country.object(country, mcmc2$meta)	
+		if(verbose) 
+			cat('\nStoring Phase III for', country.obj$name, '\n')	
+		this.output.dir <- file.path(output.dir, paste0('c', country.obj$code), 'phaseIII')
+		m <- mcmc3
+		m$meta$output.dir <- this.output.dir
+		m$meta$id_phase3 <- c()
+		bayesTFR.mcmc.meta <- m$meta
+		if(file.exists(this.output.dir)) unlink(this.output.dir, recursive=TRUE)
+		dir.create(this.output.dir)
+		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
+		for(i in 1:length(m$mcmc.list)) {
+			m$mcmc.list[[1]] <- hyperpars3.from.country.pars(mcmc3$mcmc.list[[i]], this.output.dir, country.obj, post.idx, post.burnin)
+		}
+		names(m$mcmc.list) <- length(m$mcmc.list)
+		result[[as.character(country.obj$code)]] <- structure(list(meta=bayesTFR.mcmc.meta, mcmc.list=m$mcmc.list), 
+																			class='bayesTFR.mcmc.set')
+	}
+	invisible(result)				
+}
+
+hyperpars3.from.country.pars <- function(mcmc, output.dir, country.obj, posterior.idx, burnin) {
+	if(country.obj$index %in% mcmc$meta$id_phase3) { # country has phase 3 pars
+		traces <- data.frame(load.tfr3.parameter.traces.cs(mcmc, country.obj$code,
+									par.names=c('mu.c', 'rho.c'), burnin=burnin))[posterior.idx,]
+		colnames(traces) <- c('mu', 'rho')
+	} else {
+		traces <- data.frame(load.tfr3.parameter.traces(mcmc, 
+									par.names=c('mu', 'rho'), burnin=burnin))[posterior.idx,]
+	}
+	traces <- cbind(traces, data.frame(load.tfr3.parameter.traces(mcmc, 
+									par.names=c('sigma.eps', 'sigma.rho', 'sigma.mu'), burnin=burnin))[posterior.idx,])
+	result <- list()
+	for(par in colnames(traces)) result[[par]] <- traces[,par]
+	m <- mcmc
+	m$meta$output.dir <- output.dir
+	m$meta$id_phase3 <- c()
+	m$length <- nrow(traces)
+	m$finished.iter <- m$length
+	m$thin <- 1
+	write.list.into.file.cindep(m, result)
+	store.bayesTFR.object(m, file.path(output.dir, m$output.dir))
+	return(m)
+}
+
 run.tfr3.mcmc.subnat <- function(countries, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								iter = 30000,
 								use.world.posterior = FALSE, world.sim.dir = sim.dir,

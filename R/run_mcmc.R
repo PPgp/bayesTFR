@@ -337,7 +337,7 @@ run.tfr.mcmc.subnat.extra <- function(countries, my.tfr.file, sim.dir=file.path(
 								start.year=1950, present.year=2010, 								
 								world.sim.dir = sim.dir,
 								post.burnin = 2000, buffer.size=100,
-								seed = NULL, parallel=FALSE, nr.nodes=nr.chains, compression.type='None',
+								seed = NULL, parallel=FALSE, nr.nodes=3, compression.type='None',
 								verbose=FALSE, verbose.iter=100, ...) {
 									
 	if(is.null(world.sim.dir)) world.sim.dir <- sim.dir
