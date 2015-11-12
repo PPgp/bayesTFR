@@ -241,10 +241,10 @@ run.tfr3.mcmc.subnat.extra <- function(countries, sim.dir=file.path(getwd(), 'ba
 	output.dir <- file.path(sim.dir, 'subnat')
 	mcmc2 <- get.tfr.mcmc(world.sim.dir)	
 	mcmc3 <- get.tfr3.mcmc(world.sim.dir)
-	if(has.tfr.prediction(sim.dir=world.sim.dir)) {
-		p <- get.tfr.prediction(sim.dir=world.sim.dir)
-		post.burnin <- p$burnin3
-	}
+	#if(has.tfr.prediction(sim.dir=world.sim.dir)) {
+	#	p <- get.tfr.prediction(sim.dir=world.sim.dir)
+	#	post.burnin <- p$burnin3
+	#}
 	l <- mcmc3$mcmc.list[[1]]$finished.iter
 	if(post.burnin > l) {
 		post.burnin <- as.integer(l/2)
@@ -272,7 +272,7 @@ run.tfr3.mcmc.subnat.extra <- function(countries, sim.dir=file.path(getwd(), 'ba
 		dir.create(this.output.dir)
 		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
 		for(i in 1:length(m$mcmc.list)) {
-			m$mcmc.list[[1]] <- hyperpars3.from.country.pars(mcmc3$mcmc.list[[i]], this.output.dir, country.obj, post.idx, post.burnin)
+			m$mcmc.list[[1]] <- hyperpars3.from.country.pars(mcmc3$mcmc.list[[i]], this.output.dir, country.obj, post.idx, burnin=post.burnin)
 		}
 		names(m$mcmc.list) <- length(m$mcmc.list)
 		result[[as.character(country.obj$code)]] <- structure(list(meta=bayesTFR.mcmc.meta, mcmc.list=m$mcmc.list), 
