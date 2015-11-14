@@ -186,7 +186,7 @@ estimate.scale <- function(wmeta, meta, country.index, reg.index) {
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								end.year=2100, output.dir = NULL, nr.traj=NULL, seed = NULL,  
-								sigma3=0.115, verbose=TRUE) {
+								sigma3=0.115, sigma3.default=0.115, verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
@@ -201,6 +201,10 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 	thinning.index <- unique(round(seq(1, nrow(BHMp2), length=nr.traj)))
 	nr.trajs <- length(thinning.index)
 	BHMp2 <- BHMp2[thinning.index,]
+	if(length(sigma3)==1 && length(countries) > 1) {
+		sigma3 <- rep(sigma3, length(sigma3))
+		names(sigma3) <- countries
+	}
 	for (country in countries) {
 		country.obj <- get.country.object(country, wmeta)
 		if(verbose) 
@@ -224,6 +228,8 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 						dimnames=list(meta$regions$country_code, dimnames(wpred$quantiles)[[2]], dimnames(wtrajs)[[1]]))
 		mean_sd <- array(NA, c(nr.reg, 2, nrow(wtrajs)))
 		meta$T_end_c <- rep(nrow(meta$tfr_matrix_all), nr.reg)
+		this.sigma3 <- if(as.character(country) %in% names(sigma3)) sigma3[as.character(country)] else sigma3.default
+		if(verbose) cat('\nPhase III SD = ', this.sigma3)
 		for(region in 1:nr.reg) {
 			reg.obj <- get.country.object(region, meta, index=TRUE)			
 			scale.res <- estimate.scale(wmeta, meta, country.obj$index, reg.obj$index)
@@ -243,7 +249,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		  									ifelse(tfr.pred[year-1,s] > BHMp2[s,'S_sd'], 
 		  											-BHMp2[s,'a_sd'], BHMp2[s,'b_sd']), wmeta$sigma0.min)
 		  			} else { # phase 3
-		  				sigma.eps <- sigma3
+		  				sigma.eps <- this.sigma3
 		  			}								
 					tfr.pred[year, s] <- wtrajs[year,s] * scale + rnorm(1, 0, sd=sigma.eps)
 				}
