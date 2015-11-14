@@ -171,14 +171,36 @@ estimate.scale.and.sd <- function(wmeta, meta, country.index, reg.index, interce
     return(list(scale=scale, alpha=alpha, sd=sqrt(mean(lmfit$residuals^2)), last.tfr=regtfr[length(regtfr)]))
 }
 
+estimate.scale <- function(wmeta, meta, country.index, reg.index) {
+	wtfr <- get.observed.tfr(country.index, wmeta, 'tfr_matrix_all')
+	regtfr <- get.observed.tfr(reg.index, meta, 'tfr_matrix_all')
+	# get only common years that are not NA
+	regtfr <- regtfr[!is.na(regtfr)]
+	regtfr <- regtfr[names(regtfr) %in%names(wtfr)]
+    wtfr <- wtfr[names(wtfr) %in%names(regtfr)]
+    lmfit <- lm(regtfr ~ -1 + wtfr)
+    scale <- lmfit$coef[1]
+   
+    return(list(scale=scale, last.tfr=regtfr[length(regtfr)]))
+}
+
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
-								output.dir = NULL, nr.traj=NULL, seed = NULL, intercept=FALSE, verbose=TRUE) {
+								end.year=2100, output.dir = NULL, nr.traj=NULL, seed = NULL,  
+								sigma3=0.115, verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
 	if (is.null(output.dir)) output.dir <- wmeta$output.dir
 	quantiles.to.keep <- as.numeric(dimnames(wpred$quantiles)[[2]])
+	nr.project <- min(length(seq(wmeta$start.year+5, end.year, by=5)), wpred$nr.projections)
+	
 	result <- list()
+	BHMp2 <- get.tfr.parameter.traces(wpred$mcmc.set$mcmc.list, 
+							c('sigma0', 'a_sd', 'b_sd', 'S_sd', 'const_sd'), burnin=0)
+	if(is.null(nr.traj)) nr.traj <- nrow(BHMp2)
+	thinning.index <- unique(round(seq(1, nrow(BHMp2), length=nr.traj)))
+	nr.trajs <- length(thinning.index)
+	BHMp2 <- BHMp2[thinning.index,]
 	for (country in countries) {
 		country.obj <- get.country.object(country, wmeta)
 		if(verbose) 
@@ -195,26 +217,38 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		dir.create(outdir, recursive=TRUE)
 		bayesTFR.mcmc.meta <- meta
 		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
-		wtrajs <- get.tfr.trajectories(wpred, country.obj$code)
-		wtrajs <- wtrajs[2:nrow(wtrajs),]
-		if(is.null(nr.traj)) nr.traj <- ncol(wtrajs)
-		thinning.index <- unique(round(seq(1, ncol(wtrajs), length=nr.traj)))
-		nr.trajs <- length(thinning.index)
-		wtrajs <- wtrajs[,thinning.index]
+		wtrajs <- get.tfr.trajectories(wpred, country.obj$code)		
+		wtrajs <- wtrajs[1:(nr.project+1),thinning.index]
 		nr.reg <- get.nr.countries(meta)
-		PIs_cqp <- array(NA, c(nr.reg, length(quantiles.to.keep), nrow(wtrajs)+1),
-						dimnames=list(NULL, dimnames(wpred$quantiles)[[2]], dimnames(wpred$quantiles)[[3]]))
-		mean_sd <- array(NA, c(nr.reg, 2, nrow(wtrajs)+1))
+		PIs_cqp <- array(NA, c(nr.reg, length(quantiles.to.keep), nrow(wtrajs)),
+						dimnames=list(meta$regions$country_code, dimnames(wpred$quantiles)[[2]], dimnames(wtrajs)[[1]]))
+		mean_sd <- array(NA, c(nr.reg, 2, nrow(wtrajs)))
 		meta$T_end_c <- rep(nrow(meta$tfr_matrix_all), nr.reg)
 		for(region in 1:nr.reg) {
 			reg.obj <- get.country.object(region, meta, index=TRUE)			
-			scale.sd <- estimate.scale.and.sd(wmeta, meta, country.obj$index, reg.obj$index, intercept=intercept)
-			alpha <- scale.sd$alpha
-			scale <- scale.sd$scale
-			c.sd <- scale.sd$sd
-			freg <- alpha + wtrajs * scale + matrix(rnorm(length(wtrajs), sd=c.sd), nrow=nrow(wtrajs), ncol=ncol(wtrajs))
-			freg <- rbind(rep(scale.sd$last.tfr, ncol(wtrajs)), freg)
-			trajectories <- freg
+			scale.res <- estimate.scale(wmeta, meta, country.obj$index, reg.obj$index)
+			scale <- scale.res$scale
+			tfr.pred <- matrix(NA, nrow=nr.project+1, ncol=ncol(wtrajs))
+			tfr.pred[1,] <- scale.res$last.tfr
+			is.reg.phase3 <- !(reg.obj$index %in% meta$id_Tistau) & (length(meta$lambda_c[region]:meta$T_end_c[region]) > 1)
+			for(s in 1:ncol(tfr.pred)) { # iterate over trajectories
+				is.in.phase3 <- is.reg.phase3
+				for(year in 2:(nr.project+1)) {
+					if(!is.in.phase3 & year > 2) { # check if now in phase 3
+						end.phase2 <- find.lambda.for.one.country(tfr.pred[1:(year-1),s], year-1)	 				
+						is.in.phase3 <- end.phase2 < year-1
+					}
+					if(!is.in.phase3) {
+						sigma.eps <- max(BHMp2[s,'sigma0'] + (tfr.pred[year-1,s] - BHMp2[s,'S_sd'])*
+		  									ifelse(tfr.pred[year-1,s] > BHMp2[s,'S_sd'], 
+		  											-BHMp2[s,'a_sd'], BHMp2[s,'b_sd']), wmeta$sigma0.min)
+		  			} else { # phase 3
+		  				sigma.eps <- sigma3
+		  			}								
+					tfr.pred[year, s] <- wtrajs[year,s] * scale + rnorm(1, 0, sd=sigma.eps)
+				}
+			}
+			trajectories <- tfr.pred
 			save(trajectories, file = file.path(outdir, paste0('traj_country', reg.obj$code, '.rda')))
 			# compute quantiles
 			PIs_cqp[region,,] <- apply(trajectories, 1, quantile, quantiles.to.keep, na.rm = TRUE)
