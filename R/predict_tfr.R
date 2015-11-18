@@ -181,12 +181,12 @@ estimate.scale <- function(wmeta, meta, country.index, reg.index) {
     lmfit <- lm(regtfr ~ -1 + wtfr)
     scale <- lmfit$coef[1]
    
-    return(list(scale=scale, last.tfr=regtfr[length(regtfr)]))
+    return(list(scale=scale, last.tfr=regtfr[length(regtfr)], fit=lmfit))
 }
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								end.year=2100, output.dir = NULL, nr.traj=NULL, seed = NULL,  
-								sigma3=0.115, sigma3.default=0.115, verbose=TRUE) {
+								sigma3=0.115, sigma3.default=0.115, use.lmfit=c(FALSE, TRUE), verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
@@ -245,13 +245,16 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 						is.in.phase3 <- end.phase2 < year-1
 					}
 					if(!is.in.phase3) {
+						ulmfit <- use.lmfit[1]
 						sigma.eps <- max(BHMp2[s,'sigma0'] + (tfr.pred[year-1,s] - BHMp2[s,'S_sd'])*
 		  									ifelse(tfr.pred[year-1,s] > BHMp2[s,'S_sd'], 
 		  											-BHMp2[s,'a_sd'], BHMp2[s,'b_sd']), wmeta$sigma0.min)
 		  			} else { # phase 3
+		  				ulmfit <- use.lmfit[2]
 		  				sigma.eps <- this.sigma3
 		  			}								
-					tfr.pred[year, s] <- wtrajs[year,s] * scale + rnorm(1, 0, sd=sigma.eps)
+					tfr.pred[year, s] <- if(ulmfit) predict(scale.res$fit, data.frame(wtfr=wtrajs[year,s])) 
+											else wtrajs[year,s] * scale + rnorm(1, 0, sd=sigma.eps)
 				}
 			}
 			trajectories <- tfr.pred
