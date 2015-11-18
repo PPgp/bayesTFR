@@ -202,7 +202,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 	nr.trajs <- length(thinning.index)
 	BHMp2 <- BHMp2[thinning.index,]
 	if(length(sigma3)==1 && length(countries) > 1) {
-		sigma3 <- rep(sigma3, length(sigma3))
+		sigma3 <- rep(sigma3, length(countries))
 		names(sigma3) <- countries
 	}
 	for (country in countries) {
