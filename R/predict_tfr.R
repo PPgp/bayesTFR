@@ -231,9 +231,11 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		this.sigma3 <- if(as.character(country) %in% names(sigma3)) sigma3[as.character(country)] else sigma3.default
 		if(verbose) cat('\nPhase III SD = ', this.sigma3)
 		for(region in 1:nr.reg) {
-			reg.obj <- get.country.object(region, meta, index=TRUE)			
+			reg.obj <- get.country.object(region, meta, index=TRUE)
+			#print(reg.obj$name)	
 			scale.res <- estimate.scale(wmeta, meta, country.obj$index, reg.obj$index)
 			scale <- scale.res$scale
+			fitsigma <- summary(scale.res$fit)$sigma
 			tfr.pred <- matrix(NA, nrow=nr.project+1, ncol=ncol(wtrajs))
 			tfr.pred[1,] <- scale.res$last.tfr
 			is.reg.phase3 <- !(reg.obj$index %in% meta$id_Tistau) & (length(meta$lambda_c[region]:meta$T_end_c[region]) > 1)
@@ -253,10 +255,12 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		  				ulmfit <- use.lmfit[2]
 		  				sigma.eps <- this.sigma3
 		  			}								
-					tfr.pred[year, s] <- if(ulmfit) predict(scale.res$fit, data.frame(wtfr=wtrajs[year,s])) 
+					tfr.pred[year, s] <- if(ulmfit) rnorm(1, mean=predict(scale.res$fit, data.frame(wtfr=wtrajs[year,s])), sd=fitsigma)
 											else wtrajs[year,s] * scale + rnorm(1, 0, sd=sigma.eps)
+					#if(s==57) cat('\n', year, '- is in P3:', is.in.phase3)
 				}
 			}
+
 			trajectories <- tfr.pred
 			save(trajectories, file = file.path(outdir, paste0('traj_country', reg.obj$code, '.rda')))
 			# compute quantiles
