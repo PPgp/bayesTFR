@@ -261,15 +261,16 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		  			} else { # phase 3
 		  				if(use.lmfit[2]) sigma.eps <- fitsigma
 		  				else {
-		  					if(sample.sigma3) sigma.eps <- rnorm(1, mean=this.sigma3, sd= sigma3.default.distr['sd'])
-		  					else sigma.eps <- this.sigma3
+		  					#if(sample.sigma3) sigma.eps <- rnorm(1, mean=this.sigma3, sd=sigma3.default.distr['sd'])
+		  					#else 
+		  					sigma.eps <- this.sigma3
 		  				}
 		  			}
 		  			for(i in 1:100)	{						
 						tfr.pred[year, s] <- wtrajs[year,s] * scale + rnorm(1, 0, sd=sigma.eps)
-						if(tfr.pred[year, s] > 0.7) break # lower limit for tfr is 0.7
+						if(tfr.pred[year, s] > 0.5) break # lower limit for tfr is 0.5
 					}
-					tfr.pred[year, s] <- max(0.7, tfr.pred[year, s])
+					tfr.pred[year, s] <- max(0.5, tfr.pred[year, s])
 					#if(s==57) cat('\n', year, '- is in P3:', is.in.phase3)
 				}
 			}
