@@ -186,7 +186,8 @@ estimate.scale <- function(wmeta, meta, country.index, reg.index) {
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								end.year=2100, output.dir = NULL, nr.traj=NULL, seed = NULL,  
-								sigma3=0.115, sigma3.default=0.115, use.lmfit=c(FALSE, TRUE), verbose=TRUE) {
+								sigma3=0.115, sigma3.default.distr=c(mean=0.086, sd=0.0096), 
+								use.lmfit=c(FALSE, FALSE), verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
@@ -228,7 +229,14 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 						dimnames=list(meta$regions$country_code, dimnames(wpred$quantiles)[[2]], dimnames(wtrajs)[[1]]))
 		mean_sd <- array(NA, c(nr.reg, 2, nrow(wtrajs)))
 		meta$T_end_c <- rep(nrow(meta$tfr_matrix_all), nr.reg)
-		this.sigma3 <- if(as.character(country) %in% names(sigma3)) sigma3[as.character(country)] else sigma3.default
+		sample.sigma3 <- FALSE
+		if(as.character(country) %in% names(sigma3))
+			this.sigma3 <- sigma3[as.character(country)] 
+		else {
+			this.sigma3 <- sigma3.default.distr['mean']
+			sample.sigma3 <- TRUE
+		}
+		
 		if(verbose) cat('\nPhase III SD = ', this.sigma3)
 		for(region in 1:nr.reg) {
 			reg.obj <- get.country.object(region, meta, index=TRUE)
@@ -247,20 +255,23 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 						is.in.phase3 <- end.phase2 < year-1
 					}
 					if(!is.in.phase3) {
-						ulmfit <- use.lmfit[1]
-						sigma.eps <- max(BHMp2[s,'sigma0'] + (tfr.pred[year-1,s] - BHMp2[s,'S_sd'])*
+						sigma.eps <- if(use.lmfit[1]) fitsigma else max(BHMp2[s,'sigma0'] + (tfr.pred[year-1,s] - BHMp2[s,'S_sd'])*
 		  									ifelse(tfr.pred[year-1,s] > BHMp2[s,'S_sd'], 
 		  											-BHMp2[s,'a_sd'], BHMp2[s,'b_sd']), wmeta$sigma0.min)
 		  			} else { # phase 3
-		  				ulmfit <- use.lmfit[2]
-		  				sigma.eps <- this.sigma3
-		  			}								
-					tfr.pred[year, s] <- if(ulmfit) rnorm(1, mean=predict(scale.res$fit, data.frame(wtfr=wtrajs[year,s])), sd=fitsigma)
-											else wtrajs[year,s] * scale + rnorm(1, 0, sd=sigma.eps)
+		  				if(use.lmfit[2]) sigma.eps <- fitsigma
+		  				else {
+		  					if(sample.sigma3) sigma.eps <- rnorm(1, mean=this.sigma3, sd= sigma3.default.distr['sd'])
+		  					else sigma.eps <- this.sigma3
+		  				}
+		  			}
+		  			while(TRUE)	{						
+						tfr.pred[year, s] <- wtrajs[year,s] * scale + rnorm(1, 0, sd=sigma.eps)
+						if(tfr.pred[year, s] > 0.7) break # lower limit for tfr is 0.7
+					}
 					#if(s==57) cat('\n', year, '- is in P3:', is.in.phase3)
 				}
 			}
-
 			trajectories <- tfr.pred
 			save(trajectories, file = file.path(outdir, paste0('traj_country', reg.obj$code, '.rda')))
 			# compute quantiles
