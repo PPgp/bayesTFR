@@ -171,7 +171,7 @@ estimate.scale.and.sd <- function(wmeta, meta, country.index, reg.index, interce
     return(list(scale=scale, alpha=alpha, sd=sqrt(mean(lmfit$residuals^2)), last.tfr=regtfr[length(regtfr)]))
 }
 
-estimate.scale <- function(wmeta, meta, country.index, reg.index) {
+estimate.scale <- function(wmeta, meta, country.index, reg.index, scale.from.last.point=FALSE) {
 	wtfr <- get.observed.tfr(country.index, wmeta, 'tfr_matrix_all')
 	regtfr <- get.observed.tfr(reg.index, meta, 'tfr_matrix_all')
 	# get only common years that are not NA
@@ -180,14 +180,14 @@ estimate.scale <- function(wmeta, meta, country.index, reg.index) {
     wtfr <- wtfr[names(wtfr) %in%names(regtfr)]
     lmfit <- lm(regtfr ~ -1 + wtfr)
     scale <- lmfit$coef[1]
-   
+    if(scale.from.last.point) scale <- regtfr[length(regtfr)]/wtfr[length(wtfr)]
     return(list(scale=scale, last.tfr=regtfr[length(regtfr)], fit=lmfit))
 }
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								end.year=2100, output.dir = NULL, nr.traj=NULL, seed = NULL,  
 								sigma3=0.115, sigma3.default.distr=c(mean=0.086, sd=0.0096), 
-								use.lmfit=c(FALSE, FALSE), verbose=TRUE) {
+								use.lmfit=c(FALSE, FALSE), scale.from.last.point=TRUE, verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
@@ -241,7 +241,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		for(region in 1:nr.reg) {
 			reg.obj <- get.country.object(region, meta, index=TRUE)
 			#print(reg.obj$name)	
-			scale.res <- estimate.scale(wmeta, meta, country.obj$index, reg.obj$index)
+			scale.res <- estimate.scale(wmeta, meta, country.obj$index, reg.obj$index, scale.from.last.point=scale.from.last.point)
 			scale <- scale.res$scale
 			fitsigma <- summary(scale.res$fit)$sigma
 			tfr.pred <- matrix(NA, nrow=nr.project+1, ncol=ncol(wtrajs))
