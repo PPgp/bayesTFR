@@ -196,6 +196,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 	e <- new.env()
 	load(coef.file, envir=e)
 	result <- list()
+	orig.nr.traj <- nr.traj
 	for (country in countries) {
 		country.obj <- get.country.object(country, wmeta)
 		if(verbose) 
@@ -213,6 +214,8 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		bayesTFR.mcmc.meta <- meta
 		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
 		wtrajs <- get.tfr.trajectories(wpred, country.obj$code)
+		nr.traj <- orig.nr.traj
+		if(is.null(nr.traj)) nr.traj <- nrow(wtraj)
 		thinning.index <- round(seq(1, nrow(wtrajs), length=nr.traj))
 		wtrajs <- wtrajs[1:(nr.project+1),thinning.index]
 		nr.reg <- get.nr.countries(meta)
