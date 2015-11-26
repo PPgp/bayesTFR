@@ -241,14 +241,30 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		for(region in 1:nr.reg) {
 			reg.obj <- get.country.object(region, meta, index=TRUE)
 			regcode.char <- as.character(reg.obj$code)
-			#print(reg.obj$name)			
+			#print(reg.obj$name)	
+			reg.c.sd <- if(regcode.char %in% names(rwvar)) rwvar[regcode.char] else mean.sd		
 			regtfr <- get.observed.tfr(region, meta, 'tfr_matrix_all')
 			regtfr.last <- regtfr[length(regtfr)]
 			c.first <- regtfr.last/wtfr[names(wtfr) %in% names(regtfr.last)]
+			if(is.na(regtfr.last)) { # impute where NA's at the end
+				for(i in length(regtfr):1) if(!is.na(regtfr[i])) break
+				widx <- which(names(wtfr) %in% names(regtfr[i]))
+				c.first <- regtfr[i]/wtfr[widx]
+				wi <- 1
+				for(j in (i+1):length(regtfr)) {
+					for(k in 1:100)	{
+						scale <- c.first + rnorm(1, 0, sd=reg.c.sd)
+						regtfr[j] <- wtfr[widx+wi]*scale
+						if(regtfr[j] > 0.5) break
+					}
+					wi <- wi + 1
+				}
+				regtfr.last <- regtfr[length(regtfr)]
+			}
 			tfr.pred <- matrix(NA, nrow=nr.project+1, ncol=ncol(wtrajs))
 			tfr.pred[1,] <- regtfr.last
 			#is.reg.phase3 <- !(reg.obj$index %in% meta$id_Tistau) & (length(meta$lambda_c[region]:meta$T_end_c[region]) > 1)
-			reg.c.sd <- if(regcode.char %in% names(rwvar)) rwvar[regcode.char] else mean.sd
+			
 			for(s in 1:ncol(tfr.pred)) { # iterate over trajectories
 				#is.in.phase3 <- is.reg.phase3
 				scale.prev <- c.first
