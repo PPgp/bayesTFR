@@ -186,7 +186,7 @@ estimate.scale <- function(wmeta, meta, country.index, reg.index, scale.from.las
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								end.year=2100, output.dir = NULL, nr.traj=NULL, seed = NULL,  
-								coef.file, ar.cs=TRUE, verbose=TRUE) {
+								coef.file, ar.cs=TRUE, lower.bound=0.5, verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
@@ -289,9 +289,9 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		  			for(i in 1:100)	{
 		  				scale <- scale.prev + rnorm(1, 0, sd=reg.c.sd)				
 						tfr.pred[year, s] <- wtrajs[year,s] * scale #+ rnorm(1, 0, sd=sigma.eps)
-						if(tfr.pred[year, s] > 0.5) break # lower limit for tfr is 0.5
+						if(tfr.pred[year, s] > lower.bound) break # lower limit for tfr is 0.5
 					}
-					tfr.pred[year, s] <- max(0.5, tfr.pred[year, s])
+					tfr.pred[year, s] <- max(lower.bound, tfr.pred[year, s])
 					scale.prev <- scale
 					#print(scale)
 				}
