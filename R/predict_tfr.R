@@ -240,9 +240,9 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		arsd <- sqrt(rwvar)
 		for(region in 1:nr.reg) {
 			reg.obj <- get.country.object(region, meta, index=TRUE)
-			regcode.char <- as.character(reg.obj$code)
-			#print(reg.obj$name)	
-			reg.c.sd <- if(regcode.char %in% names(rwvar)) rwvar[regcode.char] else mean.sd		
+			regcode.char <- as.character(reg.obj$code)			
+			reg.c.sd <- if(regcode.char %in% names(rwvar)) sqrt(rwvar[regcode.char]) else mean.sd
+			#print(c(reg.obj$name, reg.c.sd))	
 			regtfr <- get.observed.tfr(region, meta, 'tfr_matrix_all')
 			regtfr.last <- regtfr[length(regtfr)]
 			c.first <- regtfr.last/wtfr[names(wtfr) %in% names(regtfr.last)]
@@ -268,6 +268,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 			for(s in 1:ncol(tfr.pred)) { # iterate over trajectories
 				#is.in.phase3 <- is.reg.phase3
 				scale.prev <- c.first
+				#print(c('traj:', s))
 				for(year in 2:(nr.project+1)) {
 					# if(!is.in.phase3 & year > 2) { # check if now in phase 3
 						# end.phase2 <- find.lambda.for.one.country(tfr.pred[1:(year-1),s], year-1)	 				
@@ -291,6 +292,8 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 						if(tfr.pred[year, s] > 0.5) break # lower limit for tfr is 0.5
 					}
 					tfr.pred[year, s] <- max(0.5, tfr.pred[year, s])
+					scale.prev <- scale
+					#print(scale)
 				}
 			}
 			trajectories <- tfr.pred
