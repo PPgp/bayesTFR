@@ -186,7 +186,7 @@ estimate.scale <- function(wmeta, meta, country.index, reg.index, scale.from.las
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								end.year=2100, output.dir = NULL, nr.traj=NULL, seed = NULL,  
-								coef.file, ar.cs=TRUE, lower.bound=0.5, verbose=TRUE) {
+								coef.file, ar.cs=TRUE, lower.bound=0.5, constant.scale=FALSE, verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
@@ -215,8 +215,8 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
 		wtrajs <- get.tfr.trajectories(wpred, country.obj$code)
 		nr.traj <- orig.nr.traj
-		if(is.null(nr.traj)) nr.traj <- nrow(wtrajs)
-		thinning.index <- round(seq(1, nrow(wtrajs), length=nr.traj))
+		if(is.null(nr.traj)) nr.traj <- ncol(wtrajs)
+		thinning.index <- round(seq(1, ncol(wtrajs), length=nr.traj))
 		wtrajs <- wtrajs[1:(nr.project+1),thinning.index]
 		nr.reg <- get.nr.countries(meta)
 		PIs_cqp <- array(NA, c(nr.reg, length(quantiles.to.keep), nrow(wtrajs)),
@@ -253,9 +253,9 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 				wi <- 1
 				for(j in (i+1):length(regtfr)) {
 					for(k in 1:100)	{
-						scale <- c.first + rnorm(1, 0, sd=reg.c.sd)
+						scale <- c.first + if(!constant.scale) rnorm(1, 0, sd=reg.c.sd) else 0
 						regtfr[j] <- wtfr[widx+wi]*scale
-						if(regtfr[j] > 0.5) break
+						if(regtfr[j] > lower.bound || constant.scale) break
 					}
 					wi <- wi + 1
 				}
@@ -287,9 +287,9 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		  				# }
 		  			# }		  			
 		  			for(i in 1:100)	{
-		  				scale <- scale.prev + rnorm(1, 0, sd=reg.c.sd)				
+		  				scale <- scale.prev + if(!constant.scale) rnorm(1, 0, sd=reg.c.sd) else 0			
 						tfr.pred[year, s] <- wtrajs[year,s] * scale #+ rnorm(1, 0, sd=sigma.eps)
-						if(tfr.pred[year, s] > lower.bound) break # lower limit for tfr is 0.5
+						if(tfr.pred[year, s] > lower.bound || constant.scale) break # lower limit for tfr is 0.5
 					}
 					tfr.pred[year, s] <- max(lower.bound, tfr.pred[year, s])
 					scale.prev <- scale
