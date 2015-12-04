@@ -15,10 +15,16 @@ stop.if.country.not.DL <- function(country.obj, meta) {
     	stop('Country ', country.obj$name, ' not estimated because no decline observed.')
 }
 
-tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, nr.curves, predictive.distr=FALSE) {
-    dlc <- c()
+tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, nr.curves, predictive.distr=FALSE,
+                                                               return.sigma=FALSE) {
+	# if country.code is null, get world distribution
+	.get.sig <- function(i, sigma, S, a, b) return(sigma + (x[i] - S)*ifelse(x[i] > S, -a, b))
+	.get.sig.distr <- function(i, traces)
+						return(apply(traces, 1, function(y) 
+							return(pmax(.get.sig(i, y['sigma0'], y['S_sd'], y['a_sd'], y['b_sd']), mcmc$meta$sigma0.min))))
+    dlc <- sigma.all <- c()
     cspec <- TRUE
-    if(!is.element(country.index, mcmc.list[[1]]$meta$id_Tistau)) {
+    if(!is.null(country.code) && !is.element(country.index, mcmc.list[[1]]$meta$id_Tistau)) {
     	U.var <- paste("U_c", country.code, sep = "")
     	d.var <- paste("d_c", country.code, sep = "")
     	Triangle_c4.var <- paste("Triangle_c4_c", country.code, sep = "")
@@ -30,8 +36,10 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, 
     	gamma.vars <- paste("gamma_", 1:3, sep = "")
     	alpha.vars <- paste('alpha_',1:3, sep='')
 		delta.vars <- paste('delta_',1:3, sep='')
-		Uvalue = get.observed.tfr(country.index, mcmc.list[[1]]$meta, 
+		if(!is.null(country.code))
+			Uvalue = get.observed.tfr(country.index, mcmc.list[[1]]$meta, 
 										'tfr_matrix_all')[mcmc.list[[1]]$meta$tau_c[country.index]]
+		else Uvalue <- mcmc.list[[1]]$meta$U.c.low.base + (mcmc.list[[1]]$meta$U.up - mcmc.list[[1]]$meta$U.c.low.base)/2
     	cspec <- FALSE
     }
     # Compute the quantiles on a sample of at least 2000.   
@@ -69,25 +77,24 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, 
         dl <- t(apply(theta, 1, DLcurve, tfr = x, p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2))
         #stop('')
         if(length(x) == 1) dl <- t(dl)
-        if(predictive.distr) {
-			errors <- matrix(NA, nrow=dim(dl)[1], ncol=dim(dl)[2])
+        if(predictive.distr || return.sigma) {
 			wp.traces <- load.tfr.parameter.traces(mcmc, 
         						burnin=th.burnin, 
 								thinning.index=thincurves.mc$index,
 								par.names=c('sigma0', 'S_sd', 'a_sd', 'b_sd'))
-  			#sigma_eps <- pmax(sigma_eps, mcmc$meta$sigma0.min)
-			n <- ncol(errors)
-			for(i in 1:nrow(errors)) {
-				sigma_eps <- pmax(wp.traces[i,'sigma0'] + (x - wp.traces[i,'S_sd'])*
-  						ifelse(x > wp.traces[i,'S_sd'], -wp.traces[i,'a_sd'], wp.traces[i,'b_sd']),
-  						mcmc$meta$sigma0.min)
-				errors[i,] <- rnorm(n, mean=0, sd=sigma_eps)
+			sigma_eps <- NULL 
+			for(j in 1:length(x)) 
+				sigma_eps <- cbind(sigma_eps, .get.sig.distr(j, wp.traces))
+			if(predictive.distr) {
+				errors <- t(apply(sigma_eps, 1, function(sig) rnorm(dim(dl)[2],0,sig)))
+				dlc <- rbind(dlc, dl+errors)
+			} else {
+				dlc <- rbind(dlc, dl)
+				sigma.all <- rbind(sigma.all, sigma_eps)
 			}
-        	dlc <- rbind(dlc, dl+errors)
         } else dlc <- rbind(dlc, dl)
-    }
-    
-    return (dlc)
+    }    
+    return (if(!return.sigma) dlc else list(dl=dlc, sigma=sigma.all))
 }
 
 .match.colors.with.default <- function(col, default.col) {

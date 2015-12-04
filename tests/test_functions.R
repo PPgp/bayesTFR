@@ -473,6 +473,15 @@ test.DLcurve <- function() {
 	unlink(filename)
 	stopifnot(size > 0)
 	test.ok(test.name)
+	test.name <- 'obtaining DL curves and DL sigma'
+	start.test(test.name)
+	tfr <- seq(1, 8, length=100)
+	cobj <- get.country.object("Nigeria", m$meta)
+	dl <- bayesTFR:::tfr.get.dlcurves(tfr, m$mcmc.list, cobj$code, cobj$index, burnin=10, nr.curves=NULL)
+	stopifnot(all(dim(dl)==c(50,100)))
+	dls <- bayesTFR:::tfr.get.dlcurves(tfr, m$mcmc.list, cobj$code, cobj$index, burnin=0, nr.curves=NULL, return.sigma=TRUE)
+	stopifnot(all(dim(dls$sigma)==c(60,100)))
+	test.ok(test.name)
 }
 
 test.TFRtrajectories <- function() {
