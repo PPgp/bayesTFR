@@ -1,6 +1,8 @@
-4.3-0
+4.3-0 (12/03/2015)
 -----
 DLcurve.plot got an argument "col" for modifying colors.
+
+Added dataset include_2015 for wpp2015 support.
 
 The following defaults in run.tfr.mcmc changed:
 	start.year=1950 (from 1750)
@@ -9,7 +11,7 @@ The following defaults in run.tfr.mcmc changed:
 	
 Example directory re-created using wpp2015.
 
-4.2-0 (7/9/2015)
+4.2-0 (7/9/2015) [CRAN]
 -----
 MCMC outputs now also for back-transformed parameters Triangle_c1-3.
 
