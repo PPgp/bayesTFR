@@ -219,6 +219,11 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		if(is.null(nr.traj)) nr.traj <- ncol(wtrajs)
 		thinning.index <- round(seq(1, ncol(wtrajs), length=nr.traj))
 		wtrajs <- wtrajs[1:(nr.project+1),thinning.index]
+		wyears <- as.integer(rownames(wtrajs))
+		if(any(wyears < starty-6)) {
+			wtrajs <- wtrajs[-which(wyears < starty-6),]
+			this.nr.project <- nrow(wtrajs)-1
+		}
 		nr.reg <- get.nr.countries(meta)
 		PIs_cqp <- array(NA, c(nr.reg, length(quantiles.to.keep), nrow(wtrajs)),
 						dimnames=list(meta$regions$country_code, dimnames(wpred$quantiles)[[2]], dimnames(wtrajs)[[1]]))
@@ -262,7 +267,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 				}
 				regtfr.last <- regtfr[length(regtfr)]
 			}
-			tfr.pred <- matrix(NA, nrow=nr.project+1, ncol=ncol(wtrajs))
+			tfr.pred <- matrix(NA, nrow=this.nr.project+1, ncol=ncol(wtrajs))
 			tfr.pred[1,] <- regtfr.last
 			#is.reg.phase3 <- !(reg.obj$index %in% meta$id_Tistau) & (length(meta$lambda_c[region]:meta$T_end_c[region]) > 1)
 			
@@ -270,7 +275,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 				#is.in.phase3 <- is.reg.phase3
 				scale.prev <- c.first
 				#print(c('traj:', s))
-				for(year in 2:(nr.project+1)) {
+				for(year in 2:(this.nr.project+1)) {
 					# if(!is.in.phase3 & year > 2) { # check if now in phase 3
 						# end.phase2 <- find.lambda.for.one.country(tfr.pred[1:(year-1),s], year-1)	 				
 						# is.in.phase3 <- end.phase2 < year-1
@@ -304,7 +309,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
  			mean_sd[region,1,] <- apply(trajectories, 1, mean, na.rm = TRUE)
  			mean_sd[region,2,] <- apply(trajectories, 1, sd, na.rm = TRUE) 	
   		}
-  		present.year.index <- which(rownames(meta$tfr_matrix_all) == rownames(wmeta$tfr_matrix_all)[wpred$present.year.index])
+  		present.year.index <- which(rownames(meta$tfr_matrix_all) == rownames(wtrajs)[1])
 		bayesTFR.prediction <- structure(list(
 				quantiles = PIs_cqp,
 				traj.mean.sd = mean_sd,
@@ -313,7 +318,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 				output.directory=outdir,
 				na.index=wpred$na.index,
 				mcmc.set=list(meta=meta, mcmc.list=list()),
-				nr.projections=wpred$nr.projection,
+				nr.projections=this.nr.project,
 				burnin=NA, thin=NA,
 				end.year=wpred$end.year, use.tfr3=NA, burnin3=NA, thin3=NA,
 				mu=NA, rho=NA, sigmaAR1 = NA, mu.c=NA, rho.c=NA,
@@ -321,7 +326,6 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 				present.year.index=present.year.index,
 				present.year.index.all=present.year.index),
 				class='bayesTFR.prediction')
-			
 		store.bayesTFR.prediction(bayesTFR.prediction, outdir)
 		#do.convert.trajectories(pred=bayesTFR.prediction, n=save.as.ascii, output.dir=outdir, verbose=verbose)
 		#if(write.summary.files)
