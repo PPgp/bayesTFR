@@ -1,15 +1,17 @@
-4.3-0 (12/04/2015)
+5.0-0 (12/04/2015)
 -----
-DLcurve.plot got an argument "col" for modifying colors.
-
-Added dataset include_2015 for wpp2015 support.
+Support for wpp2015 (change in imports and dependencies)
 
 The following defaults in run.tfr.mcmc changed:
-	start.year=1950 (from 1750)
 	present.year=2015 (from 2010)
 	wpp.year=2015 (from 2012)
+	start.year=1950 (from 1750)
 	
+Added dataset include_2015.
+
 Example directory re-created using wpp2015.
+
+DLcurve.plot got an argument "col" for modifying colors.
 
 Function tfr.get.dlcurves can be called without country, in which case it returns the "world" DL curves. 
 
