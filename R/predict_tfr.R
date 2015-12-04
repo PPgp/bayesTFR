@@ -185,7 +185,7 @@ estimate.scale <- function(wmeta, meta, country.index, reg.index, scale.from.las
 }
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
-								end.year=2100, output.dir = NULL, nr.traj=NULL, seed = NULL,  
+								end.year=2100, start.year=NULL, output.dir = NULL, nr.traj=NULL, seed = NULL,  
 								coef.file, ar.cs=TRUE, lower.bound=0.5, constant.scale=FALSE, verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
@@ -201,10 +201,11 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		country.obj <- get.country.object(country, wmeta)
 		if(verbose) 
 			cat('\nPredicting TFR for ', country.obj$name, '\n')
-		start.year <- if(is.null(wpred$start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+5
-						else wpred$start.year
+		starty <- if(is.null(start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+5
+						else start.year
 		meta <- mcmc.meta.ini.subnat(wmeta, country=country.obj$code, my.tfr.file=my.tfr.file, 
-									start.year=1750, present.year=start.year-5, verbose=verbose)
+									start.year=1750, present.year=starty-5, verbose=verbose)
+		#stop('')
 		this.output.dir <- file.path(output.dir, 'subnat', paste0('c', country.obj$code))
 		outdir <- file.path(this.output.dir, 'predictions')
 		meta$output.dir <- this.output.dir
@@ -316,7 +317,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 				burnin=NA, thin=NA,
 				end.year=wpred$end.year, use.tfr3=NA, burnin3=NA, thin3=NA,
 				mu=NA, rho=NA, sigmaAR1 = NA, mu.c=NA, rho.c=NA,
-				use.correlation=NA, start.year=wpred$start.year,
+				use.correlation=NA, start.year=starty,
 				present.year.index=present.year.index,
 				present.year.index.all=present.year.index),
 				class='bayesTFR.prediction')
