@@ -222,6 +222,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		thinning.index <- round(seq(1, ncol(wtrajs), length=nr.traj))
 		wtrajs <- wtrajs[1:(nr.project+1),thinning.index]
 		wyears <- as.integer(rownames(wtrajs))
+		this.nr.project <- nr.project
 		if(any(wyears < starty-6)) {
 			wtrajs <- wtrajs[-which(wyears < starty-6),]
 			this.nr.project <- nrow(wtrajs)-1
