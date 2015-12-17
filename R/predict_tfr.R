@@ -186,7 +186,9 @@ estimate.scale <- function(wmeta, meta, country.index, reg.index, scale.from.las
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								end.year=2100, start.year=NULL, output.dir = NULL, nr.traj=NULL, seed = NULL,  
-								coef.file, ar.cs=TRUE, lower.bound=0.5, constant.scale=FALSE, verbose=TRUE) {
+								#coef.file, 
+								ar.cs=TRUE, lower.bound=0.5, constant.scale=FALSE, 
+								ar.pars=c(mu = 1, phi = 0.966, sigma = 0.039), verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
@@ -194,7 +196,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 	quantiles.to.keep <- as.numeric(dimnames(wpred$quantiles)[[2]])
 	nr.project <- min(length(seq(wmeta$start.year+5, end.year, by=5)), wpred$nr.projections)
 	e <- new.env()
-	load(coef.file, envir=e)
+	#load(coef.file, envir=e)
 	result <- list()
 	orig.nr.traj <- nr.traj
 	for (country in countries) {
@@ -230,8 +232,9 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		mean_sd <- array(NA, c(nr.reg, 2, nrow(wtrajs)))
 		meta$T_end_c <- rep(nrow(meta$tfr_matrix_all), nr.reg)
 		country.char <- as.character(country)
-		rwvar <- e$all.vars[[country.char]]
-		mean.sd <- sqrt(mean(rwvar))
+		#ar.mean.sd <- min(ar.pars['sigma'], mean(sqrt(e$all.vars[[country.char]])))
+		#rwvar <- e$all.vars[[country.char]]
+		#mean.sd <- sqrt(mean(rwvar))
 		# if(ar.cs) { # country-specific AR pars
 			# arpars <- e$all.coefs[[country.char]]
 			# mu <- mean(arpars["mu",])
@@ -243,11 +246,14 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 			# arvar <- mean(unlist(e$all.vars))
 		# }
 		wtfr <- get.observed.tfr(country.obj$index, wmeta, 'tfr_matrix_all')
-		arsd <- sqrt(rwvar)
+		for(i in meta$T_end_c[1]:1) if(sum(!is.na(meta$tfr_matrix_all)[i,]) >= 2) break # check NA's at the end
+		widx <- which(names(wtfr) == rownames(meta$tfr_matrix_all)[i])
+		arsd <- min(ar.pars['sigma'], sqrt((1-ar.pars['phi']^2)*var(meta$tfr_matrix_all[i,]/wtfr[widx])))
+		#arsd <- sqrt(rwvar)
 		for(region in 1:nr.reg) {
 			reg.obj <- get.country.object(region, meta, index=TRUE)
 			regcode.char <- as.character(reg.obj$code)			
-			reg.c.sd <- if(regcode.char %in% names(rwvar)) sqrt(rwvar[regcode.char]) else mean.sd
+			#reg.c.sd <- if(regcode.char %in% names(rwvar)) sqrt(rwvar[regcode.char]) else mean.sd
 			#print(c(reg.obj$name, reg.c.sd))	
 			regtfr <- get.observed.tfr(region, meta, 'tfr_matrix_all')
 			regtfr.last <- regtfr[length(regtfr)]
@@ -259,7 +265,8 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 				wi <- 1
 				for(j in (i+1):length(regtfr)) {
 					for(k in 1:100)	{
-						scale <- c.first + if(!constant.scale) rnorm(1, 0, sd=reg.c.sd) else 0
+						#scale <- c.first + if(!constant.scale) rnorm(1, 0, sd=reg.c.sd) else 0
+						scale <- ar.pars['phi'] * (c.first - ar.pars['mu']) + ar.pars['mu'] + rnorm(1, 0, sd=arsd)
 						regtfr[j] <- wtfr[widx+wi]*scale
 						if(regtfr[j] > lower.bound || constant.scale) break
 					}
@@ -293,7 +300,8 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		  				# }
 		  			# }		  			
 		  			for(i in 1:100)	{
-		  				scale <- scale.prev + if(!constant.scale) rnorm(1, 0, sd=reg.c.sd) else 0			
+		  				#scale <- scale.prev + if(!constant.scale) rnorm(1, 0, sd=reg.c.sd) else 0 # RW
+		  				scale <- ar.pars['phi'] * (scale.prev - ar.pars['mu']) + ar.pars['mu'] + rnorm(1, 0, sd=arsd) # AR1
 						tfr.pred[year, s] <- wtrajs[year,s] * scale #+ rnorm(1, 0, sd=sigma.eps)
 						if(tfr.pred[year, s] > lower.bound || constant.scale) break # lower limit for tfr is 0.5
 					}
