@@ -250,6 +250,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		for(i in meta$T_end_c[1]:1) if(sum(!is.na(meta$tfr_matrix_all)[i,]) >= 2) break # check NA's at the end
 		widx <- which(names(wtfr) == rownames(meta$tfr_matrix_all)[i])
 		arsd <- min(ar.pars['sigma'], sqrt((1-ar.pars['phi']^2)*var(meta$tfr_matrix_all[i,]/wtfr[widx])))
+		#stop('')
 		#arsd <- sqrt(rwvar)
 		for(region in 1:nr.reg) {
 			reg.obj <- get.country.object(region, meta, index=TRUE)
