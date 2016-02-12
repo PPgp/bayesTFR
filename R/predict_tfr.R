@@ -775,9 +775,15 @@ do.convert.trajectories <- function(pred, n, output.dir, countries=NULL, verbose
 	result.wide <- c()
 	header <- get.traj.ascii.header(pred$mcmc.set$meta)
 	convert.countries <- if(is.null(countries)) pred$mcmc.set$meta$regions$country_code else countries
-	for (country in convert.countries) {
+	lcountries <- length(convert.countries)
+	if(verbose && interactive()) cat('\n')
+	for (icountry in 1:lcountries) {
+		country <- convert.countries[icountry]
 		country.obj <- get.country.object(country, pred$mcmc.set$meta)
-		if(verbose) cat('Converting trajectories for', country.obj$name, '(code', country.obj$code, ')\n')
+		if(verbose) {
+			if(interactive()) cat('\rConverting trajectories ... ', round(icountry/lcountries * 100), ' %')
+			else cat('Converting trajectories for', country.obj$name, '(code', country.obj$code, '),', round(icountry/lcountries * 100), '% processed\n')
+		}
 		trajectories <- get.trajectories(pred, country.obj$code)$trajectories
 		if (is.null(trajectories)) {
 			warning('No trajectories for ', country.obj$name, ' (code ', country.obj$code, ')')
@@ -794,6 +800,7 @@ do.convert.trajectories <- function(pred, n, output.dir, countries=NULL, verbose
 			}
 		}
 	}
+	if(verbose && interactive()) cat('\n')
 	# order result.wide by country name
 	o <- order(country.names)
 	result.wide[,4:ncol(result.wide)] <- result.wide[,3+o]
@@ -859,8 +866,13 @@ do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
 		tfr.years <- tfr.years[1:pred$present.year.index]
 		tfr <- tfr[1:pred$present.year.index,]
 	}
+	if(!is.null(pred$mcmc.set$meta$suppl.data)) {
+		suppl.years <- as.integer(rownames(pred$mcmc.set$meta$suppl.data[["tfr_matrix_all"]]))
+		suppl.periods <- paste(suppl.years-3, suppl.years+2, sep="-")
+		tfr.years <- c(suppl.periods, tfr.years)
+	}
 	all.years <- c(tfr.years, get.prediction.periods(meta, pred$nr.projections+1, present.year.index=pred$present.year.index)[-1])
-	nr.data <- pred$nr.projections+dim(tfr)[1]
+
 	# write parameters file
 	par.header <- list(country.name="country_name", country.code="country_code", 
 					tau.c="TF_time_start_decline", Uc="TF_max", dc="TF_max_decrement",  
@@ -874,12 +886,17 @@ do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
 		tfr.and.pred.median <- c(tfr[,country], 
 								get.median.from.prediction(pred, country.obj$index, 
 												country.obj$code, adjusted=adjusted)[-1])
+		if(!is.null(pred$mcmc.set$meta$suppl.data)) {
+			# add supplemental data
+			tfr.with.suppl <- get.data.imputed.for.country(pred, country)		
+			tfr.and.pred.median <- c(tfr.with.suppl[as.integer(names(tfr.with.suppl)) < as.integer(names(tfr.and.pred.median)[1])], tfr.and.pred.median)
+		}
 		sink(con, type='message')
 		s <- summary(coda.list.mcmc(pred$mcmc.set, country=country.obj$code, 
 					par.names=NULL, par.names.cs=tfr.parameter.names.cs(trans=FALSE, back.trans=FALSE), 
 					thin=1, burnin=0))
 		sink(type='message')
-		lambda_c <- find.lambda.for.one.country(tfr.and.pred.median, nr.data)
+		lambda_c <- find.lambda.for.one.country(tfr.and.pred.median, length(tfr.and.pred.median))
 		result <- rbind(result, c(country.obj$name, country.obj$code, 
 			if(meta$tau_c[country.obj$index] > 0) tfr.years[meta$tau_c[country.obj$index]] else -1, #tau_c
 			round(s$statistics[paste('U_c',country.obj$code, sep=''),1],precision), # TFR at tau_c
