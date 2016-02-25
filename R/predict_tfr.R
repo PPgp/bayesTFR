@@ -151,44 +151,11 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	invisible(bayesTFR.prediction)
 }
 
-estimate.scale.and.sd <- function(wmeta, meta, country.index, reg.index, intercept=FALSE) {
-	wtfr <- get.observed.tfr(country.index, wmeta, 'tfr_matrix_all')
-	regtfr <- get.observed.tfr(reg.index, meta, 'tfr_matrix_all')
-	# get only common years that are not NA
-	regtfr <- regtfr[!is.na(regtfr)]
-	regtfr <- regtfr[names(regtfr) %in%names(wtfr)]
-    wtfr <- wtfr[names(wtfr) %in%names(regtfr)]
-    f <- "regtfr ~ wtfr"
-    if (!intercept) f <- paste0(f, ' - 1')
-    lmfit <- lm(formula(f))
-    if(intercept) {
-    	alpha <- lmfit$coef[1]
-    	scale <- lmfit$coef[2]
-    } else {
-    	alpha <- 0
-    	scale <- lmfit$coef[1]
-    }
-    return(list(scale=scale, alpha=alpha, sd=sqrt(mean(lmfit$residuals^2)), last.tfr=regtfr[length(regtfr)]))
-}
-
-estimate.scale <- function(wmeta, meta, country.index, reg.index, scale.from.last.point=FALSE) {
-	wtfr <- get.observed.tfr(country.index, wmeta, 'tfr_matrix_all')
-	regtfr <- get.observed.tfr(reg.index, meta, 'tfr_matrix_all')
-	# get only common years that are not NA
-	regtfr <- regtfr[!is.na(regtfr)]
-	regtfr <- regtfr[names(regtfr) %in%names(wtfr)]
-    wtfr <- wtfr[names(wtfr) %in%names(regtfr)]
-    lmfit <- lm(regtfr ~ -1 + wtfr)
-    scale <- lmfit$coef[1]
-    if(scale.from.last.point) scale <- regtfr[length(regtfr)]/wtfr[length(wtfr)]
-    return(list(scale=scale, last.tfr=regtfr[length(regtfr)], fit=lmfit))
-}
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
-								end.year=2100, start.year=NULL, output.dir = NULL, nr.traj=NULL, seed = NULL,  
-								#coef.file, 
+								end.year=2100, start.year=NULL, output.dir = NULL, nr.traj=NULL, seed = NULL, 
 								ar.cs=TRUE, lower.bound=0.5, constant.scale=FALSE, 
-								ar.pars=c(mu = 1, phi = 0.966, sigma = 0.039), verbose=TRUE) {
+								ar.pars=c(mu = 1, phi = 0.92464, sigma = 0.04522), verbose=TRUE) {
 	wpred <- get.tfr.prediction(sim.dir)
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
@@ -196,7 +163,6 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 	quantiles.to.keep <- as.numeric(dimnames(wpred$quantiles)[[2]])
 	nr.project <- min(length(seq(wmeta$start.year+5, end.year, by=5)), wpred$nr.projections)
 	e <- new.env()
-	#load(coef.file, envir=e)
 	result <- list()
 	orig.nr.traj <- nr.traj
 	for (country in countries) {
@@ -207,7 +173,6 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 						else start.year
 		meta <- mcmc.meta.ini.subnat(wmeta, country=country.obj$code, my.tfr.file=my.tfr.file, 
 									start.year=1750, present.year=starty-5, verbose=verbose)
-		#stop('')
 		this.output.dir <- file.path(output.dir, 'subnat', paste0('c', country.obj$code))
 		outdir <- file.path(this.output.dir, 'predictions')
 		meta$output.dir <- this.output.dir
@@ -233,30 +198,14 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		mean_sd <- array(NA, c(nr.reg, 2, nrow(wtrajs)))
 		meta$T_end_c <- rep(nrow(meta$tfr_matrix_all), nr.reg)
 		country.char <- as.character(country)
-		#ar.mean.sd <- min(ar.pars['sigma'], mean(sqrt(e$all.vars[[country.char]])))
-		#rwvar <- e$all.vars[[country.char]]
-		#mean.sd <- sqrt(mean(rwvar))
-		# if(ar.cs) { # country-specific AR pars
-			# arpars <- e$all.coefs[[country.char]]
-			# mu <- mean(arpars["mu",])
-			# phi <- mean(arpars["phi(1)",])
-			# arvar <- mean(e$all.residuals[[country.char]]^2)
-		# } else { worlds AR pars
-			# mu <- e$mean.mu
-			# phi <- e$mean.phi
-			# arvar <- mean(unlist(e$all.vars))
-		# }
 		wtfr <- get.observed.tfr(country.obj$index, wmeta, 'tfr_matrix_all')
-		for(i in meta$T_end_c[1]:1) if(sum(!is.na(meta$tfr_matrix_all)[i,]) >= 2) break # check NA's at the end
+		for(i in meta$T_end_c[1]:1) if(sum(!is.na(meta$tfr_matrix_all)[i,]) >= 2) break # check NA's at the end to obtained observed variance
 		widx <- which(names(wtfr) == rownames(meta$tfr_matrix_all)[i])
 		arsd <- min(ar.pars['sigma'], sqrt((1-ar.pars['phi']^2)*var(meta$tfr_matrix_all[i,]/wtfr[widx])))
-		#stop('')
-		#arsd <- sqrt(rwvar)
+		tfr_reconstructed <- meta$tfr_matrix_all
 		for(region in 1:nr.reg) {
 			reg.obj <- get.country.object(region, meta, index=TRUE)
 			regcode.char <- as.character(reg.obj$code)			
-			#reg.c.sd <- if(regcode.char %in% names(rwvar)) sqrt(rwvar[regcode.char]) else mean.sd
-			#print(c(reg.obj$name, reg.c.sd))	
 			regtfr <- get.observed.tfr(region, meta, 'tfr_matrix_all')
 			regtfr.last <- regtfr[length(regtfr)]
 			c.first <- regtfr.last/wtfr[names(wtfr) %in% names(regtfr.last)]
@@ -264,6 +213,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 				for(i in length(regtfr):1) if(!is.na(regtfr[i])) break
 				widx <- which(names(wtfr) %in% names(regtfr[i]))
 				c.first <- regtfr[i]/wtfr[widx]
+				meta$T_end_c[region] <- i
 				wi <- 1
 				for(j in (i+1):length(regtfr)) {
 					for(k in 1:100)	{
@@ -272,44 +222,25 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 						regtfr[j] <- wtfr[widx+wi]*scale
 						if(regtfr[j] > lower.bound || constant.scale) break
 					}
+					tfr_reconstructed[j,region] <- regtfr[j]
 					wi <- wi + 1
 				}
 				regtfr.last <- regtfr[length(regtfr)]
 			}
 			tfr.pred <- matrix(NA, nrow=this.nr.project+1, ncol=ncol(wtrajs))
 			tfr.pred[1,] <- regtfr.last
-			#is.reg.phase3 <- !(reg.obj$index %in% meta$id_Tistau) & (length(meta$lambda_c[region]:meta$T_end_c[region]) > 1)
 			
 			for(s in 1:ncol(tfr.pred)) { # iterate over trajectories
 				#is.in.phase3 <- is.reg.phase3
 				scale.prev <- c.first
-				#print(c('traj:', s))
-				for(year in 2:(this.nr.project+1)) {
-					# if(!is.in.phase3 & year > 2) { # check if now in phase 3
-						# end.phase2 <- find.lambda.for.one.country(tfr.pred[1:(year-1),s], year-1)	 				
-						# is.in.phase3 <- end.phase2 < year-1
-					# }
-					# if(!is.in.phase3) {
-						# sigma.eps <- if(use.lmfit[1]) fitsigma else max(BHMp2[s,'sigma0'] + (tfr.pred[year-1,s] - BHMp2[s,'S_sd'])*
-		  									# ifelse(tfr.pred[year-1,s] > BHMp2[s,'S_sd'], 
-		  											# -BHMp2[s,'a_sd'], BHMp2[s,'b_sd']), wmeta$sigma0.min)
-		  			# } else { # phase 3
-		  				# if(use.lmfit[2]) sigma.eps <- fitsigma
-		  				# else {
-		  					# #if(sample.sigma3) sigma.eps <- rnorm(1, mean=this.sigma3, sd=sigma3.default.distr['sd'])
-		  					# #else 
-		  					# sigma.eps <- this.sigma3
-		  				# }
-		  			# }		  			
+				for(year in 2:(this.nr.project+1)) {		
 		  			for(i in 1:100)	{
-		  				#scale <- scale.prev + if(!constant.scale) rnorm(1, 0, sd=reg.c.sd) else 0 # RW
 		  				scale <- ar.pars['phi'] * (scale.prev - ar.pars['mu']) + ar.pars['mu'] + rnorm(1, 0, sd=arsd) # AR1
-						tfr.pred[year, s] <- wtrajs[year,s] * scale #+ rnorm(1, 0, sd=sigma.eps)
+						tfr.pred[year, s] <- wtrajs[year,s] * scale 
 						if(tfr.pred[year, s] > lower.bound || constant.scale) break # lower limit for tfr is 0.5
 					}
 					tfr.pred[year, s] <- max(lower.bound, tfr.pred[year, s])
 					scale.prev <- scale
-					#print(scale)
 				}
 			}
 			trajectories <- tfr.pred
@@ -324,7 +255,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 				quantiles = PIs_cqp,
 				traj.mean.sd = mean_sd,
 				nr.traj=nr.traj,
-				tfr_matrix_reconstructed = meta$tfr_matrix_all,
+				tfr_matrix_reconstructed = tfr_reconstructed,
 				output.directory=outdir,
 				na.index=wpred$na.index,
 				mcmc.set=list(meta=meta, mcmc.list=list()),
@@ -347,132 +278,8 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 }
 
 
-tfr.predict.subnat.scale.varerrs <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
-								end.year=2100, output.dir = NULL, nr.traj=NULL, seed = NULL,  
-								sigma3=0.115, sigma3.default.distr=c(mean=0.086, sd=0.0096), 
-								use.lmfit=c(FALSE, FALSE), scale.from.last.point=TRUE, verbose=TRUE) {
-	wpred <- get.tfr.prediction(sim.dir)
-	wmeta <- wpred$mcmc.set$meta
-	if(!is.null(seed)) set.seed(seed)
-	if (is.null(output.dir)) output.dir <- wmeta$output.dir
-	quantiles.to.keep <- as.numeric(dimnames(wpred$quantiles)[[2]])
-	nr.project <- min(length(seq(wmeta$start.year+5, end.year, by=5)), wpred$nr.projections)
-	
-	result <- list()
-	BHMp2 <- get.tfr.parameter.traces(wpred$mcmc.set$mcmc.list, 
-							c('sigma0', 'a_sd', 'b_sd', 'S_sd', 'const_sd'), burnin=0)
-	if(is.null(nr.traj)) nr.traj <- nrow(BHMp2)
-	thinning.index <- unique(round(seq(1, nrow(BHMp2), length=nr.traj)))
-	nr.trajs <- length(thinning.index)
-	BHMp2 <- BHMp2[thinning.index,]
-	if(length(sigma3)==1 && length(countries) > 1) {
-		sigma3 <- rep(sigma3, length(countries))
-		names(sigma3) <- countries
-	}
-	for (country in countries) {
-		country.obj <- get.country.object(country, wmeta)
-		if(verbose) 
-			cat('\nPredicting TFR for ', country.obj$name, '\n')
-		start.year <- if(is.null(wpred$start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+5
-						else wpred$start.year
-		meta <- mcmc.meta.ini.subnat(wmeta, country=country.obj$code, my.tfr.file=my.tfr.file, 
-									start.year=1750, present.year=start.year-5, verbose=verbose)
-		this.output.dir <- file.path(output.dir, 'subnat', paste0('c', country.obj$code))
-		outdir <- file.path(this.output.dir, 'predictions')
-		meta$output.dir <- this.output.dir
-		
-		if(file.exists(this.output.dir)) unlink(this.output.dir, recursive=TRUE)
-		dir.create(outdir, recursive=TRUE)
-		bayesTFR.mcmc.meta <- meta
-		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
-		wtrajs <- get.tfr.trajectories(wpred, country.obj$code)		
-		wtrajs <- wtrajs[1:(nr.project+1),thinning.index]
-		nr.reg <- get.nr.countries(meta)
-		PIs_cqp <- array(NA, c(nr.reg, length(quantiles.to.keep), nrow(wtrajs)),
-						dimnames=list(meta$regions$country_code, dimnames(wpred$quantiles)[[2]], dimnames(wtrajs)[[1]]))
-		mean_sd <- array(NA, c(nr.reg, 2, nrow(wtrajs)))
-		meta$T_end_c <- rep(nrow(meta$tfr_matrix_all), nr.reg)
-		sample.sigma3 <- FALSE
-		if(as.character(country) %in% names(sigma3))
-			this.sigma3 <- sigma3[as.character(country)] 
-		else {
-			this.sigma3 <- sigma3.default.distr['mean']
-			sample.sigma3 <- TRUE
-		}
-		
-		if(verbose) cat('\nPhase III SD = ', this.sigma3)
-		for(region in 1:nr.reg) {
-			reg.obj <- get.country.object(region, meta, index=TRUE)
-			#print(reg.obj$name)	
-			scale.res <- estimate.scale(wmeta, meta, country.obj$index, reg.obj$index, scale.from.last.point=scale.from.last.point)
-			scale <- scale.res$scale
-			fitsigma <- summary(scale.res$fit)$sigma
-			tfr.pred <- matrix(NA, nrow=nr.project+1, ncol=ncol(wtrajs))
-			tfr.pred[1,] <- scale.res$last.tfr
-			is.reg.phase3 <- !(reg.obj$index %in% meta$id_Tistau) & (length(meta$lambda_c[region]:meta$T_end_c[region]) > 1)
-			for(s in 1:ncol(tfr.pred)) { # iterate over trajectories
-				is.in.phase3 <- is.reg.phase3
-				for(year in 2:(nr.project+1)) {
-					if(!is.in.phase3 & year > 2) { # check if now in phase 3
-						end.phase2 <- find.lambda.for.one.country(tfr.pred[1:(year-1),s], year-1)	 				
-						is.in.phase3 <- end.phase2 < year-1
-					}
-					if(!is.in.phase3) {
-						sigma.eps <- if(use.lmfit[1]) fitsigma else max(BHMp2[s,'sigma0'] + (tfr.pred[year-1,s] - BHMp2[s,'S_sd'])*
-		  									ifelse(tfr.pred[year-1,s] > BHMp2[s,'S_sd'], 
-		  											-BHMp2[s,'a_sd'], BHMp2[s,'b_sd']), wmeta$sigma0.min)
-		  			} else { # phase 3
-		  				if(use.lmfit[2]) sigma.eps <- fitsigma
-		  				else {
-		  					#if(sample.sigma3) sigma.eps <- rnorm(1, mean=this.sigma3, sd=sigma3.default.distr['sd'])
-		  					#else 
-		  					sigma.eps <- this.sigma3
-		  				}
-		  			}
-		  			for(i in 1:100)	{						
-						tfr.pred[year, s] <- wtrajs[year,s] * scale + rnorm(1, 0, sd=sigma.eps)
-						if(tfr.pred[year, s] > 0.5) break # lower limit for tfr is 0.5
-					}
-					tfr.pred[year, s] <- max(0.5, tfr.pred[year, s])
-					#if(s==57) cat('\n', year, '- is in P3:', is.in.phase3)
-				}
-			}
-			trajectories <- tfr.pred
-			save(trajectories, file = file.path(outdir, paste0('traj_country', reg.obj$code, '.rda')))
-			# compute quantiles
-			PIs_cqp[region,,] <- apply(trajectories, 1, quantile, quantiles.to.keep, na.rm = TRUE)
- 			mean_sd[region,1,] <- apply(trajectories, 1, mean, na.rm = TRUE)
- 			mean_sd[region,2,] <- apply(trajectories, 1, sd, na.rm = TRUE) 	
-  		}
-  		present.year.index <- which(rownames(meta$tfr_matrix_all) == rownames(wmeta$tfr_matrix_all)[wpred$present.year.index])
-		bayesTFR.prediction <- structure(list(
-				quantiles = PIs_cqp,
-				traj.mean.sd = mean_sd,
-				nr.traj=nr.traj,
-				tfr_matrix_reconstructed = meta$tfr_matrix_all,
-				output.directory=outdir,
-				na.index=wpred$na.index,
-				mcmc.set=list(meta=meta, mcmc.list=list()),
-				nr.projections=wpred$nr.projection,
-				burnin=NA, thin=NA,
-				end.year=wpred$end.year, use.tfr3=NA, burnin3=NA, thin3=NA,
-				mu=NA, rho=NA, sigmaAR1 = NA, mu.c=NA, rho.c=NA,
-				use.correlation=NA, start.year=wpred$start.year,
-				present.year.index=present.year.index,
-				present.year.index.all=present.year.index),
-				class='bayesTFR.prediction')
-			
-		store.bayesTFR.prediction(bayesTFR.prediction, outdir)
-		#do.convert.trajectories(pred=bayesTFR.prediction, n=save.as.ascii, output.dir=outdir, verbose=verbose)
-		#if(write.summary.files)
-		#	tfr.write.projection.summary.and.parameters(pred=bayesTFR.prediction, output.dir=outdir)
-		result[[as.character(country.obj$code)]] <- bayesTFR.prediction
-	}
-	cat('\nPrediction stored into', output.dir, '\n')
-	invisible(result)
-}
 
-tfr.predict.subnat.cor <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+tfr.predict.subnat.1dbhm <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								countries = NULL, nr.traj = NULL, thin = NULL, burnin=2000,  use.diagnostics=FALSE,
 								use.tfr3=TRUE, burnin3=2000,
 								mu=2.1, rho=0.8859,
@@ -531,89 +338,6 @@ tfr.predict.subnat.cor <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd()
 										correlation.matrices=cor.mat, output.dir=outdir, verbose=verbose, ...)
 	}
 	return(result)
-}
-
-tfr.predict.subnat1BHM <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-								 nr.traj = NULL, #thin = NULL, burnin=2000,  use.diagnostics=FALSE,
-								 start.year=NULL,
-								burnin3=2000, mu=2.1, rho=0.8859,
-								use.correlation=FALSE, cor.method=c('meth12'),
-								cor.start.year=NULL,
-								output.dir = NULL, ..., verbose=TRUE) {
-	wpred <- get.tfr.prediction(sim.dir)
-	wmcmc.set <- wpred$mcmc.set
-	wmeta <- wmcmc.set$meta
-	if (is.null(output.dir)) output.dir <- wmeta$output.dir
-	stored.iter <- get.stored.mcmc.length(wmcmc.set$mcmc.list, burnin=0)		
-	if(is.null(nr.traj)) nr.traj <- min(stored.iter, 2000)
-	nr.traj <- min(nr.traj, stored.iter)
-	do.not.thin <- nr.traj >= stored.iter-1
-	if(!do.not.thin) {
-		mcthin <- max(sapply(wmcmc.set$mcmc.list, function(x) x$thin))
-		thin <- floor(stored.iter/nr.traj * mcthin)
-		if(thin > 1) {
-			thinned.mcmc <- get.thinned.tfr.mcmc(wmcmc.set, thin=thin, burnin=0)
-			if(is.null(thinned.mcmc)) {
-				wmcmc.set <- create.thinned.tfr.mcmc(wmcmc.set, thin=thin, burnin=0, 
-				 							output.dir=output.dir, verbose=verbose)
-				stored.iter <- get.stored.mcmc.length(wmcmc.set$mcmc.list, burnin=0)
-			}
-		}
-		if(stored.iter != nr.traj) cat('\nNr. of trajectories changed to ', stored.iter, '\n')
-	}
-	has.p3 <- has.tfr3.mcmc(sim.dir)
-	mcmc3 <- if(has.p3) get.tfr3.mcmc(sim.dir) else NULL
-	result <- cor.mat <- NULL
-	for(country in countries){
-		country.obj <- get.country.object(country, wmeta)
-		if(verbose) 
-			cat('\nPredicting TFR for ', country.obj$name, '\n')
-		if(is.null(start.year)) 
-			start.year <- if(is.null(wpred$start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+5
-						else wpred$start.year
-
-		meta <- mcmc.meta.ini.subnat(wmeta, country=country.obj$code, my.tfr.file=my.tfr.file, 
-									start.year=min(if(is.null(cor.start.year)) wmeta$start.year else cor.start.year, wmeta$start.year),
-									present.year=wmeta$present.year, verbose=verbose)
-		this.output.dir <- file.path(output.dir, 'subnat', paste0('c', country.obj$code))
-		meta$output.dir <- this.output.dir		
-		if(file.exists(this.output.dir)) unlink(this.output.dir, recursive=TRUE)
-		dir.create(this.output.dir, recursive=TRUE)
-		bayesTFR.mcmc.meta <- meta
-		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
-		nr.reg <- get.nr.countries(meta)
-		ar1pars <- NULL
-		if(use.correlation) {
-			cor.mat <- list()
-			#for(w in c('low', 'high')) {
-			#	cor.mat[[w]] <- matrix(0.99, nrow=nr.reg, ncol=nr.reg)
-			#	diag(cor.mat[[w]]) <- 1
-			#}
-			if(!has.p3) {
-				ar1pars <- if (is.null(rho) || is.na(rho)) get.ar1.parameters(mu = mu, wmeta)
-							else list(mu=mu, rho=rho)
-			}
-			cor.mat <- tfr.correlation.subnat2(wmcmc.set, meta=meta, mcmc3.set=mcmc3, country=country, method=cor.method, burnin=0, 
-							burnin3=burnin3, 
-							ar1pars=ar1pars, cor.start.year=cor.start.year, verbose=verbose)
-		}
-		meta[['use.mcmc.from']] <- country.obj$code
-		#meta$lambda_c[] <- wmeta$lambda_c[country.obj$index]
-		#meta$id_Tistau <- if(country.obj$index %in% wmeta$id_Tistau) 1:nr.reg else c()
-		data3.meta <- NULL	
-		if(has.p3) {
-			data3.meta <- mcmc3$meta
-			# All sub-regions set as phase3 in order for all of them to draw from country-specific PIII parameters
-			data3.meta$id_phase3 <- if(country.obj$index %in% mcmc3$meta$id_phase3) 1:nr.reg  else c()
-			data3.meta$nr.countries <- length(mcmc3$meta$id_phase3)
-		}
-		result[[as.character(country)]] <- make.tfr.prediction(mcmc.set=wmcmc.set, start.year=start.year,
-										use.correlation=use.correlation, use.tfr3=has.p3, mcmc3.set=mcmc3, burnin3=wpred$burnin3,
-										correlation.matrices=cor.mat, output.dir=this.output.dir, 
-										is.mcmc.set.thinned=TRUE, data.meta=meta, data3.meta=data3.meta,
-										verbose=verbose, ...)
-	}
-	invisible(result)
 }
 
 
@@ -1828,93 +1552,6 @@ tfr.correlation.subnat <- function(mcmc.set,
 				)
 	return(c(cormat, list(kappa=kappa)))
 }
-
-tfr.correlation.subnat2 <- function(mcmc.set, mcmc3.set, meta, country,
-									method=c('meth12', 'meth11', 'meth10', 'meth9', 'meth8'), 
-									burnin=0, thin=1, burnin3=0, 
-									ar1pars=NULL, kappa=5, cor.start.year=NULL, verbose=FALSE, ...) {
-	method <- match.arg(method)
-	errs <- is.low <- matrix(NA, nrow=meta$T_end, ncol=meta$nr_countries, 
-						dimnames=list(dimnames(meta$tfr_matrix)[[1]], meta$regions$country_code))
-	country.obj <- get.country.object(country, mcmc.set$meta) # from world meta
-	has.phase3 <- !is.null(mcmc3.set)
-	if(has.phase3) {
-		if(length(mcmc3.set$mcmc.list)==0) {
-			mcmc3.set <- NULL
-			has.phase3 <- FALSE
-		} else {
-			iter3 <- get.total.iterations(mcmc3.set$mcmc.list, burnin3)
-			thin3 <- max(floor(iter3/2000),1)
-		}
-		if(is.element(country.obj$index, mcmc3.set$meta$id_phase3))
-			tr3 <- get.tfr3.parameter.traces.cs(mcmc3.set$mcmc.list, country.obj, c('mu.c', 'rho.c'), 
-								burnin=burnin3, thin=thin3)
-		else 
-			tr3 <- get.tfr3.parameter.traces(mcmc3.set$mcmc.list, c('mu', 'rho'), 
-								burnin=burnin3, thin=thin3)
-		tr3 <- cbind(tr3, get.tfr3.parameter.traces(mcmc3.set$mcmc.list, c('sigma.eps'), 
-										burnin=burnin3, thin=thin3))
-	}
-											
-	.get.err <- function(i, mu, rho, sigma) return((tfr.all[i]-mu-rho*(tfr.all[i-1]-mu))/sigma)
-	.get.err.distr <- function(i, traces) 
-						return(apply(traces, 1, function(x) return(.get.err(i, x[1], x[2], x[3]))))
-	# get prediction errors
-	for (reg in 1:meta$nr_countries) {
-		reg.obj <- get.country.object(reg, meta, index=TRUE)
-		tfr.all <- bayesTFR:::get.observed.tfr(reg, meta, 'tfr_matrix_observed')
-		is.low[,reg] <- tfr.all < kappa
-		dl.obs.idx <- if(max(meta$tau_c[reg],1) >= meta$lambda_c[reg]) c() 
-						else seq(max(meta$tau_c[reg],1), meta$lambda_c[reg])
-		start.idx <- if(is.null(cor.start.year)) 1 else which(as.integer(names(tfr.all)) >= cor.start.year)[1]
-		dl.obs.idx <- dl.obs.idx[dl.obs.idx >= start.idx]
-		if(length(dl.obs.idx) > 0) { # Phase II
-			tfr <- tfr.all[dl.obs.idx]
-			not.na.idx <- which(!is.na(tfr))
-			if(length(not.na.idx) > 1) { # needs at least two points for decrements
-				tfr <- tfr[not.na.idx]
-				decr <- -diff(tfr)
-				dlc.sigma <- tfr.get.dlcurves(tfr, mcmc.set$mcmc.list, country.obj$code, country.obj$index, 
-									burnin=burnin, nr.curves=0, return.sigma=TRUE)
-				terr <- apply(-dlc.sigma$dl[,-1, drop=FALSE], 1, "+", decr)
-				if(length(decr) > 1) terr <- t(terr)
-				dl.err <- terr/dlc.sigma$sigma[,-1, drop=FALSE]
-				res.idx <- dl.obs.idx[not.na.idx]
-				errs[res.idx[-1],reg] <- apply(dl.err, 2, mean)
-				#if(country.obj$code==549) stop('')
-			}
-		}
-		if(meta$lambda_c[reg] < meta$T_end_c[reg])  { # Phase III
-			p3.idx <- seq(meta$lambda_c[reg]+1, meta$T_end_c[reg])
-			p3.idx <- p3.idx[p3.idx >= start.idx]		
-			if(has.phase3) {			
-				eps.k <- NULL 
-				for(j in 1:length(p3.idx)) 
-					eps.k <- cbind(eps.k, .get.err.distr(p3.idx[j], tr3))
-				errs[p3.idx, reg] <- apply(eps.k, 2, mean)
-			} else  # use fixed parameters
-				errs[p3.idx, reg] <- sapply(p3.idx, .get.err, mu=ar1pars$mu, rho=ar1pars$rho, sigma=ar1pars$sigmaAR1)
-		}
-	}
-	ind <- apply(errs, 1, function(x) all(is.na(x)))
-	errs <- errs[!ind,]
-	is.low <- is.low[!ind,]
-	cormat <- switch(method,
-				bayes.mean = cor.bayes(errs, is.low, method='mean', verbose=verbose, ...),
-				bayes.mode = cor.bayes(errs, is.low, method='mode', verbose=verbose, ...),
-				meth5 = cor.bayes(errs, is.low, method='mean', scale.errors=TRUE, verbose=verbose, ...),
-				meth6 = cor.bayes(errs, is.low, method='mode', scale.errors=TRUE, verbose=verbose, ...),
-				meth7 = cor.modified(errs, is.low, verbose=verbose, ...),
-				meth8 = cor.moments2(errs, is.low, verbose=verbose, ...),
-				meth9 = cor.method9(errs, is.low, verbose=verbose, ...),
-				meth10 = cor.bayes.meth10(errs, is.low, arcsin.prior=FALSE, verbose=verbose, ...),
-				meth11 = cor.bayes.meth10(errs, is.low, arcsin.prior=TRUE, verbose=verbose, ...),
-				meth12 = cor.constant(errs, verbose=verbose, ...),
-				cor.moments(errs, is.low, method=method, verbose=verbose, ...)
-				)
-	return(c(cormat, list(kappa=kappa)))
-}
-
 
 "get.data.imputed" <- function(pred, ...) UseMethod("get.data.imputed")
 

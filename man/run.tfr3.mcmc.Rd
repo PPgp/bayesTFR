@@ -50,7 +50,7 @@ continue.tfr3.mcmc(sim.dir, iter, chain.ids=NULL,
   \item{auto.conf}{List containing a configuration for an \sQuote{automatic} run (see description of argument \code{iter}). Item \code{iter} gives the number of iterations in the first chunk of the MCMC simulation; item \code{iter.incr} gives the number of iterations in the following chunks; \code{nr.chains} gives the number of chains in all chunks of the MCMC simulation; items \code{thin} and \code{burnin} are used in the convergence diagnostics following each chunk; \code{max.loops} controls the maximum number of chunks. All items must be integer values. This argument is only used if the function argument \code{iter} is set to \sQuote{auto}.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{verbose.iter}{Integer determining how often (in number of iterations) messages are outputted during the estimation.}
-  \item{\dots}{Additional arguments to be passed to the function \code{\link[snowFT]{performParallel}}, if \code{parallel} is \code{TRUE}.}
+  \item{\dots}{Additional parameters to be passed to the function \code{\link[snowFT]{performParallel}}, if \code{parallel} is \code{TRUE}.}
   \item{chain.ids}{Array of chain identifiers that should be resumed. If it is \code{NULL}, all existing chains are resumed.}
 }
 \details{

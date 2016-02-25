@@ -15,13 +15,13 @@ using a Bayesian hierarchical model (BHM) and the United Nations demographic tim
 \details{
 \tabular{ll}{
 Package: \tab bayesTFR\cr
-Version: \tab 4.2-0\cr
-Date: \tab 2015-7-9\cr
+Version: \tab 5.0-0\cr
+Date: \tab 2015-12-4\cr
 License: \tab GPL (>= 2)\cr
 URL: \tab \url{http://bayespop.csss.washington.edu}\cr
 }
 
-The projection follows a method developed by Alkema et al. (2011) and Raftery et al (2013). It uses historical data provided by the United Nations (included in the package) to simulate a posterior distribution of total fertility rates for all countries in the world simultaneously. 
+The projection follows a method developed by Alkema et al. (2011) and Raftery et al (2013). It uses historical data provided by the United Nations to simulate a posterior distribution of total fertility rates for all countries in the world simultaneously. 
 
 The estimation is split into two parts: 
 \enumerate{
@@ -46,7 +46,7 @@ A number of functions analyzing results are included in the package:
 \item \link{tfr.trajectories.plot}: Shows the posterior trajectories for a given country, including their median and given probability intervals.
 \item \link{tfr.trajectories.table}: Shows the posterior trajectories for a given country in a tabular form.
 \item \link{tfr.map}: Shows a TFR world map for a given projection period.
-\item \link{DLcurve.plot}: Shows the posterior curves of the double logistic function used in the simulation, including their median and given probability intervals.
+\item \link{DLcurve.plot}: Shows the posterior curves of the double logistic function used in the simulation of PhaseII, including their median and given probability intervals.
 \item \link{tfr.partraces.plot} and \link{tfr.partraces.cs.plot}: Plot the Phase II MCMC traces of country-independent parameters and country-specific parameters, respectively. \link{tfr3.partraces.plot} and \link{tfr3.partraces.cs.plot} do the same for Phase III MCMCs.
 \item \link{tfr.pardensity.plot} and \link{tfr.pardensity.cs.plot}: Plot the posterior density of the Phase II MCMCs for country-independent parameters and country-specific parameters, respectively. \link{tfr3.pardensity.plot} and \link{tfr3.pardensity.cs.plot} do the same for Phase III MCMCs.
 \item \link{summary.bayesTFR.mcmc.set}: Summary function for the MCMC results.
@@ -56,9 +56,9 @@ A number of functions analyzing results are included in the package:
 For MCMC diagnostics, functions \link{coda.list.mcmc} and \link{coda.list.mcmc3} create an object of type \dQuote{mcmc.list} that can be used with the \pkg{coda} package.  Furthermore, function \link{tfr.diagnose} and \link{tfr3.diagnose} analyze the MCMCs using the Raftery diagnostics implemented in the \pkg{coda} package and gives information about parameters that did not converge. 
 %In case of having multiple chains, function \link{tfr.gelman.diag} computes the Gelman diagnostics for different burnins which can by plotted using \link{tfr.plot.gelman}.  
 
-Existing simulation results can be accessed using the \link{get.tfr.mcmc} (Phase II) and \link{get.tfr3.mcmc} (Phase III) function.  An existing prediction can be accessed via \link{get.tfr.prediction}. Existing convergence diagnostics can be accessed using the \link{get.tfr.convergence}, \link{get.tfr.convergence.all}, \link{get.tfr3.convergence} and \link{get.tfr3.convergence.all} functions.
+Existing simulation results can be accessed using the \link{get.tfr.mcmc} (Phase II) and \link{get.tfr3.mcmc} (Phase III) functions.  An existing prediction can be accessed via \link{get.tfr.prediction}. Existing convergence diagnostics can be accessed using the \link{get.tfr.convergence}, \link{get.tfr.convergence.all}, \link{get.tfr3.convergence} and \link{get.tfr3.convergence.all} functions.
 
-The historical TFR data are taken from one of the packages \pkg{wpp2008}, \pkg{wpp2010} or \pkg{wpp2012}, depending on users settings.
+The historical TFR data are taken from one of the packages \pkg{wpp2015} (default), \pkg{wpp2012} or \pkg{wpp2010}, depending on users settings.
 
 }
 
@@ -67,7 +67,7 @@ There is a directory \code{ex-data} shipped with the package which contains resu
 }
 
 \author{
-Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Adrian Raftery <raftery@uw.edu> with code contribution from Bailey Fosdick <bfosdick@uw.edu>
+Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Adrian Raftery <raftery@uw.edu> with code contribution from Bailey Fosdick <bfosdick@uw.edu>  and Patrick Gerland (gerland@un.org)
 
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 }
