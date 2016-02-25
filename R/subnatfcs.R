@@ -329,7 +329,7 @@ cor.constant <- function(errs, constant=0.99, verbose=FALSE) {
 	corm[corm<0] <- 0 # truncate
 	diag(corm) <- 1
 	Ti <- mean(apply(errs, 2, function(x) sum(!is.na(x))))
-	cormat <- ((Ti-1)/Ti)*corm + 1/(2*Ti)
+	cormat <- (Ti/(Ti+1))*corm + 1/(2*(Ti+1))
 	diag(cormat) <- 1
 	cormat.na <- which(apply(is.na(errs), 2, sum) > dim(errs)[1]-2)	
 	cormat.no.na <- if(length(cormat.na)==0) cormat else cormat[-cormat.na, -cormat.na]

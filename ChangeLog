@@ -1,15 +1,26 @@
-4.3-0
+5.0-1 (2/12/2016)
 -----
-DLcurve.plot got an argument "col" for modifying colors.
+Fixed bug in writing file projection_summary_parameters.csv 
+(column TF_time_start_decline was wrongly set to NA if supplemental values were used).
+
+5.0-0 (12/04/2015)
+-----
+Support for wpp2015 (change in imports and dependencies)
 
 The following defaults in run.tfr.mcmc changed:
-	start.year=1950 (from 1750)
 	present.year=2015 (from 2010)
 	wpp.year=2015 (from 2012)
+	start.year=1950 (from 1750)
 	
+Added dataset include_2015.
+
 Example directory re-created using wpp2015.
 
-4.2-0 (7/9/2015)
+DLcurve.plot got an argument "col" for modifying colors.
+
+Function tfr.get.dlcurves can be called without country, in which case it returns the "world" DL curves. 
+
+4.2-0 (7/9/2015) [CRAN]
 -----
 MCMC outputs now also for back-transformed parameters Triangle_c1-3.
 
