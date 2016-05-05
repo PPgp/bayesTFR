@@ -1,4 +1,9 @@
-5.0-0 (12/04/2015)
+5.0-1 (2/12/2016)
+-----
+Fixed bug in writing file projection_summary_parameters.csv 
+(column TF_time_start_decline was wrongly set to NA if supplemental values were used).
+
+5.0-0 (12/04/2015) [CRAN]
 -----
 Support for wpp2015 (change in imports and dependencies)
 
