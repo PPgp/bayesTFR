@@ -332,14 +332,21 @@ init.nodes <- function() {
 	library(bayesTFR)
 }
 
-run.tfr.mcmc.subnat.extra <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+run.tfr.mcmc.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								iter=30000, 
 								start.year=1950, present.year=2010, 								
 								world.sim.dir = sim.dir,
 								post.burnin = 2000, buffer.size=100,
-								seed = NULL, parallel=FALSE, nr.nodes=3, compression.type='None',
+								seed = NULL, parallel=FALSE, nr.nodes=NULL, compression.type='None',
 								verbose=FALSE, verbose.iter=100, ...) {
-									
+	# For sub-national BHM simulation, a directory with a "world" simulation must exist (either in world.sim.dir or sim.dir).
+	# The function runs 1-directional BHM using the posterior sample from the "world" simulation. If a prediction object 
+	# exists in the "world" simulation, the posterior sample is extracted from there, i.e. it uses already 
+	# burned, thinned and collapsed MCMCs. Otherwise iter and post.burnin is used to burn and thin the original MCMCs.
+	# Country-specific parameters from the "world" simulation are used to create hyperparameters of the subnational model.
+	# Sub-national-specific parameters are estimated via MCMCs.
+	# Results are stored into {sim.dir}/subnat/c{country_code}.
+				
 	if(is.null(world.sim.dir)) world.sim.dir <- sim.dir
 	mcmc.set <- get.tfr.mcmc(world.sim.dir)
 	meta <- mcmc.set$meta
@@ -359,35 +366,27 @@ run.tfr.mcmc.subnat.extra <- function(countries, my.tfr.file, sim.dir=file.path(
 	}
 	total.iter <- m$mcmc.list[[1]]$length - get.thinned.burnin(m$mcmc.list[[1]], post.burnin)
 	if(is.null(iter)) iter <- total.iter
+	# index for the hyperparameters (post.idx)
 	if(iter > total.iter) post.idx <- sample(1:total.iter, iter, replace=TRUE)
 	else {
 		post.idx <- get.thinning.index(iter, total.iter)
 		iter <- post.idx$nr.points
 		post.idx <- post.idx$index
 	}
+	# Since the hyperparamters will be already sampled using post.idx, 
+	# sampling.idx takes all of those samples (in mcmc.run.chain.subnat.extra)
 	sampling.idx <- 1:iter			
 	meta$buffer.size <- buffer.size
 	meta$compression.type <- compression.type
 	nr.chains <- length(m$mcmc.list)
-	# # propagate initial values for all chains if needed
-	# for (var in c('iter')) {
-		# if (length(get(var)) < nr.chains) {
-			# if (length(get(var)) == 1) {
-				# assign(var, rep(get(var), nr.chains))
-			# } else {
-			# warning(var, ' has the wrong length. Either 1 or ', nr.chains, 
-				# ' is allowed.\nValue set to ', get(var)[1], ' for all chains.')
-			# assign(var, rep(get(var)[1], nr.chains))
-			# }
-		# }
-	# }
+
 	if(!is.null(seed)) set.seed(seed)
 	
 	results <- list()
 	for (country in countries) {
 		country.obj <- get.country.object(country, m$meta)	
 		if(verbose) 
-			cat('\nSimulating Phase II for', country.obj$name, '\n')							
+			cat('\nSimulating Phase II for sub-regions of ', country.obj$name, '\n')							
 		ini <- mcmc.meta.ini.subnat(meta, country=country.obj$code, my.tfr.file=my.tfr.file, 
 									start.year=start.year, present.year=present.year, verbose=verbose)
 		this.output.dir <- file.path(output.dir, paste0('c', country.obj$code))
@@ -403,12 +402,11 @@ run.tfr.mcmc.subnat.extra <- function(countries, my.tfr.file, sim.dir=file.path(
 			new.m$mcmc.list[[i]]$meta <- ini
 			hyperpars.from.country.pars(new.m$mcmc.list[[i]], m$mcmc.list[[i]], country.obj, posterior.idx=post.idx, burnin=post.burnin)
 		}
-		if (parallel) { # run chains in parallel
-			chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc.run.chain, 
-						initfun=init.nodes, meta=bayesTFR.mcmc.meta, 
-						thin=thin, iter=iter, S.ini=S.ini, a.ini=a.ini,
-                        b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
-                        gamma.ini=gamma.ini, verbose=verbose, 
+		if (parallel && nr.chains > 1) { # run chains in parallel
+			if(is.null(nr.nodes)) nr.nodes <- nr.chains
+			chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc.run.chain.subnat.extra, 
+						initfun=init.nodes, mcmc.set=new.m, region.idx=1:nrc, 
+						posterior.sample=sampling.idx, iter=iter, burnin=0, verbose=verbose, 
                         verbose.iter=verbose.iter, ...)
 		} else { # run chains sequentially
 			chain.set <- list()
@@ -424,7 +422,7 @@ run.tfr.mcmc.subnat.extra <- function(countries, my.tfr.file, sim.dir=file.path(
 	}
 
 	if (verbose)
-		cat('\nSimulation successfully finished!!!\n')
+		cat('\nSubnational simulation successfully finished!!!\n')
 	invisible(results)
 }
 
@@ -442,6 +440,8 @@ mcmc.run.chain.subnat.extra <- function(chain.id, mcmc.set, region.idx, posterio
 }
 
 hyperpars.from.country.pars <- function(mcmc, world.mcmc, country.obj, posterior.idx, burnin) {
+	# Stores MCMC files with the hyperparameters for sub-regions. They correspond to the country-specific parameters. 
+	
 	traces <- data.frame(load.tfr.parameter.traces.cs(world.mcmc, country.obj$code, burnin=burnin))[posterior.idx,]
 	traces.world <- data.frame(load.tfr.parameter.traces(world.mcmc, burnin=burnin))[posterior.idx,]
 	nsample <- nrow(traces)
@@ -481,216 +481,6 @@ hyperpars.from.country.pars <- function(mcmc, world.mcmc, country.obj, posterior
     write.list.into.file.cindep(mcmc, result)
 }
 
-run.tfr.mcmc.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-								nr.chains=3, iter=30000, thin=10,
-								start.year=1950, present.year=2010, 								
-								use.world.posterior = FALSE, world.sim.dir = sim.dir,
-								post.burnin = 2000, buffer.size=100,
-								seed = NULL, parallel=FALSE, nr.nodes=nr.chains, compression.type='None',
-								auto.conf = list(max.loops=5, iter=30000, iter.incr=10000, nr.chains=3, thin=40, burnin=2000),
-								verbose=FALSE, verbose.iter=100, ...) {
-	if(is.null(world.sim.dir)) world.sim.dir <- sim.dir
-	mcmc.set <- get.tfr.mcmc(world.sim.dir)
-	meta <- mcmc.set$meta
-	output.dir <- file.path(sim.dir, 'subnat')
-	if(!file.exists(output.dir)) dir.create(output.dir, recursive=TRUE)
-	# modify priors of hyper-paramters using posterior of a world-country simulation
-	if(!use.world.posterior) {
-		#meta$S.low <- 3.503
-		#meta$S.up <- 5.474
-		#meta$a.low <- 0.001
-		#meta$a.up <- 0.057
-		#meta$b.low <- 0.014
-		#meta$b.up <- 0.062
-		#meta$sigma0.low <- 0.221
-		#meta$sigma0.up <- 0.301
-		#meta$const.low <- 1.188
-		#meta$const.up <- 1.59
-		meta$chi0 <- -1.571
-		meta$psi0 <- 0.126
-		meta$alpha0.p <- c(-0.853, 0.459, 1.596)
-		meta$delta0 <- 0.654
-		meta$Triangle4.0 <- 0.51
-		meta$delta4.0 <- 0.284
-		meta$mean.eps.tau0 <- -0.272
-		meta$sd.eps.tau0 <- 0.03
-		meta$psi0r <- 0.869
-		meta$nu.psi0 <- 57.441
-		meta$delta0r <- 0.727
-		meta$nu.delta0 <- 6.084
-		meta$delta4.0r <- 0.869
-		meta$nu4 <- 4.266
-		meta$sd.eps.tau0r <- 0.364
-		meta$nu.tau0 <- 142.914
-	} else {
-		library(MASS)
-		if(has.tfr.prediction(sim.dir=world.sim.dir))
-			m <- get.tfr.prediction(world.sim.dir)$mcmc.set
-		else {
-			l <- mcmc.set$mcmc.list[[1]]$finished.iter
-			if(post.burnin > l) {
-				post.burnin <- as.integer(l/2)
-				warning('post.burnin larger than MCMC length. Adjusted to ', post.burnin)
-			}
-			m <- get.tfr.mcmc(world.sim.dir, burnin=post.burnin)
-		}
-		ml <- get.mcmc.list(m)
-		
-		# Uniform priors
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'S_sd'))
-		meta$S.low <- quantile(tr, 0.001)
-		meta$S.up <- quantile(tr, 0.995)
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'a_sd'))
-		meta$a.low <- quantile(tr, 0.001)
-		meta$a.up <- quantile(tr, 0.995)
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'b_sd'))
-		meta$b.low <- quantile(tr, 0.001)
-		meta$b.up <- quantile(tr, 0.999)
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'sigma0'))
-		meta$sigma0.low <- quantile(tr, 0.001)
-		meta$sigma0.up <- quantile(tr, 0.999)
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'const_sd'))
-		meta$const.low <- quantile(tr, 0.001)
-		meta$const.up <- quantile(tr, 0.999)
-		
-		# Normal priors
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'chi'))
-		meta$chi0 <- mean(tr)
-		meta$psi0 <- sd(tr)
-		tr <- get.tfr.parameter.traces(ml, 'alpha')
-		meta$alpha0.p <- apply(tr, 2, mean)
-		meta$delta0 <- max(apply(tr, 2, sd))
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'Triangle4'))
-		meta$Triangle4.0 <- mean(tr)
-		meta$delta4.0 <- sd(tr)
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'mean_eps_tau'))
-		meta$mean.eps.tau0 <- mean(tr)
-		meta$sd.eps.tau0 <- sd(tr)
-		
-		# Gamma priors
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'psi'))
-		gfit <- fitdistr(1/(tr)^2, 'gamma')
-		meta$psi0r <- sqrt(gfit$estimate['rate']/gfit$estimate['shape'])
-		meta$nu.psi0 <- gfit$estimate['shape']*2
-		tr <- get.tfr.parameter.traces(ml, 'delta')
-		dr <- nur <- c()
-		for(i in 1:3) {
-			gfit <- fitdistr(1/(tr[,i])^2, 'gamma')
-			dr <- c(dr, sqrt(gfit$estimate['rate']/gfit$estimate['shape']))
-			nur <- c(nur, gfit$estimate['shape']*2)
-		}
-		meta$delta0r <- min(dr)
-		meta$nu.delta0 <- min(nur)
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'delta4'))
-		gfit <- fitdistr(1/(tr)^2, 'gamma')
-		meta$delta4.0r <- sqrt(gfit$estimate['rate']/gfit$estimate['shape'])
-		meta$nu4 <- gfit$estimate['shape']*2
-		tr <- as.vector(get.tfr.parameter.traces(ml, 'sd_eps_tau'))
-		gfit <- fitdistr(1/(tr)^2, 'gamma')
-		meta$sd.eps.tau0r <- sqrt(gfit$estimate['rate']/gfit$estimate['shape'])
-		meta$nu.tau0 <- gfit$estimate['shape']*2
-	}
-	if(verbose)
-		print(tfr.priors(meta))
-	
-	meta$buffer.size <- buffer.size
-	meta$compression.type <- compression.type
-
-	default.auto.conf <- formals(run.tfr.mcmc.subnat)$auto.conf
-	for (par in names(default.auto.conf))
-		if(is.null(auto.conf[[par]])) auto.conf[[par]] <- default.auto.conf[[par]]
-	auto.run <- FALSE
-	if(iter == 'auto') { # defaults for auto-run (includes convergence diagnostics)
-		iter <- auto.conf$iter
-		nr.chains <- auto.conf$nr.chains
-		auto.run <- TRUE		
-	}
-	if(!is.null(seed)) set.seed(seed)
-	# starting values (length of 1 or nr.chains)
-	S.ini <- with(meta, ifelse(rep(nr.chains==1, nr.chains), 
-					 		(S.low+S.up)/2, seq(S.low, to=S.up, length=nr.chains))) 
-	a.ini <- with(meta, ifelse(rep(nr.chains==1, nr.chains), 
-					 		(a.low+a.up)/2, seq(a.low, to=a.up, length=nr.chains))) 
-	b.ini <- with(meta, ifelse(rep(nr.chains==1, nr.chains), 
-					 		(b.low+b.up)/2, seq(b.low, to=b.up, length=nr.chains)))
-	sigma0.ini <- with(meta, ifelse(rep(nr.chains==1, nr.chains), 
-					 		(sigma0.low+sigma0.up)/2, 
-					 		seq(sigma0.low, to=sigma0.up, length=nr.chains)))
-	Triangle_c4.ini <- with(meta, ifelse(rep(nr.chains==1, nr.chains), 
-					 		(Triangle_c4.low+Triangle_c4.up)/2, 
-					 		seq(Triangle_c4.low+0.0001, to=Triangle_c4.up-0.0001, length=nr.chains))) 
-	const.ini <- with(meta, ifelse(rep(nr.chains==1, nr.chains), 
-					 		(const.low+const.up)/2, 
-					 		seq(const.low, to=const.up, length=nr.chains)))
-	gamma.ini <- 1
-	# propagate initial values for all chains if needed
-	for (var in c('S.ini', 'a.ini', 'b.ini', 'sigma0.ini', 'const.ini', 'gamma.ini', 'Triangle_c4.ini', 'iter')) {
-		if (length(get(var)) < nr.chains) {
-			if (length(get(var)) == 1) {
-				assign(var, rep(get(var), nr.chains))
-			} else {
-			warning(var, ' has the wrong length. Either 1 or ', nr.chains, 
-				' is allowed.\nValue set to ', get(var)[1], ' for all chains.')
-			assign(var, rep(get(var)[1], nr.chains))
-			}
-		}
-	}
-	results <- list()
-	for (country in countries) {
-		country.obj <- get.country.object(country, mcmc.set$meta)	
-		if(verbose) 
-			cat('\nSimulating Phase II for', country.obj$name, '\n')							
-		ini <- mcmc.meta.ini.subnat(meta, country=country.obj$code, my.tfr.file=my.tfr.file, 
-									start.year=start.year, present.year=present.year, verbose=verbose)
-		this.output.dir <- file.path(output.dir, paste0('c', country.obj$code))
-		ini$output.dir <- this.output.dir
-		if(file.exists(this.output.dir)) unlink(this.output.dir, recursive=TRUE)
-		dir.create(this.output.dir)
-		bayesTFR.mcmc.meta <- ini
-		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
-		if (parallel) { # run chains in parallel
-			chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc.run.chain, 
-						initfun=init.nodes, meta=bayesTFR.mcmc.meta, 
-						thin=thin, iter=iter, S.ini=S.ini, a.ini=a.ini,
-                        b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
-                        gamma.ini=gamma.ini, verbose=verbose, 
-                        verbose.iter=verbose.iter, ...)
-		} else { # run chains sequentially
-			chain.set <- list()
-			for (chain in 1:nr.chains) {
-				chain.set[[chain]] <- mcmc.run.chain(chain, bayesTFR.mcmc.meta, thin=thin, 
-					 	iter=iter, S.ini=S.ini, a.ini=a.ini, b.ini=b.ini, 
-					 	sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini, 
-					 	gamma.ini=gamma.ini, 
-					 	verbose=verbose, verbose.iter=verbose.iter)
-			}
-		}
-		names(chain.set) <- 1:nr.chains
-		results[[as.character(country.obj$code)]] <- structure(list(meta=bayesTFR.mcmc.meta, mcmc.list=chain.set), 
-																			class='bayesTFR.mcmc.set')
-		cat('\nResults stored in', this.output.dir,'\n')
-		if(auto.run) {
-			diag <- try(tfr.diagnose(sim.dir=this.output.dir, keep.thin.mcmc=TRUE, 
-						thin=auto.conf$thin, burnin=auto.conf$burnin,
-						verbose=verbose))
-			if(auto.conf$max.loops>1) {
-				for(loop in 2:auto.conf$max.loops) {
-					if(!inherits(diag, "try-error") && has.mcmc.converged(diag)) break
-					results[[as.character(country.obj$code)]] <- continue.tfr.mcmc(
-								iter=auto.conf$iter.incr, output.dir=this.output.dir, nr.nodes=nr.nodes,
-								parallel=parallel, verbose=verbose, verbose.iter=verbose.iter)
-					diag <- try(tfr.diagnose(sim.dir=this.output.dir, keep.thin.mcmc=TRUE, 
-								thin=auto.conf$thin, burnin=auto.conf$burnin,
-								verbose=verbose))
-				}
-			}
-		}
-	}
-	if (verbose)
-		cat('\nSimulation successfully finished!!!\n')
-	invisible(results)
-		
-}
 
 set.default.cltype <- function() {
 #	if(!is.element(snow::getClusterOption("type"), c("MPI", "SOCK"))) 

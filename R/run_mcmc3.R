@@ -234,23 +234,33 @@ mcmc3.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbo
 	return(mcmc)
 }
 
-run.tfr3.mcmc.subnat.extra <- function(countries, sim.dir=file.path(getwd(), 'bayesTFR.output'),
-										iter=5000, world.sim.dir = sim.dir, post.burnin = 10000, verbose=FALSE) {
+run.tfr3.mcmc.subnat <- function(countries, sim.dir=file.path(getwd(), 'bayesTFR.output'),
+										iter=10000, world.sim.dir = sim.dir, post.burnin = 10000, 
+										buffer.size=100, seed = NULL, parallel=FALSE, nr.nodes=NULL, 
+										verbose=FALSE, verbose.iter=100, ...) {
 	if(is.null(world.sim.dir)) world.sim.dir <- sim.dir
 	if(!has.tfr3.mcmc(world.sim.dir)) stop('No phase III available in ', world.sim.dir)
 	output.dir <- file.path(sim.dir, 'subnat')
 	mcmc2 <- get.tfr.mcmc(world.sim.dir)	
 	mcmc3 <- get.tfr3.mcmc(world.sim.dir)
-	#if(has.tfr.prediction(sim.dir=world.sim.dir)) {
-	#	p <- get.tfr.prediction(sim.dir=world.sim.dir)
-	#	post.burnin <- p$burnin3
-	#}
-	l <- mcmc3$mcmc.list[[1]]$finished.iter
-	if(post.burnin > l) {
-		post.burnin <- as.integer(l/2)
-		warning('post.burnin larger than MCMC length. Adjusted to ', post.burnin)
+	world.use.tfr3 <- FALSE
+	post.thin <- NULL
+	if(has.tfr.prediction(sim.dir=world.sim.dir)) {
+		p <- get.tfr.prediction(sim.dir=world.sim.dir)
+		world.use.tfr3 <- p$use.tfr3
 	}
-	total.iter <- mcmc3$mcmc.list[[1]]$length - get.thinned.burnin(mcmc3$mcmc.list[[1]], post.burnin)
+	if(world.use.tfr3) {
+		post.burnin <- p$burnin3
+		total.iter <- p$nr.traj
+		post.thin <- p$thin3
+	} else {
+		l <- mcmc3$mcmc.list[[1]]$finished.iter
+		if(post.burnin > l) {
+			post.burnin <- as.integer(l/2)
+			warning('post.burnin larger than MCMC length. Adjusted to ', post.burnin)
+		}
+		total.iter <- mcmc3$mcmc.list[[1]]$length - get.thinned.burnin(mcmc3$mcmc.list[[1]], post.burnin)
+	}
 	if(is.null(iter)) iter <- total.iter
 	if(iter > total.iter) post.idx <- sample(1:total.iter, iter, replace=TRUE)
 	else {
@@ -258,102 +268,104 @@ run.tfr3.mcmc.subnat.extra <- function(countries, sim.dir=file.path(getwd(), 'ba
 		iter <- post.idx$nr.points
 		post.idx <- post.idx$index
 	}
+	sampling.idx <- 1:iter			
+	mcmc3$meta$buffer.size <- buffer.size
+	if(!is.null(seed)) set.seed(seed)
 	result <- list()
 	for (country in countries) {
 		country.obj <- get.country.object(country, mcmc2$meta)	
 		if(verbose) 
-			cat('\nStoring Phase III for', country.obj$name, '\n')	
-		this.output.dir <- file.path(output.dir, paste0('c', country.obj$code), 'phaseIII')
-		m <- mcmc3
-		m$meta$output.dir <- this.output.dir
-		m$meta$id_phase3 <- c()
-		bayesTFR.mcmc.meta <- m$meta
+			cat('\nStoring Phase III for sub-regions of ', country.obj$name, '\n')
+		m2.sim.dir <- file.path(output.dir, paste0('c', country.obj$code))
+		if(!has.tfr.mcmc(m2.sim.dir)) {
+			warnings('No Phase II MCMC for ', country.obj$name)
+			next
+		}
+		m2 <- get.tfr.mcmc(m2.sim.dir)
+		this.output.dir <- file.path(m2.sim.dir, 'phaseIII')		
+		m3 <- mcmc3
+		m3$meta$output.dir <- this.output.dir
+		m3$meta$id_phase3 <- which(m2$meta$lambda_c < m2$meta$T_end_c)
+		m3$meta$parent <- m2$meta
+		m3$meta$regions <- m2$meta$regions
+		m3$meta$nr.countries <- length(m3$meta$id_phase3)
+		bayesTFR.mcmc.meta <- m3$meta
 		if(file.exists(this.output.dir)) unlink(this.output.dir, recursive=TRUE)
 		dir.create(this.output.dir)
 		store.bayesTFR.meta.object(bayesTFR.mcmc.meta, this.output.dir)
-		for(i in 1:length(m$mcmc.list)) {
-			m$mcmc.list[[1]] <- hyperpars3.from.country.pars(mcmc3$mcmc.list[[i]], this.output.dir, country.obj, post.idx, burnin=post.burnin)
+		m3$mcmc.list <- hyperpars3.from.country.pars(mcmc3$mcmc.list, mcmc3$meta, m3$meta, world.use.tfr3, this.output.dir, country.obj, post.idx,  
+								burnin=post.burnin, thin=post.thin)
+		nr.chains <- length(m3$mcmc.list)
+		if(length(m3$meta$id_phase3) > 0) {
+			nrc <- get.nr.countries(m3$meta)
+			if (parallel  && nr.chains > 1) { # run chains in parallel
+				if(is.null(nr.nodes)) nr.nodes <- nr.chains
+				chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc3.run.chain.subnat.extra, 
+						initfun=init.nodes, mcmc.set=m3, region.idx=1:nrc, 
+						posterior.sample=sampling.idx, iter=iter, burnin=0, verbose=verbose, 
+                        verbose.iter=verbose.iter, ...)
+			} else { # run chains sequentially
+				chain.set <- list()
+				for (chain in 1:nr.chains) {
+					chain.set[[chain]] <- mcmc3.run.chain.subnat.extra(chain, m3, region.idx=1:nrc, posterior.sample=sampling.idx,
+												iter=iter, burnin=0, verbose=verbose, verbose.iter=verbose.iter)
+				}
+			}
+			names(chain.set) <- 1:nr.chains
+			m3$mcmc.list <- chain.set
 		}
-		names(m$mcmc.list) <- length(m$mcmc.list)
-		result[[as.character(country.obj$code)]] <- structure(list(meta=bayesTFR.mcmc.meta, mcmc.list=m$mcmc.list), 
+		result[[as.character(country.obj$code)]] <- structure(list(meta=bayesTFR.mcmc.meta, mcmc.list=m3$mcmc.list), 
 																			class='bayesTFR.mcmc.set')
 	}
 	invisible(result)				
 }
 
-hyperpars3.from.country.pars <- function(mcmc, output.dir, country.obj, posterior.idx, burnin) {
-	if(country.obj$index %in% mcmc$meta$id_phase3) { # country has phase 3 pars
-		traces <- data.frame(load.tfr3.parameter.traces.cs(mcmc, country.obj$code,
-									par.names=c('mu.c', 'rho.c'), burnin=burnin))[posterior.idx,]
-		colnames(traces) <- c('mu', 'rho')
-	} else {
-		traces <- data.frame(load.tfr3.parameter.traces(mcmc, 
-									par.names=c('mu', 'rho'), burnin=burnin))[posterior.idx,]
-	}
-	traces <- cbind(traces, data.frame(load.tfr3.parameter.traces(mcmc, 
-									par.names=c('sigma.eps', 'sigma.rho', 'sigma.mu'), burnin=burnin))[posterior.idx,])
-	result <- list()
-	for(par in colnames(traces)) result[[par]] <- traces[,par]
-	m <- mcmc
-	m$meta$output.dir <- output.dir
-	m$meta$id_phase3 <- c()
-	m$length <- nrow(traces)
-	m$finished.iter <- m$length
-	m$thin <- 1
-	write.list.into.file.cindep(m, result)
-	store.bayesTFR.object(m, file.path(output.dir, m$output.dir))
-	return(m)
+mcmc3.run.chain.subnat.extra <- function(chain.id, mcmc.set, region.idx, posterior.sample, 
+												iter=NULL, burnin=0, verbose=FALSE, verbose.iter=100) {
+	cat('\n\nChain nr.', chain.id, '\n')
+	if (verbose)
+		cat('************\n')
+	mcmc <- mcmc.set$mcmc.list[[chain.id]]
+	mcmc$length <- mcmc$finished.iter <- iter
+	mcmc$rho.c <- rep(mcmc$rho.ini, get.nr.countries(mcmc.set$meta))
+	mcmc$mu.c <- rep(mcmc$mu.ini, get.nr.countries(mcmc.set$meta))
+	mcmc <- tfr3.mcmc.sampling.extra(mcmc, mcmc.list=mcmc.set$mcmc.list, countries=region.idx, 
+									posterior.sample=posterior.sample, do.sample.posterior=FALSE,
+									iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter)
+	return(mcmc)
 }
 
-run.tfr3.mcmc.subnat <- function(countries, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-								iter = 30000,
-								use.world.posterior = FALSE, world.sim.dir = sim.dir,
-								post.burnin = 10000, 
-								auto.conf = list(max.loops=5, iter=30000, iter.incr=10000, nr.chains=3, thin=40, burnin=2000),
-								verbose=FALSE, ...) {
-	output.dir <- file.path(sim.dir, 'subnat')
-	if(is.null(world.sim.dir)) world.sim.dir <- sim.dir
-	world.mcmc.set <- get.tfr.mcmc(world.sim.dir)
-	meta <- list()
-	meta$sigma.mu.prior.range <- eval(formals(run.tfr3.mcmc)$sigma.mu.prior.range)
-	meta$sigma.rho.prior.range <- eval(formals(run.tfr3.mcmc)$sigma.rho.prior.range)
-	if(!use.world.posterior) {
-		meta$mu.prior.range <- c(1.515, 2.1) #min(mu)
-		meta$rho.prior.range <- c(0.365,1-.Machine$double.xmin)
-		#meta$sigma.eps.prior.range <- c(0.05, 0.146) # min, max
-		meta$sigma.eps.prior.range <- c(0.05, 0.5)
+hyperpars3.from.country.pars <- function(mcmc.list, world.meta, meta, thin.and.collapse, output.dir, country.obj, posterior.idx, burnin, thin=NULL) {
+	if(thin.and.collapse) { # thin and collapse so that it matches predictions
+		new.mcmc.list <- mcmc.list[1]
 	} else {
-		mcmc.set <- get.tfr3.mcmc(world.sim.dir)
-		if(has.tfr.prediction(sim.dir=world.sim.dir)) {
-			p <- get.tfr.prediction(sim.dir=world.sim.dir)
-			post.burnin <- p$burnin3
-		}
-		l <- mcmc.set$mcmc.list[[1]]$finished.iter
-		if(post.burnin > l) {
-			post.burnin <- as.integer(l/2)
-			warning('post.burnin larger than MCMC length. Adjusted to ', post.burnin)
-		}
-		m <- get.tfr3.mcmc(world.sim.dir)
-		ml <- get.mcmc.list(m)
-		tr <- as.vector(get.tfr3.parameter.traces(ml, 'mu', burnin=post.burnin))
-		meta$mu.prior.range <- c(min(tr), 2.1)
-		tr <- as.vector(get.tfr3.parameter.traces(ml, 'rho', burnin=post.burnin))
-		meta$rho.prior.range <- c(min(tr),1-.Machine$double.xmin)
-		tr <- as.vector(get.tfr3.parameter.traces(ml, 'sigma.eps', burnin=post.burnin))
-		meta$sigma.eps.prior.range <- c(min(tr), 0.5)
+		new.mcmc.list <- mcmc.list
 	}
-	if(verbose)
-		print(tfr3.priors(meta))
-		
-	results <- list()
-	for (country in countries) {
-		country.obj <- get.country.object(country, world.mcmc.set$meta)	
-		if(verbose) 
-			cat('\nSimulating Phase III for', country.obj$name, '\n')	
-		this.output.dir <- file.path(output.dir, paste0('c', country.obj$code))
-		results[[as.character(country.obj$code)]] <- run.tfr3.mcmc(sim.dir=this.output.dir, iter=iter, 
-						mu.prior.range=meta$mu.prior.range, rho.prior.range=meta$rho.prior.range, 
-						sigma.eps.prior.range=meta$sigma.eps.prior.range, auto.conf=auto.conf, verbose=verbose, ...)
+	#if(country.obj$code == 203) stop('')
+	for (i in 1:length(new.mcmc.list)) {
+		mc <- if(thin.and.collapse) mcmc.list else mcmc.list[[i]]
+		if(country.obj$index %in% world.meta$id_phase3) { # country has phase 3 pars
+			traces <- data.frame(get.tfr3.parameter.traces.cs(mc, country.obj,
+									par.names=c('mu.c', 'rho.c'), burnin=burnin, thin=thin))[posterior.idx,]
+			colnames(traces) <- c('mu', 'rho')
+		} else {
+			traces <- data.frame(get.tfr3.parameter.traces(mc, par.names=c('mu', 'rho'), 
+									burnin=burnin, thin=thin))[posterior.idx,]
+		}
+		traces <- cbind(traces, data.frame(get.tfr3.parameter.traces(mc, 
+									par.names=c('sigma.eps', 'sigma.rho', 'sigma.mu'), burnin=burnin, thin=thin))[posterior.idx,]) 
+		result <- list()
+		for(par in colnames(traces)) result[[par]] <- traces[,par]
+		m <- new.mcmc.list[[i]]
+		m$length <- nrow(traces)
+		m$finished.iter <- m$length
+		m$thin <- 1
+		m$meta <- meta
+		write.list.into.file.cindep(m, result)
+		store.bayesTFR.object(m, file.path(output.dir, m$output.dir))
+		new.mcmc.list[[i]] <- m
 	}
-	invisible(results)	
+	names(new.mcmc.list) <- 1:length(new.mcmc.list)
+	return(new.mcmc.list)
 }
+

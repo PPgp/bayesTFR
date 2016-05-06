@@ -111,7 +111,9 @@ export(
 	get.data.for.worldmap,
 	get.countries.table,
 	tfr.priors,
-	tfr3.priors
+	tfr3.priors,
+	run.tfr.mcmc.subnat,
+	run.tfr3.mcmc.subnat
 )
 
 # register S3 methods
