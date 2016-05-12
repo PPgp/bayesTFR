@@ -252,7 +252,7 @@ run.tfr3.mcmc.subn1d <- function(countries, sim.dir=file.path(getwd(), 'bayesTFR
 	if(world.use.tfr3) {
 		post.burnin <- p$burnin3
 		total.iter <- p$nr.traj
-		post.thin <- p$thin3
+		post.thin <- floor(get.total.iterations(mcmc3$mcmc.list, burnin=post.burnin)/total.iter)
 	} else {
 		l <- mcmc3$mcmc.list[[1]]$finished.iter
 		if(post.burnin > l) {
