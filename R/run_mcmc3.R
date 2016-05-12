@@ -234,7 +234,7 @@ mcmc3.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbo
 	return(mcmc)
 }
 
-run.tfr3.mcmc.subnat <- function(countries, sim.dir=file.path(getwd(), 'bayesTFR.output'),
+run.tfr3.mcmc.subn1d <- function(countries, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 										iter=10000, world.sim.dir = sim.dir, post.burnin = 10000, 
 										buffer.size=100, seed = NULL, parallel=FALSE, nr.nodes=NULL, 
 										verbose=FALSE, verbose.iter=100, ...) {

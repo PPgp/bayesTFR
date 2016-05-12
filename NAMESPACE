@@ -19,11 +19,8 @@ export(
 	continue.tfr.mcmc,
 	continue.tfr3.mcmc,
 	run.tfr.mcmc.extra,
-	run.tfr.mcmc.subnat,
-	run.tfr3.mcmc.subnat,
 	tfr.predict,
 	tfr.predict.extra,
-	tfr.predict.subnat,
 	tfr.median.shift,
 	tfr.median.set,
 	tfr.median.reset,
@@ -112,8 +109,10 @@ export(
 	get.countries.table,
 	tfr.priors,
 	tfr3.priors,
-	run.tfr.mcmc.subnat,
-	run.tfr3.mcmc.subnat
+	run.tfr.mcmc.subn1d,
+	run.tfr3.mcmc.subn1d,
+	tfr.predict.subn1d,
+	tfr.predict.subnat
 )
 
 # register S3 methods

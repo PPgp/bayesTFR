@@ -1055,6 +1055,7 @@ print.summary.bayesTFR.prediction <- function(x, digits = 3, ...) {
 	if(x$use.tfr3) {
 		cat('\nPhase III burnin:', x$burnin3)
 		cat('\nPhase III thin:', x$thin3)
+		cat('\n')
 	} else {
 		cat('\nParameters of AR(1):\n')
 		arpars <- c(x$mu, x$rho, x$sigmaAR1)

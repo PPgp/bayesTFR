@@ -154,9 +154,11 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								end.year=2100, start.year=NULL, output.dir = NULL, nr.traj=NULL, seed = NULL, 
-								ar.cs=TRUE, lower.bound=0.5, constant.scale=FALSE, 
-								ar.pars=c(mu = 1, phi = 0.92464, sigma = 0.04522), verbose=TRUE) {
-	wpred <- get.tfr.prediction(sim.dir)
+								lower.bound=0.5, ar.pars=c(mu = 1, phi = 0.92464, sigma = 0.04522), 
+								verbose=TRUE) {
+	# sim.dir is the world-national simulation. Set output.dir to store results somewhere else.  
+		
+	wpred <- get.tfr.prediction(sim.dir) # contains national projections
 	wmeta <- wpred$mcmc.set$meta
 	if(!is.null(seed)) set.seed(seed)
 	if (is.null(output.dir)) output.dir <- wmeta$output.dir
@@ -217,10 +219,9 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 				wi <- 1
 				for(j in (i+1):length(regtfr)) {
 					for(k in 1:100)	{
-						#scale <- c.first + if(!constant.scale) rnorm(1, 0, sd=reg.c.sd) else 0
 						scale <- ar.pars['phi'] * (c.first - ar.pars['mu']) + ar.pars['mu'] + rnorm(1, 0, sd=arsd)
 						regtfr[j] <- wtfr[widx+wi]*scale
-						if(regtfr[j] > lower.bound || constant.scale) break
+						if(regtfr[j] > lower.bound) break
 					}
 					tfr_reconstructed[j,region] <- regtfr[j]
 					wi <- wi + 1
@@ -237,7 +238,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 		  			for(i in 1:100)	{
 		  				scale <- ar.pars['phi'] * (scale.prev - ar.pars['mu']) + ar.pars['mu'] + rnorm(1, 0, sd=arsd) # AR1
 						tfr.pred[year, s] <- wtrajs[year,s] * scale 
-						if(tfr.pred[year, s] > lower.bound || constant.scale) break # lower limit for tfr is 0.5
+						if(tfr.pred[year, s] > lower.bound) break # lower limit for tfr is 0.5
 					}
 					tfr.pred[year, s] <- max(lower.bound, tfr.pred[year, s])
 					scale.prev <- scale
@@ -279,13 +280,15 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 
 
 
-tfr.predict.subnat.1dbhm <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-								countries = NULL, nr.traj = NULL, thin = NULL, burnin=2000,  use.diagnostics=FALSE,
-								use.tfr3=TRUE, burnin3=2000,
-								mu=2.1, rho=0.8859,
-								use.phase3.from = NULL, use.correlation=FALSE, cor.method=c('bayes', 'median', 'mean'),
-								cor.start.year=NULL,
-								output.dir = NULL, ..., verbose=TRUE) {
+tfr.predict.subn1d <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+								countries = NULL, nr.traj = NULL, thin = NULL, burnin=2000,  
+								use.diagnostics=FALSE, use.tfr3=TRUE, burnin3=2000,
+								mu=2.1, rho=0.8859, use.phase3.from = NULL, 
+								use.correlation=FALSE, cor.method=c('bayes', 'median', 'mean'),
+								cor.start.year=NULL, output.dir = NULL, ..., verbose=TRUE) {
+	# use.phase3.from can be set to use an external Phase III if there is no Phase III simulated for a country
+	# If rho is set to NULL, the parameter is estimated from data. Only used if use.tfr3 is FALSE.
+	
 	if(is.null(mcmc.set.list)) {
 		cdirs <- list.files(file.path(sim.dir, 'subnat'), pattern='^c[0-9]+', full.names=TRUE)
 		for(i in 1:length(cdirs)) {
@@ -296,14 +299,11 @@ tfr.predict.subnat.1dbhm <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd
 				mcmc.set.list[[country.code]] <- get.tfr.mcmc(cdirs[i])
 		}
 	}
-	if(is.null(nr.traj) && is.null(thin) && !use.diagnostics)
-		stop('Either nr.traj or thin must be given or use.diagnostics must be TRUE.')
 	result <- cor.mat <- NULL
 	outdir <- NULL
 	for(country in names(mcmc.set.list)){
 		if(use.correlation) {
 			if(verbose) cat('\nCompute correlation for country', country, '...')
-			snr.traj <- nr.traj
 			sburnin <- burnin
 			if(use.diagnostics) {
 				nrtraj.burnin <- get.burnin.nrtraj.from.diagnostics(mcmc.set.list[[country]])
@@ -324,14 +324,16 @@ tfr.predict.subnat.1dbhm <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd
 							else list(mu=mu, rho=rho)
 			}
 			cor.mat <- tfr.correlation.subnat(mcmc.set.list[[country]], method=cor.method, burnin=sburnin, 
-							burnin3=burnin3, use.external.phase3=use.external.phase3, use.phase3.from = use.phase3.from, 
+							burnin3=burnin3, use.external.phase3=use.external.phase3, 
+							use.phase3.from = use.phase3.from, 
 							ar1pars=ar1pars, cor.start.year=cor.start.year, verbose=verbose)
 			if(verbose) cat(' done.\n')
 		}
 		if(!is.null(output.dir)) {
 			outdir <- file.path(output.dir, 'subnat', paste0('c', country))
 		}		
-		result[[country]] <- tfr.predict(mcmc.set=mcmc.set.list[[country]], nr.traj=nr.traj, thin=thin, burnin=burnin, 
+		result[[country]] <- tfr.predict(mcmc.set=mcmc.set.list[[country]], 
+										nr.traj=nr.traj, thin=thin, burnin=burnin, 
 										use.tfr3=use.tfr3, burnin3=burnin3, use.diagnostics=use.diagnostics,
 										mu=mu, rho=rho, use.phase3.from = use.phase3.from,
 										use.correlation=use.correlation, 

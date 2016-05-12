@@ -332,7 +332,7 @@ init.nodes <- function() {
 	library(bayesTFR)
 }
 
-run.tfr.mcmc.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
+run.tfr.mcmc.subn1d <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								iter=30000, 
 								start.year=1950, present.year=2010, 								
 								world.sim.dir = sim.dir,
