@@ -955,10 +955,10 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
 	sPDF$UN[sPDF$ISO3=="CYN"] <- 196
 	## Kosovo -> assign to Serbia
 	sPDF$UN[sPDF$ISO3=="KOS"] <- 688
-	## W. Sahara -> no UN numerical code assigned in Natural Earth map
-	sPDF$UN[sPDF$ISO3=="SAH"] <- 732
-	## Somaliland -> assign to Somalia
-	sPDF$UN[sPDF$ISO3=="SOL"] <- 706
+	## W. Sahara -> no UN numerical code assigned in Natural Earth map (its ISO3 changed in rworlmap 1.3.6)
+	sPDF$UN[sPDF$ISO3=="ESH"] <- 732
+	## Somaliland -> assign to Somalia -> fixed in rworlmap version 1.3.6
+	#sPDF$UN[sPDF$ISO3=="SOL"] <- 706
 
 	#mtfr <- joinCountryData2Map(tfr, joinCode='UN', nameJoinColumn='un')
 	# join sPDF with tfr
@@ -973,7 +973,8 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
 		do.call(rworldmap::mapDevice, c(list(device=device), device.args))
 	mapParams<-rworldmap::mapCountryData(sPDF, nameColumnToPlot='tfr', addLegend=FALSE, mapTitle=main, ...
 	)
-	do.call(rworldmap::addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all'))
+	# Default for legendIntervals changed in rworlmap 1.3.6 from "page" to "data". Therefore need to pass it explicitely here.
+	do.call(rworldmap::addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all', legendIntervals = "page"))
 	#do.call(addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all', sigFigs=2, legendShrink=0.8, tcl=-0.3, digits=1))
 }
 
