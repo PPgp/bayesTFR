@@ -1,4 +1,8 @@
-5.0-2 (6/10/2016)
+5.0-3 (10/27/2016)
+-----
+Fixed a bug that caused run.tfr.mcmc.extra not being able to pass my.locations.file (thanks to Yicheng Li).
+
+5.0-2 (6/10/2016) [CRAN]
 -----
 Modifications in tfr.map due to changes in rworldmap 1.3-6:
 	- division of the legend colour bar put back to equal units (legendIntervals="page")
