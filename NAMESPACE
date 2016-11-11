@@ -86,6 +86,8 @@ export(
 	tfr.diagnose,
 	tfr3.diagnose,
 	tfr.get.dlcurves,
+	tfr.world.dlcurves,
+	tfr.country.dlcurves,
 	tfr.dl.coverage,
 	get.median.from.prediction,
 	bdem.parameter.traces,

@@ -2,6 +2,8 @@
 -----
 Fixed a bug that caused run.tfr.mcmc.extra not being able to pass my.locations.file (thanks to Yicheng Li).
 
+Added functions for obtaining world and country-specific DL curves (tfr.world.dlcurves, tfr.country.dlcurves).
+
 5.0-2 (6/10/2016) [CRAN]
 -----
 Modifications in tfr.map due to changes in rworldmap 1.3-6:
