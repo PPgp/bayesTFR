@@ -2,6 +2,8 @@
 \Rdversion{1.1}
 \alias{DLcurve.plot}
 \alias{DLcurve.plot.all}
+\alias{tfr.world.dlcurves}
+\alias{tfr.country.dlcurves}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Plotting  Posterior Distribution of the Double Logistic Function
