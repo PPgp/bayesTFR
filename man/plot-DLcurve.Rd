@@ -49,7 +49,7 @@ tfr.country.dlcurves(x, mcmc.list, country, burnin=NULL, \dots)
 \details{
 \code{DLcurve.plot} plots double logistic curves for the given country.  \code{DLcurve.plot.all} creates such plots for all countries and stores them in \code{output.dir}. Parameters inputting the double logistic function are either thinned traces created by the \code{\link{tfr.predict}} function (if \code{mcmc.list} is an object of class \code{\link{bayesTFR.prediction}}), or they are selected by equal spacing from the MCMC traces. In the former case, \code{burnin} is set automatically; in the latter case, \code{burnin} defaults to 0 since such object has already been \dQuote{burned}. If \code{nr.curves} is smaller than 2000, the median and probability intervals are computed on a sample of 2000 equally spaced data points, otherwise on all plotted curves.
 
-Function \code{tfr.world.dlcurves} returns the DL curves of the hierarchical distribution, conditioned on the starting point of the fertility transition in a given country (given by the \code{countryUc} argument). Function \code{tfr.country.dlcurves} returns DL curves for the given country. If \code{mcmc.list} is a prediction object, \code{burnin} should not be given, as such object has already been \dQuote{burned}.  
+Function \code{tfr.world.dlcurves} returns the DL curves of the hierarchical distribution, conditioned on the starting point of the fertility transition in a given country (given by the \code{countryUc} argument). Function \code{tfr.country.dlcurves} returns DL curves for a given country. If \code{mcmc.list} is a prediction object, \code{burnin} should not be given, as such object has already been \dQuote{burned}.  
 }
 
 \value{
