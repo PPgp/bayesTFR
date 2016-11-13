@@ -1,8 +1,8 @@
 Package: bayesTFR
-Version: 5.0-2
-Date: 2016-6-10
+Version: 5.0-3
+Date: 2016-11-10
 Title: Bayesian Fertility Projection
-Author: Hana Sevcikova (hanas@uw.edu), Leontine Alkema (alkema@nus.edu.sg), Adrian Raftery (raftery@uw.edu) with code contribution from Bailey Fosdick (bfosdick@uw.edu) and Patrick Gerland (gerland@un.org)
+Author: Hana Sevcikova (hanas@uw.edu), Leontine Alkema (alkema@nus.edu.sg), Adrian Raftery (raftery@uw.edu), Bailey Fosdick (bfosdick@uw.edu), Patrick Gerland (gerland@un.org)
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 Depends: R (>= 2.14.2)
 Imports: mvtnorm, MASS, coda, wpp2015, graphics, grDevices, stats, utils

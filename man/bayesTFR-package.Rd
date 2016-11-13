@@ -15,8 +15,8 @@ using a Bayesian hierarchical model (BHM) and the United Nations demographic tim
 \details{
 \tabular{ll}{
 Package: \tab bayesTFR\cr
-Version: \tab 5.0-2\cr
-Date: \tab 2016-6-10\cr
+Version: \tab 5.0-3\cr
+Date: \tab 2016-11-10\cr
 License: \tab GPL (>= 2)\cr
 URL: \tab \url{http://bayespop.csss.washington.edu}\cr
 }
@@ -67,7 +67,7 @@ There is a directory \code{ex-data} shipped with the package which contains resu
 }
 
 \author{
-Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Adrian Raftery <raftery@uw.edu> with code contribution from Bailey Fosdick <bfosdick@uw.edu>  and Patrick Gerland (gerland@un.org)
+Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Adrian Raftery <raftery@uw.edu>, Bailey Fosdick <bfosdick@uw.edu>, Patrick Gerland (gerland@un.org)
 
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 }

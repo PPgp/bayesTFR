@@ -15,31 +15,64 @@ stop.if.country.not.DL <- function(country.obj, meta) {
     	stop('Country ', country.obj$name, ' not estimated because no decline observed.')
 }
 
-tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, nr.curves, predictive.distr=FALSE,
-                                                               return.sigma=FALSE) {
-	# if country.code is null, get world distribution
+tfr.world.dlcurves <- function(x, mcmc.list, burnin=NULL, countryUc=NULL, ...) {
+	# Get the hierarchical DL curves with U_c for a given country (countryUc)
+	# If countryUc is not given, take the middle point of the U_c prior. 
+	if(class(mcmc.list) == 'bayesTFR.prediction') {
+		if(!is.null(burnin) && burnin != mcmc.list$burnin)
+			warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin)
+		burnin <- 0 # because burnin was already cut of the traces
+	}
+	if(is.null(burnin)) burnin <- 0
+    mcmc.list <- get.mcmc.list(mcmc.list)
+    country <- if(!is.null(countryUc)) get.country.object(countryUc, mcmc.list[[1]]$meta)$code else countryUc
+	return(tfr.get.dlcurves(x, mcmc.list, country.code=NULL, country.index=NULL, burnin=burnin, countryUc=country, ...))
+}
+
+tfr.country.dlcurves <- function(x, mcmc.list, country, burnin=NULL, ...) {
+	# Get country-specific DL curves.
+	# It's a wrapper around tfr.get.dlcurves for easier usage.
+	if(class(mcmc.list) == 'bayesTFR.prediction') {
+		if(!is.null(burnin) && burnin != mcmc.list$burnin)
+			warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin)
+		burnin <- 0 # because burnin was already cut of the traces
+	}
+	if(is.null(burnin)) burnin <- 0
+    mcmc.list <- get.mcmc.list(mcmc.list)
+    country.obj <- get.country.object(country, mcmc.list[[1]]$meta)$code
+	return(tfr.get.dlcurves(x, mcmc.list, country.code=country.obj$code, country.index=country.obj$index, burnin=burnin, ...))
+}
+
+tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin=0, nr.curves=2000, predictive.distr=FALSE,
+                                                               return.sigma=FALSE, countryUc=NULL) {
+	# If country.code is null, get world distribution. In such a case, countryUc gives the country code 
+	# that should be used for retrieving U_c. If not given, the middle point between U_c prior is taken.
 	.get.sig <- function(i, sigma, S, a, b) return(sigma + (x[i] - S)*ifelse(x[i] > S, -a, b))
 	.get.sig.distr <- function(i, traces)
 						return(apply(traces, 1, function(y) 
 							return(pmax(.get.sig(i, y['sigma0'], y['S_sd'], y['a_sd'], y['b_sd']), mcmc$meta$sigma0.min))))
     dlc <- sigma.all <- c()
     cspec <- TRUE
+    Uvalue <- NULL
     if(!is.null(country.code) && !is.element(country.index, mcmc.list[[1]]$meta$id_Tistau)) {
-    	U.var <- paste("U_c", country.code, sep = "")
-    	d.var <- paste("d_c", country.code, sep = "")
-    	Triangle_c4.var <- paste("Triangle_c4_c", country.code, sep = "")
-    	gamma.vars <- paste("gamma_", 1:3, "_c", country.code, sep = "")
+    	U.var <- paste0("U_c", country.code)
+    	d.var <- paste0("d_c", country.code)
+    	Triangle_c4.var <- paste0("Triangle_c4_c", country.code)
+    	gamma.vars <- paste0("gamma_", 1:3, "_c", country.code)
     } else {
     	U.var <- "U"
     	d.var <- "d"
     	Triangle_c4.var <- "Triangle_c4"
-    	gamma.vars <- paste("gamma_", 1:3, sep = "")
-    	alpha.vars <- paste('alpha_',1:3, sep='')
-		delta.vars <- paste('delta_',1:3, sep='')
+    	gamma.vars <- paste0("gamma_", 1:3)
+    	alpha.vars <- paste0('alpha_',1:3)
+		delta.vars <- paste0('delta_',1:3)
 		if(!is.null(country.code))
 			Uvalue = get.observed.tfr(country.index, mcmc.list[[1]]$meta, 
 										'tfr_matrix_all')[mcmc.list[[1]]$meta$tau_c[country.index]]
-		else Uvalue <- mcmc.list[[1]]$meta$U.c.low.base + (mcmc.list[[1]]$meta$U.up - mcmc.list[[1]]$meta$U.c.low.base)/2
+		else {
+			if(!is.null(countryUc)) U.var <- paste0("U_c", countryUc)
+			else Uvalue <- mcmc.list[[1]]$meta$U.c.low.base + (mcmc.list[[1]]$meta$U.up - mcmc.list[[1]]$meta$U.c.low.base)/2
+		}
     	cspec <- FALSE
     }
     # Compute the quantiles on a sample of at least 2000.   
@@ -57,6 +90,7 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, 
 			traces <- data.frame(load.tfr.parameter.traces(mcmc, 
         						burnin=th.burnin, 
 								thinning.index=thincurves.mc$index))
+			
 			ltraces <- nrow(traces)
 			for (i in 1:3){
 				gamma <- rnorm(ltraces, mean = traces[,alpha.vars[i]], 
@@ -68,8 +102,13 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin, 
 			traces <- cbind(traces, 
 						Triangle_c4=( mcmc$meta$Triangle_c4.up*exp(Triangle4_tr_s) + mcmc$meta$Triangle_c4.low)/(1+exp(Triangle4_tr_s)))
 			d_tr_s <- rnorm(ltraces, mean = traces[,'chi'], sd = traces[,'psi'])
-			traces <- cbind(traces,   d=(mcmc$meta$d.up*(exp(d_tr_s) + mcmc$meta$d.low)/(1+exp(d_tr_s))),
-									U=rep(Uvalue, ltraces))
+			if(is.null(Uvalue)) {
+				traces <- cbind(traces, data.frame(load.tfr.parameter.traces.cs(mcmc, countryUc, par.names = "U",
+        						burnin=th.burnin, 
+								thinning.index=thincurves.mc$index)))
+				
+			} else traces <- cbind(traces, U=rep(Uvalue, ltraces))
+			traces <- cbind(traces,   d=(mcmc$meta$d.up*(exp(d_tr_s) + mcmc$meta$d.low)/(1+exp(d_tr_s))))
 		}
         theta <- (traces[, U.var] - traces[, Triangle_c4.var] ) * 
             exp(traces[, gamma.vars, drop=FALSE])/apply(exp(traces[,gamma.vars, drop=FALSE]), 1, sum)
