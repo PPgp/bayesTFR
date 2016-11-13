@@ -39,7 +39,7 @@ tfr.country.dlcurves <- function(x, mcmc.list, country, burnin=NULL, ...) {
 	}
 	if(is.null(burnin)) burnin <- 0
     mcmc.list <- get.mcmc.list(mcmc.list)
-    country.obj <- get.country.object(country, mcmc.list[[1]]$meta)$code
+    country.obj <- get.country.object(country, mcmc.list[[1]]$meta)
 	return(tfr.get.dlcurves(x, mcmc.list, country.code=country.obj$code, country.index=country.obj$index, burnin=burnin, ...))
 }
 
