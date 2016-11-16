@@ -476,11 +476,15 @@ test.DLcurve <- function() {
 	test.name <- 'obtaining DL curves and DL sigma'
 	start.test(test.name)
 	tfr <- seq(1, 8, length=100)
-	cobj <- get.country.object("Nigeria", m$meta)
-	dl <- bayesTFR:::tfr.get.dlcurves(tfr, m$mcmc.list, cobj$code, cobj$index, burnin=10, nr.curves=NULL)
+	dl <- tfr.country.dlcurves(tfr, m, "Nigeria", burnin=10)
 	stopifnot(all(dim(dl)==c(50,100)))
-	dls <- bayesTFR:::tfr.get.dlcurves(tfr, m$mcmc.list, cobj$code, cobj$index, burnin=0, nr.curves=NULL, return.sigma=TRUE)
+	dls <- tfr.country.dlcurves(tfr, m, "Nigeria", burnin=0, return.sigma=TRUE)
 	stopifnot(all(dim(dls$sigma)==c(60,100)))
+	# world distribution
+	dlw <- tfr.world.dlcurves(tfr, m, countryUc="Nigeria")
+	stopifnot(all(dim(dlw)==c(60,100)))
+	# median of the world DL in the TFR range of 2-4 is smaller than the country-specific median in that range
+	stopifnot(all(apply(dlw[, tfr > 2 & tfr < 4], 2, median) < apply(dls$dl[, tfr > 2 & tfr < 4], 2, median)))
 	test.ok(test.name)
 }
 

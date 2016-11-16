@@ -480,7 +480,7 @@ get.tobacktrans.parameter.names <- function(cs=FALSE) {
 
 get.other.parameter.names <- function(cs=FALSE) {
 	pars <- if(cs) get.all.parameter.names.cs() else get.all.parameter.names()
-	is.trans <- sapply(pars, function(x) return(x[1]) > 0)
+	is.trans <- sapply(pars, function(x) return(x[1] > 0))
 	return(names(pars)[!is.trans])
 }
 
