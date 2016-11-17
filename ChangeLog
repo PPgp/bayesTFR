@@ -1,3 +1,11 @@
+5.0-4 (11/17/2016)
+-----
+Due to an issue in the CRAN check method, the following methods renamed:
+   get.nr.countries.est became to get.nrest.countries
+   get.data.imputed.for.country became get.data.for.country.imputed
+   
+Since CRAN check cannot handle http -> https redirections, the project URL modified.
+
 5.0-3 (11/16/2016)
 -----
 Fixed a bug that caused run.tfr.mcmc.extra not being able to pass my.locations.file 

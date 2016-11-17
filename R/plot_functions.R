@@ -275,7 +275,7 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 		stop('Argument "country" must be given.')
 	}
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
-	obs.data <- get.data.imputed.for.country(tfr.pred, country$index)
+	obs.data <- get.data.for.country.imputed(tfr.pred, country$index)
 	if(!is.null(tfr.pred$present.year.index)) obs.data <- obs.data[1:min(length(obs.data), tfr.pred$present.year.index.all)]
 	pred.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
 	trajectories <- get.trajectories(tfr.pred, country$code)
