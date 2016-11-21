@@ -276,7 +276,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 	tfrs <- data
 	country.codes.processed <- meta$regions$country_code
 	ncountries <- get.nr.countries(meta)
-	ncountries.est <- get.nr.countries.est(meta)
+	ncountries.est <- get.nrest.countries(meta)
 	replaced.processed <- intersect(tfrs$replaced, country.codes.processed)
 	idx.replaced.processed <- is.element(country.codes.processed, replaced.processed)
 	replaced.processed.est <- country.codes.processed[1:ncountries.est][idx.replaced.processed[1:ncountries.est]]

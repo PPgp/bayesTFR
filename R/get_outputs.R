@@ -480,7 +480,7 @@ get.tobacktrans.parameter.names <- function(cs=FALSE) {
 
 get.other.parameter.names <- function(cs=FALSE) {
 	pars <- if(cs) get.all.parameter.names.cs() else get.all.parameter.names()
-	is.trans <- sapply(pars, function(x) return(x[1]) > 0)
+	is.trans <- sapply(pars, function(x) return(x[1] > 0))
 	return(names(pars)[!is.trans])
 }
 
@@ -1197,9 +1197,9 @@ get.tfr.trajectories <- function(tfr.pred, country) {
 get.nr.countries.bayesTFR.mcmc.meta <- function(meta, ...) 
 	return (if(is.null(meta$phase) || (meta$phase==2)) meta$nr_countries else meta$nr.countries)
 
-"get.nr.countries.est" <- function(meta, ...) UseMethod("get.nr.countries.est")
+"get.nrest.countries" <- function(meta, ...) UseMethod("get.nrest.countries")
  
-get.nr.countries.est.bayesTFR.mcmc.meta <- function(meta, ...) 
+get.nrest.countries.bayesTFR.mcmc.meta <- function(meta, ...) 
 	return (if(is.null(meta$phase) || (meta$phase==2)) meta$nr_countries_estimation else meta$nr.countries)
 
 "get.data.matrix" <- function(meta, ...) UseMethod("get.data.matrix")

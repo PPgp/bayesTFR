@@ -625,7 +625,7 @@ get.ar1.countries <- function(meta) {
 }
 
 get.ar1.countries.index <- function(meta) {
-	nr.countries <- get.nr.countries.est(meta)
+	nr.countries <- get.nrest.countries(meta)
 	return(seq(1, nr.countries)[meta$lambda_c[1:nr.countries]!=meta$T_end_c[1:nr.countries]])
 }
 
@@ -888,7 +888,7 @@ do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
 												country.obj$code, adjusted=adjusted)[-1])
 		if(!is.null(pred$mcmc.set$meta$suppl.data)) {
 			# add supplemental data
-			tfr.with.suppl <- get.data.imputed.for.country(pred, country)		
+			tfr.with.suppl <- get.data.for.country.imputed(pred, country)		
 			tfr.and.pred.median <- c(tfr.with.suppl[as.integer(names(tfr.with.suppl)) < as.integer(names(tfr.and.pred.median)[1])], tfr.and.pred.median)
 		}
 		sink(con, type='message')
@@ -1192,8 +1192,8 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 get.data.imputed.bayesTFR.prediction <- function(pred, ...)
 	return(get.tfr.reconstructed(pred$tfr_matrix_reconstructed, pred$mcmc.set$meta))
 	
-"get.data.imputed.for.country" <- function(pred, country.index, ...) UseMethod("get.data.imputed.for.country")
+"get.data.for.country.imputed" <- function(pred, country.index, ...) UseMethod("get.data.for.country.imputed")
 
-get.data.imputed.for.country.bayesTFR.prediction <- function(pred, country.index, ...)
+get.data.for.country.imputed.bayesTFR.prediction <- function(pred, country.index, ...)
 	return(get.observed.with.supplemental(country.index, pred$tfr_matrix_reconstructed, pred$mcmc.set$meta$suppl.data, 'tfr_matrix_all'))
 	

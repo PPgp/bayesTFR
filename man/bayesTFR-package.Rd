@@ -16,9 +16,9 @@ using a Bayesian hierarchical model (BHM) and the United Nations demographic tim
 \tabular{ll}{
 Package: \tab bayesTFR\cr
 Version: \tab 5.0-3\cr
-Date: \tab 2016-11-10\cr
+Date: \tab 2016-11-16\cr
 License: \tab GPL (>= 2)\cr
-URL: \tab \url{http://bayespop.csss.washington.edu}\cr
+URL: \tab \url{https://bayespop.csss.washington.edu}\cr
 }
 
 The projection follows a method developed by Alkema et al. (2011) and Raftery et al (2013). It uses historical data provided by the United Nations to simulate a posterior distribution of total fertility rates for all countries in the world simultaneously. 

@@ -226,7 +226,7 @@ tfr.raftery.diag <- function(mcmc=NULL,
 				N.country.spec=N.country.dep,
 				Nmedian.country.spec=round(Nmed.cs,0),
 				thin.ind=list('0.025'=thin.ind.025, '0.975'=thin.ind.975, median=thin.ind),
-				nr.countries=c(used=length(c.index), total=get.nr.countries.est(mcmc.set$meta))))
+				nr.countries=c(used=length(c.index), total=get.nrest.countries(mcmc.set$meta))))
 }
 
 process.not.converged.parameters <- function(diag, iter) {
@@ -302,7 +302,7 @@ process.not.converged.parameters <- function(diag, iter) {
 	if(to.run <= 0) status['green'] <- TRUE
 	else status['red'] <- TRUE
 	nr.countries <- if(!is.null(raftery.diag.res.cs)) raftery.diag.res.cs$nr.countries 
-					else c(used=0, total=get.nr.countries.est(mcmc.set$meta))
+					else c(used=0, total=get.nrest.countries(mcmc.set$meta))
 	use.nr.traj <- floor(iter/thin)
 	thinned.mcmc <- NULL
 	if(keep.thin.mcmc) {

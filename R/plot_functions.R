@@ -40,8 +40,6 @@ tfr.country.dlcurves <- function(x, mcmc.list, country, burnin=NULL, ...) {
 	if(is.null(burnin)) burnin <- 0
     mcmc.list <- get.mcmc.list(mcmc.list)
     country.obj <- get.country.object(country, mcmc.list[[1]]$meta)
-    if(is.null(country.obj$code))
-	stop("Country ", country, " not	found.")
 	return(tfr.get.dlcurves(x, mcmc.list, country.code=country.obj$code, country.index=country.obj$index, burnin=burnin, ...))
 }
 
@@ -277,7 +275,7 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 		stop('Argument "country" must be given.')
 	}
 	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
-	obs.data <- get.data.imputed.for.country(tfr.pred, country$index)
+	obs.data <- get.data.for.country.imputed(tfr.pred, country$index)
 	if(!is.null(tfr.pred$present.year.index)) obs.data <- obs.data[1:min(length(obs.data), tfr.pred$present.year.index.all)]
 	pred.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
 	trajectories <- get.trajectories(tfr.pred, country$code)

@@ -1,8 +1,20 @@
-5.0-3 (10/27/2016)
+5.0-4 (11/17/2016)
 -----
-Fixed a bug that caused run.tfr.mcmc.extra not being able to pass my.locations.file (thanks to Yicheng Li).
+Due to an issue in the CRAN check method, the following methods renamed:
+   get.nr.countries.est became to get.nrest.countries
+   get.data.imputed.for.country became get.data.for.country.imputed
+   
+Since CRAN check cannot handle http -> https redirections, the project URL modified.
 
-Added functions for obtaining world and country-specific DL curves (tfr.world.dlcurves, tfr.country.dlcurves).
+5.0-3 (11/16/2016)
+-----
+Fixed a bug that caused run.tfr.mcmc.extra not being able to pass my.locations.file 
+(thanks to Yicheng Li).
+
+Added functions for obtaining world and country-specific DL curves 
+(tfr.world.dlcurves, tfr.country.dlcurves).
+
+Fixed typo in return of get.other.parameter.names (thanks to Duncan Murdoch).
 
 5.0-2 (6/10/2016) [CRAN]
 -----
