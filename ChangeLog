@@ -1,3 +1,7 @@
+5.0-5
+-----
+In tfr.country.dlcurves check for country existence.
+
 5.0-4 (11/17/2016)
 -----
 Due to an issue in the CRAN check method, the following methods renamed:
