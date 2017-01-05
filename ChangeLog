@@ -1,8 +1,11 @@
-5.0-5
+5.0-5 (1/5/2017)
 -----
+Made the minimum threshold for TFR changeable via an argument 
+(min.tfr in tfr.predict(), default is 0.5).
+
 In tfr.country.dlcurves check for country existence.
 
-5.0-4 (11/17/2016)
+5.0-4 (11/17/2016) [CRAN]
 -----
 Due to an issue in the CRAN check method, the following methods renamed:
    get.nr.countries.est became to get.nrest.countries
