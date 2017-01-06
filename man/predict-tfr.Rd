@@ -15,7 +15,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
     replace.output = FALSE, start.year = NULL, 
     nr.traj = NULL, thin = NULL, burnin = 2000,
     use.diagnostics = FALSE, use.tfr3 = TRUE, burnin3 = 10000,
-    mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016,
+    mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016, min.tfr = 0.5,
     use.correlation = FALSE, save.as.ascii = 1000, output.dir = NULL, 
     low.memory = TRUE, seed = NULL, verbose = TRUE, \dots)
 }
@@ -38,6 +38,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
   \item{mu}{Long-term mean \eqn{\mu}{mu} in the AR(1) projection model. Only used if \code{use.tfr3} is \code{FALSE}.}
   \item{rho}{Autoregressive parameter \eqn{\rho}{rho} in AR(1) projection model. If it is \code{NULL} it is estimated from the data. Only used if \code{use.tfr3} is \code{FALSE}.}
   \item{sigmaAR1}{Standard deviation \eqn{s} of AR(1) distortion terms in short-term projections. If it is \code{NULL} it is estimated from the data. It can be a single value or a vector giving the standard deviations for single projections. If the vector is shorter than the number of projections simulated via the AR(1) process, the last value is repeated for the remaining projections. In case of a single value (default), the standard deviation is kept constant over all AR(1) projections. Only used if \code{use.tfr3} is \code{FALSE}.}
+  \item{min.tfr}{Smallest TFR value allowed.}
   \item{use.correlation}{Logical. If \code{TRUE} the model errors are sampled jointly for all countries (Fosdick and Raftery, 2014).}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible projections.}
   \item{verbose}{Logical switching log messages on and off.}
@@ -66,6 +67,7 @@ The resulting prediction object is saved into \file{\{output.dir\}/predictions}.
 	\item{burnin, thin, burnin3, thin3}{Burnin and thin used for this prediction for Phase II and Phase III, respectively.}
 	\item{end.year}{The end year of this prediction.}
 	\item{mu, rho, sigma_t, sigmaAR1}{Parameters of the AR(1) process. \code{sigma_t} is a vector of actual values of the standard deviation \eqn{s} used for each projection.}
+	\item{min.tfr}{Input value of minimum threshold for TFR.}
 	\item{na.index}{Index of trajectories for which at least one country got \code{NA} values.}
 	\item{mcmc.set}{Object of class \code{\link{bayesTFR.mcmc.set}} used for this prediction, i.e. the burned, thinned, and collapsed MCMC chain.}
 	}

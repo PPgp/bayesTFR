@@ -5,7 +5,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						use.diagnostics=FALSE,
 						use.tfr3=TRUE, burnin3=10000,
 						mu=2.1, rho=0.8859, sigmaAR1=0.1016,
-						use.correlation=FALSE,
+						min.tfr=0.5, use.correlation=FALSE,
 						save.as.ascii=1000, output.dir = NULL,
 						low.memory=TRUE,
 						seed=NULL, verbose=TRUE, ...) {
@@ -62,7 +62,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 	}
 	invisible(make.tfr.prediction(mcmc.set, end.year=end.year, replace.output=replace.output,  
 					start.year=start.year, nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, burnin3=burnin3,
-					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1, use.correlation=use.correlation,
+					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1, min.tfr=min.tfr, use.correlation=use.correlation,
 					save.as.ascii=save.as.ascii,
 					output.dir=output.dir, verbose=verbose, ...))			
 }
@@ -101,7 +101,7 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	new.pred <- make.tfr.prediction(mcmc.set, start.year=pred$start.year, end.year=pred$end.year, replace.output=FALSE,
 									nr.traj=pred$nr.traj, burnin=pred$burnin, use.tfr3=use.tfr3, burnin3=pred$burnin3,
 									use.correlation=pred$use.correlation, mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, 
-									countries=countries.idx, save.as.ascii=0, output.dir=prediction.dir,
+									min.tfr=pred$min.tfr, countries=countries.idx, save.as.ascii=0, output.dir=prediction.dir,
 									force.creating.thinned.mcmc=TRUE,
 									write.summary.files=FALSE, write.trajectories=TRUE, verbose=verbose)
 									
@@ -142,7 +142,7 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replace.output=FALSE,
 								nr.traj = NULL, burnin=0, thin = NULL, 
 								use.tfr3=TRUE, mcmc3.set=NULL, burnin3=0,
-								mu=2.1, rho=0.9057, sigmaAR1 = 0.0922, 
+								mu=2.1, rho=0.9057, sigmaAR1 = 0.0922, min.tfr=0.5,
 								use.correlation=FALSE, countries = NULL,
 								adj.factor1=NA, adj.factor2=0, forceAR1=FALSE,
 								boost.first.period.in.phase2=TRUE,
@@ -161,7 +161,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	l.sigmaAR1 <- length(sigmaAR1)
 	sigma.end <- rep(sigmaAR1[l.sigmaAR1], nr_project + meta$T_end-l.sigmaAR1)
 	sigmas_all <- c(sigmaAR1, sigma.end) 
-	
+	if(is.null(min.tfr)) min.tfr <- 0.5
 	sigma0_s <- a_sd_s <- b_sd_s <- f_sd_s <- const_sd_s <- NULL
 	burn <- if(is.mcmc.set.thinned) 0 else burnin
 	total.iter <- get.total.iterations(mcmc.set$mcmc.list, burn)
@@ -502,16 +502,16 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 							passed <- FALSE
 		       				for(i in 1:50) {
 		       					err <- rnorm(1, eps.mean, sigma_eps)
-		                    	if( (new.tfr + err) > 0.5 && 
+		                    	if( (new.tfr + err) > min.tfr && 
 		                    		(new.tfr + err) <= cs.par.values.list[[country]][s,cs.var.names[[country]]$U] ) {passed <- TRUE; break}
 		                	}
-		                	if(!passed) err <- min(max(err, 0.5-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
+		                	if(!passed) err <- min(max(err, min.tfr-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
 		                } else { # joint predictions
 		                	err <- sigma_eps*epsilons[country]
-		                	if(err < 0.5 - new.tfr || err > cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr) {# TFR outside of bounds
+		                	if(err < min.tfr - new.tfr || err > cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr) {# TFR outside of bounds
 		                		stop.country.loop <- FALSE
 		                		if(country.loop < country.loop.max) break
-		                		else err <- min(max(err, 0.5-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
+		                		else err <- min(max(err, min.tfr-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
 		                	}
 		                }
 					} else { # Phase III
@@ -521,15 +521,15 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 							passed <- FALSE
 	 						for(i in 1:50){
 	 							err <- rnorm(1, 0, sigma.epsAR1[[country]][year-1])
-	 							if (new.tfr + err > 0.5 )   {passed <- TRUE; break}
+	 							if (new.tfr + err > min.tfr )   {passed <- TRUE; break}
 							}
-							if(!passed) err <- 0.5 - new.tfr
+							if(!passed) err <- min.tfr - new.tfr
 						} else { # joint predictions
 							err <- sigma.epsAR1[[country]][year-1]*epsilons[country]
-							if(err < 0.5 - new.tfr) {
+							if(err < min.tfr - new.tfr) {
 		                		stop.country.loop <- FALSE
 		                		if(country.loop < country.loop.max) break
-		                		else err <- 0.5 - new.tfr
+		                		else err <- min.tfr - new.tfr
 							}
 						}		
 					}
@@ -544,8 +544,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	# Impute missing values if any and compute quantiles
 	for (icountry in 1:nr_countries_real){
 		country <- prediction.countries[icountry]
-		# Ignore trajectories that go below 0.5 
-		isnotNA <- apply(1-(all.f_ps[icountry,,] < 0.5), 2, prod) 
+		# Ignore trajectories that go below min.tfr (0.5) 
+		isnotNA <- apply(1-(all.f_ps[icountry,,] < min.tfr), 2, prod) 
 		isnotNA <- ifelse(is.na(isnotNA),0,isnotNA)
 		all.f_ps[icountry,,isnotNA==0] <- NA
 		# extract the future trajectories (including the present period)
@@ -581,7 +581,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				nr.projections=nr_project,
 				burnin=burnin, thin=thin,
 				end.year=end.year, use.tfr3=has.phase3, burnin3=burnin3, thin3=thin3,
-				mu=mu, rho=rho,  sigma_t = sigmas_all, sigmaAR1 = sigmaAR1,
+				mu=mu, rho=rho,  sigma_t = sigmas_all, sigmaAR1 = sigmaAR1, min.tfr=min.tfr,
 				use.correlation=use.correlation, start.year=start.year,
 				present.year.index=present.year.index,
 				present.year.index.all=ltfr_matrix.all),
@@ -1136,7 +1136,7 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 	new.pred <- make.tfr.prediction(mcmc.set, start.year=pred$start.year, end.year=pred$end.year, replace.output=FALSE,
 									nr.traj=NULL, burnin=0, 
 									use.tfr3=pred$use.tfr3, mcmc3.set=m3.set, burnin3=pred$burnin3,
-									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, 
+									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, min.tfr=pred$min.tfr,
 									countries=countries.idx, adj.factor1=factor1, adj.factor2=factor2,
 									forceAR1=forceAR1, save.as.ascii=0, output.dir=NULL,
 									write.summary.files=FALSE, is.mcmc.set.thinned=TRUE, 
