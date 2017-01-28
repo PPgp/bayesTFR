@@ -280,11 +280,11 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 }
 
 
-.extra.matrix.regions <- function(data, countries, meta, package="bayesTFR", verbose=FALSE) {
+.extra.matrix.regions <- function(data, countries, meta, package="bayesTFR", my.locations.file=NULL, verbose=FALSE) {
 	tfrs <- data
 	country.codes.processed <- meta$regions$country_code
 	ncountries <- get.nr.countries(meta)
-	ncountries.est <- get.nr.countries.est(meta)
+	ncountries.est <- get.nrest.countries(meta)
 	replaced.processed <- intersect(tfrs$replaced, country.codes.processed)
 	idx.replaced.processed <- is.element(country.codes.processed, replaced.processed)
 	replaced.processed.est <- country.codes.processed[1:ncountries.est][idx.replaced.processed[1:ncountries.est]]
@@ -307,7 +307,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 					   setdiff(countries, countries.processed.est))
 	if(length(include.codes) > 0) {
 		include <- is.element(tfrs$data$country_code, include.codes)
-		locations <- read.UNlocations(tfrs$data, wpp.year=meta$wpp.year, package=package, verbose=verbose)
+		locations <- read.UNlocations(tfrs$data, wpp.year=meta$wpp.year, package=package, my.locations.file=my.locations.file, verbose=verbose)
 		TFRmatrix.regions <- get.TFRmatrix.and.regions(tfrs$data[include,], locations$loc_data, 
 												start.year=meta$start.year, 
 												present.year=meta$present.year,
@@ -327,7 +327,7 @@ set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, my.locations.f
 	un.object <- read.UNtfr(wpp.year=meta$wpp.year, my.tfr.file=my.tfr.file, 
 							present.year=meta$present.year, verbose=verbose)
 	data <- un.object$data.object
-	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, verbose=verbose)
+	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, my.locations.file=my.locations.file, verbose=verbose)
 	if(!is.null(extra.wpp)) {
 		locations <- read.UNlocations(data$data, wpp.year=meta$wpp.year, my.locations.file=my.locations.file, verbose=verbose)
 		suppl.wpp <- .get.suppl.matrix.and.regions(un.object, extra.wpp, locations$loc_data, 

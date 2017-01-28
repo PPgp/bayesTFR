@@ -54,7 +54,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 		if(is.null(get(varname)))
 			assign(varname, get.init.values(get(paste(varname, '.range', sep=''))))
 	}
-	c.index <- 1: (if(use.extra.countries) get.nr.countries(mc$meta) else get.nr.countries.est(mc$meta))
+	c.index <- 1: (if(use.extra.countries) get.nr.countries(mc$meta) else get.nrest.countries(mc$meta))
 	bayesTFR.mcmc.meta <- structure(list(nr.chains=nr.chains,
 								my.tfr.file=my.tfr.file, output.dir=output.dir,
 								phase=3, id_phase3 = which(mc$meta$lambda_c[c.index] < mc$meta$T_end_c[c.index]),

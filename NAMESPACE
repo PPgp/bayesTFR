@@ -86,16 +86,18 @@ export(
 	tfr.diagnose,
 	tfr3.diagnose,
 	tfr.get.dlcurves,
+	tfr.world.dlcurves,
+	tfr.country.dlcurves,
 	tfr.dl.coverage,
 	get.median.from.prediction,
 	bdem.parameter.traces,
 	get.traj.ascii.header,
 	get.nr.countries,
-	get.nr.countries.est,
+	get.nrest.countries,
 	get.data.matrix,
 	get.countries.index,
 	get.data.imputed,
-	get.data.imputed.for.country,
+	get.data.for.country.imputed,
 	get.projection.summary.header,
 	get.UN.variant.names,
 	get.friendly.variant.names,
@@ -142,11 +144,11 @@ S3method(print, tfr3.priors)
 
 S3method(get.traj.ascii.header, bayesTFR.mcmc.meta)
 S3method(get.nr.countries, bayesTFR.mcmc.meta)
-S3method(get.nr.countries.est, bayesTFR.mcmc.meta)
+S3method(get.nrest.countries, bayesTFR.mcmc.meta)
 S3method(get.data.matrix, bayesTFR.mcmc.meta)
 S3method(get.countries.index, bayesTFR.mcmc.meta)
 S3method(get.data.imputed, bayesTFR.prediction)
-S3method(get.data.imputed.for.country, bayesTFR.prediction)
+S3method(get.data.for.country.imputed, bayesTFR.prediction)
 S3method(get.projection.summary.header, bayesTFR.prediction)
 S3method(get.UN.variant.names, bayesTFR.prediction)
 S3method(get.friendly.variant.names, bayesTFR.prediction)

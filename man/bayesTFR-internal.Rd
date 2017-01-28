@@ -29,7 +29,7 @@
 \alias{get.data.for.worldmap}
 \alias{get.data.for.worldmap.bayesTFR.prediction}
 \alias{get.data.imputed}
-\alias{get.data.imputed.for.country}
+\alias{get.data.for.country.imputed}
 \alias{get.data.matrix}
 \alias{get.friendly.variant.names}
 \alias{get.full.par.names}
@@ -46,7 +46,7 @@
 \alias{get.meta.only}
 \alias{get.newTFRcolnames}
 \alias{get.nr.countries}
-\alias{get.nr.countries.est}
+\alias{get.nrest.countries}
 \alias{get.observed.time.matrix.and.regions}
 \alias{get.other.parameter.names} 
 \alias{get.other.parameter.names.cs}

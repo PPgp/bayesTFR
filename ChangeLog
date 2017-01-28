@@ -1,4 +1,36 @@
-5.0-1 (2/12/2016)
+5.0-5 (1/5/2017)
+-----
+Made the minimum threshold for TFR changeable via an argument 
+(min.tfr in tfr.predict(), default is 0.5).
+
+In tfr.country.dlcurves check for country existence.
+
+5.0-4 (11/17/2016) [CRAN]
+-----
+Due to an issue in the CRAN check method, the following methods renamed:
+   get.nr.countries.est became to get.nrest.countries
+   get.data.imputed.for.country became get.data.for.country.imputed
+   
+Since CRAN check cannot handle http -> https redirections, the project URL modified.
+
+5.0-3 (11/16/2016)
+-----
+Fixed a bug that caused run.tfr.mcmc.extra not being able to pass my.locations.file 
+(thanks to Yicheng Li).
+
+Added functions for obtaining world and country-specific DL curves 
+(tfr.world.dlcurves, tfr.country.dlcurves).
+
+Fixed typo in return of get.other.parameter.names (thanks to Duncan Murdoch).
+
+5.0-2 (6/10/2016) [CRAN]
+-----
+Modifications in tfr.map due to changes in rworldmap 1.3-6:
+	- division of the legend colour bar put back to equal units (legendIntervals="page")
+	- reflected change in ISO3 code for Western Sahara
+	- no need to fix Somaliland anymore
+
+5.0-1 (2/12/2016) [CRAN]
 -----
 Fixed bug in writing file projection_summary_parameters.csv 
 (column TF_time_start_decline was wrongly set to NA if supplemental values were used).
