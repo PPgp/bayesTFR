@@ -219,8 +219,8 @@ mcmc.meta.ini <- function(...,
 }
 	
 	
-do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_gammas = NULL, 
-						average.gammas.cov=FALSE, use.default.gammas.cov=FALSE, burnin=200, verbose=FALSE) {
+do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
+						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE) {
 	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
 	tfr_matrix_observed <- tfr.with.regions$tfr_matrix
@@ -248,16 +248,12 @@ do.meta.ini <- function(meta, tfr.with.regions, my.tfr.file=NULL, proposal_cov_g
     	tfr_min_c <- apply(updated.tfr.matrix, 2, min, na.rm = TRUE)
     lower_U_c <- ifelse(tfr_min_c > meta$U.c.low.base, tfr_min_c, meta$U.c.low.base)
 	prop_cov_gammas <- array(NA, c(nr_countries,3,3))
-	if(average.gammas.cov) {
-		cov.to.average <- NULL
-		if(!use.default.gammas.cov) {
+	if(use.average.gammas.cov) {
 			cov.to.average <- get.cov.gammas(sim.dir=meta$output.dir, burnin=burnin)$values
 			if (all(is.na(cov.to.average))) {
 				warning('Covariance of gamma is NA for all countries. Average from default covariance will be used.', 
 						immediate.=TRUE)
 			}
-		}
-		if(use.default.gammas.cov || is.null(cov.to.average)) {
 			e <- new.env()
 			data('proposal_cov_gammas_cii', envir=e)
 			cov.to.average <- e$proposal_cov_gammas_cii$values
@@ -445,8 +441,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 		has.mock.suppl <- TRUE
 	}
 	Emeta <- do.meta.ini(meta, tfr.with.regions=tfr.with.regions, 
-								my.tfr.file=my.tfr.file, 
-								average.gammas.cov=TRUE, burnin=burnin,
+								use.average.gammas.cov=TRUE, burnin=burnin,
 						 		verbose=verbose)
 			 		
 	# join the new meta with the existing one
@@ -566,3 +561,19 @@ mcmc.ini.extra <- function(mcmc, countries, index.replace=NULL) {
 	return(mcmc)
 }
 
+mcmc.meta.ini.subnat <- function(meta, country,
+                                 start.year=1950, present.year=2010, 
+                                 my.tfr.file = NULL, buffer.size=1000,
+                                 verbose=FALSE
+                                ) {
+  # Initialize meta parameters - those that are common to all chains.
+  meta$start.year <- start.year
+  meta$present.year <- present.year
+  meta$buffer.size <- buffer.size
+  tfr.with.regions <- set.wpp.subnat(country=country, start.year=start.year, present.year=present.year,  
+                                     my.tfr.file = my.tfr.file, verbose=verbose)
+  this.meta <- do.meta.ini(meta, tfr.with.regions, verbose=verbose)
+  for (item in names(meta))
+    if(!(item %in% names(this.meta))) this.meta[[item]] <- meta[[item]]
+  return(structure(this.meta, class='bayesTFR.mcmc.meta'))
+}

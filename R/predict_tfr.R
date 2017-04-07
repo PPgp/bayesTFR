@@ -3,10 +3,9 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						replace.output=FALSE,
 						start.year=NULL, nr.traj = NULL, thin = NULL, burnin=2000, 
 						use.diagnostics=FALSE,
-						use.tfr3=TRUE, mcmc3.set=NULL, burnin3=10000,
+						use.tfr3=TRUE, burnin3=10000,
 						mu=2.1, rho=0.8859, sigmaAR1=0.1016,
-						use.phase3.from = NULL, min.tfr=0.5,
-						use.correlation=FALSE,
+						min.tfr=0.5, use.correlation=FALSE,
 						save.as.ascii=1000, output.dir = NULL,
 						low.memory=TRUE,
 						seed=NULL, verbose=TRUE, ...) {
@@ -14,16 +13,12 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 		if (class(mcmc.set) != 'bayesTFR.mcmc.set') {
 			stop('Wrong type of mcmc.set. Must be of type bayesTFR.mcmc.set.')
 			}
-		mcmc.set.passed <- TRUE
 	} else {		
 		mcmc.set <- get.tfr.mcmc(sim.dir, low.memory=low.memory, verbose=verbose)
-		mcmc.set.passed <- FALSE
 	}
 	has.phase3 <- FALSE
 	if(use.tfr3) {
-		has.phase3 <- !is.null(mcmc3.set)
-		if(!has.phase3) has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
-		if(!has.phase3 && !is.null(use.phase3.from) && has.tfr3.mcmc(use.phase3.from)) has.phase3 <- TRUE
+	  has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
 		if(!has.phase3)
 			warning('No Phase III MCMCs available. Switching to constant AR(1) parameters.', immediate. = TRUE)
 	}
@@ -51,10 +46,8 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 			cat('\nUsing convergence settings: nr.traj=', nr.traj, ', burnin=', burnin, '\n')
 	}
 	invisible(make.tfr.prediction(mcmc.set, end.year=end.year, replace.output=replace.output,  
-					start.year=start.year, nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, 
-					mcmc3.set=mcmc3.set, burnin3=burnin3,
-					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1, use.phase3.from=use.phase3.from, 
-					min.tfr=min.tfr, use.correlation=use.correlation,
+					start.year=start.year, nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, burnin3=burnin3,
+					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1, min.tfr=min.tfr, use.correlation=use.correlation,
 					save.as.ascii=save.as.ascii,
 					output.dir=output.dir, verbose=verbose, ...))			
 }
@@ -279,91 +272,20 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
 }
 
 
-
-tfr.predict.subn1d <- function(mcmc.set.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-								countries = NULL, nr.traj = NULL, thin = NULL, burnin=2000,  
-								use.diagnostics=FALSE, use.tfr3=TRUE, burnin3=2000,
-								mu=2.1, rho=0.8859, use.phase3.from = NULL, 
-								use.correlation=FALSE, cor.method=c('bayes', 'median', 'mean'),
-								cor.start.year=NULL, output.dir = NULL, ..., verbose=TRUE) {
-	# use.phase3.from can be set to use an external Phase III if there is no Phase III simulated for a country
-	# If rho is set to NULL, the parameter is estimated from data. Only used if use.tfr3 is FALSE.
-	
-	if(is.null(mcmc.set.list)) {
-		cdirs <- list.files(file.path(sim.dir, 'subnat'), pattern='^c[0-9]+', full.names=TRUE)
-		for(i in 1:length(cdirs)) {
-			cdir.short <- strsplit(cdirs[i], split=.Platform$file.sep)
-			cdir.short <- cdir.short[[1]][length(cdir.short[[1]])]
-			country.code <- substring(cdir.short, 2)
-			if(is.null(countries) || is.element(country.code, countries))
-				mcmc.set.list[[country.code]] <- get.tfr.mcmc(cdirs[i])
-		}
-	}
-	result <- cor.mat <- NULL
-	outdir <- NULL
-	for(country in names(mcmc.set.list)){
-		if(use.correlation) {
-			if(verbose) cat('\nCompute correlation for country', country, '...')
-			sburnin <- burnin
-			if(use.diagnostics) {
-				nrtraj.burnin <- get.burnin.nrtraj.from.diagnostics(mcmc.set.list[[country]])
-				sburnin <- nrtraj.burnin[2]
-			}
-			has.phase3 <- FALSE
-			ar1pars <- NULL
-			use.external.phase3 <- FALSE
-			if(use.tfr3) {
-				has.phase3 <- has.tfr3.mcmc(mcmc.set.list[[country]]$meta$output.dir)
-				if(!has.phase3 && !is.null(use.phase3.from) && has.tfr3.mcmc(use.phase3.from)) {
-					has.phase3 <- TRUE
-					use.external.phase3 <- TRUE
-				}
-			}
-			if(!has.phase3) {
-				ar1pars <- if (is.null(rho) || is.na(rho)) get.ar1.parameters(mu = mu, mcmc.set.list[[country]]$meta)
-							else list(mu=mu, rho=rho)
-			}
-			cor.mat <- tfr.correlation.subnat(mcmc.set.list[[country]], method=cor.method, burnin=sburnin, 
-							burnin3=burnin3, use.external.phase3=use.external.phase3, 
-							use.phase3.from = use.phase3.from, 
-							ar1pars=ar1pars, cor.start.year=cor.start.year, verbose=verbose)
-			if(verbose) cat(' done.\n')
-		}
-		if(!is.null(output.dir)) {
-			outdir <- file.path(output.dir, 'subnat', paste0('c', country))
-		}		
-		result[[country]] <- tfr.predict(mcmc.set=mcmc.set.list[[country]], 
-										nr.traj=nr.traj, thin=thin, burnin=burnin, 
-										use.tfr3=use.tfr3, burnin3=burnin3, use.diagnostics=use.diagnostics,
-										mu=mu, rho=rho, use.phase3.from = use.phase3.from,
-										use.correlation=use.correlation, 
-										correlation.matrices=cor.mat, output.dir=outdir, verbose=verbose, ...)
-	}
-	return(result)
-}
-
-
 make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replace.output=FALSE,
 								nr.traj = NULL, burnin=0, thin = NULL, 
 								use.tfr3=TRUE, mcmc3.set=NULL, burnin3=0,
 								mu=2.1, rho=0.9057, sigmaAR1 = 0.0922, min.tfr=0.5,
-								use.correlation=FALSE, correlation.matrices=NULL,
-								countries = NULL,
+								use.correlation=FALSE, countries = NULL,
 								adj.factor1=NA, adj.factor2=0, forceAR1=FALSE,
-								use.phase3.from = NULL,
 								boost.first.period.in.phase2=TRUE,
 							    save.as.ascii=1000, output.dir = NULL, write.summary.files=TRUE, 
 							    is.mcmc.set.thinned=FALSE, force.creating.thinned.mcmc=FALSE,
-							    write.trajectories=TRUE, data.meta=NULL, data3.meta=NULL,
+							    write.trajectories=TRUE, 
 							    verbose=verbose){
 	# if 'countries' is given, it is an index
 	# sigmaAR1 can be a vector. The last element will be repeated up to nr.projections
-
-	meta <- if(is.null(data.meta)) mcmc.set$meta else data.meta
-	#meta <- mcmc.set$meta
-	#mc.meta <- if(!is.null(meta$use.mcmc.meta)) meta$use.mcmc.meta else meta
-	mc.meta <- mcmc.set$meta
-
+	meta <- mcmc.set$meta
 	present.year <- if(is.null(start.year)) meta$present.year else start.year - 5
 	nr_project <- length(seq(present.year+5, end.year, by=5))
 	suppl.T <- if(!is.null(meta$suppl.data$regions)) meta$suppl.data$T_end else 0
@@ -435,6 +357,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	ltfr_matrix <- present.year.index
 	ltfr_matrix.all <- present.year.index + suppl.T
 	
+	#quantiles.to.keep <- c(0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975)
 	#keep these defaults for checking the out-of-sample projections
     quantiles.to.keep <- c(0,0.025,0.05,0.1,0.2,0.25,0.3,0.4,0.5,0.6,0.7,0.75,0.8,0.9,0.95,0.975,1)
 	PIs_cqp <- array(NA, c(nr_countries, length(quantiles.to.keep), nr_project+1))
@@ -460,18 +383,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	has.phase3 <- use.tfr3
 	mu.c.mean <- rho.c.mean <- meta3 <- mc.meta3.pointer <- mcmc3.list.pointer <- NULL
 	if(has.phase3) {
-		mcmc3 <- NULL
-		if(is.null(mcmc3.set)) {
-			if(has.tfr3.mcmc(mc.meta$output.dir))
-				mcmc3 <- get.tfr3.mcmc(mc.meta$output.dir) 
-		} else mcmc3 <- mcmc3.set
-		if((is.null(mcmc3) || length(mcmc3$meta$id_phase3)<=0) && !is.null(use.phase3.from)) {
-			mcmc3 <- get.tfr3.mcmc(use.phase3.from) # use external phase3 parameters
-			mcmc3$meta$id_phase3 <- c()             # only hierarchical pars. to be used
-			if (has.tfr.prediction(sim.dir=use.phase3.from)) 
-				burnin3 <- get.tfr.prediction(use.phase3.from)$burnin3
-			if (verbose) cat('Using Phase III model (with burnin=', burnin3, ') from\n', use.phase3.from, '\n')
-		}					
+	  mcmc3 <- if(is.null(mcmc3.set)) get.tfr3.mcmc(meta$output.dir) else mcmc3.set
 		total.iter <- get.stored.mcmc.length(mcmc3$mcmc.list, burnin3)
 		thinning.index <- unique(round(seq(1, total.iter, length=nr_simu)))
 		if(length(thinning.index) < nr_simu) 
@@ -485,7 +397,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		rho <- mean(m3.par.values[,'rho'])
 		sigmaAR1 <- mean(m3.par.values[,'sigma.eps'])
 		mu.c.mean <- rho.c.mean <- rep(NA, nr_countries)
-		meta3 <- if(is.null(data3.meta)) mcmc3$meta else data3.meta
+		meta3 <- mcmc3$meta
 		mc.meta3.pointer <- newPointer(mcmc3$meta)
 		mcmc3.list.pointer <- newPointer(mcmc3$mcmc.list)
 	}
@@ -495,28 +407,19 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	if (verbose) cat('Load country-specific parameters.\n')
 	cs.par.values.list <- cs.var.names <- theta_si.list <- country.objects <- all.tfr.list <- m3.par.values.cs.list <- list()
 	nmissing <- list()
-	mc.meta.pointer <- newPointer(mc.meta)
 	meta.pointer <- newPointer(meta)
 	mcmc.list.pointer <- newPointer(mcmc.set$mcmc.list)
 	load.mcmc.list.pointer <- newPointer(load.mcmc.set$mcmc.list)
 	load.meta.pointer <- newPointer(load.mcmc.set$meta)
 	
 	# country loop for preparing data for projections
-	if(!is.null(meta$use.mcmc.from)) {
-		country.obj <- get.country.object(meta$use.mcmc.from, mc.meta)
-		dprep <- .prepare.country.spec.pars.for.predictions(country.obj$index, country.obj, mc.meta.pointer, mcmc.list.pointer, 
-														mc.meta.pointer, load.mcmc.list.pointer, 
-														nr_simu, burnin, alpha.vars, delta.vars, has.phase3, 
-														mc.meta3.pointer, mcmc3.list.pointer, burnin3, thinning.index, cs.par.values_hier)
-	}
 	for (country in prediction.countries){
 		country.obj <- get.country.object(country, meta, index=TRUE)
-		if(is.null(meta$use.mcmc.from)) {
-			dprep <- .prepare.country.spec.pars.for.predictions(country, country.obj, meta.pointer, mcmc.list.pointer, 
+		dprep <- .prepare.country.spec.pars.for.predictions(country, country.obj, meta.pointer, mcmc.list.pointer, 
 														load.meta.pointer, load.mcmc.list.pointer, nr_simu, burnin,
 														alpha.vars, delta.vars, has.phase3, mc.meta3.pointer, mcmc3.list.pointer, burnin3, thinning.index,
 														cs.par.values_hier)
-		}
+
 		cs.var.names[[country]] <- list(U=dprep$U.var, Triangle_c4=dprep$Triangle_c4.var)
 		cs.par.values.list[[country]] <- dprep$cs.par.values[,c(dprep$Triangle_c4.var, dprep$U.var)]
 		theta_si.list[[country]] <- dprep$theta_si
@@ -530,7 +433,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		max.nr.project <- max(max.nr.project, nr_project + nmissing[[country]])
 		
 		# load phase3 country-specific parameter traces
-		if(has.phase3 && is.element(country, meta3$id_phase3)) {
+		if(has.phase3 && is.element(country, meta3$meta$id_phase3)) {
 			m3.par.values.cs.list[[country]] <- dprep$m3.par.values.cs
 			mu.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,1])
 			rho.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,2])
@@ -539,9 +442,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	
 	if(use.correlation) {
 		# prepare AR1 eps for joint sampling
-		eps.correlation <- correlation.matrices
-		if(is.null(eps.correlation))	
-			eps.correlation <- tfr.correlation(meta) 
+		eps.correlation <- tfr.correlation(meta) 
 		cor.mat.na <- which(apply(is.na(eps.correlation$low), 2, sum) > dim(eps.correlation$low)[1]-2)
 		nr.countries.no.na <- nr_countries - length(cor.mat.na)
 		epsilons <- rep(NA, nr_countries)
@@ -605,7 +506,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			mu.c[] <- m3.par.values[s,'mu']
 			rho.c[] <- m3.par.values[s,'rho']
 			sigma.epsAR1 <- rep(list(rep(m3.par.values[s,'sigma.eps'], max.nr.project)), nr_countries)
-			for (country in prediction.countries[prediction.countries %in% meta3$id_phase3]){	
+			for (country in prediction.countries[prediction.countries %in% meta3$meta$id_phase3]){	
 					mu.c[country] <- m3.par.values.cs.list[[country]][s,1]
 					rho.c[country] <- m3.par.values.cs.list[[country]][s,2]
 			}
@@ -639,7 +540,6 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
         			else epsilons[] <- epsilons.no.na
 				}
 				tfr.c <- all.f_ps[, year,s]
-				#stop('')
 				#########################################
 				for (icountry in 1:nr_countries_real){ # Iterate over countries
 				#########################################
@@ -679,18 +579,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			  									all.f_ps[icountry,year-2,s]-mu.c[country])))
 				 		}
 		  			}
-		  			#if(s==5) {
-		  			#	cobj <- get.country.object(country, meta, index=TRUE)
-		  			#	print(c(year, cobj$name, c('II', 'III')[is.in.phase3[icountry]+1]))
-		  			#}
 		  			# Simulate projection
-					if (!is.in.phase3[icountry]){ # Phase II						
-						old.tfr <- all.f_ps[icountry,year-1,s]
-						# for subnational TFR get decrements based on U_c as maximum (for TFR larger than U_c the decrements would be close to zero)
-						if(!is.null(meta$use.mcmc.from) && all.f_ps[icountry,year-1,s] > sum(theta_si.list[[country]][s,1:4]))
-							old.tfr <- sum(theta_si.list[[country]][s,1:4])
-						new.tfr <- (all.f_ps[icountry,year-1,s]- DLcurve(theta_si.list[[country]][s,], old.tfr, meta$dl.p1, meta$dl.p2) - 
-										W[icountry,year]*S11[icountry])
+					if (!is.in.phase3[icountry]){ # Phase II
+						new.tfr <- (all.f_ps[icountry,year-1,s]- DLcurve(theta_si.list[[country]][s,], all.f_ps[icountry,year-1,s], 
+						                                                 meta$dl.p1, meta$dl.p2) - W[icountry,year]*S11[icountry])
 						# get errors
 						if(boost.first.period.in.phase2 && is.element(country, meta$id_Tistau) && (year == first.projection[icountry])) {
 							eps.mean <- tau.par.values[s, 'mean_eps_tau']
@@ -758,7 +650,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			f_ps_future[1,] <- quantile(f_ps_future[1,], 0.5, na.rm = TRUE) # set all trajectories in the first time period to the median
 			tfr_matrix_reconstructed[(ltfr_matrix-fps.end.obs.index+2):ltfr_matrix,country] <- apply(
 											all.f_ps[icountry,2:fps.end.obs.index,,drop=FALSE],
-												2, quantile, 0.5, na.rm = TRUE)
+												c(1,2), quantile, 0.5, na.rm = TRUE)
 			if (verbose) 
 				cat('\t', nmissing[[country]], 'data points reconstructed for', country.objects[[country]]$name,'\n')
 		}
@@ -774,7 +666,6 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
  		mean_sd[country,2,] <- apply(f_ps_future, 1, sd, na.rm = TRUE) 		
  	}
 	load.mcmc.set <- remove.tfr.traces(load.mcmc.set)
-	if(!is.null(data.meta)) load.mcmc.set$meta <- data.meta
 	bayesTFR.prediction <- structure(list(
 				quantiles = PIs_cqp,
 				traj.mean.sd = mean_sd,
@@ -1477,100 +1368,6 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 	diag(low.eps.cor) <- 1
 	diag(high.eps.cor) <- 1
 	return(list(low=low.eps.cor, high=high.eps.cor, kappa=kappa))
-}
-
-tfr.correlation.subnat <- function(mcmc.set, 
-									method=c('meth12', 'meth11', 'meth10', 'meth9', 'meth8', 'meth7', 'meth6', 'meth5', 'bayes.mean', 'bayes.mode', 'median', 'mean'), 
-									burnin=0, thin=1, burnin3=0, 
-									use.external.phase3=FALSE, use.phase3.from = NULL, 
-									ar1pars=NULL, kappa=5, cor.start.year=NULL, verbose=FALSE, ...) {
-	meta <- mcmc.set$meta
-	method <- match.arg(method)
-	errs <- is.low <- matrix(NA, nrow=meta$T_end, ncol=meta$nr_countries, 
-						dimnames=list(dimnames(meta$tfr_matrix)[[1]], meta$regions$country_code))
-	m3 <- NULL
-	has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
-	if(has.phase3) {
-		m3 <-  get.tfr3.mcmc(sim.dir=mcmc.set$meta$output.dir)
-		if(length(m3$mcmc.list)==0) {
-			m3 <- NULL
-			has.phase3 <- FALSE
-		}
-	}
-	if(!has.phase3 && use.external.phase3) {
-		m3 <- get.tfr3.mcmc(sim.dir=use.phase3.from)
-		if (has.tfr.prediction(sim.dir=use.phase3.from)) 
-			burnin3 <- get.tfr.prediction(use.phase3.from)$burnin3
-	}	
-	if(!is.null(m3)) { 
-		iter3 <- get.total.iterations(m3$mcmc.list, burnin3)
-		thin3 <- max(floor(iter3/2000),1)			
-	}
-	.get.err <- function(i, mu, rho, sigma) return((tfr.all[i]-mu-rho*(tfr.all[i-1]-mu))/sigma)
-	.get.err.distr <- function(i, traces) 
-						return(apply(traces, 1, function(x) return(.get.err(i, x[1], x[2], x[3]))))
-	# get prediction errors
-	for (country in 1:meta$nr_countries) {
-		country.obj <- get.country.object(country, meta, index=TRUE)
-		tfr.all <- bayesTFR:::get.observed.tfr(country, meta, 'tfr_matrix_observed')
-		is.low[,country] <- tfr.all < kappa
-		dl.obs.idx <- if(max(meta$tau_c[country],1) >= meta$lambda_c[country]) c() 
-						else seq(max(meta$tau_c[country],1), meta$lambda_c[country])
-		start.idx <- if(is.null(cor.start.year)) 1 else which(as.integer(names(tfr.all)) >= cor.start.year)[1]
-		dl.obs.idx <- dl.obs.idx[dl.obs.idx>=start.idx]
-		if(length(dl.obs.idx) > 0) { # Phase II
-			tfr <- tfr.all[dl.obs.idx]
-			not.na.idx <- which(!is.na(tfr))
-			if(length(not.na.idx) > 1) { # needs at least two points for decrements
-				tfr <- tfr[not.na.idx]
-				decr <- -diff(tfr)
-				dlc.sigma <- tfr.get.dlcurves(tfr, mcmc.set$mcmc.list, country.obj$code, country, 
-									burnin=burnin, nr.curves=0, return.sigma=TRUE)
-				terr <- apply(-dlc.sigma$dl[,-1, drop=FALSE], 1, "+", decr)
-				if(length(decr) > 1) terr <- t(terr)
-				dl.err <- terr/dlc.sigma$sigma[,-1, drop=FALSE]
-				res.idx <- dl.obs.idx[not.na.idx]
-				errs[res.idx[-1],country] <- apply(dl.err, 2, mean)
-				#if(country.obj$code==549) stop('')
-			}
-		}
-		if(meta$lambda_c[country] < meta$T_end_c[country])  { # Phase III
-			p3.idx <- seq(meta$lambda_c[country]+1, meta$T_end_c[country])
-			p3.idx <- p3.idx[p3.idx >= start.idx]		
-			if(!is.null(m3)) {
-				if(!use.external.phase3 && is.element(country, m3$meta$id_phase3))
-					tr <- get.tfr3.parameter.traces.cs(m3$mcmc.list, country.obj, c('mu.c', 'rho.c'), 
-								burnin=burnin3, thin=thin3)
-				else 
-					tr <- get.tfr3.parameter.traces(m3$mcmc.list, c('mu', 'rho'), 
-								burnin=burnin3, thin=thin3)
-				tr <- cbind(tr, get.tfr3.parameter.traces(m3$mcmc.list, c('sigma.eps'), 
-										burnin=burnin3, thin=thin3))
-				eps.k <- NULL 
-				for(j in 1:length(p3.idx)) 
-					eps.k <- cbind(eps.k, .get.err.distr(p3.idx[j], tr))
-				errs[p3.idx, country] <- apply(eps.k, 2, mean)
-			} else  # use fixed parameters
-				errs[p3.idx, country] <- sapply(p3.idx, .get.err, mu=ar1pars$mu, rho=ar1pars$rho, sigma=ar1pars$sigmaAR1)
-		}
-	}
-	ind <- apply(errs, 1, function(x) all(is.na(x)))
-	errs <- errs[!ind,]
-	is.low <- is.low[!ind,]
-	cormat <- switch(method,
-				bayes.mean = cor.bayes(errs, is.low, method='mean', verbose=verbose, ...),
-				bayes.mode = cor.bayes(errs, is.low, method='mode', verbose=verbose, ...),
-				meth5 = cor.bayes(errs, is.low, method='mean', scale.errors=TRUE, verbose=verbose, ...),
-				meth6 = cor.bayes(errs, is.low, method='mode', scale.errors=TRUE, verbose=verbose, ...),
-				meth7 = cor.modified(errs, is.low, verbose=verbose, ...),
-				meth8 = cor.moments2(errs, is.low, verbose=verbose, ...),
-				meth9 = cor.method9(errs, is.low, verbose=verbose, ...),
-				meth10 = cor.bayes.meth10(errs, is.low, arcsin.prior=FALSE, verbose=verbose, ...),
-				meth11 = cor.bayes.meth10(errs, is.low, arcsin.prior=TRUE, verbose=verbose, ...),
-				meth12 = cor.constant(errs, verbose=verbose, ...),
-				cor.moments(errs, is.low, method=method, verbose=verbose, ...)
-				)
-	return(c(cormat, list(kappa=kappa)))
 }
 
 "get.data.imputed" <- function(pred, ...) UseMethod("get.data.imputed")

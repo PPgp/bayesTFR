@@ -109,11 +109,6 @@ export(
 	par.names.for.worldmap,
 	get.data.for.worldmap,
 	get.countries.table,
-	tfr.priors,
-	tfr3.priors,
-	run.tfr.mcmc.subn1d,
-	run.tfr3.mcmc.subn1d,
-	tfr.predict.subn1d,
 	tfr.predict.subnat
 )
 
@@ -139,8 +134,6 @@ S3method(summary, bayesTFR.convergence)
 
 S3method(print, summary.bayesTFR.prediction)
 S3method(print, summary.bayesTFR.mcmc.set.meta)
-S3method(print, tfr.priors)
-S3method(print, tfr3.priors)
 
 S3method(get.traj.ascii.header, bayesTFR.mcmc.meta)
 S3method(get.nr.countries, bayesTFR.mcmc.meta)
