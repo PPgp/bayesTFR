@@ -209,8 +209,6 @@ mcmc.meta.ini <- function(...,
 	mcmc.input$start.year <- start.year
 	mcmc.input$present.year <- present.year
 	mcmc.input$wpp.year <- wpp.year
-	for(par in c('psi0', 'delta0', 'delta4.0', 'sd.eps.tau0'))
-		mcmc.input[[paste0(par,'r')]] <- mcmc.input[[par]]
 	if(present.year-3 > wpp.year) warning("present.year is much larger then wpp.year. Make sure WPP data for present.year are available.")
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
 										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose)
@@ -568,20 +566,3 @@ mcmc.ini.extra <- function(mcmc, countries, index.replace=NULL) {
 	return(mcmc)
 }
 
-mcmc.meta.ini.subnat <- function(meta, country,
-						start.year=1950, present.year=2010, 
-						my.tfr.file = NULL, buffer.size=1000,
-						verbose=FALSE
-					 ) {
-	# Initialize meta parameters - those that are common to all chains.
-	meta$start.year <- start.year
-	meta$present.year <- present.year
-	meta$buffer.size <- buffer.size
-	tfr.with.regions <- set.wpp.subnat(country=country, start.year=start.year, present.year=present.year,  
-										my.tfr.file = my.tfr.file, verbose=verbose)
-	this.meta <- do.meta.ini(meta, tfr.with.regions, my.tfr.file=my.tfr.file, average.gammas.cov=TRUE,
-						use.default.gammas.cov=TRUE, verbose=verbose)
-	for (item in names(meta))
-		if(!(item %in% names(this.meta))) this.meta[[item]] <- meta[[item]]
-	return(structure(this.meta, class='bayesTFR.mcmc.meta'))
-}

@@ -1118,67 +1118,6 @@ summary.bayesTFR.convergence <- function(object, expand=FALSE, ...) {
 	cat('\nStatus:', names(object$status)[object$status], '\n')
 }
 
-tfr.priors <- function(meta) {
-	# uniform
-	uni.pars <- c('S', 'a', 'b', 'sigma0', 'const')
-	uni.table <- matrix(NA, nrow=length(uni.pars), ncol=2, dimnames=list(uni.pars, c('lower', 'upper')))
-	uni.table[,1] <- unlist(meta[paste(uni.pars, 'low', sep='.')])
-	uni.table[,2] <- unlist(meta[paste(uni.pars, 'up', sep='.')])
-	
-	# normal
-	norm.pars <- c('chi', 'alpha_1', 'alpha_2', 'alpha_3', 'Triangle4', 'm_tau')
-	norm.table <- matrix(NA, nrow=length(norm.pars), ncol=2, dimnames=list(norm.pars, c('mean', 'SD')))
-	norm.table[1,] <- unlist(meta[c('chi0', 'psi0')])
-	norm.table[2,] <- c(meta$alpha0.p[1], meta$delta0)
-	norm.table[3,] <- c(meta$alpha0.p[2], meta$delta0)
-	norm.table[4,] <- c(meta$alpha0.p[3], meta$delta0)
-	norm.table[5,] <- unlist(meta[c('Triangle4.0', 'delta4.0')])
-	norm.table[6,] <- unlist(meta[c('mean.eps.tau0', 'sd.eps.tau0')])
-	
-	# gamma
-	gamma.pars <- c('1/psi^2', '1/delta_i^2', '1/delta_4^2', '1/s_tau^2')
-	gamma.table <- matrix(NA, nrow=length(gamma.pars), ncol=2, dimnames=list(gamma.pars, c('nu_0', 's_0')))
-	gamma.table[1,] <- unlist(meta[c('nu.psi0', 'psi0r')])
-	gamma.table[2,] <- unlist(meta[c('nu.delta0', 'delta0r')])
-	gamma.table[3,] <- unlist(meta[c('nu4', 'delta4.0r')])
-	gamma.table[4,] <- unlist(meta[c('nu.tau0', 'sd.eps.tau0r')])
-	res <- list(uniform=uni.table, normal=norm.table, gamma=gamma.table)
-	class(res) <- 'tfr.priors'
-	return(res)
-}
-
-print.tfr.priors <- function(x, digits = 3, ...) {
-	cat('\nPhase II Priors:')
-	cat('\n================')
-	cat('\nUniform Priors:\n')
-	print(x$uniform, digits=digits, ...)
-	cat('\nNormal Priors:\n')
-	print(x$normal, digits=digits, ...)
-	cat('\nGamma Priors: (shape=nu_0/2; rate=nu_0/2 * s_0^2)\n')
-	print(x$gamma, digits=digits, ...)
-	cat('\n')
-}
-
-tfr3.priors <- function(meta) {
-	# uniform
-	uni.pars <- c('mu', 'sigma.mu', 'rho', 'sigma.rho', 'sigma.eps')
-	uni.table <- matrix(NA, nrow=length(uni.pars), ncol=2, dimnames=list(uni.pars, c('lower', 'upper')))
-	for(i in 1:nrow(uni.table))
-		uni.table[i,] <- meta[[paste(uni.pars[i], 'prior.range', sep='.')]]
-	res <- list(uniform=uni.table)
-	class(res) <- 'tfr3.priors'
-	return(res)
-}
-
-print.tfr3.priors <- function(x, digits = 3, ...) {
-	cat('\nPhase III Priors:')
-	cat('\n=================')
-	cat('\nUniform Priors:\n')
-	print(x$uniform, digits=digits, ...)
-	cat('\n')
-}
-
-
 tfr.info <- function(sim.dir) {
 	mc <- get.tfr.mcmc(sim.dir=sim.dir)
 	if (is.null(mc)) {
