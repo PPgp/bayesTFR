@@ -257,7 +257,6 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 			e <- new.env()
 			data('proposal_cov_gammas_cii', envir=e)
 			cov.to.average <- e$proposal_cov_gammas_cii$values
-		}
 	} else {
 		# get default proposal_cov_gammas_cii and match with country codes of this run
 		e <- new.env()
