@@ -236,4 +236,3 @@ slice.sampling <- function(x0, fun, width,  ..., low, up, maxit=50) {
 	}
 	stop('Problem in slice sampling')
 }
-

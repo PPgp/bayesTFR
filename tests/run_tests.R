@@ -9,6 +9,7 @@ for(wpp in c(2010, 2012, 2015)) {
 }
 test.load.UNtfr.and.my.tfr.file()
 test.existing.simulation()
+test.subnational.predictions()
 
 ## disable the following tests when submitting to CRAN
 ## to speed-up the checking procedure

@@ -249,6 +249,14 @@ write.table.into.file.cindep <- function(data, ...) {
 		write.values.into.file.cindep(par, data[,par], mode='w', ...)
 }
 
+write.list.into.file.cindep <- function(mcmc, data.list) {
+	output.dir <- file.path(mcmc$meta$output.dir, mcmc$output.dir)
+	if(!file.exists(output.dir)) 
+		dir.create(output.dir)
+	for (par in names(data.list))
+		write.values.into.file.cindep(par, data.list[[par]], output.dir, mode='w', compression.type=mcmc$meta$compression.type)
+}
+
 write.values.into.file.cdep <- function(par, data, output.dir, country.code, mode='w', compression.type='None') {
 	do.write.values.into.file(file.path(output.dir, paste(par,"_country", country.code, ".txt",sep = "")), 
 									data, mode=mode, compression.type=compression.type)

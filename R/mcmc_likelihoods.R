@@ -87,13 +87,14 @@ log_cond_sigma0.tau = function(eps_Tc, sd_Tc, mean_eps_Tc){
 }
 
 ##############################################################################
-log_cond_Triangle_c4_trans <- function(Triangle_c4_trans, eps_T, sd_eps_T, mean_eps_T,Triangle4, delta4){ 
- # eps are non-NAs
-# stop('')
- log_cond_Triangle_c4_trans <- (
-                -1/(2*delta4^2) *(Triangle_c4_trans-Triangle4)^2 +
-                sum(dnorm(eps_T, mean = mean_eps_T, sd = sd_eps_T, log = TRUE))         )
- return(log_cond_Triangle_c4_trans)
-}
+# This is re-implemented in C
+# log_cond_Triangle_c4_trans <- function(Triangle_c4_trans, eps_T, sd_eps_T, mean_eps_T,Triangle4, delta4){ 
+#  # eps are non-NAs
+# # stop('')
+#  log_cond_Triangle_c4_trans <- (
+#                 -1/(2*delta4^2) *(Triangle_c4_trans-Triangle4)^2 +
+#                 sum(dnorm(eps_T, mean = mean_eps_T, sd = sd_eps_T, log = TRUE))         )
+#  return(log_cond_Triangle_c4_trans)
+# }
 
 ############################################

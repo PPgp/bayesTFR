@@ -1,3 +1,7 @@
+6.0-0 (4/14/2017)
+-----
+Function for subnational TFR implemented, called tfr.predict.subnat.
+
 5.0-5 (1/5/2017)
 -----
 Made the minimum threshold for TFR changeable via an argument 

@@ -1,5 +1,4 @@
 \name{bayesTFR-package}
-\Rdversion{1.1}
 \alias{bayesTFR-package}
 \alias{bayesTFR}
 \docType{package}
@@ -9,14 +8,14 @@ Bayesian Fertility Projection
 
 \description{
 Collection of functions for making probabilistic projections of total fertility rate (TFR) for all countries of the world, 
-using a Bayesian hierarchical model (BHM) and the United Nations demographic time series.
+using a Bayesian hierarchical model (BHM) and the United Nations demographic time series. Functions for subnational projections are also available.
 }
 
 \details{
 \tabular{ll}{
 Package: \tab bayesTFR\cr
-Version: \tab 5.0-5\cr
-Date: \tab 2017-1-5\cr
+Version: \tab 6.0-0\cr
+Date: \tab 2017-4-14\cr
 License: \tab GPL (>= 2)\cr
 URL: \tab \url{https://bayespop.csss.washington.edu}\cr
 }
@@ -58,8 +57,9 @@ For MCMC diagnostics, functions \link{coda.list.mcmc} and \link{coda.list.mcmc3}
 
 Existing simulation results can be accessed using the \link{get.tfr.mcmc} (Phase II) and \link{get.tfr3.mcmc} (Phase III) functions.  An existing prediction can be accessed via \link{get.tfr.prediction}. Existing convergence diagnostics can be accessed using the \link{get.tfr.convergence}, \link{get.tfr.convergence.all}, \link{get.tfr3.convergence} and \link{get.tfr3.convergence.all} functions.
 
-The historical TFR data are taken from one of the packages \pkg{wpp2015} (default), \pkg{wpp2012} or \pkg{wpp2010}, depending on users settings.
+The historical national TFR data are taken from one of the packages \pkg{wpp2015} (default), \pkg{wpp2012} or \pkg{wpp2010}, depending on users settings.
 
+Subnational TFR projections can be generated using \link{tfr.predict.subnat}. In this case, historical data must be provided by the user. Existing projections can be accessed from disk via \link{get.regtfr.prediction}. 
 }
 
 \note{
@@ -105,3 +105,4 @@ unlink(sim.dir, recursive=TRUE)
 % to reproduce the example included in the package exactly:
 % m <- run.tfr.mcmc(nr.chains=1, iter=60, seed=1, verbose=TRUE, compression.type='bz', start.year=1950)
 % pred <- tfr.predict(m, burnin=30, verbose=TRUE, save.as.ascii=0, use.tfr3=FALSE)
+% # Directory with thinned chains and summary files in "predictions" removed to save disk space.  

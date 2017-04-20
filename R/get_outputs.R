@@ -207,18 +207,35 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
 	bayesTFR.prediction$output.directory <- output.dir
 	
 	pred <- bayesTFR.prediction
-	# re-route mcmcs if necessary
+	if(!is.null(mcmc.dir) && is.na(mcmc.dir)) return(pred)
+	# re-route mcmcs if necessary and load
 	if(!is.null(mcmc.dir) || !has.tfr.mcmc(pred$mcmc.set$meta$output.dir)) {
-		if((!is.null(mcmc.dir) && !is.na(mcmc.dir)) || is.null(mcmc.dir)) {
+		#if((!is.null(mcmc.dir) && !is.na(mcmc.dir)) || is.null(mcmc.dir)) {
 			new.path <- file.path(sim.dir, basename(pred$mcmc.set$meta$output.dir))
 			if (has.tfr.mcmc(new.path)) pred$mcmc.set <- get.tfr.mcmc(new.path)
 			else {
 				est.dir <- if(is.null(mcmc.dir)) sim.dir else mcmc.dir
 				pred$mcmc.set <- get.tfr.mcmc(est.dir)
 			}
-		}
+		#}
 	}
 	return(pred)
+}
+
+get.regtfr.prediction <- function(sim.dir, country=NULL){
+  dir <- file.path(sim.dir, 'subnat')
+  if(!file.exists(dir)) stop("No subnational predictions in ", sim.dir)
+  cdirs <- list.files(dir, pattern='^c[0-9]+', full.names=FALSE)
+  if(length(cdirs)==0) stop("No subnational predictions in ", sim.dir)
+  if (!is.null(country)) {
+    cdirs <- cdirs[cdirs == paste0("c", country)]
+    if(length(cdirs)==0) stop("No subnational predictions for country ", country, " in ", sim.dir)
+    return(get.tfr.prediction(sim.dir=file.path(dir, cdirs[1]), mcmc.dir=NA))
+  }
+  preds <- NULL
+  for (d in cdirs) 
+    preds[[sub("c", "", d)]] <- get.tfr.prediction(sim.dir=file.path(dir, d), mcmc.dir=NA)
+  return(preds)
 }
 
 .do.get.convergence.all <- function(type, package, sim.dir) {
@@ -999,9 +1016,10 @@ get.prediction.summary.data <- function(object, unchanged.pars, country, compact
 	for (par in unchanged.pars)
 		res[[par]] <- object[[par]]
 	proj.and.present.years <- if(is.null(object$proj.years)) 
-				seq(object$end.year-5*object$nr.projections-2, 
-										object$end.year-2, by=5)
-							else object$proj.years
+	      as.integer(dimnames(object$quantiles)[[3]]) else object$proj.years
+				#seq(object$end.year-5*object$nr.projections-2, 
+				#						object$end.year-2, by=5)
+							 
 
 	res$projection.years <- proj.and.present.years[2:length(proj.and.present.years)]
 	if(is.null(country)) return(res)
@@ -1053,6 +1071,7 @@ print.summary.bayesTFR.prediction <- function(x, digits = 3, ...) {
 	if(x$use.tfr3) {
 		cat('\nPhase III burnin:', x$burnin3)
 		cat('\nPhase III thin:', x$thin3)
+		cat('\n')
 	} else {
 		cat('\nParameters of AR(1):\n')
 		arpars <- c(x$mu, x$rho, x$sigmaAR1)

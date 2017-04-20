@@ -24,7 +24,6 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 				runif(nr.chains, range[1], range[2])
 				)
 	}
-
 	mc <- get.tfr.mcmc(sim.dir)
 	output.dir <- file.path(sim.dir, 'phaseIII')
 	if(file.exists(output.dir)) {
