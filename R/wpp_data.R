@@ -228,11 +228,14 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
 		tfr_matrix[(tfr_data[i,'last.observed'] < mid.years), i] <- NA
 		all.na[i] <- all(is.na(tfr_matrix[,i]))
 	}
+	country.codes <- tfr_data[[datacolnames['country.code']]]
+	colnames(tfr_matrix) <- colnames(tfr_matrix_all) <- country.codes
 	regions <- list(name=if(has.reg.name) reg_name else na.array, 
 					code=if(has.reg.code) reg_code else na.array, 
 					area_name=if(has.area.name) area_name else na.array, 
 					area_code=if(has.area.code) area_code else na.array,
-				country_name=tfr_data[[datacolnames['country.name']]], country_code=tfr_data[[datacolnames['country.code']]])
+				country_name=tfr_data[[datacolnames['country.name']]], 
+				country_code=country.codes)
 	return(list(obs_matrix=tfr_matrix, obs_matrix_all=tfr_matrix_all, regions=regions, all.na=all.na))
 }
 
@@ -340,8 +343,7 @@ set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, my.locations.f
 create.sublocation.dataset <- function(data) {
 	loc.idx <- which(is.element(colnames(data), c('name',  'country_code', 'include_code', 'reg_code')))
 	loc_data <- data[, loc.idx]
-	include <- data$include_code == 2
-	prediction.only <- data$include_code == 1
+	if(! 'include_code' %in% colnames(data)) data$include_code <- 2
 	return(list(loc_data=loc_data, include=data$include_code == 2, 
 				prediction.only=data$include_code == 1, include.code=data$include_code))
 }
@@ -363,13 +365,8 @@ set.wpp.subnat <- function(country, start.year=1950, present.year=2010, my.tfr.f
 	include <- locations$include
 	prediction.only <- locations$prediction.only
 
-	tfr_data_countries <- tfr_data[include,]
-	nr_countries_estimation <- length(tfr_data_countries[,1])
-	if(any(!is.na(prediction.only))) { # move prediction countries at the end of tfr_data
-		tfr_data_prediction <- tfr_data[prediction.only,]
-		tfr_data_countries <- rbind(tfr_data_countries, tfr_data_prediction)
-	}
-	
+	tfr_data_countries <- tfr_data[include | locations$prediction.only,]
+	nr_countries_estimation <- sum(include)
 	TFRmatrix.regions <- get.TFRmatrix.and.regions(tfr_data_countries, loc_data, 
 												start.year=start.year, 
 												present.year=present.year,

@@ -32,7 +32,7 @@ Hana Sevcikova
 %}
 
 \seealso{
-\code{\link{get.country.object}}
+\code{\link{get.countries.table}}, \code{\link{get.country.object}}
 }
 \examples{
 sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")

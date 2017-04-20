@@ -105,5 +105,5 @@ unlink(sim.dir, recursive=TRUE)
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{distribution}
+\keyword{models}
 \keyword{multivariate}

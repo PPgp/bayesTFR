@@ -483,8 +483,11 @@ test.DLcurve <- function() {
 	# world distribution
 	dlw <- tfr.world.dlcurves(tfr, m, countryUc="Nigeria")
 	stopifnot(all(dim(dlw)==c(60,100)))
-	# median of the world DL in the TFR range of 2-4 is smaller than the country-specific median in that range
-	stopifnot(all(apply(dlw[, tfr > 2 & tfr < 4], 2, median) < apply(dls$dl[, tfr > 2 & tfr < 4], 2, median)))
+	# median of the world DL in the TFR range of 3-4.5 is smaller than the country-specific median in that range
+	# visual check:
+	# DLcurve.plot(m, 'Nigeria')
+	# lines(tfr, apply(dlw, 2, median))
+	stopifnot(all(apply(dlw[, tfr > 3 & tfr < 4.5], 2, median) < apply(dls$dl[, tfr > 3 & tfr < 4.5], 2, median)))
 	test.ok(test.name)
 }
 
@@ -515,7 +518,7 @@ test.plot.all <- function() {
 	sim.dir <- file.path(find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
 	pred <- get.tfr.prediction(sim.dir=sim.dir)
 	mc <- get.tfr.mcmc(sim.dir)
-	dir <- tempdir()
+	dir <- tempfile()
 	tfr.trajectories.plot.all(pred, output.dir=dir, main='XXX trajs')
 	trajf <- length(list.files(dir, pattern='png$', full.names=FALSE))
 	DLcurve.plot.all(mc, output.dir=dir, main='DL XXX', output.type='jpeg')
@@ -674,4 +677,61 @@ test.estimate.mcmc.with.suppl.data <- function() {
 	npred <- dim(pred$tfr_matrix_reconstructed)[2]
 	test.ok(test.name)
 	unlink(sim.dir, recursive=TRUE)
+}
+
+test.subnational.predictions <- function() {
+  sim.dir <- tempfile()
+  test.name <- 'predicting subnational TFR'
+  start.test(test.name)
+  
+  my.subtfr.file <- file.path(find.package("bayesTFR"), 'extdata', 'subnational_tfr_template.txt')
+  nat.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
+  
+  # Subnational projections for Australia and Canada; start year before national projections
+  preds <- tfr.predict.subnat(c(36, 124), my.tfr.file=my.subtfr.file,
+                              sim.dir=nat.dir, output.dir=sim.dir, start.year=2006)
+  stopifnot(all(names(preds) %in% c("36", "124")))
+  stopifnot(nrow(get.countries.table(preds[["36"]]))==8)
+  filename <- tempfile()
+  pdf(file=filename)
+  tfr.trajectories.plot(preds[["36"]], "Queensland")
+  tfr.trajectories.plot(preds[["124"]], "Quebec")
+  dev.off()
+  size <- file.info(filename)['size']
+  unlink(filename)
+  stopifnot(size > 0)
+  unlink(sim.dir, recursive=TRUE)
+  
+  # Subnational projections for Canada; start year after the start of national projections
+  sim.dir <- tempfile()
+  preds <- tfr.predict.subnat("Canada", my.tfr.file=my.subtfr.file,
+                              sim.dir=nat.dir, output.dir=sim.dir, start.year=2018)
+  stopifnot(all(names(preds) %in% c("124")))
+  spred <- summary(preds[["124"]], "Quebec")
+  stopifnot(min(spred$projection.years) == 2018)
+  unlink(sim.dir, recursive=TRUE)
+  
+  # Subnational projections for all countries in the file
+  sim.dir <- tempfile()
+  preds <- tfr.predict.subnat(c(36, 218, 124), my.tfr.file=my.subtfr.file, sim.dir=nat.dir, 
+                              output.dir=sim.dir, end.year=2050)
+  stopifnot(length(preds) == 3)
+  
+  # Retrieve results for all countries
+  preds <- get.regtfr.prediction(sim.dir)
+  stopifnot(length(preds) == 3)
+  t <- tfr.trajectories.table(preds[["218"]], "Bolivar")
+  stopifnot(all(dim(t) == c(17, 7)))
+  
+  # Retrieve results for one country
+  pred <- get.regtfr.prediction(sim.dir, 218)
+  spred <- summary(pred, "Loja")
+  stopifnot(max(spred$projection.years) == 2048)
+  
+  # Retrieve trajectories
+  trajs <- get.tfr.trajectories(preds[["124"]], "Alberta")
+  stopifnot(all(dim(trajs) == c(8, 30)))
+  
+  test.ok(test.name)
+  unlink(sim.dir, recursive=TRUE)
 }

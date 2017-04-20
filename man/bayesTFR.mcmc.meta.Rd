@@ -23,8 +23,8 @@ It contains information that is common to all chains. It is part of a \code{\lin
 	Furthermore, Phase II meta objects contain components:
 	\describe{
 	\item{tfr_matrix_all}{A \eqn{q \times n}{q x n} matrix with the United Nations TFR estimates. \eqn{q} is number of years (see \code{T_end} below), \eqn{n} is number of countries (see \code{nr_countries} below). The first \eqn{n_e} columns correspond to countries included in the MCMC estimation (see \code{nr_countries_estimation} below), where \eqn{n_e <= n}.}
-	\item{tfr_matrix}{Like \code{tfr_matrix_all}, but it has \code{NA} values before and after country''s fertility transition.}
-	\item{tfr_matrix_observed}{Like \code{tfr_matrix}, but it has \code{NA} values for years where no historical data is available.}
+	\item{tfr_matrix_observed}{Like \code{tfr_matrix_all}, but it has \code{NA} values for years where no historical data is available (i.e. after the last observed time period).}
+	\item{tfr_matrix}{Like \code{tfr_matrix_observed}, but it has \code{NA} values before and after country''s fertility transition.}
 	\item{nr_countries}{Number of countries included in the tfr matrices.}
 	\item{nr_countries_estimation}{Number of countries included in the MCMC estimation. It must be smaller or equal to \code{nr_countries}.}
 	\item{tau_c}{Estimated start year of the fertility decline for each country (as a row index within the tfr matrices). -1 means that the decline started before \code{start.year}.}
