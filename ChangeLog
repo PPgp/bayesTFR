@@ -1,3 +1,10 @@
+6.1-0 (7/25/2017)
+-----
+Support for wpp2017 added. wpp.year=2017 is the new default in run.tfr.mcmc.
+Note two changes in country names in wpp2017:
+    "Czech Republic" -> "Czechia"
+    "Other non-specified areas" -> "China, Taiwan Province of China"
+
 6.0-0 (4/14/2017)
 -----
 Function for subnational TFR implemented, called tfr.predict.subnat.

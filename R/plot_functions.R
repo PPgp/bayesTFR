@@ -161,7 +161,9 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
 	if(is.null(burnin)) burnin <- 0
     mcmc.list <- get.mcmc.list(mcmc.list)
     meta <- mcmc.list[[1]]$meta
-    country <- get.country.object(country, meta)
+    country.obj <- get.country.object(country, meta)
+    if(is.null(country.obj$code)) stop("Country ", country, " not found.")
+    country <- country.obj
     #stop.if.country.not.DL(country, meta)
     tfr_plot <- seq(0, tfr.max, 0.1)
     dlc <- tfr.get.dlcurves(tfr_plot, mcmc.list, country$code, country$index, burnin, nr.curves, 
@@ -276,7 +278,9 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 	if (missing(country)) {
 		stop('Argument "country" must be given.')
 	}
-	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
+	country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
+	if(is.null(country.obj$code)) stop("Country ", country, " not found.")
+	country <- country.obj
 	obs.data <- get.data.for.country.imputed(tfr.pred, country$index)
 	if(!is.null(tfr.pred$present.year.index)) obs.data <- obs.data[1:min(length(obs.data), tfr.pred$present.year.index.all)]
 	pred.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
@@ -427,7 +431,9 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 		lwd[6] <- 1
 	}
 	col <- .match.colors.with.default(col, c('black', 'green', 'red', 'red', 'blue', '#00000020'))
-	country <- get.country.object(country, tfr.pred$mcmc.set$meta)
+	country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
+	if(is.null(country.obj$code)) stop("Country ", country, " not found.")
+	country <- country.obj
 	tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
 	T_end_c <- tfr.pred$mcmc.set$meta$T_end_c
 	if(!is.null(tfr.pred$present.year.index.all)) T_end_c <- pmin(T_end_c, tfr.pred$present.year.index.all)

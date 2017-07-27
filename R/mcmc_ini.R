@@ -197,7 +197,7 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
 mcmc.meta.ini <- function(...,
 						U.c.low,
 						start.year=1950, present.year=2015, 
-						wpp.year=2015, my.tfr.file = NULL, my.locations.file = NULL,
+						wpp.year=2017, my.tfr.file = NULL, my.locations.file = NULL,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						verbose=FALSE
 					 ) {
