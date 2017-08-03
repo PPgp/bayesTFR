@@ -14,8 +14,8 @@ using a Bayesian hierarchical model (BHM) and the United Nations demographic tim
 \details{
 \tabular{ll}{
 Package: \tab bayesTFR\cr
-Version: \tab 6.0-0\cr
-Date: \tab 2017-4-14\cr
+Version: \tab 6.1-0\cr
+Date: \tab 2017-7-25\cr
 License: \tab GPL (>= 2)\cr
 URL: \tab \url{https://bayespop.csss.washington.edu}\cr
 }
@@ -57,7 +57,7 @@ For MCMC diagnostics, functions \link{coda.list.mcmc} and \link{coda.list.mcmc3}
 
 Existing simulation results can be accessed using the \link{get.tfr.mcmc} (Phase II) and \link{get.tfr3.mcmc} (Phase III) functions.  An existing prediction can be accessed via \link{get.tfr.prediction}. Existing convergence diagnostics can be accessed using the \link{get.tfr.convergence}, \link{get.tfr.convergence.all}, \link{get.tfr3.convergence} and \link{get.tfr3.convergence.all} functions.
 
-The historical national TFR data are taken from one of the packages \pkg{wpp2015} (default), \pkg{wpp2012} or \pkg{wpp2010}, depending on users settings.
+The historical national TFR data are taken from one of the packages \pkg{wpp2017} (default), \pkg{wpp2015}, \pkg{wpp2012} or \pkg{wpp2010}, depending on users settings.
 
 Subnational TFR projections can be generated using \link{tfr.predict.subnat}. In this case, historical data must be provided by the user. Existing projections can be accessed from disk via \link{get.regtfr.prediction}. 
 }
@@ -84,10 +84,7 @@ Statistical Science, Vol. 29, 58-68.
 }
 
 \keyword{ package }
-%\seealso{
-%~~ Optional links to other man pages, e.g. ~~
-%~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
-%}
+
 \examples{
 \dontrun{
 # This command produces output data such as in the directory ex-data

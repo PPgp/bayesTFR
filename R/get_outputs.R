@@ -955,6 +955,7 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 							par.names.cs=par.names.cs, thin=thin, burnin=burnin, ...))
 	if (!is.null(country)) {
 		country.obj <- get.country.object(country, object$meta)
+		if(is.null(country.obj$name)) stop("Country ", country, " not found.")
 		cat('\nCountry:', country.obj$name, '\n')
 		if (!is.element(country.obj$index, object$meta$id_DL)) {
 			cat('\tnot used for estimation because no decline observed.\n')
@@ -981,6 +982,7 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 							par.names.cs=par.names.cs, thin=thin, burnin=burnin, ...))
 	if (!is.null(country)) {
 		country.obj <- get.country.object(country, object$meta)
+		if(is.null(country.obj$name)) stop("Country ", country, " not found.")
 		cat('\nCountry:', country.obj$name, '\n')
 		if (!is.element(country.obj$index, object$meta$id_phase3)) {
 			cat('\tnot used for estimation because it has not reached phase III yet.\n')

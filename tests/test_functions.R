@@ -483,11 +483,11 @@ test.DLcurve <- function() {
 	# world distribution
 	dlw <- tfr.world.dlcurves(tfr, m, countryUc="Nigeria")
 	stopifnot(all(dim(dlw)==c(60,100)))
-	# median of the world DL in the TFR range of 3-4.5 is smaller than the country-specific median in that range
+	# median of the world DL in the TFR range of 3-4.3 is smaller than the country-specific median in that range
 	# visual check:
 	# DLcurve.plot(m, 'Nigeria')
 	# lines(tfr, apply(dlw, 2, median))
-	stopifnot(all(apply(dlw[, tfr > 3 & tfr < 4.5], 2, median) < apply(dls$dl[, tfr > 3 & tfr < 4.5], 2, median)))
+	stopifnot(all(apply(dlw[, tfr > 3 & tfr < 4.3], 2, median) < apply(dls$dl[, tfr > 3 & tfr < 4.3], 2, median)))
 	test.ok(test.name)
 }
 

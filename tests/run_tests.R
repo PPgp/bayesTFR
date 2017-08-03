@@ -2,7 +2,7 @@ library(bayesTFR)
 source('test_functions.R')
 
 cran <- TRUE
-for(wpp in c(2010, 2012, 2015)) {
+for(wpp in c(2010, 2012, 2015, 2017)) {
 	test.load.UNtfr(wpp)
 	test.load.UNlocations(wpp)
 	test.create.tfr.matrix(wpp)
