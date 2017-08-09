@@ -2,7 +2,7 @@ citHeader("To cite bayesTFR in publications use:")
 
 citEntry(entry = "Article",
   title        = "{bayesTFR}: An {R} Package for Probabilistic Projections of the Total Fertility Rate",
-  author       = personList(as.person("Hana \\v{S}ev\\v{c}\\'{\\i}kov\\'{a}"),
+  author       = personList(as.person("Hana \\v{S}ev\\v{c}{\\'\\i}kov\\'{a}"),
                    as.person("Leontine Alkema"),
                    as.person("Adrian E. Raftery")),
   journal      = "Journal of Statistical Software",
