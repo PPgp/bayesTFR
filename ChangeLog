@@ -1,3 +1,7 @@
+6.1-1 (8/9/2017)
+-----
+Accent syntax changed in CITATION (request from CRAN).
+
 6.1-0 (7/25/2017)
 -----
 Support for wpp2017 added. wpp.year=2017 is the new default in run.tfr.mcmc.
