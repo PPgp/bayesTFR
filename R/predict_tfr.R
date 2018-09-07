@@ -305,7 +305,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		max.nr.project <- max(max.nr.project, nr_project + nmissing[[country]])
 		
 		# load phase3 country-specific parameter traces
-		if(has.phase3 && is.element(country, meta3$meta$id_phase3)) {
+		if(has.phase3 && is.element(country, meta3$id_phase3)) {
 			m3.par.values.cs.list[[country]] <- dprep$m3.par.values.cs
 			mu.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,1])
 			rho.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,2])
@@ -378,7 +378,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 			mu.c[] <- m3.par.values[s,'mu']
 			rho.c[] <- m3.par.values[s,'rho']
 			sigma.epsAR1 <- rep(list(rep(m3.par.values[s,'sigma.eps'], max.nr.project)), nr_countries)
-			for (country in prediction.countries[prediction.countries %in% meta3$meta$id_phase3]){	
+			for (country in prediction.countries[prediction.countries %in% meta3$id_phase3]){	
 					mu.c[country] <- m3.par.values.cs.list[[country]][s,1]
 					rho.c[country] <- m3.par.values.cs.list[[country]][s,2]
 			}

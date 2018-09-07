@@ -83,8 +83,8 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 	if(!is.null(my.tfr.file)) {
 		cat('Reading file ', my.tfr.file, '.\n')
 		my.tfr_data <- read.tfr.file(file=my.tfr.file)
-		cols.to.use <- colnames(my.tfr_data)[is.element(colnames(my.tfr_data), colnames(tfr_data))]
 		colnames(my.tfr_data)[colnames(my.tfr_data)=='name'] <- 'country'
+		cols.to.use <- colnames(my.tfr_data)[is.element(colnames(my.tfr_data), colnames(tfr_data))]
 		# don't overwrite country_name
 		cols.wo.name <- setdiff(cols.to.use, 'country')
 		if (!is.element('country_code', cols.to.use))
