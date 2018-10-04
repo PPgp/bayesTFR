@@ -765,8 +765,8 @@ coda.list.mcmc <- function(mcmc=NULL, country=NULL, chain.ids=NULL,
 	# return a list of mcmc objects that can be analyzed using the coda package
 	mcmc.list <- mcmc
 	if (is.null(mcmc.list)) {
-		mcmc.list <- get.tfr.mcmc(sim.dir, chain.ids=chain.ids, low.memory=low.memory, 
-									burnin=burnin)$mcmc.list
+		mcmc.list <- stop.if.mcmc.missing(get.tfr.mcmc(sim.dir, chain.ids=chain.ids, low.memory=low.memory, 
+									burnin=burnin)$mcmc.list)
 	} else {
 		mcmc.list <- get.mcmc.list(mcmc.list)
 		if (!is.null(chain.ids)) {
@@ -839,12 +839,17 @@ filter.traces <- function(values, par.names) {
     return(v)
 }
 
+stop.if.mcmc.missing <- function(x, ignore.missing = FALSE) {
+  if(!ignore.missing && length(x) == 0) stop("No MCMCs found")
+  return(x)
+}
+
 "get.mcmc.list" <- function(mcmc.list, ...) UseMethod("get.mcmc.list")
 
-get.mcmc.list.bayesTFR.mcmc.set <- function(mcmc.list, ...) return(mcmc.list$mcmc.list)
-get.mcmc.list.bayesTFR.mcmc <- function(mcmc.list, ...) return(list(mcmc.list))
-get.mcmc.list.bayesTFR.prediction <- function(mcmc.list, ...) return(mcmc.list$mcmc.set$mcmc.list)
-get.mcmc.list.list <- function(mcmc.list, ...) return(mcmc.list)
+get.mcmc.list.bayesTFR.mcmc.set <- function(mcmc.list, ...) return(stop.if.mcmc.missing(mcmc.list$mcmc.list), ...)
+get.mcmc.list.bayesTFR.mcmc <- function(mcmc.list, ...) return(stop.if.mcmc.missing(list(mcmc.list), ...))
+get.mcmc.list.bayesTFR.prediction <- function(mcmc.list, ...) return(stop.if.mcmc.missing(mcmc.list$mcmc.set$mcmc.list, ...))
+get.mcmc.list.list <- function(mcmc.list, ...) return(stop.if.mcmc.missing(mcmc.list, ...))
 
 "get.mcmc.meta" <- function(meta, ...) UseMethod("get.mcmc.meta")
 get.mcmc.meta.bayesTFR.mcmc.set <- function(meta, ...) return(meta$meta)
