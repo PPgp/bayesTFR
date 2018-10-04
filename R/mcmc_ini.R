@@ -60,6 +60,7 @@ get_eps_T_all <- function (mcmc) {
 }
 
 find.lambda.for.one.country <- function(tfr, T_end) {
+    # find the end of Phase II
 	lambda <- T_end
 	if ( sum(tfr<2, na.rm=TRUE)>2 ){
 		period <- .get.T.start.end(tfr)[1]+2
@@ -81,7 +82,7 @@ find.lambda.for.one.country <- function(tfr, T_end) {
 
 
 .get.T.start.end <- function(tfr) {
-	# Return first index after NAs at the beginning of the time series
+	# Return first index after NAs at the beginning of the time series and the last index before any NA's at the end
 	isna.tfr <- is.na(tfr)
 	start <- if(sum(isna.tfr) > 0 && isna.tfr[1]) which(diff(cumsum(isna.tfr))==0)[1]+1 else 1
 	return(c(start, sum(!isna.tfr) + start - 1))
@@ -104,15 +105,15 @@ get.observed.with.supplemental <- function(country.index, matrix, suppl.data, ma
 find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5, #5.5, 
 												max.diff.local.and.global.max.for.start.at.loc = 0.53, #0.5,
 												delta.for.local.max = 0.001,
-												suppl.data=NULL) 
-# gets tau_c and puts NAs before tau_c
-# gets ids of DL (where decline has been observed)
-# and divides those into early and not early
-# find lambda_c's based on definition tfr increased twice, below 2
-{
-	post.v2 <- TRUE
+												suppl.data=NULL) {
+    # gets tau_c and puts NAs before tau_c (start of Phase II)
+    # gets ids of DL (where decline has been observed)
+    # and divides those into early (tau_c has been not observed) and not early (tau_c observed)
+    # find lambda_c's based on definition tfr increased twice, below 2 (start of Phase III)
+
+    post.v2 <- TRUE
 	if(!is.null(getOption("TFRphase2.pre.v2", NULL)) && getOption("TFRphase2.pre.v2")==TRUE) {
-		# This is for backward-compatibility to make some publications reproducible.
+        # This is for backward-compatibility to make some publications reproducible.
 		min.TFRlevel.for.start.after.1950 = 5.5
 		max.diff.local.and.global.max.for.start.at.loc = 0.5
 		delta.for.local.max = 0
@@ -122,37 +123,38 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
     T_end <- dim(tfr_matrix)[1]
     nr_countries <- dim(tfr_matrix)[2]
     T_end_c <- lambda_c <-rep(T_end, nr_countries)
-    #has.suppl <- rep(FALSE, nr_countries)
     T.suppl <- if(is.null(suppl.data$regions)) 0 else dim(suppl.data$tfr_matrix)[1]
     tau_c <- start_c <- rep(NA, nr_countries)
+
     for (country in 1:nr_countries) {
-    	data <- get.observed.with.supplemental(country, tfr_matrix, suppl.data)
+        data <- get.observed.with.supplemental(country, tfr_matrix, suppl.data)
     	has.suppl <- length(data) > T_end && !is.na(suppl.data$index.from.all.countries[country])
-    	# ignoring NAs at the beginning
+    	# Find the beginning of Phase II (index tau_c)
+    	# ignoring NAs at the beginning and at the end
     	T.start.end <- .get.T.start.end(data)
     	T.start <- T.start.end[1]
-    	T_end_c[country] = T.start.end[2]
+    	T_end_c[country] <- T.start.end[2]
     	lT <- T_end_c[country] - T.start + 1
     	local_max_indices <- rep(NA, lT)
     	d <- diff(data[T.start:T_end_c[country]])
         does_tfr_decrease <- ifelse(d < delta.for.local.max, 1, 0)
         local_max_indices[1] <- does_tfr_decrease[1]
-   		# in middle only a local max if increase is followed by decrease
-        local_max_indices[-c(1, lT)] = diff(does_tfr_decrease)
-   		# at end local max if preceded by an increase 
-        local_max_indices[lT] = 1 - does_tfr_decrease[lT - 1]
- 		value_global_max = max(data, na.rm = TRUE)
+   		# in the middle only a local max if increase is followed by decrease
+        local_max_indices[-c(1, lT)] <- diff(does_tfr_decrease)
+   		# at the end local max if preceded by an increase 
+        local_max_indices[lT] <- 1 - does_tfr_decrease[lT - 1]
+ 		value_global_max <- max(data, na.rm = TRUE)
  		max_index <- max(seq(T.start, T_end_c[country]) * (local_max_indices > 0) * 
  						ifelse(data[T.start:T_end_c[country]] >
             				value_global_max - max.diff.local.and.global.max.for.start.at.loc, 1, 0))
-        # move the point to the right if there are more recent points with the same values
         if(post.v2) {
+            # move the point to the right if there are more recent points with the same values
         	is.same <- c(0, ifelse(abs(d) < delta.for.local.max, 1, 0), 0)
         	cs.same <- cumsum(is.same[(max_index-T.start+1):(lT+1)])
         	max_index <- max_index + cs.same[min(which(diff(cs.same)==0))]
         }
         tau_c[country] <- max_index
-        start_c[country] <- tau_c[country]
+        start_c[country] <- tau_c[country] # start index of phase II
 
 		if(data[tau_c[country]] < min.TFRlevel.for.start.after.1950) {
         	if ((post.v2 && as.integer(names(data)[T.start]) > 1855) || !post.v2) {
@@ -161,11 +163,11 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
         	}
         }
         if (tau_c[country] > 1 && T.suppl > 0 && has.suppl) 
-        	suppl.data$tfr_matrix[1:min(tau_c[country] - 1, T.suppl),suppl.data$index.from.all.countries[country]] <- NA
+        	suppl.data$tfr_matrix[1:min(tau_c[country] - 1, T.suppl), suppl.data$index.from.all.countries[country]] <- NA
         if(tau_c[country] > T.suppl + 1)
             tfr_matrix[1:(tau_c[country] - 1 - T.suppl), country] <- NA
 
-        lambda_c[country] <- find.lambda.for.one.country(data, T_end_c[country])
+        lambda_c[country] <- find.lambda.for.one.country(data, T_end_c[country]) # end index of Phase II
         if (lambda_c[country] < T_end_c[country]) { # set NA all values between lambda_c and T_c_end
          	if(lambda_c[country] < T.suppl) {
          		suppl.data$tfr_matrix[(lambda_c[country] + 1):min(T.suppl, T_end_c[country]),
@@ -175,19 +177,13 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
         }
     }
 
-    id_Tistau <- seq(1, nr_countries)[tau_c == T_end_c]
-        # not needed in fit
-    id_DL <- seq(1, nr_countries)[(tau_c != T_end_c)
-    #& (apply(tfr_matrix, 2, min, na.rm = TRUE) >1) # excludes Macao and Hong Kong
-                ]
-        # for par in BHM
-   id_early <- seq(1, nr_countries)[(tau_c == -1)
-    #& (apply(tfr_matrix, 2, min, na.rm = TRUE) >1)
-    			]
+    id_Tistau <- seq(1, nr_countries)[tau_c == T_end_c] # have not started Phase II yet
+    id_DL <- seq(1, nr_countries)[(tau_c != T_end_c)] # have started Phase II
+    # for par in BHM
+    id_early <- seq(1, nr_countries)[(tau_c == -1)] # start of Phase II not observed (happened prior to observed data)
     # needed for which U_c's to update, this is updated in mcmc
-   id_notearly = seq(1, nr_countries)[(tau_c != -1)  & (tau_c != T_end_c)
-    #& (apply(tfr_matrix, 2, min, na.rm = TRUE) >1)
-    			]
+    id_notearly <- seq(1, nr_countries)[(tau_c != -1)  & (tau_c != T_end_c)] # start of Phase II observed
+
     return(list(tau_c = tau_c,  id_Tistau = id_Tistau, id_DL = id_DL, id_early = id_early,
         		id_notearly = id_notearly, tfr_matrix = tfr_matrix, T_end_c=T_end_c, 
         		lambda_c=lambda_c, start_c=start_c, suppl.matrix=suppl.data$tfr_matrix
