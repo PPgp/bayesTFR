@@ -846,7 +846,7 @@ stop.if.mcmc.missing <- function(x, ignore.missing = FALSE) {
 
 "get.mcmc.list" <- function(mcmc.list, ...) UseMethod("get.mcmc.list")
 
-get.mcmc.list.bayesTFR.mcmc.set <- function(mcmc.list, ...) return(stop.if.mcmc.missing(mcmc.list$mcmc.list), ...)
+get.mcmc.list.bayesTFR.mcmc.set <- function(mcmc.list, ...) return(stop.if.mcmc.missing(mcmc.list$mcmc.list, ...))
 get.mcmc.list.bayesTFR.mcmc <- function(mcmc.list, ...) return(stop.if.mcmc.missing(list(mcmc.list), ...))
 get.mcmc.list.bayesTFR.prediction <- function(mcmc.list, ...) return(stop.if.mcmc.missing(mcmc.list$mcmc.set$mcmc.list, ...))
 get.mcmc.list.list <- function(mcmc.list, ...) return(stop.if.mcmc.missing(mcmc.list, ...))

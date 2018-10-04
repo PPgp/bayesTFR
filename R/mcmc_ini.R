@@ -80,7 +80,6 @@ find.lambda.for.one.country <- function(tfr, T_end) {
 }
 
 
-
 .get.T.start.end <- function(tfr) {
 	# Return first index after NAs at the beginning of the time series and the last index before any NA's at the end
 	isna.tfr <- is.na(tfr)
@@ -167,7 +166,9 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
         if(tau_c[country] > T.suppl + 1)
             tfr_matrix[1:(tau_c[country] - 1 - T.suppl), country] <- NA
 
-        lambda_c[country] <- find.lambda.for.one.country(data, T_end_c[country]) # end index of Phase II
+        # end index of Phase II
+        lambda_c[country] <- do.call(getOption("TFRphase3findfct", "find.lambda.for.one.country"), list(data, T_end_c[country]))
+        
         if (lambda_c[country] < T_end_c[country]) { # set NA all values between lambda_c and T_c_end
          	if(lambda_c[country] < T.suppl) {
          		suppl.data$tfr_matrix[(lambda_c[country] + 1):min(T.suppl, T_end_c[country]),
@@ -178,11 +179,11 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
     }
 
     id_Tistau <- seq(1, nr_countries)[tau_c == T_end_c] # have not started Phase II yet
-    id_DL <- seq(1, nr_countries)[(tau_c != T_end_c)] # have started Phase II
+    id_DL <- seq(1, nr_countries)[(tau_c != T_end_c) & (lambda_c != 1)] # have started Phase II
     # for par in BHM
-    id_early <- seq(1, nr_countries)[(tau_c == -1)] # start of Phase II not observed (happened prior to observed data)
+    id_early <- seq(1, nr_countries)[(tau_c == -1) & (lambda_c != 1)] # start of Phase II not observed (happened prior to observed data)
     # needed for which U_c's to update, this is updated in mcmc
-    id_notearly <- seq(1, nr_countries)[(tau_c != -1)  & (tau_c != T_end_c)] # start of Phase II observed
+    id_notearly <- seq(1, nr_countries)[(tau_c != -1)  & (tau_c != T_end_c) & (lambda_c != 1)] # start of Phase II observed
 
     return(list(tau_c = tau_c,  id_Tistau = id_Tistau, id_DL = id_DL, id_early = id_early,
         		id_notearly = id_notearly, tfr_matrix = tfr_matrix, T_end_c=T_end_c, 
