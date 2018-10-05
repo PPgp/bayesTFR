@@ -4,7 +4,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
                                save.as.ascii=0, verbose=TRUE) {
   # Run subnational projections, using the Scale AR(1) model applied to a national bayesTFR simulation 
   # sim.dir is the world-national simulation. Set output.dir to store results somewhere else.  
-  
+
   wpred <- get.tfr.prediction(sim.dir) # contains national projections
   wdata <- wpred$tfr_matrix_reconstructed
   wmeta <- wpred$mcmc.set$meta
@@ -79,39 +79,40 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
     arsd <- min(ar.pars['sigma'], sqrt((1-ar.pars['rho']^2)*var(meta$tfr_matrix_observed[i,]/wtfr[widx], na.rm = TRUE)))
     tfr_reconstructed <- meta$tfr_matrix_observed
     for(region in 1:nr.reg) {
-      reg.obj <- get.country.object(region, meta, index=TRUE)
-      regcode.char <- as.character(reg.obj$code)			
-      regtfr <- get.observed.tfr(region, meta, 'tfr_matrix_observed')
-      regtfr.last <- regtfr[length(regtfr)]
-      c.first <- rep(regtfr.last/wtfr[names(wtfr) %in% names(regtfr.last)], nr.traj)
-      if(is.na(regtfr.last)) { # impute where NA's at the end
-        for(i in length(regtfr):1) if(!is.na(regtfr[i])) break
-        widx <- which(names(wtfr) %in% names(regtfr[i]))
-        c.first <- rep(regtfr[i]/wtfr[widx], nr.traj)
-        meta$T_end_c[region] <- i
-        tmptraj <- matrix(NA, nrow = length(regtfr) - i, ncol = nr.traj)
-        for(tr in 1:nr.traj) {
-          scale.prev <- c.first[tr]
-          wi <- 1
-          for(j in (i+1):length(regtfr)) {
-            for(k in 1:100)	{
-              scale <- ar.pars['rho'] * (scale.prev - ar.pars['mu']) + ar.pars['mu'] + rnorm(1, 0, sd=arsd)
-              tmptraj[j-i, tr] <- wtfr[widx+wi]*scale
-              if(tmptraj[j-i, tr] > min.tfr) break
+        reg.obj <- get.country.object(region, meta, index=TRUE)
+        regcode.char <- as.character(reg.obj$code)			
+        regtfr <- get.observed.tfr(region, meta, 'tfr_matrix_observed')
+        regtfr.last <- rep(regtfr[length(regtfr)], nr.traj)
+        c.first <- regtfr.last/wtfr[names(wtfr) %in% names(regtfr.last)] # set of initial scales
+        if(is.na(regtfr.last[1])) { # impute where NA's at the end
+            for(i in length(regtfr):1) if(!is.na(regtfr[i])) break
+            widx <- which(names(wtfr) %in% names(regtfr[i]))
+            c.first <- rep(regtfr[i]/wtfr[widx], nr.traj) # set of initial scales
+            meta$T_end_c[region] <- i
+            tmptraj <- matrix(NA, nrow = length(regtfr) - i, ncol = nr.traj) # trajectory matrix for imputation
+            for(tr in 1:nr.traj) { # iterate over trajectories
+                scale.prev <- c.first[tr]
+                wi <- 1 # counter for moving along the time of world trajectories
+                for(j in (i+1):length(regtfr)) { # iterate over imputation time
+                    for(k in 1:100)	{ # loop for getting tfr above the required minimum (0.5)
+                        scale <- ar.pars['rho'] * (scale.prev - ar.pars['mu']) + ar.pars['mu'] + rnorm(1, 0, sd=arsd)
+                        tmptraj[j-i, tr] <- wtfr[widx+wi]*scale
+                        if(tmptraj[j-i, tr] > min.tfr) break
+                    }
+                    tmptraj[j-i, tr] <- max(min.tfr, tmptraj[j-i, tr])
+                    scale.prev <- scale
+                    wi <- wi + 1
+                }
+                # set the starting scale of the projection to the end scale of the imputation (for this trajectory)
+                c.first[tr] <- scale 
             }
-            tmptraj[j-i, tr] <- max(min.tfr, tmptraj[j-i, tr])
-            scale.prev <- scale
-            wi <- wi + 1
-          }
-          # set the starting scale of the projection to the end scale of the imputation
-          c.first[tr] <- scale 
-        }
-        # impute using median
-        regtfr[(i+1):length(regtfr)] <- tfr_reconstructed[(i+1):length(regtfr),region] <- apply(tmptraj, 1, median)
-        regtfr.last <- regtfr[length(regtfr)]
-      }
-      tfr.pred <- matrix(NA, nrow=this.nr.project+1, ncol=nr.traj)
-      tfr.pred[1,] <- regtfr.last
+            # impute using median
+            regtfr[(i+1):length(regtfr)] <- tfr_reconstructed[(i+1):length(regtfr),region] <- apply(tmptraj, 1, median)
+            regtfr.last <- tmptraj[,length(regtfr)]
+        } # end of imputation
+        
+        tfr.pred <- matrix(NA, nrow=this.nr.project+1, ncol=nr.traj)
+        tfr.pred[1,] <- regtfr.last
       
       for(s in 1:ncol(tfr.pred)) { # iterate over trajectories
         #is.in.phase3 <- is.reg.phase3
