@@ -711,6 +711,22 @@ test.subnational.predictions <- function() {
   stopifnot(min(spred$projection.years) == 2018)
   unlink(sim.dir, recursive=TRUE)
   
+  # Subnational projections for Canada with one region (Alberta) having imputed values
+  sim.dir <- tempfile()
+  mytfr <- read.delim(my.subtfr.file, check.names = FALSE)
+  mytfr[mytfr$country_code == 124 & mytfr$reg_code == 658, "last.observed"] <- 1999
+  my.subtfr.file.mis <- tempfile()
+  write.table(mytfr, file = my.subtfr.file.mis, row.names = FALSE, quote = FALSE, sep = "\t")
+  preds <- tfr.predict.subnat("Canada", my.tfr.file=my.subtfr.file.mis,
+                              sim.dir=nat.dir, output.dir=sim.dir, start.year=2013)
+  obs <- preds[["124"]]$mcmc.set$meta$tfr_matrix_observed[,"658"]
+  recon <- preds[["124"]]$tfr_matrix_reconstructed[,"658"]
+  stopifnot(all(is.na(obs[c("2003", "2008")]))) # observed is NA
+  stopifnot(all(!is.na(obs["1998"]))) # last observed non-NA 
+  stopifnot(all(!is.na(recon[c("2003", "2008")]))) # missing values were reconstructed
+  unlink(sim.dir, recursive=TRUE)
+  unlink(my.subtfr.file.mis)
+  
   # Subnational projections for all countries in the file
   sim.dir <- tempfile()
   preds <- tfr.predict.subnat(c(36, 218, 124), my.tfr.file=my.subtfr.file, sim.dir=nat.dir, 

@@ -4,7 +4,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
                                save.as.ascii=0, verbose=TRUE) {
   # Run subnational projections, using the Scale AR(1) model applied to a national bayesTFR simulation 
   # sim.dir is the world-national simulation. Set output.dir to store results somewhere else.  
-  
+
   wpred <- get.tfr.prediction(sim.dir) # contains national projections
   wdata <- wpred$tfr_matrix_reconstructed
   wmeta <- wpred$mcmc.set$meta
@@ -35,6 +35,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
     if(is.null(nr.traj)) nr.traj <- ncol(wtrajs)
     thinning.index <- round(seq(1, ncol(wtrajs), length=nr.traj))
     wtrajs <- wtrajs[as.integer(rownames(wtrajs)) <= end.year, thinning.index]
+    nr.traj <- ncol(wtrajs)
     wyears <- as.integer(rownames(wtrajs))
     wend.year <- max(wyears)
     wtfr <- wdata[,country.obj$index]
@@ -47,7 +48,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
     }
     if(presenty < min(wyears)) { # add observed data to national trajectories if present year is not there
       addtfr <- wtfr[-length(wtfr)][wtfrobsy >= presenty]
-      adddata <- matrix(addtfr, ncol=ncol(wtrajs), nrow=length(addtfr), 
+      adddata <- matrix(addtfr, ncol=nr.traj, nrow=length(addtfr), 
                         dimnames=list(names(addtfr), colnames(wtrajs)))
       wtrajs <- rbind(adddata, wtrajs)
     }
@@ -72,40 +73,50 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
     meta$T_end <- nrow(meta$tfr_matrix_all)
     meta$T_end_c <- rep(meta$T_end, nr.reg)
     country.char <- as.character(country.obj$code)
-    
-    for(i in meta$T_end:1) if(sum(!is.na(meta$tfr_matrix_observed)[i,]) >= max(2, nr.reg/2)) break # check NA's at the end to obtain observed variance
+    # Get observed variance (SD) from a time point that has at least one half of the regions non-NA
+    for(i in meta$T_end:1) if(sum(!is.na(meta$tfr_matrix_observed)[i,]) >= max(2, nr.reg/2)) break # check NA's at the end
     widx <- which(names(wtfr) == rownames(meta$tfr_matrix_observed)[i])
-    arsd <- min(ar.pars['sigma'], sqrt((1-ar.pars['rho']^2)*var(meta$tfr_matrix_observed[i,]/wtfr[widx])))
+    arsd <- min(ar.pars['sigma'], sqrt((1-ar.pars['rho']^2)*var(meta$tfr_matrix_observed[i,]/wtfr[widx], na.rm = TRUE)))
     tfr_reconstructed <- meta$tfr_matrix_observed
     for(region in 1:nr.reg) {
-      reg.obj <- get.country.object(region, meta, index=TRUE)
-      regcode.char <- as.character(reg.obj$code)			
-      regtfr <- get.observed.tfr(region, meta, 'tfr_matrix_observed')
-      regtfr.last <- regtfr[length(regtfr)]
-      c.first <- regtfr.last/wtfr[names(wtfr) %in% names(regtfr.last)]
-      if(is.na(regtfr.last)) { # impute where NA's at the end
-        for(i in length(regtfr):1) if(!is.na(regtfr[i])) break
-        widx <- which(names(wtfr) %in% names(regtfr[i]))
-        c.first <- regtfr[i]/wtfr[widx]
-        meta$T_end_c[region] <- i
-        wi <- 1
-        for(j in (i+1):length(regtfr)) {
-          for(k in 1:100)	{
-            scale <- ar.pars['rho'] * (c.first - ar.pars['mu']) + ar.pars['mu'] + rnorm(1, 0, sd=arsd)
-            regtfr[j] <- wtfr[widx+wi]*scale
-            if(regtfr[j] > min.tfr) break
-          }
-          tfr_reconstructed[j,region] <- regtfr[j]
-          wi <- wi + 1
-        }
-        regtfr.last <- regtfr[length(regtfr)]
-      }
-      tfr.pred <- matrix(NA, nrow=this.nr.project+1, ncol=ncol(wtrajs))
-      tfr.pred[1,] <- regtfr.last
+        reg.obj <- get.country.object(region, meta, index=TRUE)
+        regcode.char <- as.character(reg.obj$code)			
+        regtfr <- get.observed.tfr(region, meta, 'tfr_matrix_observed')
+        regtfr.last <- rep(regtfr[length(regtfr)], nr.traj)
+        c.first <- regtfr.last/wtfr[names(wtfr) %in% names(regtfr.last)] # set of initial scales
+        if(is.na(regtfr.last[1])) { # impute where NA's at the end
+            for(i in length(regtfr):1) if(!is.na(regtfr[i])) break
+            widx <- which(names(wtfr) %in% names(regtfr[i]))
+            c.first <- rep(regtfr[i]/wtfr[widx], nr.traj) # set of initial scales
+            meta$T_end_c[region] <- i
+            tmptraj <- matrix(NA, nrow = length(regtfr) - i, ncol = nr.traj) # trajectory matrix for imputation
+            for(tr in 1:nr.traj) { # iterate over trajectories
+                scale.prev <- c.first[tr]
+                wi <- 1 # counter for moving along the time of world trajectories
+                for(j in (i+1):length(regtfr)) { # iterate over imputation time
+                    for(k in 1:100)	{ # loop for getting tfr above the required minimum (0.5)
+                        scale <- ar.pars['rho'] * (scale.prev - ar.pars['mu']) + ar.pars['mu'] + rnorm(1, 0, sd=arsd)
+                        tmptraj[j-i, tr] <- wtfr[widx+wi]*scale
+                        if(tmptraj[j-i, tr] > min.tfr) break
+                    }
+                    tmptraj[j-i, tr] <- max(min.tfr, tmptraj[j-i, tr])
+                    scale.prev <- scale
+                    wi <- wi + 1
+                }
+                # set the starting scale of the projection to the end scale of the imputation (for this trajectory)
+                c.first[tr] <- scale 
+            }
+            # impute using median
+            regtfr[(i+1):length(regtfr)] <- tfr_reconstructed[(i+1):length(regtfr),region] <- apply(tmptraj, 1, median)
+            regtfr.last <- tmptraj[nrow(tmptraj),]
+        } # end of imputation
+        
+        tfr.pred <- matrix(NA, nrow=this.nr.project+1, ncol=nr.traj)
+        tfr.pred[1,] <- regtfr.last
       
       for(s in 1:ncol(tfr.pred)) { # iterate over trajectories
         #is.in.phase3 <- is.reg.phase3
-        scale.prev <- c.first
+        scale.prev <- c.first[s]
         for(year in 2:(this.nr.project+1)) {		
           for(i in 1:100)	{
             scale <- ar.pars['rho'] * (scale.prev - ar.pars['mu']) + ar.pars['mu'] + rnorm(1, 0, sd=arsd) # AR1
@@ -130,7 +141,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
       traj.mean.sd = mean_sd,
       nr.traj=nr.traj,
       tfr_matrix_reconstructed = tfr_reconstructed,
-      output.directory=outdir,
+      output.directory = normalizePath(outdir),
       na.index=wpred$na.index,
       mcmc.set=list(meta=meta, mcmc.list=list()),
       nr.projections=this.nr.project,

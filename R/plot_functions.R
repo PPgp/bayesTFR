@@ -24,8 +24,8 @@ tfr.world.dlcurves <- function(x, mcmc.list, burnin=NULL, countryUc=NULL, ...) {
 		burnin <- 0 # because burnin was already cut of the traces
 	}
 	if(is.null(burnin)) burnin <- 0
-    mcmc.list <- get.mcmc.list(mcmc.list)
-    country <- if(!is.null(countryUc)) get.country.object(countryUc, mcmc.list[[1]]$meta)$code else countryUc
+  mcmc.list <- get.mcmc.list(mcmc.list)
+  country <- if(!is.null(countryUc)) get.country.object(countryUc, mcmc.list[[1]]$meta)$code else countryUc
 	return(tfr.get.dlcurves(x, mcmc.list, country.code=NULL, country.index=NULL, burnin=burnin, countryUc=country, ...))
 }
 
@@ -56,6 +56,7 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin=0
     dlc <- sigma.all <- c()
     cspec <- TRUE
     Uvalue <- NULL
+    if(length(mcmc.list) == 0) stop("No MCMCs available.")
     if(!is.null(country.code) && !is.element(country.index, mcmc.list[[1]]$meta$id_Tistau)) {
     	U.var <- paste0("U_c", country.code)
     	d.var <- paste0("d_c", country.code)

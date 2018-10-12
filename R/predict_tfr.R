@@ -543,7 +543,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				traj.mean.sd = mean_sd,
 				nr.traj=nr_simu,
 				tfr_matrix_reconstructed = tfr_matrix_reconstructed,
-				output.directory=outdir,
+				output.directory = normalizePath(outdir),
 				na.index=(1:nr_simu)[hasNAs],
 				mcmc.set=load.mcmc.set,
 				nr.projections=nr_project,
