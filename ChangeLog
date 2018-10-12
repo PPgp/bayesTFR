@@ -1,3 +1,13 @@
+6.2-0 (10/11/2018)
+-----
+Imputation of missing subnational values.
+
+Support for a user-defined function to modify the Phase III definition.
+    - the function name is set in options "TFRphase3findfct" and 
+        needs arguments tfr and T_end
+
+Unit test for subnational projections.
+
 6.1-2 (01/18/2018)
 -----
 Bug fixes:
