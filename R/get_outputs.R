@@ -204,7 +204,7 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
 		return(NULL)
 	}
 	load(file=pred.file)
-	bayesTFR.prediction$output.directory <- output.dir
+	bayesTFR.prediction$output.directory <- normalizePath(output.dir)
 	
 	pred <- bayesTFR.prediction
 	if(!is.null(mcmc.dir) && is.na(mcmc.dir)) return(pred)

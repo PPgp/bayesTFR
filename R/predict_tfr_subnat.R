@@ -108,7 +108,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
             }
             # impute using median
             regtfr[(i+1):length(regtfr)] <- tfr_reconstructed[(i+1):length(regtfr),region] <- apply(tmptraj, 1, median)
-            regtfr.last <- tmptraj[,length(regtfr)]
+            regtfr.last <- tmptraj[nrow(tmptraj),]
         } # end of imputation
         
         tfr.pred <- matrix(NA, nrow=this.nr.project+1, ncol=nr.traj)
@@ -141,7 +141,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
       traj.mean.sd = mean_sd,
       nr.traj=nr.traj,
       tfr_matrix_reconstructed = tfr_reconstructed,
-      output.directory=outdir,
+      output.directory = normalizePath(outdir),
       na.index=wpred$na.index,
       mcmc.set=list(meta=meta, mcmc.list=list()),
       nr.projections=this.nr.project,
