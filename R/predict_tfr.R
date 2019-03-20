@@ -983,7 +983,7 @@ get.friendly.variant.names.bayesTFR.prediction <- function(pred, ...)
 	return(c('median', 'lower 80', 'upper 80', 'lower 95', 'upper 95', '-0.5child', '+0.5child', 'constant'))
 
 get.wpp.revision.number <- function(pred) {
-	wpps <- c(2008, 2010, 2012, 2015, 2017)
+	wpps <- c(2008, 2010, 2012, 2015, 2017, 2019, 2021)
 	wpps <- wpps[wpps <= pred$mcmc.set$meta$wpp.year]
 	lwpps <- length(wpps)
 	return(seq(13, length=lwpps)[lwpps])
