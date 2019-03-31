@@ -1192,7 +1192,7 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 									use.tfr3=pred$use.tfr3, mcmc3.set=m3.set, burnin3=pred$burnin3,
 									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, min.tfr=pred$min.tfr,
 									countries=countries.idx, adj.factor1=factor1, adj.factor2=factor2,
-									forceAR1=forceAR1, save.as.ascii=0, output.dir=NULL,
+									forceAR1=forceAR1, save.as.ascii=0, output.dir=sim.dir,
 									write.summary.files=FALSE, is.mcmc.set.thinned=TRUE, 
 									write.trajectories=FALSE, verbose=FALSE)
 	new.means <- new.pred$traj.mean.sd[,1,2:dim(new.pred$traj.mean.sd)[3]]
