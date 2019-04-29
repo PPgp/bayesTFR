@@ -1226,11 +1226,12 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
   		for(j in (i+1):nr_countries) {
         	pred.row <- which(i_is_in & ((cor.pred[,1] == country.codes[j]) | (cor.pred[,2] == country.codes[j])))
         	if(length(pred.row) <= 0) {
-        		warning('No records found for pair ', paste(country.codes[c(i,j)], collapse=', '))
-        		next
+        	    reg.values <- c(1, rep(0, ncol(cor.pred)-2)) # set all independent variables to 0
+        		warning('No records found for pair ', paste(country.codes[c(i,j)], collapse=', '), ". All vars set to 0.")
+        	} else {
+        	    if(length(pred.row)>1) pred.row <- pred.row[1]
+        	    reg.values <- c(1,as.numeric(cor.pred[pred.row,-c(1:2)]))
         	}
-        	if(length(pred.row)>1) pred.row <- pred.row[1]
-        	reg.values <- c(1,as.numeric(cor.pred[pred.row,-c(1:2)]))
         	low.eps.cor[i,j] <- low.eps.cor[j,i] <- sum(reg.values*low.coeffs)
         	high.eps.cor[i,j] <- high.eps.cor[j,i] <- sum(reg.values*high.coeffs)        
         	if(is.na(low.eps.cor[i,j]) || is.na(high.eps.cor[i,j]))
