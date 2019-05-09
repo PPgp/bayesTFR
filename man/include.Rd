@@ -4,6 +4,7 @@
 \alias{include_2012}
 \alias{include_2015}
 \alias{include_2017}
+\alias{include_2019}
 
 \docType{data}
 \title{
@@ -13,6 +14,7 @@ Inclusion Codes
 Data sets containing codes that determine which countries are to be included into a simulation or/and projections. 
 }
 \usage{
+data(include_2019)
 data(include_2017)
 data(include_2015)
 data(include_2012)
@@ -36,7 +38,7 @@ Data provided by the United Nations Population Division.
 }
 
 \examples{
-data(include_2017)
-head(include_2017)
+data(include_2019)
+head(include_2019)
 }
 \keyword{datasets}
