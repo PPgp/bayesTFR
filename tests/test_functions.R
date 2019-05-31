@@ -36,7 +36,7 @@ test.load.UNlocations <- function(wpp.year=2012) {
 	test.name <- 'loading WPP location file'
 	start.test(test.name)
 	tfr <- suppressWarnings(bayesTFR:::read.UNtfr(wpp.year)) # if wpp.year=2008, there are warnings about non-existent tfr_supplemental dataset
-	locs <- bayesTFR:::read.UNlocations(tfr$data.object$data, wpp.year)
+	locs <- bayesTFR:::read.UNlocations(tfr$data.object$data, wpp.year) # this could give warnings if there are duplicates in UNlocations
 	stopifnot(length(dim(locs$loc_data)) == 2)
 	stopifnot(all(is.element(c('country_code', 'include_code'), colnames(locs$loc_data))))
 	stopifnot(dim(locs$loc_data)[1] > 200)
@@ -55,7 +55,7 @@ test.load.UNlocations <- function(wpp.year=2012) {
 	# this for some reason causes a warning "‘match’ requires vector arguments"
 	#data("UNlocations", package=paste0("wpp", wpp.year), envir=e) 
 	my.locations <- e$UNlocations[1:100,]
-	my.locations[my.locations$country_code==392,'area_code'] <- 123456
+	my.locations[which(my.locations$location_type == 4)[1],'area_code'] <- 123456
 	write.table(my.locations, file=f, sep='\t', row.names=FALSE)
 	mylocs <- bayesTFR:::read.UNlocations(tfr$data.object$data, wpp.year, my.locations.file=f)
 	stopifnot(is.element(123456, mylocs$loc_data$area_code))

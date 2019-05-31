@@ -1,3 +1,13 @@
+6.3-0 (05/09/2019)
+-----
+Support for wpp2019 (thanks to Patrick Gerland):
+    - revision number extended
+    - dataset include_2019 added
+    - dataset correlation_predictors updated with additional countries
+
+Fixed bug in handling missing country pairs in correlation.
+
+
 6.2-0 (10/11/2018)
 -----
 Imputation of missing subnational values.

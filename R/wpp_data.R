@@ -151,7 +151,7 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
 			loc_data <- rbind(loc_data, my.locations[wnoverlap,])
 		}
 	}
-		
+	
 	include_codes <- read.tfr.file(file.path(find.package(package), "data", 
                                        paste('include_', wpp.year, '.txt', sep='')))
     loc_data <- merge(loc_data, include_codes, by='country_code', all.x=TRUE)
@@ -167,6 +167,10 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
  		loc_index <- (1:n_loc_data)[loc_data$country_code == data$country_code[i]]
  		if (length(loc_index)<=0)
  			stop('Country ', data$country_code[i], ' not found in the location dataset of wpp', wpp.year, '.')
+ 		if (length(loc_index) > 1) {
+ 		    warning("Duplicates found in the location file for country ", data$country_code[i])
+ 		    loc_index <- loc_index[1]
+ 		}
  		incl.code <- if(data$include_code[i] >= 0) data$include_code[i] else loc_data$include_code[loc_index]
  		include[i] <- incl.code == 2
  		prediction.only[i] <- incl.code == 1	

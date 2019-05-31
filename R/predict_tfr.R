@@ -983,7 +983,7 @@ get.friendly.variant.names.bayesTFR.prediction <- function(pred, ...)
 	return(c('median', 'lower 80', 'upper 80', 'lower 95', 'upper 95', '-0.5child', '+0.5child', 'constant'))
 
 get.wpp.revision.number <- function(pred) {
-	wpps <- c(2008, 2010, 2012, 2015, 2017)
+	wpps <- c(2008, 2010, 2012, seq(2015, by = 2, length = 20))
 	wpps <- wpps[wpps <= pred$mcmc.set$meta$wpp.year]
 	lwpps <- length(wpps)
 	return(seq(13, length=lwpps)[lwpps])
@@ -1192,7 +1192,7 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 									use.tfr3=pred$use.tfr3, mcmc3.set=m3.set, burnin3=pred$burnin3,
 									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, min.tfr=pred$min.tfr,
 									countries=countries.idx, adj.factor1=factor1, adj.factor2=factor2,
-									forceAR1=forceAR1, save.as.ascii=0, output.dir=NULL,
+									forceAR1=forceAR1, save.as.ascii=0, output.dir=sim.dir,
 									write.summary.files=FALSE, is.mcmc.set.thinned=TRUE, 
 									write.trajectories=FALSE, verbose=FALSE)
 	new.means <- new.pred$traj.mean.sd[,1,2:dim(new.pred$traj.mean.sd)[3]]
@@ -1219,18 +1219,22 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 	}
 	for(i in 1:(nr_countries-1)) {
 		i_is_in <- (cor.pred[,1] == country.codes[i]) | (cor.pred[,2] == country.codes[i])
+		cntry.found <- TRUE
 		if(sum(i_is_in)==0) {
 			warning('No records found for country ', country.codes[i])
-			next
+		    cntry.found <- FALSE
 		}
   		for(j in (i+1):nr_countries) {
-        	pred.row <- which(i_is_in & ((cor.pred[,1] == country.codes[j]) | (cor.pred[,2] == country.codes[j])))
-        	if(length(pred.row) <= 0) {
-        		warning('No records found for pair ', paste(country.codes[c(i,j)], collapse=', '))
-        		next
-        	}
-        	if(length(pred.row)>1) pred.row <- pred.row[1]
-        	reg.values <- c(1,as.numeric(cor.pred[pred.row,-c(1:2)]))
+  		    if(cntry.found) {
+        	    pred.row <- which(i_is_in & ((cor.pred[,1] == country.codes[j]) | (cor.pred[,2] == country.codes[j])))
+        	    if(length(pred.row) <= 0) {
+        	        reg.values <- c(1, rep(0, ncol(cor.pred)-2)) # set all independent variables to 0
+        		    warning('No records found for pair ', paste(country.codes[c(i,j)], collapse=', '), ". All vars set to 0.")
+        	    } else {
+        	        if(length(pred.row)>1) pred.row <- pred.row[1]
+        	        reg.values <- c(1,as.numeric(cor.pred[pred.row,-c(1:2)]))
+        	    }
+  		    } else reg.values <- c(1, rep(0, ncol(cor.pred)-2)) # set all independent variables to 0
         	low.eps.cor[i,j] <- low.eps.cor[j,i] <- sum(reg.values*low.coeffs)
         	high.eps.cor[i,j] <- high.eps.cor[j,i] <- sum(reg.values*high.coeffs)        
         	if(is.na(low.eps.cor[i,j]) || is.na(high.eps.cor[i,j]))
