@@ -1,3 +1,7 @@
+6.3-1 (6/10/2019)
+-----
+Removed duplicates from the include_2019 dataset.
+
 6.3-0 (05/09/2019)
 -----
 Support for wpp2019 (thanks to Patrick Gerland):
