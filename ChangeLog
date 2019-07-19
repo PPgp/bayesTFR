@@ -1,3 +1,8 @@
+6.3-? (7/19/2019)
+-----
+Restoring graphical pars in tfr.pardensity.plot, tfr.partraces.plot 
+(thanks to Ludger Sandig for the patch)
+
 6.3-1 (6/10/2019)
 -----
 Removed duplicates from the include_2019 dataset.
