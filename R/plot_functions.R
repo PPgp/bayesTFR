@@ -616,7 +616,7 @@ do.plot.tfr.partraces <- function(mcmc.list, func, par.names, main.postfix='', c
 		ncols <- dev.ncol
 		nrows <- ceiling(par.names.l/dev.ncol)
 	}
-	par(mfrow=c(nrows,ncols))
+	par.cur <- par(mfrow=c(nrows,ncols))
 	col <- 1:nr.chains
 	maxx<-max(iter)
 	if(is.null(plot.args$xlim)) plot.args$xlim <- c(1+orig.burnin,maxx)
@@ -647,6 +647,7 @@ do.plot.tfr.partraces <- function(mcmc.list, func, par.names, main.postfix='', c
 		}
 		ipara <- ipara+1
 	}
+	par(par.cur)
 	#stop('')
 }
 
@@ -727,7 +728,7 @@ do.plot.tfr.pardensity <- function(mcmc.list, func, par.names, par.names.ext, ma
 		nrows <- ceiling(par.names.l/dev.ncol)
 	}
 	args <- extract.plot.args(...)
-	par(mfrow=c(nrows,ncols))
+	par.cur <- par(mfrow=c(nrows,ncols))
 	for (para in par.names) {
 		values <- eval(do.call(func, c(list(mcmc.list, par.names=para, burnin=burnin), func.args)))
 		values <-  filter.traces(values, par.names)
@@ -736,6 +737,7 @@ do.plot.tfr.pardensity <- function(mcmc.list, func, par.names, par.names.ext, ma
 			do.call('plot', c(list(dens, main=paste(par.name, main.postfix)), args$plot.args))
 		}
 	}
+	par(par.cur)
 }
 
 tfr.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
