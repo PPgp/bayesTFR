@@ -2,7 +2,7 @@
 run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 'bayesTFR.output'), 
 						thin=1, replace.output=FALSE,
 						# meta parameters
-						start.year=1950, present.year=2015, wpp.year=2019,
+						start.year=1950, present.year=2020, wpp.year=2019,
 						my.tfr.file = NULL, my.locations.file = NULL, buffer.size=100,
 					 	U.c.low=5.5, U.up=8.8, U.width=3,
 					 	mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2,                                                
@@ -116,7 +116,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 		}
 	if (parallel) { # run chains in parallel
 		chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc.run.chain, 
-						initfun=init.nodes, meta=bayesTFR.mcmc.meta, 
+						initfun=init.nodes, seed = seed, meta=bayesTFR.mcmc.meta, 
 						thin=thin, iter=iter, S.ini=S.ini, a.ini=a.ini,
                         b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
                         gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, 

@@ -29,4 +29,5 @@ if(!cran) {
 	test.run.mcmc.simulation.auto()
 	test.run.mcmc.simulation.auto.parallel()
 	test.plot.all()
+	test.reproduce.simulation()
 }
