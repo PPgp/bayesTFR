@@ -1,5 +1,7 @@
-6.3-? (7/19/2019)
+6.4-0 (7/26/2019)
 -----
+Default for wpp.year set to 2019
+
 Restoring graphical pars in tfr.pardensity.plot, tfr.partraces.plot 
 (thanks to Ludger Sandig for the patch)
 

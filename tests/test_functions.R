@@ -483,11 +483,11 @@ test.DLcurve <- function() {
 	# world distribution
 	dlw <- tfr.world.dlcurves(tfr, m, countryUc="Nigeria")
 	stopifnot(all(dim(dlw)==c(60,100)))
-	# median of the world DL in the TFR range of 3-4.3 is smaller than the country-specific median in that range
+	# median of the world DL in the TFR range of 3-4 is smaller than the country-specific median in that range
 	# visual check:
 	# DLcurve.plot(m, 'Nigeria')
 	# lines(tfr, apply(dlw, 2, median))
-	stopifnot(all(apply(dlw[, tfr > 3 & tfr < 4.3], 2, median) < apply(dls$dl[, tfr > 3 & tfr < 4.3], 2, median)))
+	stopifnot(all(apply(dlw[, tfr > 3 & tfr < 4], 2, median) < apply(dls$dl[, tfr > 3 & tfr < 4], 2, median)))
 	test.ok(test.name)
 }
 
@@ -687,9 +687,9 @@ test.subnational.predictions <- function() {
   my.subtfr.file <- file.path(find.package("bayesTFR"), 'extdata', 'subnational_tfr_template.txt')
   nat.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
   
-  # Subnational projections for Australia and Canada; start year before national projections
+  # Subnational projections for Australia and Canada; start 1 time period before national projections
   preds <- tfr.predict.subnat(c(36, 124), my.tfr.file=my.subtfr.file,
-                              sim.dir=nat.dir, output.dir=sim.dir, start.year=2006)
+                              sim.dir=nat.dir, output.dir=sim.dir, start.year=2011)
   stopifnot(all(names(preds) %in% c("36", "124")))
   stopifnot(nrow(get.countries.table(preds[["36"]]))==8)
   filename <- tempfile()
@@ -746,7 +746,7 @@ test.subnational.predictions <- function() {
   
   # Retrieve trajectories
   trajs <- get.tfr.trajectories(preds[["124"]], "Alberta")
-  stopifnot(all(dim(trajs) == c(8, 30)))
+  stopifnot(all(dim(trajs) == c(7, 30)))
   
   test.ok(test.name)
   unlink(sim.dir, recursive=TRUE)
