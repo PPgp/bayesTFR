@@ -171,8 +171,8 @@ test.run.mcmc.simulation <- function(compression='None') {
 	tfr.median.shift(sim.dir, country='Uganda', shift=1.5, from=2051, to=2080)
 	shifted.pred <- get.tfr.prediction(sim.dir)
 	shifted.projs <- summary(shifted.pred, country='Uganda')$projections
-	stopifnot(all(projs[9:14,c(1,3:dim(projs)[2])]+1.5 == shifted.projs[9:14,c(1,3:dim(projs)[2])]))
-	stopifnot(all(projs[c(1:8, 15:18),c(1,3:dim(projs)[2])] == shifted.projs[c(1:8, 15:18),c(1,3:dim(projs)[2])]))
+	stopifnot(all(projs[8:13,c(1,3:dim(projs)[2])]+1.5 == shifted.projs[8:13,c(1,3:dim(projs)[2])]))
+	stopifnot(all(projs[c(1:7, 14:17),c(1,3:dim(projs)[2])] == shifted.projs[c(1:7, 14:17),c(1,3:dim(projs)[2])]))
 	test.ok(test.name)
 
 	test.name <- 'resetting the median'
@@ -186,11 +186,11 @@ test.run.mcmc.simulation <- function(compression='None') {
 	start.test(test.name)
 	expert.values <- c(2.3, 2.4, 2.4)
 	cobj <- get.country.object('Uganda', m$meta)
-	shift <- expert.values - pred$quantiles[cobj$index, '0.5',3:5]
+	shift <- expert.values - pred$quantiles[cobj$index, '0.5',2:4]
 	mod.pred <- tfr.median.set(sim.dir, country='Uganda', values=expert.values, years=2024)
 	mod.projs <- summary(mod.pred, country='Uganda')$projections
-	stopifnot(all(mod.projs[3:5, c(1,3:dim(projs)[2])]==projs[3:5, c(1,3:dim(projs)[2])]+shift))
-	stopifnot(all(mod.projs[c(1:2,6:18), c(1,3:dim(projs)[2])]==projs[c(1:2,6:18), c(1,3:dim(projs)[2])]))
+	stopifnot(all(mod.projs[2:4, c(1,3:dim(projs)[2])]==projs[2:4, c(1,3:dim(projs)[2])]+shift))
+	stopifnot(all(mod.projs[c(1,5:17), c(1,3:dim(projs)[2])]==projs[c(1,5:17), c(1,3:dim(projs)[2])]))
 	test.ok(test.name)
 	
 	unlink(sim.dir, recursive=TRUE)
@@ -483,11 +483,11 @@ test.DLcurve <- function() {
 	# world distribution
 	dlw <- tfr.world.dlcurves(tfr, m, countryUc="Nigeria")
 	stopifnot(all(dim(dlw)==c(60,100)))
-	# median of the world DL in the TFR range of 3-4.3 is smaller than the country-specific median in that range
+	# median of the world DL in the TFR range of 3-4 is smaller than the country-specific median in that range
 	# visual check:
 	# DLcurve.plot(m, 'Nigeria')
 	# lines(tfr, apply(dlw, 2, median))
-	stopifnot(all(apply(dlw[, tfr > 3 & tfr < 4.3], 2, median) < apply(dls$dl[, tfr > 3 & tfr < 4.3], 2, median)))
+	stopifnot(all(apply(dlw[, tfr > 3 & tfr < 4], 2, median) < apply(dls$dl[, tfr > 3 & tfr < 4], 2, median)))
 	test.ok(test.name)
 }
 
@@ -687,9 +687,9 @@ test.subnational.predictions <- function() {
   my.subtfr.file <- file.path(find.package("bayesTFR"), 'extdata', 'subnational_tfr_template.txt')
   nat.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
   
-  # Subnational projections for Australia and Canada; start year before national projections
+  # Subnational projections for Australia and Canada; start 1 time period before national projections
   preds <- tfr.predict.subnat(c(36, 124), my.tfr.file=my.subtfr.file,
-                              sim.dir=nat.dir, output.dir=sim.dir, start.year=2006)
+                              sim.dir=nat.dir, output.dir=sim.dir, start.year=2011)
   stopifnot(all(names(preds) %in% c("36", "124")))
   stopifnot(nrow(get.countries.table(preds[["36"]]))==8)
   filename <- tempfile()
@@ -746,8 +746,38 @@ test.subnational.predictions <- function() {
   
   # Retrieve trajectories
   trajs <- get.tfr.trajectories(preds[["124"]], "Alberta")
-  stopifnot(all(dim(trajs) == c(8, 30)))
+  stopifnot(all(dim(trajs) == c(7, 30)))
   
   test.ok(test.name)
   unlink(sim.dir, recursive=TRUE)
+}
+
+test.reproduce.simulation <- function() {
+    sim.dir <- tempfile()
+    test.name <- 'reproducing simulation'
+    start.test(test.name)
+    seed <- 1234
+    m1 <- run.tfr.mcmc(iter=5, nr.chains=2, output.dir=sim.dir, start.year=1950, seed = seed)
+    res1 <- summary(m1)$statistics
+    m2 <- run.tfr.mcmc(iter=5, nr.chains=2, output.dir=sim.dir, start.year=1950, seed = seed, replace.output = TRUE)
+    res2 <- summary(m2)$statistics
+    stopifnot(all(res1 == res2))
+    
+    m3 <- run.tfr.mcmc(iter=5, nr.chains=2, output.dir=sim.dir, start.year=1950, replace.output = TRUE) # no seed
+    res3 <- summary(m3)$statistics
+    stopifnot(!all(res3 == res2))
+    
+    # parallel
+    m1p <- run.tfr.mcmc(iter=5, nr.chains=2, output.dir=sim.dir, start.year=1950, seed = seed, replace.output = TRUE, parallel = TRUE, ft_verbose = TRUE)
+    res1p <- summary(m1p)$statistics
+    m2p <- run.tfr.mcmc(iter=5, nr.chains=2, output.dir=sim.dir, start.year=1950, seed = seed, replace.output = TRUE, parallel = TRUE, ft_verbose = TRUE)
+    res2p <- summary(m2p)$statistics
+    stopifnot(all(res1p == res2p))
+    
+    m3p <- run.tfr.mcmc(iter=5, nr.chains=2, output.dir=sim.dir, start.year=1950, replace.output = TRUE, parallel = TRUE, ft_verbose = TRUE) # no seed
+    res3p <- summary(m3p)$statistics
+    stopifnot(!all(res3p == res2p))
+    
+    test.ok(test.name)
+    unlink(sim.dir, recursive=TRUE)
 }

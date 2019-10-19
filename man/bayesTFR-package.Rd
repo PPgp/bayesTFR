@@ -57,7 +57,7 @@ For MCMC diagnostics, functions \link{coda.list.mcmc} and \link{coda.list.mcmc3}
 
 Existing simulation results can be accessed using the \link{get.tfr.mcmc} (Phase II) and \link{get.tfr3.mcmc} (Phase III) functions.  An existing prediction can be accessed via \link{get.tfr.prediction}. Existing convergence diagnostics can be accessed using the \link{get.tfr.convergence}, \link{get.tfr.convergence.all}, \link{get.tfr3.convergence} and \link{get.tfr3.convergence.all} functions.
 
-The historical national TFR data are taken from one of the packages \pkg{wpp2017} (default), \pkg{wpp2015}, \pkg{wpp2012} or \pkg{wpp2010}, depending on users settings.
+The historical national TFR data are taken from one of the packages \pkg{wpp2019} (default), \pkg{wpp2017}, \pkg{wpp2015}, \pkg{wpp2012} or \pkg{wpp2010}, depending on users settings.
 
 Subnational TFR projections can be generated using \link{tfr.predict.subnat}. In this case, historical data must be provided by the user. Existing projections can be accessed from disk via \link{get.regtfr.prediction}. 
 }

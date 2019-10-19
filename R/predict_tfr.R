@@ -39,9 +39,9 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 	
 	# Get argument settings from existing convergence diagnostics
 	if(use.diagnostics) {
-		nrtraj.burnin <- get.burnin.nrtraj.from.diagnostics(mcmc.set)
-		nr.traj <- nrtraj.burnin[1]
-		burnin <- nrtraj.burnin[2]
+	    diagpars <- get.burnin.nrtraj.from.diagnostics(mcmc.set$meta$output.dir, verbose = verbose)
+		nr.traj <- diagpars['nr.traj']
+		burnin <- diagpars['burnin']
 		if(verbose)
 			cat('\nUsing convergence settings: nr.traj=', nr.traj, ', burnin=', burnin, '\n')
 	}
@@ -52,25 +52,33 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 					output.dir=output.dir, verbose=verbose, ...))			
 }
 
-get.burnin.nrtraj.from.diagnostics <- function(mcmc.set) {
-	diag.list <- get.tfr.convergence.all(mcmc.set$meta$output.dir)
-	ldiag <- length(diag.list)
-	if (ldiag == 0) stop('There is no diagnostics available. Use manual settings of "nr.traj" or "thin".')
-	use.nr.traj <- use.burnin <- rep(NA, ldiag)
-	for(idiag in 1:ldiag) {
-		if (has.mcmc.converged(diag.list[[idiag]])) {
-			use.nr.traj[idiag] <- diag.list[[idiag]]$use.nr.traj
-			use.burnin[idiag] <- diag.list[[idiag]]$burnin
-		}
-	}
-	if(all(is.na(use.nr.traj)))
-		stop('There is no diagnostics indicating convergence of the MCMCs. Use manual settings of "nr.traj" or "thin".')
-	# Try to select those that suggest nr.traj >= 2000 (take the minimum of those)
-	traj.is.notna <- !is.na(use.nr.traj)
-	larger2T <- traj.is.notna & use.nr.traj>=2000
-	nr.traj.idx <- if(sum(larger2T)>0) (1:ldiag)[larger2T][which.min(use.nr.traj[larger2T])] 
-					else (1:ldiag)[traj.is.notna][which.max(use.nr.traj[traj.is.notna])]
-	return(c(use.nr.traj[nr.traj.idx], use.burnin[nr.traj.idx]))
+.find.burnin.nr.traj.from.diag <- function(diag.list, verbose = FALSE) {
+    ldiag <- length(diag.list)
+    if (ldiag == 0) stop('There is no diagnostics available. Use manual settings of "nr.traj" or "thin".')
+    use.nr.traj <- use.burnin <- rep(NA, ldiag)
+    for(idiag in 1:ldiag) {
+        if (has.mcmc.converged(diag.list[[idiag]])) {
+            use.nr.traj[idiag] <- diag.list[[idiag]]$use.nr.traj
+            use.burnin[idiag] <- diag.list[[idiag]]$burnin
+        }
+    }
+    if(all(is.na(use.nr.traj)))
+        stop('There is no diagnostics indicating convergence of the MCMCs. Use manual settings of "nr.traj" or "thin".')
+    # Try to select those that suggest nr.traj >= 2000 (take the minimum of those)
+    traj.is.notna <- !is.na(use.nr.traj)
+    larger2T <- traj.is.notna & use.nr.traj>=2000
+    nr.traj.idx <- if(sum(larger2T)>0) (1:ldiag)[larger2T][which.min(use.nr.traj[larger2T])] 
+    else (1:ldiag)[traj.is.notna][which.max(use.nr.traj[traj.is.notna])]
+    nr.traj <- use.nr.traj[nr.traj.idx]
+    burnin <- use.burnin[nr.traj.idx]
+    if(verbose)
+        cat('\nUsing convergence settings: nr.traj=', nr.traj, ', burnin=', burnin, '\n')
+    return(c(nr.traj = nr.traj, burnin = burnin))
+}
+
+get.burnin.nrtraj.from.diagnostics <- function(sim.dir, ...) {
+	diag.list <- get.tfr.convergence.all(sim.dir)
+	return(.find.burnin.nr.traj.from.diag(diag.list, ...))
 }
 
 tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
