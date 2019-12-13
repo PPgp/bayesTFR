@@ -10,6 +10,7 @@ get.tfr.mcmc <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), chain.id
 	}
 	load(file=mcmc.file.path)
 	bayesTFR.mcmc.meta$output.dir <- normalizePath(sim.dir)
+	if(is.null(bayesTFR.mcmc.meta$annual.simulation)) bayesTFR.mcmc.meta$annual.simulation <- FALSE
 	if (is.null(chain.ids)) {
 		mc.dirs.short <- list.files(sim.dir, pattern='^mc[0-9]+', full.names=FALSE)
 		chain.ids <- as.integer(substring(mc.dirs.short, 3))

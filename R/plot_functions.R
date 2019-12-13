@@ -116,7 +116,8 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin=0
         theta <- (traces[, U.var] - traces[, Triangle_c4.var] ) * 
             exp(traces[, gamma.vars, drop=FALSE])/apply(exp(traces[,gamma.vars, drop=FALSE]), 1, sum)
         theta <- cbind(theta, traces[, Triangle_c4.var], traces[, d.var])
-        dl <- t(apply(theta, 1, DLcurve, tfr = x, p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2))
+        dl <- t(apply(theta, 1, DLcurve, tfr = x, p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2, 
+                      annual = mcmc$meta$annual.simulation))
         #stop('')
         if(length(x) == 1) dl <- t(dl)
         if(predictive.distr || return.sigma) {
