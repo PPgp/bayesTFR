@@ -40,11 +40,12 @@ get_eps_T_all <- function (mcmc) {
     return(eps_Tc)
 }
 
-find.lambda.for.one.country <- function(tfr, T_end) {
+find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
     # find the end of Phase II
 	lambda <- T_end
 	if ( sum(tfr<2, na.rm=TRUE)>2 ){
 		period <- .get.T.start.end(tfr)[1]+2
+		stop('')
 		while (period<=T_end){
 			if (( (tfr[period] - tfr[period-1]) >0 )& 
                     ( (tfr[period-1] - tfr[period-2]) >0) & 
@@ -84,7 +85,7 @@ get.observed.with.supplemental <- function(country.index, matrix, suppl.data, ma
 
 find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5, #5.5, 
 												max.diff.local.and.global.max.for.start.at.loc = 0.53, #0.5,
-												delta.for.local.max = 0.001,
+												delta.for.local.max = 0.001, annual = FALSE,
 												suppl.data=NULL) {
     # gets tau_c and puts NAs before tau_c (start of Phase II)
     # gets ids of DL (where decline has been observed)
@@ -148,7 +149,8 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
             tfr_matrix[1:(tau_c[country] - 1 - T.suppl), country] <- NA
 
         # end index of Phase II
-        lambda_c[country] <- do.call(getOption("TFRphase3findfct", "find.lambda.for.one.country"), list(data, T_end_c[country]))
+        lambda_c[country] <- do.call(getOption("TFRphase3findfct", "find.lambda.for.one.country"), 
+                                     list(data, T_end_c[country], annual = annual))
         
         if (lambda_c[country] < T_end_c[country]) { # set NA all values between lambda_c and T_c_end
          	if(lambda_c[country] < T.suppl) {
@@ -200,7 +202,8 @@ mcmc.meta.ini <- function(...,
 	
 do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
 						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE) {
-	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, suppl.data=tfr.with.regions$suppl.data)
+	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, annual = meta$annual.simulation,
+	                                               suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
 	tfr_matrix_observed <- tfr.with.regions$tfr_matrix
 	updated.tfr.matrix <- results_tau$tfr_matrix

@@ -444,7 +444,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 						if(year == first.projection[icountry]) { # first projection period
 							D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
 				 			if(!is.in.phase3[icountry]) { # country in Phase II				
-		           				d11 <- DLcurve(theta_si.list[[country]][s,], all.tfr[this.T_end-1], meta$dl.p1, meta$dl.p2)
+		           				d11 <- DLcurve(theta_si.list[[country]][s,], all.tfr[this.T_end-1], meta$dl.p1, meta$dl.p2, 
+		           				               meta$annual.simulation)
 			 					S11[icountry] <- D11 - d11
 			  				} else { # country in Phase III	
 								S11[icountry] <- D11 - (all.tfr[this.T_end-1] - 
@@ -462,7 +463,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		  			# Simulate projection
 					if (!is.in.phase3[icountry]){ # Phase II
 						new.tfr <- (all.f_ps[icountry,year-1,s]- DLcurve(theta_si.list[[country]][s,], all.f_ps[icountry,year-1,s], 
-						                                                 meta$dl.p1, meta$dl.p2) - W[icountry,year]*S11[icountry])
+						                                                 meta$dl.p1, meta$dl.p2, meta$annual.simulation) - 
+						                W[icountry,year]*S11[icountry])
 						# get errors
 						if(boost.first.period.in.phase2 && is.element(country, meta$id_Tistau) && (year == first.projection[icountry])) {
 							eps.mean <- tau.par.values[s, 'mean_eps_tau']
