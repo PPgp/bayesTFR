@@ -42,10 +42,20 @@ get_eps_T_all <- function (mcmc) {
 
 find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
     # find the end of Phase II
-	lambda <- T_end
+	if(annual) { # compute 5-year average
+	    tfrorig <- tfr
+	    Tendorig <- T_end
+	    years <- as.integer(names(tfr))
+	    ranges <- range(years[years %% 5 == 0])
+	    mid.points <- c(0, seq(ranges[1]-2, ranges[2]+3, by = 5))
+	    brks <- seq(ranges[1]-5, ranges[2] + 5, by = 5)
+	    year.bin <- findInterval(years, brks, left.open = TRUE)
+	    tfr <- aggregate(tfr, by = list(year.bin), FUN = mean)[,"x"]
+	    T_end <- year.bin[T_end]
+	}
+    lambda <- T_end
 	if ( sum(tfr<2, na.rm=TRUE)>2 ){
 		period <- .get.T.start.end(tfr)[1]+2
-		stop('')
 		while (period<=T_end){
 			if (( (tfr[period] - tfr[period-1]) >0 )& 
                     ( (tfr[period-1] - tfr[period-2]) >0) & 
@@ -56,8 +66,11 @@ find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
 			} else { 
 				period = period +1
             }
-         }
+		}
 	}
+	if(annual)  # convert lambda from 5-year scale to annual scale
+        lambda <- min(which(year.bin == lambda) + 2, Tendorig)
+
 	return(lambda)
 }
 
