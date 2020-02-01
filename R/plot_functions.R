@@ -467,13 +467,24 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 	points.y <- y1.part1
 	if (mark.estimation.points) {
 		tfr.est <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix')[1:T_end_c[country$index]][y1.is.not.na]
+		elim.idx <- c()
+		# Phase I
 		end.na <- which(!is.na(tfr.est))
 		end.na <- if(length(end.na)==0) length(tfr.est) else end.na[1]
 		if(end.na > 1) {
 			na.idx <- 1:end.na
 			points(points.x[na.idx], points.y[na.idx], type=type, lwd=lwd[1], col=rgb(t(col2rgb(col[1])/255), alpha=0.1), ...)
-			points.x <- points.x[-na.idx[-end.na]]
-			points.y <- points.y[-na.idx[-end.na]]
+			elim.idx <- c(elim.idx, na.idx[-end.na])
+		}
+		# Phase III
+		p3.idx <- if(tfr.pred$mcmc.set$meta$lambda_c[country$index]>=length(tfr.est)) c() else seq(tfr.pred$mcmc.set$meta$lambda_c[country$index], length(tfr.est))
+		if(length(p3.idx) > 0) {
+		    points(points.x[p3.idx], points.y[p3.idx], type=type, lwd=lwd[1], col=col[1], pch = 3, ...)
+		    elim.idx <- c(elim.idx, p3.idx)
+		}
+		if(length(elim.idx) > 0) {
+		    points.x <- points.x[-elim.idx]
+		    points.y <- points.y[-elim.idx]
 		}
 	}
 	points(points.x, points.y, type=type, lwd=lwd[1], col=col[1], ...)
