@@ -247,7 +247,8 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
 	l <- tfr.pred$nr.projections
 	obs.data <- obs.data[!is.na(obs.data)]
 	x1 <- as.integer(names(obs.data))
-	x2 <- seq(max(x1)+5, by=5, length=l)
+	year.step <- if(tfr.pred$mcmc.set$meta$annual.simulation) 1 else 5
+	x2 <- seq(max(x1)+year.step, by=year.step, length=l)
 	tfr <- as.matrix(obs.data, ncol=1)
 	rownames(tfr) <- x1
 	pred.table <- matrix(NA, ncol=2*length(pi)+1, nrow=l)

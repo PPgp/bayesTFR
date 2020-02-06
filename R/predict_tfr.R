@@ -166,11 +166,12 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	# if 'countries' is given, it is an index
 	# sigmaAR1 can be a vector. The last element will be repeated up to nr.projections
 	meta <- mcmc.set$meta
-	present.year <- if(is.null(start.year)) meta$present.year else start.year - 5
-	nr_project <- length(seq(present.year+5, end.year, by=5))
+	year.step <- if(meta$annual.simulation) 1 else 5
+	present.year <-  if(is.null(start.year)) meta$present.year else start.year - year.step
+	nr_project <- length(seq(present.year+year.step, end.year, by=year.step))
 	suppl.T <- if(!is.null(meta$suppl.data$regions)) meta$suppl.data$T_end else 0
 #	if (verbose)
-		cat('\nPrediction from', present.year+5, 'until', end.year, '(i.e.', nr_project, 'projections)\n\n')
+		cat('\nPrediction from', present.year+year.step, 'until', end.year, '(i.e.', nr_project, 'projections)\n\n')
 	l.sigmaAR1 <- length(sigmaAR1)
 	sigma.end <- rep(sigmaAR1[l.sigmaAR1], nr_project + meta$T_end-l.sigmaAR1)
 	sigmas_all <- c(sigmaAR1, sigma.end) 
@@ -776,7 +777,8 @@ get.all.prediction.years <- function(pred) {
 get.prediction.years <- function(meta, n, present.year.index=NULL) {
 	if(is.null(present.year.index)) present.year.index <- nrow(get.data.matrix(meta))
 	present.year <-  as.numeric(rownames(get.data.matrix(meta))[present.year.index])
-	return (seq(present.year, length=n, by=5))
+	year.step <- if(meta$annual.simulation) 1 else 5
+	return (seq(present.year, length=n, by=year.step))
 }
 
 get.prediction.periods <- function(meta, n, ...) {
@@ -1151,8 +1153,10 @@ tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, 
 	pred.years <- as.numeric(dimnames(pred$quantiles)[[3]])
 	nr.proj <- pred$nr.projections+1 
 	if(is.null(years)) years <- pred.years[2:nr.proj]
-	mid.years <- cut(years, labels=pred.years, 
-					breaks=seq(from=pred.years[1]-3, to=pred.years[nr.proj]+2, by=5))
+	if(!meta$annual.simulation) 
+	    mid.years <- cut(years, labels=pred.years, 
+					    breaks=seq(from=pred.years[1]-3, to=pred.years[nr.proj]+2, by=5))
+	else mid.years <- years
 	which.years <- is.element(pred.years, mid.years)
 	lvalues <- length(values)
 	if(lvalues > sum(which.years)) {
