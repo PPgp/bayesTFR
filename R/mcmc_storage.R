@@ -41,6 +41,13 @@ store.mcmc <- local({
 				buffer.cs[[par]][[country]][counter,] <<- result
 			}
 		}
+		if ('tfr_all' %in% names(mcmc$meta))
+		{
+		  for (country in country.index){
+		    result <- mcmc$meta[['tfr_all']][, country]
+		    buffer.cs[['tfr']][[country]][counter,] <<- result
+		  }
+		}
 	}
 		
 	buffers.ini <- function(mcmc, size, countries=NULL) {
@@ -66,6 +73,14 @@ store.mcmc <- local({
 				}
 				buffer.cs[[par]][[country]] <<- matrix(NA, ncol=length(v), nrow=size)
 			}
+		}
+		
+		if ('tfr_all' %in% names(mcmc$meta))
+		{
+		  for (country in country.index){
+		    v <- mcmc$meta[['tfr_all']][, country]
+		    buffer.cs[['tfr']][[country]] <<- matrix(NA, ncol=length(v), nrow=size)
+		  }
 		}
 		counter <<- 0
 	}
@@ -106,6 +121,20 @@ store.mcmc <- local({
 											compression.type=mcmc$compression.type)
 			}
 		}
+		if ('tfr' %in% names(buffer.cs))
+		{
+		  for (country in country.index){
+		    if (counter == 1) {
+		      values <- t(buffer.cs[['tfr']][[country]][1:counter,])
+		    } else {
+		      values <- buffer.cs[['tfr']][[country]][1:counter,]
+		    }
+		    write.values.into.file.cdep('tfr', values, output.dir, 
+		                                get.country.object(country, meta=mcmc$meta, index=TRUE)$code, mode=open, 
+		                                compression.type=mcmc$compression.type)
+		  }
+		}
+		
 		resmc <- as.list(mcmc)
 		class(resmc) <- 'bayesTFR.mcmc'
 		store.bayesTFR.object(resmc, output.dir)
@@ -176,6 +205,7 @@ store.mcmc3 <- local({
 		if(!file.exists(output.dir)) 
 			dir.create(output.dir)
 		open <- if(append) 'a' else 'w'
+		
 		if (is.null(countries)) {
 			for(par in par.names) { # write country-independent parameters
 				if (is.null(buffer3[[par]])) next
@@ -203,7 +233,7 @@ store.mcmc3 <- local({
 	}
 	
 	store <- function(mcmc, append=FALSE, flush.buffer=FALSE, countries=NULL, verbose=FALSE) {
-		# If countries is not NULL, only country-specific parameters 
+	  # If countries is not NULL, only country-specific parameters 
 		# for those countries (given as index) are stored
 		buffer.size <- mcmc$meta$buffer.size
 		if (is.null(buffer.size)) buffer.size <- default.buffer.size

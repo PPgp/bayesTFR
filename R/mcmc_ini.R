@@ -40,21 +40,21 @@ get_eps_T = function (DLpar, country, tfr_matrix, start, lambda, p1, p2)
 #	return(index + mcmc$meta$suppl.data$T_end)
 #}
 
-get.eps.T <- function (DLpar, country, meta) 
+get.eps.T <- function (DLpar, country, meta, ...) 
 {
-    tfr <- get.observed.tfr(country, meta)[meta$start_c[country]:meta$lambda_c[country]]
+    tfr <- get.observed.tfr(country, meta, ...)[meta$start_c[country]:meta$lambda_c[country]]
     ldl <- length(tfr)-1
     dl <- DLcurve(DLpar, tfr[1:ldl], meta$dl.p1, meta$dl.p2)
     return(tfr[2:(ldl+1)] - tfr[1:ldl] + dl)
 }
 
-get_eps_T_all <- function (mcmc) {
+get_eps_T_all <- function (mcmc, ...) {
 	suppl.T <- if(!is.null(mcmc$meta$suppl.data$regions)) mcmc$meta$suppl.data$T_end else 0
 	eps_Tc <- matrix(NA, mcmc$meta$T_end-1 + suppl.T, mcmc$meta$nr_countries)
     for (country in mcmc$meta$id_DL){
     	theta <- c((mcmc$U_c[country]-mcmc$Triangle_c4[country])*exp(mcmc$gamma_ci[country,])/                                     
                                 sum(exp(mcmc$gamma_ci[country,])), mcmc$Triangle_c4[country], mcmc$d_c[country])
-        eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country] <- get.eps.T(theta, country, mcmc$meta)
+        eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country] <- get.eps.T(theta, country, mcmc$meta, ...)
         }
     return(eps_Tc)
 }
@@ -196,7 +196,7 @@ mcmc.meta.ini <- function(...,
 						start.year=1950, present.year=2020, 
 						wpp.year=2019, my.tfr.file = NULL, my.locations.file = NULL,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
-						verbose=FALSE
+						verbose=FALSE, uncertainty=FALSE
 					 ) {
 	# Initialize meta parameters - those that are common to all chains.
 	args <- list(...)
@@ -211,13 +211,13 @@ mcmc.meta.ini <- function(...,
 										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose)
 
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
-						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose)
+						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, uncertainty=uncertainty)
 	return(structure(c(mcmc.input, meta), class='bayesTFR.mcmc.meta'))
 }
 	
 	
 do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
-						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE) {
+						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE, uncertainty=FALSE) {
 	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
 	tfr_matrix_observed <- tfr.with.regions$tfr_matrix
@@ -279,26 +279,47 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 		for(is.na.country in 1:sum(isNA)) 
 			prop_cov_gammas[(1:nr_countries)[isNA][is.na.country],,] <- avg
 	}
-
-	return(list(
-			tfr_matrix=updated.tfr.matrix, 
-			tfr_matrix_all=tfr.with.regions$tfr_matrix_all,
-			tfr_matrix_observed=tfr_matrix_observed,
-            tau_c = results_tau$tau_c, lambda_c = lambda_c,
-            proposal_cov_gammas_cii = prop_cov_gammas,
-            start_c = results_tau$start_c, 
-            id_Tistau = results_tau$id_Tistau, 
-            id_DL = results_tau$id_DL, 
-            id_early = results_tau$id_early,
-            id_notearly = results_tau$id_notearly,
-            id_notearly_estimation = results_tau$id_notearly[results_tau$id_notearly <= nr_countries_estimation],
-			U.c.low=lower_U_c,
-            nr_countries=nr_countries,
-            nr_countries_estimation=nr_countries_estimation,
-            T_end=dim(tfr.with.regions$tfr_matrix)[1], T_end_c=results_tau$T_end_c, 
-            regions=tfr.with.regions$regions,
-            suppl.data=suppl.data
-            ))
+  
+	output <- list(
+	  tfr_matrix=updated.tfr.matrix, 
+	  tfr_matrix_all=tfr.with.regions$tfr_matrix_all,
+	  tfr_matrix_observed=tfr_matrix_observed,
+	  tau_c = results_tau$tau_c, lambda_c = lambda_c,
+	  proposal_cov_gammas_cii = prop_cov_gammas,
+	  start_c = results_tau$start_c, 
+	  id_Tistau = results_tau$id_Tistau, 
+	  id_DL = results_tau$id_DL, 
+	  id_early = results_tau$id_early,
+	  id_notearly = results_tau$id_notearly,
+	  id_notearly_estimation = results_tau$id_notearly[results_tau$id_notearly <= nr_countries_estimation],
+	  U.c.low=lower_U_c,
+	  nr_countries=nr_countries,
+	  nr_countries_estimation=nr_countries_estimation,
+	  T_end=dim(tfr.with.regions$tfr_matrix)[1], T_end_c=results_tau$T_end_c, 
+	  regions=tfr.with.regions$regions,
+	  suppl.data=suppl.data
+	)
+	
+	if(uncertainty)
+	{
+	  raw.data <- read.csv('TFR_cleaned.csv')
+	  output$raw.data <- list()
+	  count <- 1
+	  for (name in colnames(tfr_matrix_all))
+	  {
+	    output$raw.data[[count]] <- subset(raw.data, ISO.code == as.numeric(name))
+	    output$raw.data[[count]]$DataProcess <- factor(as.character(output$raw.data[[count]]$DataProcess))
+	    output$raw.data[[count]]$Estimating.Methods <- factor(as.character(output$raw.data[[count]]$Estimating.Methods))
+	    count <- count + 1
+	  }
+	  
+	  output$tfr_all <- output$tfr_matrix_all
+	  output$tfr_mu_all <- output$tfr_all
+	  output$tfr_sd_all <- matrix(0, nrow = nrow(output$tfr_all), ncol=ncol(output$tfr_all))
+	}
+	
+	
+	return(output)
 
 }
 
@@ -313,7 +334,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 					 gamma.ini=1, Triangle_c4.ini = 1.85,
 					 d.ini=0.17,
 					 save.all.parameters=FALSE,
-					 verbose=FALSE
+					 verbose=FALSE, uncertainty=FALSE
 					 ) {
 				 		 	
 	nr_countries <- mcmc.meta$nr_countries
@@ -391,7 +412,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
                         traces=0, traces.burnin=0, 
                         rng.state = .Random.seed,
                         compression.type=mcmc.meta$compression.type,
-                        dontsave=dontsave.pars
+                        dontsave=dontsave.pars, uncertainty=uncertainty
                         ),
                    class='bayesTFR.mcmc')
                    
@@ -401,6 +422,13 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	# note: the eps will always be NA outside (tau_c, lambda-1)!!
 	# ini the epsilons
 	mcmc$eps_Tc <- get_eps_T_all(mcmc)
+	if (uncertainty)
+	{
+	  mcmc <- get.obs.estimate.diff(mcmc)
+	  mcmc <- estimate.bias.sd.raw(mcmc)
+	}
+	
+	# mcmc <- as.list(mcmc)
 	return(mcmc)
 }
 

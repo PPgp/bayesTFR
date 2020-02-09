@@ -19,14 +19,16 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	chi0=-1.5, psi0=0.6, nu.psi0=2,
 					 	alpha0.p=c(-1, 0.5, 1.5), delta0=1, nu.delta0=2,
 					 	dl.p1=9, dl.p2=9,
+						phase3.parameter=NULL,
 						# starting values (length of 1 or nr.chains)
 						S.ini=NULL, a.ini=NULL, b.ini=NULL, 
 					 	sigma0.ini=NULL, Triangle_c4.ini=NULL, const.ini=NULL, gamma.ini=1, 
+						phase3.starting.values=NULL,
 					 	proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
 					 	save.all.parameters = FALSE, compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
-						verbose=FALSE, verbose.iter = 10, ...) {
+						verbose=FALSE, verbose.iter = 10, uncertainty = FALSE, ...) {
 
 	if(file.exists(output.dir)) {
 		if(length(list.files(output.dir)) > 0 & !replace.output)
@@ -99,9 +101,80 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	dl.p1=dl.p1, dl.p2=dl.p2, 
 					 	proposal_cov_gammas = proposal_cov_gammas,
 					 	buffer.size=buffer.size, compression.type=compression.type, 
-					 	auto.conf=auto.conf, verbose=verbose)
+					 	auto.conf=auto.conf, verbose=verbose, uncertainty=uncertainty)
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
-			
+	
+	starting.values <- NULL
+	if (uncertainty)
+	{
+	  get.init.values <- function(range) {
+	    ifelse(rep(nr.chains==1, nr.chains), sum(range)/2, 
+	           #seq(range[1], to=range[2], length=nr.chains)
+	           runif(nr.chains, range[1], range[2])
+	    )
+	  }
+	  
+	  dir.create(file.path(output.dir, 'phaseIII'))
+	  if ('mu.prior.range' %in% names(phase3.parameter)) {mu.prior.range <- phase3.parameter[['mu.prior.range']]}
+	  else {mu.prior.range <- c(0, 2.1)}
+	  if ('rho.prior.range' %in% names(phase3.parameter)) {rho.prior.range <- phase3.parameter[['rho.prior.range']]}
+	  else {rho.prior.range <- c(0,1-.Machine$double.xmin)}
+	  if ('sigma.mu.prior.range' %in% names(phase3.parameter)) {sigma.mu.prior.range <- phase3.parameter[['sigma.mu.prior.range']]}
+	  else {sigma.mu.prior.range <- c(1e-5,0.318)}
+	  if ('sigma.rho.prior.range' %in% names(phase3.parameter)) {sigma.rho.prior.range <- phase3.parameter[['sigma.rho.prior.range']]}
+	  else {sigma.rho.prior.range <- c(1e-5,0.289)}
+	  if ('sigma.eps.prior.range' %in% names(phase3.parameter)) {sigma.eps.prior.range <- phase3.parameter[['sigma.eps.prior.range']]}
+	  else {sigma.eps.prior.range <- c(1e-5, 0.5)}
+	  if ('use.extra.countries' %in% names(phase3.parameter)) {use.extra.countries <- phase3.parameter[['use.extra.countries']]}
+	  else {use.extra.countries <- FALSE}
+	  
+	  for (varname in c('mu', 'rho', 'sigma.mu', 'sigma.rho', 'sigma.eps'))
+	  {
+	    assign(paste0(varname, '.ini.range'), get(paste0(varname, '.prior.range')))
+	    if (paste0(varname, '.ini') %in% names(phase3.starting.values))
+	    {
+	      assign(paste0(varname, '.ini'), phase3.starting.values[[paste0(varname, '.ini')]])
+	    }
+	    else
+	    {
+	      assign(paste0(varname, '.ini'), get.init.values(get(paste0(varname, '.prior.range'))))
+	    }
+	  }
+	  c.index <- 1: (if(use.extra.countries) get.nr.countries(bayesTFR.mcmc.meta) else get.nrest.countries(bayesTFR.mcmc.meta))
+	  meta <- structure(list(nr.chains=nr.chains,
+	                         my.tfr.file=my.tfr.file, output.dir=output.dir,
+	                         phase=3, id_phase3 = which(bayesTFR.mcmc.meta$lambda_c[c.index] < bayesTFR.mcmc.meta$T_end_c[c.index]),
+	                         nr.countries=sum(bayesTFR.mcmc.meta$lambda_c[c.index] < bayesTFR.mcmc.meta$T_end_c[c.index]),
+	                         mu.prior.range=mu.prior.range, rho.prior.range=rho.prior.range,
+	                         sigma.mu.prior.range=sigma.mu.prior.range, 
+	                         sigma.rho.prior.range=sigma.rho.prior.range,
+	                         sigma.eps.prior.range=sigma.eps.prior.range,
+	                         mu.ini = mu.ini, mu.ini.range=mu.ini.range, 
+	                         rho.ini=rho.ini, rho.ini.range=rho.ini.range, 
+	                         sigma.mu.ini=sigma.mu.ini, sigma.mu.ini.range=sigma.mu.ini.range,
+	                         sigma.rho.ini=sigma.rho.ini, sigma.rho.ini.range=sigma.rho.ini.range,
+	                         sigma.eps.ini=sigma.eps.ini, sigma.eps.ini.range=sigma.eps.ini.range,
+	                         compression.type=compression.type, buffer.size=buffer.size, auto.conf=auto.conf
+	  ), class='bayesTFR.mcmc.meta')	
+	  store.bayesTFR.meta.object(meta, file.path(output.dir, 'phaseIII'))
+	  if(meta$nr.countries <= 0) run.phase3 <- FALSE else run.phase3 <- TRUE
+	  for (name in names(meta))
+	  {
+	    if (!(name %in% names(bayesTFR.mcmc.meta)))
+	    {
+	      bayesTFR.mcmc.meta[[name]] <- meta[[name]]
+	    }
+	  }
+	  bayesTFR.mcmc.meta$run.phase3 <- run.phase3
+	  bayesTFR.mcmc.meta$parent <- bayesTFR.mcmc.meta
+	  for (var in c('mu.ini', 'rho.ini', 'sigma.mu.ini', 'sigma.rho.ini', 'sigma.eps.ini', 'iter')) {
+	    if (length(get(var)) < nr.chains) 
+	      assign(var, rep(get(var), nr.chains)[1:nr.chains])
+	    if (var != 'iter') starting.values[[var]] <- get(var)
+	  }
+	}
+	
+	
 	# propagate initial values for all chains if needed
 	for (var in c('S.ini', 'a.ini', 'b.ini', 'sigma0.ini', 'const.ini', 'gamma.ini', 'Triangle_c4.ini', 'iter')) {
 		if (length(get(var)) < nr.chains) {
@@ -117,18 +190,18 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	if (parallel) { # run chains in parallel
 		chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc.run.chain, 
 						initfun=init.nodes, seed = seed, meta=bayesTFR.mcmc.meta, 
-						thin=thin, iter=iter, S.ini=S.ini, a.ini=a.ini,
+						thin=thin, starting.values=starting.values, iter=iter, S.ini=S.ini, a.ini=a.ini,
                         b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
                         gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, 
-                        verbose.iter=verbose.iter, ...)
+                        verbose.iter=verbose.iter, uncertainty=uncertainty, ...)
 	} else { # run chains sequentially
 		chain.set <- list()
 		for (chain in 1:nr.chains) {
-			chain.set[[chain]] <- mcmc.run.chain(chain, bayesTFR.mcmc.meta, thin=thin, 
+			chain.set[[chain]] <- mcmc.run.chain(chain, bayesTFR.mcmc.meta, thin=thin, starting.values=starting.values, 
 					 	iter=iter, S.ini=S.ini, a.ini=a.ini, b.ini=b.ini, 
 					 	sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini, 
 					 	gamma.ini=gamma.ini, save.all.parameters=save.all.parameters,
-					 	verbose=verbose, verbose.iter=verbose.iter)
+					 	verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 		}
 	}
 	names(chain.set) <- 1:nr.chains
@@ -156,10 +229,10 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 }
 
 
-mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, 
+mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NULL, 
 							S.ini, a.ini, b.ini, sigma0.ini, Triangle_c4.ini, const.ini, gamma.ini=1,
 							save.all.parameters=FALSE,
-							verbose=FALSE, verbose.iter=10) {
+							verbose=FALSE, verbose.iter=10, uncertainty=FALSE) {
 								
 	cat('\n\nChain nr.', chain.id, '\n')
     if (verbose) {
@@ -180,7 +253,26 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100,
                                      const.ini=const.ini[chain.id],
                                      gamma.ini=gamma.ini[chain.id],
                                      save.all.parameters=save.all.parameters,
-                                     verbose=verbose)
+                                     verbose=verbose, uncertainty=uncertainty)
+	if (uncertainty)
+	{
+	  this.sv <- list()
+	  for(var in names(starting.values)) {
+	    this.sv[[var]] <- starting.values[[var]][chain.id]
+	  }
+	  mcmc3 <- do.call('mcmc3.ini', c(list(chain.id, meta, iter=iter[chain.id], thin=thin, starting.values=this.sv) ))
+	  for (name in names(mcmc3))
+	  {
+	    if (!(name %in% names(mcmc)))
+	    {
+	      mcmc[[name]] <- mcmc3[[name]]
+	    }
+	    else if (name == 'meta')
+	    {
+	      mcmc[['meta3']] <- mcmc3[['meta']]
+	    }
+	  }
+	}
 	
 	if (verbose) 
 		cat('Store initial values into ', mcmc$output.dir, '\n')
@@ -188,7 +280,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100,
 	
 	if (verbose) 
 		cat('Start sampling -', mcmc$iter, 'iterations in total.\n')
-	mcmc <- tfr.mcmc.sampling(mcmc, thin=thin, verbose=verbose, verbose.iter=verbose.iter)
+	mcmc <- tfr.mcmc.sampling(mcmc, thin=thin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 	return(mcmc)
 }
 	
@@ -248,10 +340,11 @@ mcmc.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbos
 		cat('************\n')
 	mcmc <- mcmc.list[[chain.id]]
 	mcmc$iter <- mcmc$finished.iter + iter
+	uncertainty <- mcmc$uncertainty
 	if (verbose) 
 		cat('Continue sampling -', iter, 'additional iterations,', mcmc$iter, 'iterations in total.\n')
 
-	mcmc <- tfr.mcmc.sampling(mcmc, thin=mcmc$thin, start.iter=mcmc$finished.iter+1, verbose=verbose, verbose.iter=verbose.iter)
+	mcmc <- tfr.mcmc.sampling(mcmc, thin=mcmc$thin, start.iter=mcmc$finished.iter+1, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 	return(mcmc)
 }
 
