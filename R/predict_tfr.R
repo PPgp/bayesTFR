@@ -765,6 +765,10 @@ get.predORest.year.index <- function(pred, year) {
 get.prediction.year.index <- function(pred, year) {
 	years <- get.all.prediction.years(pred)
 	lyears <- length(years)
+	if(pred$mcmc.set$meta$annual.simulation) {
+	    idx <- which(years == year)
+	    return(if(length(idx)==0) NULL else idx[1])
+	}
 	breaks <- c(years-3, years[lyears]+2)
 	h <- try(hist(year, breaks=breaks, plot=FALSE)$count, silent=TRUE)
 	return(if(inherits(h, "try-error")) NULL else which(h > 0)[1])
@@ -783,6 +787,8 @@ get.prediction.years <- function(meta, n, present.year.index=NULL) {
 
 get.prediction.periods <- function(meta, n, ...) {
 	mid.years <- get.prediction.years(meta, n, ...)
+	if(meta$annual.simulation)
+	    return(mid.years)
 	return (paste(mid.years-3, mid.years+2, sep='-'))
 }
 
@@ -792,13 +798,19 @@ get.estimation.years <- function(meta)
 get.estimation.year.index <- function(meta, year) {
 	years <- get.estimation.years(meta)
 	lyears <- length(years)
-	breaks <- c(years-3, years[lyears]+2)
+	if(meta$annual.simulation) {
+	    idx <- which(years == year)
+	    return(if(length(idx)==0) NULL else idx[1])
+	}
+	breaks <-  c(years-3, years[lyears]+2)
 	h <- try(hist(year, breaks=breaks, plot=FALSE)$count, silent=TRUE)
 	return(if(inherits(h, "try-error")) NULL else which(h > 0)[1])
 }
 
 get.tfr.periods <- function(meta) {
 	mid.years <- get.estimation.years(meta)
+	if(meta$annual.simulation)
+	    return(mid.years)
 	return (paste(mid.years-3, mid.years+2, sep='-'))
 }
 
@@ -1023,11 +1035,13 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 	un.time.idx <- c()
 	un.time.label <- as.character(e$UN_time$TLabel)
 	l.un.time.label <- length(un.time.label)
+	filter <- e$UN_time$Tinterval == 0
+	if(pred$mcmc.set$meta$annual.simulation) filter <- filter & e$UN_time$TimeID > 1000
 	for (i in 1:ltfr) 
-		un.time.idx <- c(un.time.idx, which(un.time.label==tfr.years[i])[1])
+		un.time.idx <- c(un.time.idx, which(un.time.label==tfr.years[i] & filter)[1])
 	for (i in 1:nr.proj) {
 		header1[[paste('year', i, sep='')]] <- pred.period[i]
-		un.time.idx <- c(un.time.idx, which(un.time.label==pred.period[i]))
+		un.time.idx <- c(un.time.idx, which(un.time.label==pred.period[i] & filter)[1])
 	}
 	if(is.null(revision)) revision <- get.wpp.revision.number(pred)
 	header2 <- get.projection.summary.header(pred)

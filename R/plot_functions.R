@@ -480,7 +480,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 		# Phase III
 		p3.idx <- if(tfr.pred$mcmc.set$meta$lambda_c[country$index]>=length(tfr.est)) c() else seq(tfr.pred$mcmc.set$meta$lambda_c[country$index], length(tfr.est))
 		if(length(p3.idx) > 0) {
-		    points(points.x[p3.idx], points.y[p3.idx], type=type, lwd=lwd[1], col=col[1], pch = 3, ...)
+		    points(points.x[p3.idx], points.y[p3.idx], type=type, lwd=lwd[1], col=rgb(t(col2rgb(col[1])/255), alpha=0.3), pch = 4, ...)
 		    elim.idx <- c(elim.idx, p3.idx)
 		}
 		if(length(elim.idx) > 0) {
@@ -955,10 +955,10 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=N
 		projection <- TRUE
 		if(!is.null(year)) {
 			ind.proj <- get.predORest.year.index(pred, year)
+			if(! 'index' %in% names(ind.proj))
+			    stop('Projection year ', year, ' not found.')
 			projection.index <- ind.proj['index']
 			projection <- ind.proj['is.projection']
-			if(is.null(projection.index)) 
-				if(is.null(projection.index)) stop('Projection year ', year, ' not found.')
 		}
 		if(projection) {
 			if(!all(is.element(as.character(quantiles), dimnames(pred$quantiles)[[2]])))
