@@ -1,10 +1,11 @@
 
-DLcurve <- function(DLpar, tfr, p1, p2){ 
+DLcurve <- function(DLpar, tfr, p1, p2, annual = FALSE){ 
  # gives the DL-decrement
  # DLpar is c(Delta1, Delta2, Delta3, Delta4, d_c)
- # tfr is a vector for which the decrements for this curve need to  	be calculated
+ # tfr is a vector for which the decrements for this curve need to be calculated
  	dlvalue <- rep(0.0, length(tfr))
-	res <- .C("doDLcurve", as.numeric(DLpar), as.numeric(tfr), p1, p2, length(tfr), dl_values=dlvalue)
+ 	perfct <- if(annual) 1 else 5
+	res <- .C("doDLcurve", as.numeric(DLpar), as.numeric(tfr), p1, p2, length(tfr), dl_values=dlvalue, period_multiplier=as.integer(perfct))
 	return(res$dl_values)
 #    t_mid1 <- DLpar[4] + DLpar[3] + DLpar[2] + 0.5 * DLpar[1]
 #    t_mid3 <- DLpar[4] + 0.5 * DLpar[3]
@@ -19,32 +20,12 @@ DLcurve <- function(DLpar, tfr, p1, p2){
 # function to get the distortion for country for a given set of DLparameters
 # note: this function gives only the eps's in (tau, lambda-1)
 # (because rest is NA!!)
-get_eps_T = function (DLpar, country, tfr_matrix, start, lambda, p1, p2) 
-{
-#    eps_T <- NULL
-    tfr <- tfr_matrix[start:lambda, country]
-    ldl <- length(tfr)-1
-    dl <- DLcurve(DLpar, tfr[1:ldl], p1, p2)
-#    for (t in start:(lambda - 1)) {
-#        eps_T <- c(eps_T, tfr_matrix[t + 1, country] - tfr_matrix[t, 
-#            country] + DLcurve(DLpar, tfr_matrix[t, country], 
-#            p1, p2))
-#    }
-    eps_T <- tfr[2:(ldl+1)] - tfr[1:ldl] + dl
-    return(eps_T)
-}
-
-#get.dl.index <- function(country, meta) {
-#	index <- meta$start_c[country] : meta$lambda_c[country]
-#	if(is.null(meta$suppl.data) || meta$has.suppl.data[country]) return(index)
-#	return(index + mcmc$meta$suppl.data$T_end)
-#}
 
 get.eps.T <- function (DLpar, country, meta, ...) 
 {
     tfr <- get.observed.tfr(country, meta, ...)[meta$start_c[country]:meta$lambda_c[country]]
     ldl <- length(tfr)-1
-    dl <- DLcurve(DLpar, tfr[1:ldl], meta$dl.p1, meta$dl.p2)
+    dl <- DLcurve(DLpar, tfr[1:ldl], meta$dl.p1, meta$dl.p2, annual = meta$annual.simulation)
     return(tfr[2:(ldl+1)] - tfr[1:ldl] + dl)
 }
 
@@ -208,7 +189,8 @@ mcmc.meta.ini <- function(...,
 	mcmc.input$wpp.year <- wpp.year
 	if(present.year-3 > wpp.year) warning("present.year is much larger then wpp.year. Make sure WPP data for present.year are available.")
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
-										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose)
+										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, 
+										annual = mcmc.input$annual.simulation, verbose=verbose)
 
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
 						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, uncertainty=uncertainty)
