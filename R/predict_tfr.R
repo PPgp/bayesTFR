@@ -235,6 +235,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	#ltfr_matrix <- dim(tfr_matrix_reconstructed)[1]
 	#ltfr_matrix.all <- ltfr_matrix + suppl.T
 	present.year.index <- get.estimation.year.index(meta, present.year)
+	if(is.null(present.year.index)) stop('present.year ', present.year, ' not found. Change the start.year argument.')
 	ltfr_matrix <- present.year.index
 	ltfr_matrix.all <- present.year.index + suppl.T
 	
