@@ -247,7 +247,8 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
 	l <- tfr.pred$nr.projections
 	obs.data <- obs.data[!is.na(obs.data)]
 	x1 <- as.integer(names(obs.data))
-	x2 <- seq(max(x1)+5, by=5, length=l)
+	year.step <- if(tfr.pred$mcmc.set$meta$annual.simulation) 1 else 5
+	x2 <- seq(max(x1)+year.step, by=year.step, length=l)
 	tfr <- as.matrix(obs.data, ncol=1)
 	rownames(tfr) <- x1
 	pred.table <- matrix(NA, ncol=2*length(pi)+1, nrow=l)
@@ -467,13 +468,24 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
 	points.y <- y1.part1
 	if (mark.estimation.points) {
 		tfr.est <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix')[1:T_end_c[country$index]][y1.is.not.na]
+		elim.idx <- c()
+		# Phase I
 		end.na <- which(!is.na(tfr.est))
 		end.na <- if(length(end.na)==0) length(tfr.est) else end.na[1]
 		if(end.na > 1) {
 			na.idx <- 1:end.na
 			points(points.x[na.idx], points.y[na.idx], type=type, lwd=lwd[1], col=rgb(t(col2rgb(col[1])/255), alpha=0.1), ...)
-			points.x <- points.x[-na.idx[-end.na]]
-			points.y <- points.y[-na.idx[-end.na]]
+			elim.idx <- c(elim.idx, na.idx[-end.na])
+		}
+		# Phase III
+		p3.idx <- if(tfr.pred$mcmc.set$meta$lambda_c[country$index]>=length(tfr.est)) c() else seq(tfr.pred$mcmc.set$meta$lambda_c[country$index], length(tfr.est))
+		if(length(p3.idx) > 0) {
+		    points(points.x[p3.idx], points.y[p3.idx], type=type, lwd=lwd[1], col=rgb(t(col2rgb(col[1])/255), alpha=0.3), pch = 4, ...)
+		    elim.idx <- c(elim.idx, p3.idx)
+		}
+		if(length(elim.idx) > 0) {
+		    points.x <- points.x[-elim.idx]
+		    points.y <- points.y[-elim.idx]
 		}
 	}
 	points(points.x, points.y, type=type, lwd=lwd[1], col=col[1], ...)
@@ -943,10 +955,10 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=N
 		projection <- TRUE
 		if(!is.null(year)) {
 			ind.proj <- get.predORest.year.index(pred, year)
+			if(! 'index' %in% names(ind.proj))
+			    stop('Projection year ', year, ' not found.')
 			projection.index <- ind.proj['index']
 			projection <- ind.proj['is.projection']
-			if(is.null(projection.index)) 
-				if(is.null(projection.index)) stop('Projection year ', year, ' not found.')
 		}
 		if(projection) {
 			if(!all(is.element(as.character(quantiles), dimnames(pred$quantiles)[[2]])))

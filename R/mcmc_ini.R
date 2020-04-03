@@ -40,9 +40,20 @@ get_eps_T_all <- function (mcmc, ...) {
     return(eps_Tc)
 }
 
-find.lambda.for.one.country <- function(tfr, T_end) {
+find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
     # find the end of Phase II
-	lambda <- T_end
+	if(annual) { # compute 5-year average
+	    tfrorig <- tfr
+	    Tendorig <- T_end
+	    years <- as.integer(names(tfr))
+	    ranges <- range(years[years %% 5 == 0])
+	    mid.points <- c(0, seq(ranges[1]-2, ranges[2]+3, by = 5))
+	    brks <- seq(ranges[1]-5, ranges[2] + 5, by = 5)
+	    year.bin <- findInterval(years, brks, left.open = TRUE)
+	    tfr <- aggregate(tfr, by = list(year.bin), FUN = mean)[,"x"]
+	    T_end <- year.bin[T_end]
+	}
+    lambda <- T_end
 	if ( sum(tfr<2, na.rm=TRUE)>2 ){
 		period <- .get.T.start.end(tfr)[1]+2
 		while (period<=T_end){
@@ -55,8 +66,11 @@ find.lambda.for.one.country <- function(tfr, T_end) {
 			} else { 
 				period = period +1
             }
-         }
+		}
 	}
+	if(annual)  # convert lambda from 5-year scale to annual scale
+        lambda <- min(which(year.bin == lambda) + 2, Tendorig)
+
 	return(lambda)
 }
 
@@ -84,7 +98,7 @@ get.observed.with.supplemental <- function(country.index, matrix, suppl.data, ma
 
 find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5, #5.5, 
 												max.diff.local.and.global.max.for.start.at.loc = 0.53, #0.5,
-												delta.for.local.max = 0.001,
+												delta.for.local.max = 0.001, annual = FALSE,
 												suppl.data=NULL) {
     # gets tau_c and puts NAs before tau_c (start of Phase II)
     # gets ids of DL (where decline has been observed)
@@ -148,7 +162,8 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
             tfr_matrix[1:(tau_c[country] - 1 - T.suppl), country] <- NA
 
         # end index of Phase II
-        lambda_c[country] <- do.call(getOption("TFRphase3findfct", "find.lambda.for.one.country"), list(data, T_end_c[country]))
+        lambda_c[country] <- do.call(getOption("TFRphase3findfct", "find.lambda.for.one.country"), 
+                                     list(data, T_end_c[country], annual = annual))
         
         if (lambda_c[country] < T_end_c[country]) { # set NA all values between lambda_c and T_c_end
          	if(lambda_c[country] < T.suppl) {
@@ -200,7 +215,8 @@ mcmc.meta.ini <- function(...,
 	
 do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
 						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE, uncertainty=FALSE) {
-	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, suppl.data=tfr.with.regions$suppl.data)
+	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, annual = meta$annual.simulation,
+	                                               suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
 	tfr_matrix_observed <- tfr.with.regions$tfr_matrix
 	updated.tfr.matrix <- results_tau$tfr_matrix

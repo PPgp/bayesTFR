@@ -166,11 +166,12 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	# if 'countries' is given, it is an index
 	# sigmaAR1 can be a vector. The last element will be repeated up to nr.projections
 	meta <- mcmc.set$meta
-	present.year <- if(is.null(start.year)) meta$present.year else start.year - 5
-	nr_project <- length(seq(present.year+5, end.year, by=5))
+	year.step <- if(meta$annual.simulation) 1 else 5
+	present.year <-  if(is.null(start.year)) meta$present.year else start.year - year.step
+	nr_project <- length(seq(present.year+year.step, end.year, by=year.step))
 	suppl.T <- if(!is.null(meta$suppl.data$regions)) meta$suppl.data$T_end else 0
 #	if (verbose)
-		cat('\nPrediction from', present.year+5, 'until', end.year, '(i.e.', nr_project, 'projections)\n\n')
+		cat('\nPrediction from', present.year+year.step, 'until', end.year, '(i.e.', nr_project, 'projections)\n\n')
 	l.sigmaAR1 <- length(sigmaAR1)
 	sigma.end <- rep(sigmaAR1[l.sigmaAR1], nr_project + meta$T_end-l.sigmaAR1)
 	sigmas_all <- c(sigmaAR1, sigma.end) 
@@ -234,6 +235,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	#ltfr_matrix <- dim(tfr_matrix_reconstructed)[1]
 	#ltfr_matrix.all <- ltfr_matrix + suppl.T
 	present.year.index <- get.estimation.year.index(meta, present.year)
+	if(is.null(present.year.index)) stop('present.year ', present.year, ' not found. Change the start.year argument.')
 	ltfr_matrix <- present.year.index
 	ltfr_matrix.all <- present.year.index + suppl.T
 	
@@ -444,7 +446,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 						if(year == first.projection[icountry]) { # first projection period
 							D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
 				 			if(!is.in.phase3[icountry]) { # country in Phase II				
-		           				d11 <- DLcurve(theta_si.list[[country]][s,], all.tfr[this.T_end-1], meta$dl.p1, meta$dl.p2)
+		           				d11 <- DLcurve(theta_si.list[[country]][s,], all.tfr[this.T_end-1], meta$dl.p1, meta$dl.p2, 
+		           				               meta$annual.simulation)
 			 					S11[icountry] <- D11 - d11
 			  				} else { # country in Phase III	
 								S11[icountry] <- D11 - (all.tfr[this.T_end-1] - 
@@ -462,7 +465,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		  			# Simulate projection
 					if (!is.in.phase3[icountry]){ # Phase II
 						new.tfr <- (all.f_ps[icountry,year-1,s]- DLcurve(theta_si.list[[country]][s,], all.f_ps[icountry,year-1,s], 
-						                                                 meta$dl.p1, meta$dl.p2) - W[icountry,year]*S11[icountry])
+						                                                 meta$dl.p1, meta$dl.p2, meta$annual.simulation) - 
+						                W[icountry,year]*S11[icountry])
 						# get errors
 						if(boost.first.period.in.phase2 && is.element(country, meta$id_Tistau) && (year == first.projection[icountry])) {
 							eps.mean <- tau.par.values[s, 'mean_eps_tau']
@@ -762,6 +766,10 @@ get.predORest.year.index <- function(pred, year) {
 get.prediction.year.index <- function(pred, year) {
 	years <- get.all.prediction.years(pred)
 	lyears <- length(years)
+	if(pred$mcmc.set$meta$annual.simulation) {
+	    idx <- which(years == year)
+	    return(if(length(idx)==0) NULL else idx[1])
+	}
 	breaks <- c(years-3, years[lyears]+2)
 	h <- try(hist(year, breaks=breaks, plot=FALSE)$count, silent=TRUE)
 	return(if(inherits(h, "try-error")) NULL else which(h > 0)[1])
@@ -774,11 +782,14 @@ get.all.prediction.years <- function(pred) {
 get.prediction.years <- function(meta, n, present.year.index=NULL) {
 	if(is.null(present.year.index)) present.year.index <- nrow(get.data.matrix(meta))
 	present.year <-  as.numeric(rownames(get.data.matrix(meta))[present.year.index])
-	return (seq(present.year, length=n, by=5))
+	year.step <- if(meta$annual.simulation) 1 else 5
+	return (seq(present.year, length=n, by=year.step))
 }
 
 get.prediction.periods <- function(meta, n, ...) {
 	mid.years <- get.prediction.years(meta, n, ...)
+	if(meta$annual.simulation)
+	    return(mid.years)
 	return (paste(mid.years-3, mid.years+2, sep='-'))
 }
 
@@ -788,13 +799,19 @@ get.estimation.years <- function(meta)
 get.estimation.year.index <- function(meta, year) {
 	years <- get.estimation.years(meta)
 	lyears <- length(years)
-	breaks <- c(years-3, years[lyears]+2)
+	if(meta$annual.simulation) {
+	    idx <- which(years == year)
+	    return(if(length(idx)==0) NULL else idx[1])
+	}
+	breaks <-  c(years-3, years[lyears]+2)
 	h <- try(hist(year, breaks=breaks, plot=FALSE)$count, silent=TRUE)
 	return(if(inherits(h, "try-error")) NULL else which(h > 0)[1])
 }
 
 get.tfr.periods <- function(meta) {
 	mid.years <- get.estimation.years(meta)
+	if(meta$annual.simulation)
+	    return(mid.years)
 	return (paste(mid.years-3, mid.years+2, sep='-'))
 }
 
@@ -1019,11 +1036,13 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 	un.time.idx <- c()
 	un.time.label <- as.character(e$UN_time$TLabel)
 	l.un.time.label <- length(un.time.label)
+	filter <- e$UN_time$Tinterval == 0
+	if(pred$mcmc.set$meta$annual.simulation) filter <- filter & e$UN_time$TimeID > 1000
 	for (i in 1:ltfr) 
-		un.time.idx <- c(un.time.idx, which(un.time.label==tfr.years[i])[1])
+		un.time.idx <- c(un.time.idx, which(un.time.label==tfr.years[i] & filter)[1])
 	for (i in 1:nr.proj) {
 		header1[[paste('year', i, sep='')]] <- pred.period[i]
-		un.time.idx <- c(un.time.idx, which(un.time.label==pred.period[i]))
+		un.time.idx <- c(un.time.idx, which(un.time.label==pred.period[i] & filter)[1])
 	}
 	if(is.null(revision)) revision <- get.wpp.revision.number(pred)
 	header2 <- get.projection.summary.header(pred)
@@ -1149,8 +1168,10 @@ tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, 
 	pred.years <- as.numeric(dimnames(pred$quantiles)[[3]])
 	nr.proj <- pred$nr.projections+1 
 	if(is.null(years)) years <- pred.years[2:nr.proj]
-	mid.years <- cut(years, labels=pred.years, 
-					breaks=seq(from=pred.years[1]-3, to=pred.years[nr.proj]+2, by=5))
+	if(!meta$annual.simulation) 
+	    mid.years <- cut(years, labels=pred.years, 
+					    breaks=seq(from=pred.years[1]-3, to=pred.years[nr.proj]+2, by=5))
+	else mid.years <- years
 	which.years <- is.element(pred.years, mid.years)
 	lvalues <- length(values)
 	if(lvalues > sum(which.years)) {
