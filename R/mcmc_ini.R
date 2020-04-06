@@ -69,7 +69,10 @@ find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
 		}
 	}
 	if(annual)  # convert lambda from 5-year scale to annual scale
-        lambda <- min(which(year.bin == lambda) + 2, Tendorig)
+	{
+	  lambda <- min(which(year.bin == lambda) + 2, Tendorig)
+	  if (length(year.bin) - lambda < 5) lambda <- length(year.bin)
+	}
 
 	return(lambda)
 }
