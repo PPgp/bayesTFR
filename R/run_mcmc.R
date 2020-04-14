@@ -67,7 +67,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	if (missing(sigma0.ini) || is.null(sigma0.ini)) 
 		sigma0.ini <- ifelse(rep(nr.chains==1, nr.chains), 
 					 		(sigma0.low+sigma0.up)/2, 
-					 		seq(sigma0.low, to=sigma0.up, length=nr.chains))
+					 		seq(max(sigma0.low, 0.1), to=sigma0.up, length=nr.chains))
 	if (missing(Triangle_c4.ini) || is.null(Triangle_c4.ini)) 
 		Triangle_c4.ini <- ifelse(rep(nr.chains==1, nr.chains), 
 					 		(Triangle_c4.low+Triangle_c4.up)/2, 

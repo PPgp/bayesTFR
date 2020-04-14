@@ -3,7 +3,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						replace.output=FALSE,
 						start.year=NULL, nr.traj = NULL, thin = NULL, burnin=2000, 
 						use.diagnostics=FALSE,
-						use.tfr3=TRUE, burnin3=10000,
+						use.tfr3=TRUE, burnin3=2000,
 						mu=2.1, rho=0.8859, sigmaAR1=0.1016,
 						min.tfr=0.5, use.correlation=FALSE,
 						save.as.ascii=1000, output.dir = NULL,
@@ -162,10 +162,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 							    save.as.ascii=1000, output.dir = NULL, write.summary.files=TRUE, 
 							    is.mcmc.set.thinned=FALSE, force.creating.thinned.mcmc=FALSE,
 							    write.trajectories=TRUE, 
-							    verbose=verbose){
+							    verbose=verbose, uncertainty=FALSE){
 	# if 'countries' is given, it is an index
 	# sigmaAR1 can be a vector. The last element will be repeated up to nr.projections
-	meta <- mcmc.set$meta
+  meta <- mcmc.set$meta
 	year.step <- if(meta$annual.simulation) 1 else 5
 	present.year <-  if(is.null(start.year)) meta$present.year else start.year - year.step
 	nr_project <- length(seq(present.year+year.step, end.year, by=year.step))
@@ -219,7 +219,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	unblock.gtk('bDem.TFRpred')
 	load.mcmc.set <- if(has.thinned.mcmc && !force.creating.thinned.mcmc) thinned.mcmc
 					 else create.thinned.tfr.mcmc(mcmc.set, thin=thin, burnin=burnin, 
-					 							output.dir=output.dir, verbose=verbose)
+					 							output.dir=output.dir, verbose=verbose, uncertainty=uncertainty)
 	nr_simu <- load.mcmc.set$mcmc.list[[1]]$finished.iter
 
 	if (verbose) cat('Load variance parameters.\n')
@@ -340,13 +340,25 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	first.projection <- rep(1, nr_countries_real)
 	for (icountry in 1:nr_countries_real) {
 		# fill the result array with observed data 
-		for(year in 1:fps.end.obs.index) 
-			all.f_ps[icountry,year,] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min+year-1]
+	  if (uncertainty)
+	  {
+	    country.obj <- get.country.object(icountry, meta, index=TRUE)
+	    tfr.table <- get.tfr.parameter.traces.cs(getValue(load.mcmc.list.pointer), country.obj, 
+	                                'tfr', burnin=0)
+	    for(year in 1:fps.end.obs.index)
+	      all.f_ps[icountry,year,] <- tfr.table[,all.T_end.min+year-1]
+	  }
+	  else
+	  {
+	    for(year in 1:fps.end.obs.index) 
+	      all.f_ps[icountry,year,] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min+year-1]
+	  }
 		first.two.na <- which(is.na(all.f_ps[icountry,,1]))[1:2]
 		which.Wsecond[icountry] <- first.two.na[2]
 		W[icountry,first.two.na] <- c(adj.factor1, adj.factor2)
 		first.projection[icountry] <- first.two.na[1]
 	}
+	
 	W[is.na(W)] <- 0
 	mu.c <- rho.c <- rep(NA, nr_countries)
 	sigma.epsAR1 <- list()
@@ -366,6 +378,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		verbose.iter <- as.integer(max(1, nr_simu/100))
 		if(interactive()) cat('\n')
 	}
+	
 	#########################################
 	for (s in 1:nr_simu){ # Iterate over trajectories
 	#########################################
@@ -576,6 +589,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	}
 	invisible(bayesTFR.prediction)
 }
+
 newPointer <- function(inputValue){
 	object <- new.env(parent=globalenv())
 	object$value <- inputValue
@@ -590,7 +604,7 @@ getValue <- function(pointer)
 .prepare.country.spec.pars.for.predictions <- function(country, country.obj, meta, mcmc.list, load.meta, load.mcmc.list, nr_simu, burnin,
 														alpha.vars, delta.vars, has.phase3, meta3, mcmc3.list, burnin3, thinning.index,
 														cs.par.values_hier) {
-	if (is.element(country,getValue(meta)$id_DL)){
+  if (is.element(country,getValue(meta)$id_DL)){
 		U.var <- paste0('U_c', country.obj$code)
 		d.var <- paste0('d_c', country.obj$code)
 		Triangle_c4.var <- paste0("Triangle_c4_c", country.obj$code)

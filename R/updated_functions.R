@@ -72,8 +72,9 @@ get.eps.all.phases <- function(Dlpar, mcmc, country)
 {
   eps_return <- numeric(length = mcmc$meta$T_end-1)
   id2 <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country] - 1)
-  dl <- - 5 * Dlpar[5]/(1 + exp(- 2*log(9)/Dlpar[1] *(mcmc$meta$tfr_all[id2, country] - Dlpar[1] - Dlpar[2] -Dlpar[3] - Dlpar[4] + 0.5*Dlpar[1]))) + 
-          5 * Dlpar[5]/(1 + exp(- 2*log(9)/Dlpar[3] *(mcmc$meta$tfr_all[id2, country] - Dlpar[4] - 0.5*Dlpar[3])))
+  dl <- - Dlpar[5]/(1 + exp(- 2*log(9)/Dlpar[1] *(mcmc$meta$tfr_all[id2, country] - Dlpar[1] - Dlpar[2] -Dlpar[3] - Dlpar[4] + 0.5*Dlpar[1]))) + 
+          Dlpar[5]/(1 + exp(- 2*log(9)/Dlpar[3] *(mcmc$meta$tfr_all[id2, country] - Dlpar[4] - 0.5*Dlpar[3])))
+  dl <- dl * ifelse(mcmc$meta$annual.simulation, 1, 5)
   dl[mcmc$meta$tfr_all[id2, country] < 1] <- 0
   dl[dl<0] <- 0
   eps_return[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)] <- mcmc$meta$tfr_all[id2 + 1, country] - 

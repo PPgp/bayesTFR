@@ -19,7 +19,7 @@ store.mcmc <- local({
 	special.case <- c('gamma', 'eps_T')
 	
 	buffers.insert <- function(mcmc, countries=NULL) {
-		counter <<- counter + 1
+	  counter <<- counter + 1
 		if (is.null(countries)) {
 			for (par in par.names) {
 				if (is.element(par, mcmc$dontsave)) next
@@ -41,6 +41,7 @@ store.mcmc <- local({
 				buffer.cs[[par]][[country]][counter,] <<- result
 			}
 		}
+	  
 		if ('tfr_all' %in% names(mcmc$meta))
 		{
 		  for (country in country.index){
@@ -168,7 +169,7 @@ store.mcmc3 <- local({
 	buffer3 <- buffer3.cs <- NULL
 		
 	buffers.insert <- function(mcmc, countries=NULL) {
-		counter3 <<- counter3 + 1
+	  counter3 <<- counter3 + 1
 		if (is.null(countries)) {
 			for (par in par.names) buffer3[[par]][counter3,] <<- mcmc[[par]]
 			country.index <- 1: mcmc$meta$nr.countries
@@ -178,6 +179,7 @@ store.mcmc3 <- local({
 				buffer3.cs[[par]][[country]][counter3,] <<- if(is.null(dim(mcmc[[par]]))) mcmc[[par]][country] 
                 								          else mcmc[[par]][,country]
 		}
+		
 	}
 		
 	buffers.ini <- function(mcmc, size, countries=NULL) {
@@ -201,8 +203,15 @@ store.mcmc3 <- local({
 	do.flush.buffers <- function(mcmc, append=FALSE, countries=NULL, verbose=FALSE) {
 		if (verbose)
 			cat("Flushing results into disk.\n")
-		output.dir <- file.path(mcmc$meta$output.dir, mcmc$output.dir)
-		if(!file.exists(output.dir)) 
+	  if (mcmc$uncertainty)
+	  {
+	    output.dir <- file.path(mcmc$meta$output.dir, "phaseIII", mcmc$output.dir)
+	  }
+	  else
+	  {
+	    output.dir <- file.path(mcmc$meta$output.dir, mcmc$output.dir)
+	  }
+	  if(!file.exists(output.dir)) 
 			dir.create(output.dir)
 		open <- if(append) 'a' else 'w'
 		
@@ -235,6 +244,7 @@ store.mcmc3 <- local({
 	store <- function(mcmc, append=FALSE, flush.buffer=FALSE, countries=NULL, verbose=FALSE) {
 	  # If countries is not NULL, only country-specific parameters 
 		# for those countries (given as index) are stored
+	  
 		buffer.size <- mcmc$meta$buffer.size
 		if (is.null(buffer.size)) buffer.size <- default.buffer.size
 		if (is.null(buffer3)) buffers.ini(mcmc, buffer.size, countries=countries)

@@ -30,7 +30,7 @@ get.eps.T <- function (DLpar, country, meta, ...)
 }
 
 get_eps_T_all <- function (mcmc, ...) {
-	suppl.T <- if(!is.null(mcmc$meta$suppl.data$regions)) mcmc$meta$suppl.data$T_end else 0
+  suppl.T <- if(!is.null(mcmc$meta$suppl.data$regions)) mcmc$meta$suppl.data$T_end else 0
 	eps_Tc <- matrix(NA, mcmc$meta$T_end-1 + suppl.T, mcmc$meta$nr_countries)
     for (country in mcmc$meta$id_DL){
     	theta <- c((mcmc$U_c[country]-mcmc$Triangle_c4[country])*exp(mcmc$gamma_ci[country,])/                                     
@@ -69,7 +69,10 @@ find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
 		}
 	}
 	if(annual)  # convert lambda from 5-year scale to annual scale
-        lambda <- min(which(year.bin == lambda) + 2, Tendorig)
+	{
+	  lambda <- min(which(year.bin == lambda) + 2, Tendorig)
+	  if (length(year.bin) - lambda < 5) lambda <- length(year.bin)
+	}
 
 	return(lambda)
 }
@@ -215,7 +218,7 @@ mcmc.meta.ini <- function(...,
 	
 do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
 						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE, uncertainty=FALSE) {
-	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, annual = meta$annual.simulation,
+  results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, annual = meta$annual.simulation,
 	                                               suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
 	tfr_matrix_observed <- tfr.with.regions$tfr_matrix
@@ -300,7 +303,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	
 	if(uncertainty)
 	{
-	  raw.data <- read.csv('TFR_cleaned.csv')
+	  raw.data <- read.csv('TFR_cleaned_2019.csv')
 	  output$raw.data <- list()
 	  count <- 1
 	  for (name in colnames(tfr_matrix_all))

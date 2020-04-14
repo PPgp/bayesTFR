@@ -199,6 +199,29 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
 															reg.code='reg_code', area.name='area_name', area.code='area_code')) {
 	tfr_data <- data
 	nr_countries <- length(tfr_data[,1])
+	if (annual)
+	{
+	  tfr_data_new <- tfr_data[, 1:2]
+	  for (year in start.year:present.year)
+	  {
+	    tfr_data_new[, as.character(year)] <- NA
+	    if (year %% 5 == 3)
+	    {
+	      tfr_data_new[, as.character(year)] <- tfr_data[, as.integer((year-1938)/5)]
+	    }
+	    else
+	    {
+	      left_ind <- floor((year-1938)/5)
+	      right_ind <- left_ind + 1
+	      left_ind <- max(left_ind, 3)
+	      right_ind <- min(right_ind, ncol(tfr_data)-2)
+	      left_dis <- year - 1938 - 5*left_ind
+	      right_dis <- 5 - left_dis
+	      tfr_data_new[, as.character(year)] <- (tfr_data[, left_ind] * right_dis + tfr_data[, right_ind] * left_dis) / 5
+	    }
+	  }
+	  tfr_data <- tfr_data_new
+	}
 	names.tfr.data <- names(tfr_data)
 	if(!annual) { # index of year-columns 
 	    #num.columns <- grep('^X[0-9]{4}.[0-9]{4}$', names.tfr.data)

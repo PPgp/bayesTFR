@@ -83,7 +83,7 @@ get.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0) {
 	return(NULL)
 }
 	
-create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL, verbose=TRUE) {
+create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL, verbose=TRUE, uncertainty=FALSE) {
 	#Return a thinned mcmc.set object with burnin removed and all chanins collapsed into one
 	mcthin <- max(sapply(mcmc.set$mcmc.list, function(x) x$thin))
 	thin <- max(c(thin, mcthin))
@@ -129,6 +129,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	}
 	if(verbose) cat('done.\nStoring country-specific parameters ...')
 	par.names.cs <- tfr.parameter.names.cs(trans=FALSE)
+	if (uncertainty) par.names.cs <- c(par.names.cs, 'tfr')
 	for (country in mcmc.set$meta$id_DL){
 		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
 		for (par in par.names.cs) {
@@ -305,7 +306,7 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 	# Load traces from the disk
 	if(is.null(mcmc$meta$phase) || mcmc$meta$phase == 2) {
 		all.standard.names <- c(tfr.parameter.names(), get.trans.parameter.names(), 
-							tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE))
+							tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE), 'tfr')
 		tran.names <- c(get.trans.parameter.names(), get.trans.parameter.names(cs=TRUE))
 		totran.names <- c(get.totrans.parameter.names(), get.totrans.parameter.names(cs=TRUE))
 		backtran.names <- get.backtrans.parameter.names(cs=TRUE)
@@ -649,7 +650,7 @@ load.tfr.parameter.traces <- function(mcmc, par.names=tfr.parameter.names(), bur
 
 load.tfr.parameter.traces.cs <- function(mcmc, country, par.names=tfr.parameter.names.cs(), burnin=0, 
 										thinning.index=NULL) {
- 	return(bdem.parameter.traces(mcmc, par.names, paste('_country', country, sep=''),
+  return(bdem.parameter.traces(mcmc, par.names, paste('_country', country, sep=''),
 						par.names.postfix=paste('_c', country, sep=''), burnin=burnin, 
 						thinning.index=thinning.index))
 }

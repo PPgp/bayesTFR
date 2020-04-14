@@ -4,7 +4,7 @@
 #########################################################
 
 tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose.iter=10, uncertainty=FALSE) {
-	if (!is.null(mcmc$rng.state)) .Random.seed <- mcmc$rng.state
+  if (!is.null(mcmc$rng.state)) .Random.seed <- mcmc$rng.state
 	  nr_simu <- mcmc$iter
     nr_countries <- mcmc$meta$nr_countries_estimation
     nr_countries_all <- mcmc$meta$nr_countries
@@ -111,7 +111,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     # Start MCMC
 	############
 	  for (simu in start.iter:nr_simu) {
-    	if(verbose.iter > 0 && (simu %% verbose.iter == 0))
+	    if(verbose.iter > 0 && (simu %% verbose.iter == 0))
         	cat('\nIteration:', simu, '--', date())
         unblock.gtk('bDem.TFRmcmc')
         #################################################################
