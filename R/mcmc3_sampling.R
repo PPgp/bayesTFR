@@ -3,7 +3,7 @@
 #########################################################
 
 tfr3.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose.iter=10) {
-	if (!is.null(mcmc$rng.state)) .Random.seed <- mcmc$rng.state
+  if (!is.null(mcmc$rng.state)) .Random.seed <- mcmc$rng.state
 	meta <- mcmc$meta
   niter <- mcmc$iter
   nr.countries <- meta$nr.countries

@@ -174,7 +174,8 @@ store.mcmc3 <- local({
 			for (par in par.names) buffer3[[par]][counter3,] <<- mcmc[[par]]
 			country.index <- 1: mcmc$meta$nr.countries
 		} else country.index <- countries
-		for (par in par.cs.names) {			
+		for (par in par.cs.names) {		
+		  
 			for (country in country.index)
 				buffer3.cs[[par]][[country]][counter3,] <<- if(is.null(dim(mcmc[[par]]))) mcmc[[par]][country] 
                 								          else mcmc[[par]][,country]
@@ -203,7 +204,7 @@ store.mcmc3 <- local({
 	do.flush.buffers <- function(mcmc, append=FALSE, countries=NULL, verbose=FALSE) {
 		if (verbose)
 			cat("Flushing results into disk.\n")
-	  if (mcmc$uncertainty)
+	  if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty) )
 	  {
 	    output.dir <- file.path(mcmc$meta$output.dir, "phaseIII", mcmc$output.dir)
 	  }

@@ -277,6 +277,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 	if (verbose) 
 		cat('Store initial values into ', mcmc$output.dir, '\n')
 	store.mcmc(mcmc, append=FALSE, flush.buffer=TRUE, verbose=verbose)
+	if (uncertainty) store.mcmc3(mcmc, append=FALSE, flush.buffer=TRUE, verbose=verbose)
 	
 	if (verbose) 
 		cat('Start sampling -', mcmc$iter, 'iterations in total.\n')

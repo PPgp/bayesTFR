@@ -254,6 +254,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
     tau.par.values <- get.tfr.parameter.traces(load.mcmc.set$mcmc.list, tau.par.names, burnin=0)
 
 	if (verbose) cat('Load hierarchical parameters.\n')
+  
+  # browser()
 	alpha.vars <- paste('alpha_',1:3, sep='')
 	delta.vars <- paste('delta_',1:3, sep='')
 	other.vars <- c('chi', 'psi', 'Triangle4', 'delta4')
@@ -264,6 +266,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	thin3 <- NA
 	has.phase3 <- use.tfr3
 	mu.c.mean <- rho.c.mean <- meta3 <- mc.meta3.pointer <- mcmc3.list.pointer <- NULL
+	
 	if(has.phase3) {
 	  mcmc3 <- if(is.null(mcmc3.set)) get.tfr3.mcmc(meta$output.dir) else mcmc3.set
 		total.iter <- get.stored.mcmc.length(mcmc3$mcmc.list, burnin3)
@@ -293,7 +296,6 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	mcmc.list.pointer <- newPointer(mcmc.set$mcmc.list)
 	load.mcmc.list.pointer <- newPointer(load.mcmc.set$mcmc.list)
 	load.meta.pointer <- newPointer(load.mcmc.set$meta)
-	
 	# country loop for preparing data for projections
 	for (country in prediction.countries){
 		country.obj <- get.country.object(country, meta, index=TRUE)
@@ -316,6 +318,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		
 		# load phase3 country-specific parameter traces
 		if(has.phase3 && is.element(country, meta3$id_phase3)) {
+		  
 			m3.par.values.cs.list[[country]] <- dprep$m3.par.values.cs
 			mu.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,1])
 			rho.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,2])
@@ -330,6 +333,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		epsilons <- rep(NA, nr_countries)
 		kappa<-eps.correlation$kappa
 	}
+	
 	# array for results - includes also historical data for periods with missing data
 	all.f_ps <- array(NA, dim=c(nr_countries_real, max.nr.project+1, nr_simu))
 	# vector W with the weight for the first two periods:
