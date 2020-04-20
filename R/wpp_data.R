@@ -31,7 +31,7 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, m
 	TFRmatrix.regions <- get.TFRmatrix.and.regions(tfr_data_countries, loc_data, 
 												start.year=start.year, 
 												present.year=present.year,
-												annual = annual, verbose=verbose)
+												annual = annual, verbose=verbose, my.tfr.file=my.tfr.file)
 	if(!annual) {
 	    TFRmatrixsuppl.regions <- .get.suppl.matrix.and.regions(un.object, TFRmatrix.regions, loc_data, 
 									start.year, present.year)
@@ -196,10 +196,10 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
 
 get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950, present.year=2010, annual = FALSE,
 												 datacolnames=c(country.code='country_code', country.name='country', reg.name='reg_name',
-															reg.code='reg_code', area.name='area_name', area.code='area_code')) {
+															reg.code='reg_code', area.name='area_name', area.code='area_code'), my.tfr.file = NULL) {
 	tfr_data <- data
 	nr_countries <- length(tfr_data[,1])
-	if (annual)
+	if (annual && is.null(my.tfr.file))
 	{
 	  tfr_data_new <- tfr_data[, 1:2]
 	  for (year in start.year:present.year)
