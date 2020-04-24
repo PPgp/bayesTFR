@@ -30,7 +30,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     nu_psi0 <- mcmc$meta$nu.psi0
     nu_psiD <- nu_psi0 + nr_DL
     prod_psi0 <- nu_psi0*psi0^2
-
+    
     mean_eps_tau_0 <- mcmc$meta$mean.eps.tau0
     sd_eps_tau_0 <- mcmc$meta$sd.eps.tau0
     nu_tau0 <- mcmc$meta$nu.tau0
@@ -65,7 +65,6 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
       mcmc$recompute.mu.integral <- TRUE
       mcmc$recompute.rho.integral <- TRUE
     }
-    
     mcenv <- as.environment(mcmc) # Create an environment for the mcmc stuff in order to avoid 
 					   			  # copying of the mcmc list 
     
@@ -209,6 +208,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
          ##################################################################
          mcenv$finished.iter <- simu
          mcenv$rng.state <- .Random.seed
+         
          if (simu %% thin == 0){
            mcenv$length <- mcenv$length + 1
            flush.buffer <- FALSE
@@ -348,8 +348,9 @@ unblock.gtk <- function(option, options.list=NULL) {
 }
 
 tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample,
-											 iter=NULL, burnin=2000, verbose=FALSE, verbose.iter=100) {
+											 iter=NULL, burnin=2000, verbose=FALSE, verbose.iter=100, uncertainty=FALSE) {
 	#run mcmc sampling for countries given by the index 'countries'
+  browser()
 	nr_simu <- iter
 	if (is.null(iter))
     	nr_simu <- mcmc$length
@@ -387,6 +388,25 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
     	hyperparameters[[par]] <- hyperparameters[[par]][sampled.index,]
     }
 	mcmc.orig <- mcmc
+	if (uncertainty)
+	{
+	  meta <- mcmc$meta
+	  nr.countries <- meta$nr.countries
+	  countries.index <- meta$id_phase3
+	  ardata <- list()
+	  Ts <- rep(0, nr.countries)
+	  for(country in 1:nr.countries) {
+	    data <- get.observed.tfr(countries.index[country], meta, 'tfr_matrix_all')
+	    ardata[[country]] <- data[meta$lambda_c[countries.index[country]]:meta$T_end_c[countries.index[country]]]
+	    Ts[country] <- length(ardata[[country]])
+	  }
+	  mcmc$observations <- ardata
+	  mcmc$length_obs <- Ts
+	  mcmc$recompute.mu.integral <- TRUE
+	  mcmc$recompute.rho.integral <- TRUE
+	}
+	matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix')
+	
 	mcenv <- as.environment(mcmc) # Create an environment for the mcmc stuff in order to avoid 
 					              # copying of the mcmc list 
 
@@ -434,14 +454,14 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
         # country-specific parameters: d_c, gamma's, U_c and Triangle_c4
         ##################################################################
         for (country in id_DL) {
-        	mcmc.update.d(country, mcenv)
-          mcmc.update.gamma(country, mcenv)
-          mcmc.update.Triangle_c4(country, mcenv)
+        	mcmc.update.d(country, mcenv, matrix.name=matrix.name)
+          mcmc.update.gamma(country, mcenv, matrix.name=matrix.name)
+          mcmc.update.Triangle_c4(country, mcenv, matrix.name=matrix.name)
         } 
  
          # U_c updated only for countries with early decline
          for (country in id_early){
-                mcmc.update.U(country, mcenv)
+                mcmc.update.U(country, mcenv, matrix.name=matrix.name)
          } 
 
          ################################################################### 

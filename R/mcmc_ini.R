@@ -195,7 +195,8 @@ mcmc.meta.ini <- function(...,
 						start.year=1950, present.year=2020, 
 						wpp.year=2019, my.tfr.file = NULL, my.locations.file = NULL,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
-						verbose=FALSE, uncertainty=FALSE
+						verbose=FALSE, uncertainty=FALSE,
+						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL)
 					 ) {
 	# Initialize meta parameters - those that are common to all chains.
 	args <- list(...)
@@ -211,13 +212,14 @@ mcmc.meta.ini <- function(...,
 										annual = mcmc.input$annual.simulation, verbose=verbose)
 
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
-						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, uncertainty=uncertainty)
+						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file)
 	return(structure(c(mcmc.input, meta), class='bayesTFR.mcmc.meta'))
 }
 	
 	
 do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
-						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE, uncertainty=FALSE) {
+						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE, uncertainty=FALSE, 
+						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL)) {
   results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, annual = meta$annual.simulation,
 	                                               suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
@@ -300,10 +302,9 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	  regions=tfr.with.regions$regions,
 	  suppl.data=suppl.data
 	)
-	
 	if(uncertainty)
 	{
-	  raw.data <- read.csv('TFR_cleaned_2019.csv')
+	  raw.data <- read.csv(my.tfr.raw.file)
 	  output$raw.data <- list()
 	  count <- 1
 	  for (name in colnames(tfr_matrix_all))
@@ -434,7 +435,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 }
 
 mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL, 
-									my.locations.file=NULL, burnin = 200, verbose=FALSE) {
+									my.locations.file=NULL, burnin = 200, verbose=FALSE, uncertainty=FALSE) {
 	update.regions <- function(reg, ereg, id.replace, is.new, is.old) {
 		nreg <- list()
 		for (name in c('code', 'area_code', 'country_code')) {
@@ -450,7 +451,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	}
 	meta <- mcmc.set$meta
 	#create tfr matrix only for the extra countries
-	tfr.with.regions <- set.wpp.extra(meta, countries=countries, 
+	tfr.with.regions <- set.wpp.extra(meta, countries=countries, annual = meta$annual.simulation,
 									  my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose)
 	if(is.null(tfr.with.regions)) return(list(meta=meta, index=c()))
 	has.mock.suppl <- FALSE
@@ -467,7 +468,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	}
 	Emeta <- do.meta.ini(meta, tfr.with.regions=tfr.with.regions, 
 								use.average.gammas.cov=TRUE, burnin=burnin,
-						 		verbose=verbose)
+						 		verbose=verbose, uncertainty=uncertainty)
 			 		
 	# join the new meta with the existing one
 	is.old <- tfr.with.regions$is_processed
@@ -554,7 +555,8 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	for (item in names(new.meta)) {
 		meta[[item]] <- new.meta[[item]]
 	}
-
+	browser()
+	
 	return(list(meta=meta, index=index, index.replace=id.replace, 
 				index_DL=index[is.element(index, new.meta$id_DL)]))
 }

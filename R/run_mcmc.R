@@ -27,7 +27,8 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
 					 	save.all.parameters = FALSE, compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
-						verbose=FALSE, verbose.iter = 10, uncertainty = FALSE, ...) {
+						verbose=FALSE, verbose.iter = 10, uncertainty = FALSE, 
+						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), ...) {
 
 	if(file.exists(output.dir)) {
 		if(length(list.files(output.dir)) > 0 & !replace.output)
@@ -101,7 +102,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	dl.p1=dl.p1, dl.p2=dl.p2, 
 					 	proposal_cov_gammas = proposal_cov_gammas,
 					 	buffer.size=buffer.size, compression.type=compression.type, 
-					 	auto.conf=auto.conf, verbose=verbose, uncertainty=uncertainty)
+					 	auto.conf=auto.conf, verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file)
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
 	
 	starting.values <- NULL
@@ -276,6 +277,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 	
 	if (verbose) 
 		cat('Store initial values into ', mcmc$output.dir, '\n')
+	
 	store.mcmc(mcmc, append=FALSE, flush.buffer=TRUE, verbose=verbose)
 	if (uncertainty) store.mcmc3(mcmc, append=FALSE, flush.buffer=TRUE, verbose=verbose)
 	
@@ -353,7 +355,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								countries = NULL, my.tfr.file = NULL, iter = NULL,
 								thin=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
 								my.locations.file = NULL,
-								verbose=FALSE, verbose.iter=100, ...) {
+								verbose=FALSE, verbose.iter=100, uncertainty=FALSE, ...) {
 									
 	mcmc.set <- get.tfr.mcmc(sim.dir)
 	Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, 
@@ -407,7 +409,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 }
 	
 mcmc.run.chain.extra <- function(chain.id, mcmc.list, countries, posterior.sample, 
-												iter=NULL, burnin=2000, verbose=FALSE, verbose.iter=100) {
+												iter=NULL, burnin=2000, verbose=FALSE, verbose.iter=100, uncertainty=FALSE) {
 	cat('\n\nChain nr.', chain.id, '\n')
 	if (verbose)
 		cat('************\n')
@@ -418,7 +420,7 @@ mcmc.run.chain.extra <- function(chain.id, mcmc.list, countries, posterior.sampl
 
 	mcmc <- tfr.mcmc.sampling.extra(mcmc, mcmc.list=mcmc.list, countries=countries, 
 									posterior.sample=posterior.sample, 
-									iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter)
+									iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 	return(mcmc)
 }
 

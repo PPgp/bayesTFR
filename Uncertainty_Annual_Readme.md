@@ -24,7 +24,7 @@ mcmc.list <- run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, nr.chains=1)
 
 If we want to run the phase III part, then:
 ```R
-mcmc3.list <- run.tfr3.mcmc(sim.dir="bayesTFR.output", iter=10, nr.chains=1)
+mcmc3.list <- run.tfr3.mcmc(sim.dir="bayesTFR.output", iter=10, nr.chains=1, thin=1)
 ```
 
 For prediction:
@@ -58,9 +58,10 @@ Then, for phase III MCMC and prediction, we don't need to specify annual again a
 ### Estimation with Uncertainty
 An uncertainty option is provided, and we could call them by:
 ```R
-run.tfr.mcmc(output.dir="package_test", iter=10, replace.output=TRUE, uncertainty=TRUE)
+run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, replace.output=TRUE, uncertainty=TRUE, my.tfr.raw.file="TFR_cleaned_2019.csv")
 ```
-In order to run the code with **uncertainty=TRUE**, users should provide the raw data file with name "TFR_cleaned_2019.csv" in the working directory. The file is in the data directory in the modulize branch also, and users are happy to provide their own data with the same format:
+
+When **uncertainty=TRUE**, the function will by default take the "TFR_cleaned_2019.csv" in the modulize branch. Users are happy to provide their own data with the same format: (and provide the name in my.tfr.raw.file)
 
 |Country.or.area|ISO.code|Year|DataValue|Estimating.Methods|DataProcess|
 |---------------|--------|----|---------|------------------|-----------|
@@ -75,7 +76,7 @@ For prediction, and option for uncertainty is provided. If someone wants to use 
 pred.list <- tfr.predict(sim.dir="bayesTFR.output", burnin=0, burnin3=0, uncertainty=TRUE)
 ```
 
-Otherwise, it will take the past TFR as the input in my.tfr.file, and if that is not provided it will take the linearly interpolated UN estimates as input.
+Otherwise, it will take the past TFR as the input in my.tfr.file, and if that is not provided it will take the linearly interpolated UN estimates as input (but still use the estimated parameters with uncertainty considered).
 
 ## More to come
 - Faster version for Annual estimation
