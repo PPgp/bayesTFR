@@ -417,8 +417,7 @@ get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 
 tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1,
                                 pis = c(80, 95), plot.raw = TRUE,
-                                my.raw.tfr.file = file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), 
-                                grouping = 'DataProcess', save.image=TRUE)
+                                grouping = 'DataProcess', save.image=TRUE, plot.dir = 'Estimation.plot')
 {
   if (is.null(mcmc.list)) 
     mcmc.list <- get.tfr.mcmc(sim.dir)
@@ -452,7 +451,7 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   
   if (plot.raw)
   {
-    raw.data <- subset(read.csv(my.raw.tfr.file), ISO.code == country.obj$code)
+    raw.data <- mcmc.list$meta$raw.data[[country.obj$index]]
     q <- q + geom_point(mapping = aes_string(x="Year", y="DataValue", color=grouping), data=raw.data, size=2)
   }
   
@@ -461,6 +460,13 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   q <- q + geom_line(data = wpp.data, aes(x=year, y=TFR), size = 0.8) + theme_bw() + 
     geom_point(data = wpp.data,aes(x=year, y=TFR))
   
+  if (save.image)
+  {
+    if(!dir.exists(plot.dir)) dir.create(plot.dir)
+    pdf(file = paste0(plot.dir, '/tfr_country_', country.code, ".pdf"), width=10, height=5)
+    print (q)
+    dev.off()
+  }
   print(q)
   return(q)
 }
