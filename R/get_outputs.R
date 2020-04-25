@@ -225,6 +225,45 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
 	return(pred)
 }
 
+get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1, probs=NULL) {
+  ############
+  # Returns an object of class bayesTFR.prediction
+  # Set mcmc.dir to NA, if the prediction object should not have a pointer 
+  # to the corresponding mcmc traces.
+  ############
+  require(countrycode)
+  require(data.table)
+  if (is.null(mcmc.list)) 
+    mcmc.list <- get.tfr.mcmc(sim.dir)
+  if (is.null(mcmc.list)) {
+    warning('MCMC does not exist.')
+    return(NULL)
+  }
+  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
+  {
+    stop("MCMC does not consider uncertainty of past TFR.")
+  }
+  if (is.null(country.code))
+    country.code <- countrycode(ISO.code, origin = 'iso3c', destination = 'un')
+  
+  country.obj <- get.country.object(country.code, mcmc.list$meta)
+  tfr_table <- get.tfr.parameter.traces.cs(mcmc.list$mcmc.list, country.obj, 'tfr', burnin = burnin, thin=thin)
+  output <- list(tfr_table=tfr_table, country.obj = country.obj)
+  if (!is.null(probs))
+  {
+    tfr_quantile <- apply(tfr_table, 2, quantile, probs = probs)
+    tfr_quantile <- data.table(t(tfr_quantile))
+    start.year <- mcmc.list$meta$start.year
+    end.year <- mcmc.list$meta$present.year
+    if (mcmc.list$meta$annual.simulation)
+      tfr_quantile$year <- start.year:end.year
+    else
+      tfr_quantile$year <- seq(start.year+3, end.year-2, 5)
+    output$tfr_quantile <- tfr_quantile
+  }
+  return(output)
+}
+
 get.regtfr.prediction <- function(sim.dir, country=NULL){
   dir <- file.path(sim.dir, 'subnat')
   if(!file.exists(dir)) stop("No subnational predictions in ", sim.dir)

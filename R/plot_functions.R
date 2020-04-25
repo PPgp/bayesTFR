@@ -415,6 +415,56 @@ get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 	return(rbind(lower, upper))	
 }
 
+tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1,
+                                pis = c(80, 95), plot.raw = TRUE,
+                                my.raw.tfr.file = file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), 
+                                grouping = 'DataProcess', save.image=TRUE)
+{
+  if (is.null(mcmc.list)) 
+    mcmc.list <- get.tfr.mcmc(sim.dir)
+  if (is.null(mcmc.list)) {
+    warning('MCMC does not exist.')
+    return(NULL)
+  }
+  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
+  {
+    stop("MCMC does not consider uncertainty of past TFR.")
+  }
+  tfr.object <- get.tfr.estimation(mcmc.list=mcmc.list, country.code=country.code, ISO.code=ISO.code, sim.dir=sim.dir, 
+                                   burnin=burnin, thin=thin, probs=sort(c((1-pis/100)/2, 0.5, pis/100 + (1-pis/100)/2)))
+  if (is.null(country.code))
+    country.code <- countrycode(ISO.code, origin = 'iso3c', destination = 'un')
+  
+  country.obj <- get.country.object(country.code, mcmc.list$meta)
+  
+  quantile_tbl <- tfr.object$tfr_quantile
+  names(quantile_tbl)[1:(1 + 2 * length(pis))] <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
+  names.col <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
+  require(ggplot2)
+  q <- ggplot(data=quantile_tbl)  + xlab("Year") + ylab("TFR")
+  q <- q + geom_ribbon(aes_string(x="year", ymin=names.col[1], ymax=names.col[length(names.col)]), alpha=0.2, fill='red') +
+    geom_line(aes_string(x="year", y="Q50"), size = 0.8, color="red") +
+    geom_point(aes_string(x="year", y="Q50"), size = 1, color="red") + 
+    ggtitle(country.obj$name)
+  
+  if (length(pis) > 1)
+    q <- q + geom_ribbon(aes_string(x="year", ymin=names.col[2], ymax=names.col[length(names.col)-1]), alpha=0.3, fill='red')
+  
+  if (plot.raw)
+  {
+    raw.data <- subset(read.csv(my.raw.tfr.file), ISO.code == country.obj$code)
+    q <- q + geom_point(mapping = aes_string(x="Year", y="DataValue", color=grouping), data=raw.data, size=2)
+  }
+  
+  wpp.data <- get.observed.tfr(country.obj$index, mcmc.list$meta, "tfr_matrix_all")
+  wpp.data <- data.frame(year=quantile_tbl$year, TFR = as.numeric(wpp.data))
+  q <- q + geom_line(data = wpp.data, aes(x=year, y=TFR), size = 0.8) + theme_bw() + 
+    geom_point(data = wpp.data,aes(x=year, y=TFR))
+  
+  print(q)
+  return(q)
+}
+
 tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95), 
 								  half.child.variant=TRUE, nr.traj=NULL,
 								  adjusted.only = TRUE, typical.trajectory=FALSE,
