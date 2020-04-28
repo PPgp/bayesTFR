@@ -94,9 +94,29 @@ tfr.estimation.plot(mcmc.list=NULL, country.code=840, ISO.code=NULL, sim.dir="ba
 
 Here, all parameters mentioned in previous function is as the same. **pis** represents probability interval, where it could be length 1 or 2, and should be values between 50 and 100. **plot.raw** is to control whether the raw data (used for estimation) should be plot, and grouping is for how the colors should be assigned based on groups (could be **"DataProcess"** or **"Estimating.Methods"**). **save.image** will control whether the image is saved, and if yes, users could provide their own plot directory or using the default.
 
+### Run with simple countries
+Since running the complete MCMC process takes long, a simpler version for estimation TFR is available. To do that, take annual version as an example:
+```R
+output.dir <- 'bayesTFR.output'
+nr.chains <- 3
+total.iter <- 62000
+annual <- TRUE
+burnin <- 0
+thin <- 1
+### Specify with the same setting
+run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, burnin = burnin, thin = thin)
+run.tfr3.mcmc(sim.dir = output.dir, nr.chains = nr.chains, iter = total.iter, thin = thin, burnin = burnin)
+
+## Finish running MCMC for both phase II and phase III
+## Specify countries of interest, for example Nigeria and the United States
+countries <- c(566, 840)
+run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 50000, burnin=0, uncertainty=TRUE)
+```
+
+With this method, users could get access to TFR estimations easier without updating the hyper parameter estimation (or can use with the previous estimates). Users could provide raw data with the same format as described before. 
+
 ## More to come
 - Faster version for Annual estimation
-- Run with simple countries
 - More user-friendly interface
 - Email me for for requirements
 
