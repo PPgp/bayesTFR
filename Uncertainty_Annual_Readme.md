@@ -94,7 +94,7 @@ tfr.estimation.plot(mcmc.list=NULL, country.code=840, ISO.code=NULL, sim.dir="ba
 
 Here, all parameters mentioned in previous function is as the same. **pis** represents probability interval, where it could be length 1 or 2, and should be values between 50 and 100. **plot.raw** is to control whether the raw data (used for estimation) should be plot, and grouping is for how the colors should be assigned based on groups (could be **"DataProcess"** or **"Estimating.Methods"**). **save.image** will control whether the image is saved, and if yes, users could provide their own plot directory or using the default.
 
-### Run with simple countries
+### Run with single or a few countries
 Since running the complete MCMC process takes long, a simpler version for estimation TFR is available. To do that, take annual version as an example:
 ```R
 output.dir <- 'bayesTFR.output'
