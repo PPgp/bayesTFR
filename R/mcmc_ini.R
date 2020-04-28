@@ -435,7 +435,8 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 }
 
 mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL, 
-									my.locations.file=NULL, burnin = 200, verbose=FALSE, uncertainty=FALSE) {
+									my.locations.file=NULL, burnin = 200, verbose=FALSE, uncertainty=FALSE, 
+									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL)) {
 	update.regions <- function(reg, ereg, id.replace, is.new, is.old) {
 		nreg <- list()
 		for (name in c('code', 'area_code', 'country_code')) {
@@ -468,7 +469,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	}
 	Emeta <- do.meta.ini(meta, tfr.with.regions=tfr.with.regions, 
 								use.average.gammas.cov=TRUE, burnin=burnin,
-						 		verbose=verbose, uncertainty=uncertainty)
+						 		verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file = my.tfr.raw.file)
 			 		
 	# join the new meta with the existing one
 	is.old <- tfr.with.regions$is_processed
@@ -513,7 +514,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 		remove.from.old <- !is.element(idx.old, Emeta[[name]])
 		if(any(remove.from.old)) {
 			idx <- which(is.element(meta[[name]], id.replace[remove.from.old]))
-			meta[[name]] <- meta[[name]][-idx]
+			if (length(idx) > 0) meta[[name]] <- meta[[name]][-idx]
 		}
 		new.meta[[name]] <- meta[[name]]
 		idx2 <- !is.inold
@@ -555,7 +556,18 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	for (item in names(new.meta)) {
 		meta[[item]] <- new.meta[[item]]
 	}
-	browser()
+	if (uncertainty)
+	{
+	  meta$tfr_all <- meta[['tfr_matrix_all']]
+	  meta$tfr_mu_all <- meta[['tfr_matrix_all']]
+	  meta$tfr_sd_all <- matrix(0, nrow = nrow(meta$tfr_all), ncol=ncol(meta$tfr_all))
+	  meta$raw.data <- list()
+	  for (count in 1:length(Emeta$raw.data))
+	  {
+	    meta$raw.data[[index[count]]] <- Emeta$raw.data[[count]]
+	  }
+	  
+	}
 	
 	return(list(meta=meta, index=index, index.replace=id.replace, 
 				index_DL=index[is.element(index, new.meta$id_DL)]))

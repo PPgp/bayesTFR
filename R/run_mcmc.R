@@ -359,12 +359,24 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 									
 	mcmc.set <- get.tfr.mcmc(sim.dir)
 	Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, 
-												my.locations.file=my.locations.file, burnin=burnin, verbose=verbose)
-	meta <- Eini$meta
+												my.locations.file=my.locations.file, burnin=burnin, verbose=verbose, uncertainty=uncertainty)
 	if(length(Eini$index) <= 0) {
 		cat('\nNothing to be done.\n')
 		return(invisible(mcmc.set))
 	}
+	if (uncertainty)
+	{
+	  mcmc3.set <- get.tfr3.mcmc(sim.dir)
+	  Eini$meta[['id_phase3']] <- intersect(mcmc3.set$meta$id_phase3, which(mcmc.set$meta$regions$country_code %in% countries))
+	  for (par.name in tfr3.parameter.names())
+	  {
+	    for (suffix in c('prior.range', 'ini', 'ini.range'))
+	    {
+	      Eini$meta[[paste0(par.name, '.', suffix)]] <- mcmc3.set$meta[[paste0(par.name, '.', suffix)]]
+	    }
+	  }
+	}
+	meta <- Eini$meta
 	chain.ids <- names(mcmc.set$mcmc.list)
 	mcthin <- 1
 	if(verbose) cat('\n')
@@ -373,8 +385,25 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		mcmc.set$mcmc.list[[chain]]$meta <- meta
 		mcmc.set$mcmc.list[[chain]] <- mcmc.ini.extra(mcmc.set$mcmc.list[[chain]], countries=Eini$index,
 												index.replace=Eini$index.replace)
+		if (uncertainty)
+		{
+		  mcmc.set$mcmc.list[[chain]]$meta$nr.countries <- length(Eini$meta[['id_phase3']])
+		  for(varname in c('mu', 'rho')) {
+		    var <- paste(varname, 'c', sep='.')
+		    range.var <- paste(varname,'ini.range', sep='.')
+		    mcmc.set$mcmc.list[[chain]][[var]] <- runif(length(Eini$meta[['id_phase3']]), 
+		                                                mcmc.set$mcmc.list[[chain]]$meta[[range.var]][1], 
+		                                                mcmc.set$mcmc.list[[chain]]$meta[[range.var]][2])
+		  }
+		  for (country in 1:length(Eini$meta[['id_phase3']]))
+		    mcmc.set$mcmc.list[[chain]]$observations[[country]] <- 
+		      mcmc.set$mcmc.list[[chain]]$meta$tfr_all[meta$lambda_c[meta$id_phase3[country]]:meta$T_end, meta$id_phase3[country]]
+		}
 		mcthin <- max(mcthin, mcmc.set$mcmc.list[[chain]]$thin)
+		mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff(mcmc.set$mcmc.list[[chain]])
+		mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.raw(mcmc.set$mcmc.list[[chain]])
 	}
+	
 	if(length(Eini$index_DL) <= 0) {
 		cat('\nNo DL countries or regions. Nothing to be done.\n')
 		store.bayesTFR.meta.object(meta, meta$output.dir)
@@ -392,14 +421,15 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
 		chain.list <- bDem.performParallel(nr.nodes, chain.ids, mcmc.run.chain.extra, 
 						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, countries=Eini$index_DL, 
-						posterior.sample=post.idx, iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, ...)
+						posterior.sample=post.idx, iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, 
+						uncertainty=uncertainty, ...)
 		for (i in 1:length(chain.ids))
 			mcmc.set$mcmc.list[[chain.ids[i]]] <- chain.list[[i]]
 	} else { # run chains sequentially
 		for (chain.id in chain.ids) {
 			mcmc.set$mcmc.list[[chain.id]] <- mcmc.run.chain.extra(chain.id, mcmc.set$mcmc.list, 
 												countries=Eini$index_DL, posterior.sample=post.idx, iter=iter,  
-												burnin=burnin, verbose=verbose, verbose.iter=verbose.iter)
+												burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 		}
 	}
 	store.bayesTFR.meta.object(meta, meta$output.dir)
@@ -414,7 +444,7 @@ mcmc.run.chain.extra <- function(chain.id, mcmc.list, countries, posterior.sampl
 	if (verbose)
 		cat('************\n')
 	mcmc <- mcmc.list[[chain.id]]
-		
+	
 	if (verbose) 
 		cat('MCMC sampling for additional countries and regions.\n')
 

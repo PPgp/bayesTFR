@@ -350,8 +350,7 @@ unblock.gtk <- function(option, options.list=NULL) {
 tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample,
 											 iter=NULL, burnin=2000, verbose=FALSE, verbose.iter=100, uncertainty=FALSE) {
 	#run mcmc sampling for countries given by the index 'countries'
-  browser()
-	nr_simu <- iter
+  nr_simu <- iter
 	if (is.null(iter))
     	nr_simu <- mcmc$length
     nr_countries_all <- mcmc$meta$nr_countries
@@ -370,23 +369,53 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 	mid.years <- as.integer(c(if(suppl.T > 0) rownames(mcmc$meta$suppl.data$tfr_matrix) else c(), rownames(mcmc$meta$tfr_matrix)))
 	const_sd_dummie_Tc_extra[mid.years[-length(mid.years)] < 1975,] <- 1
 	
+	
 	# get values of the hyperparameters (sample from the posterior)
-    hyperparameter.names <- tfr.parameter.names(trans=FALSE)
-    hyperparameters <- list()
-    sampled.index <- sample(posterior.sample, nr_simu, replace=TRUE)
-    th.burnin <- get.thinned.burnin(mcmc, burnin)
-    for (par in hyperparameter.names) {
-    	hyperparameters[[par]] <- c()
-    	for(mc in mcmc.list) {
-    		if (no.traces.loaded(mc)  || th.burnin < mc$traces.burnin) {
-    			traces <- bdem.parameter.traces(mc, par, burnin=th.burnin)
-        	} else {
-          		traces <- get.burned.tfr.traces(mc, par, th.burnin)
-       		}
-       		hyperparameters[[par]] <- rbind(hyperparameters[[par]], traces)
-       	}
-    	hyperparameters[[par]] <- hyperparameters[[par]][sampled.index,]
+  hyperparameter.names <- tfr.parameter.names(trans=FALSE)
+  hyperparameters <- list()
+  sampled.index <- sample(posterior.sample, nr_simu, replace=TRUE)
+  th.burnin <- get.thinned.burnin(mcmc, burnin)
+  if (uncertainty)
+  {
+    mcmc3.format <- list()
+    for (i in 1:length(mcmc.list))
+    {
+      mcmc3.format[[i]] <- list()
+      mcmc3.format[[i]]$meta$phase <- 3
+      mcmc3.format[[i]]$compression.type <- mcmc.list[[i]]$compression.type
+      mcmc3.format[[i]]$meta$compression.type <- mcmc.list[[i]]$meta$compression.type
+      mcmc3.format[[i]]$meta$output.dir <- file.path(mcmc.list[[i]]$meta$output.dir, 'phaseIII')
+      mcmc3.format[[i]]$output.dir <- mcmc.list[[i]]$output.dir
+      mcmc3.format[[i]]$traces <- mcmc.list[[i]]$traces
+      mcmc3.format[[i]] <- structure(mcmc3.format[[i]], class='bayesTFR.mcmc')
     }
+    hyperparameter3.names <- tfr3.parameter.names()
+    for (par in hyperparameter3.names) {
+      hyperparameters[[par]] <- c()
+      for(mc in mcmc3.format) {
+        if (no.traces.loaded(mc)  || th.burnin < mc$traces.burnin) {
+          traces <- bdem.parameter.traces(mc, par, burnin=th.burnin)
+        } else {
+          traces <- get.burned.tfr.traces(mc, par, th.burnin)
+        }
+        hyperparameters[[par]] <- rbind(hyperparameters[[par]], traces)
+      }
+      hyperparameters[[par]] <- hyperparameters[[par]][sampled.index,]
+    }
+  }
+  for (par in hyperparameter.names) {
+    hyperparameters[[par]] <- c()
+    for(mc in mcmc.list) {
+    	if (no.traces.loaded(mc)  || th.burnin < mc$traces.burnin) {
+    		traces <- bdem.parameter.traces(mc, par, burnin=th.burnin)
+        } else {
+        		traces <- get.burned.tfr.traces(mc, par, th.burnin)
+       	}
+       	hyperparameters[[par]] <- rbind(hyperparameters[[par]], traces)
+      }
+    hyperparameters[[par]] <- hyperparameters[[par]][sampled.index,]
+  }
+  
 	mcmc.orig <- mcmc
 	if (uncertainty)
 	{
@@ -402,15 +431,17 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 	  }
 	  mcmc$observations <- ardata
 	  mcmc$length_obs <- Ts
-	  mcmc$recompute.mu.integral <- TRUE
-	  mcmc$recompute.rho.integral <- TRUE
 	}
 	matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix')
 	
 	mcenv <- as.environment(mcmc) # Create an environment for the mcmc stuff in order to avoid 
 					              # copying of the mcmc list 
-
+  
+	mcenv$const_sd_dummie_Tc <- matrix(0, mcenv$meta$T_end-1+suppl.T, nr_countries_all)
+	mcenv$const_sd_dummie_Tc[mid.years[-length(mid.years)] < 1975,] <- 1
+	
 	updated.var.names <- c('gamma_ci', 'd_c', 'Triangle_c4', 'U_c')
+	if (uncertainty) updated.var.names <- c(updated.var.names, 'rho.c', 'mu.c')
 	idx.tau_c.id.notearly <- matrix(c(mcmc$meta$tau_c[id_notearly], id_notearly), ncol=2)
 
     ################################################################### 
@@ -428,6 +459,7 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
         		mcenv[[par]] <- hyperparameters[[par]][simu,]
         	}
         }
+			  
         # compute eps_T, mean_eps_t and sd_Tc
         if(is.null(mcenv$eps_Tc)) mcenv$eps_Tc <- get_eps_T_all(mcenv)
          	
@@ -435,13 +467,16 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
         mcenv$data.list <- list()
     	for (icountry in 1:length(countries)){
     		country <- countries[icountry]
-    		this.data <- get.observed.tfr(country, mcenv$meta)
+    		this.data <- get.observed.tfr(country, mcenv$meta, matrix.name = matrix.name)
     		this.data <- this.data[1:(mcenv$meta$T_end_c[country]-1)]
     		mcenv$data.list[[country]] <- this.data
 			add_to_sd_Tc_extra[1:(mcenv$meta$T_end_c[country]-1),icountry] <- (
 						this.data - mcenv$S_sd)*ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
-		}
-		mcenv$mean_eps_Tc <- matrix(0, mcenv$meta$T_end -1 + suppl.T, nr_countries_all)
+    	}
+      mcenv$add_to_sd_Tc <- matrix(0, mcenv$meta$T_end-1+suppl.T, nr_countries_all)
+        
+      mcenv$add_to_sd_Tc[,countries] <- add_to_sd_Tc_extra
+		  mcenv$mean_eps_Tc <- matrix(0, mcenv$meta$T_end -1 + suppl.T, nr_countries_all)
         mcenv$sd_Tc <- matrix(NA, mcenv$meta$T_end -1 + suppl.T, nr_countries_all)
        	mcenv$sd_Tc[,countries] <- ifelse(const_sd_dummie_Tc_extra==1, 
          						mcenv$const_sd, 1)*
@@ -463,6 +498,52 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
          for (country in id_early){
                 mcmc.update.U(country, mcenv, matrix.name=matrix.name)
          } 
+ 		
+ 		    if (uncertainty)
+ 		    {
+ 		      for (par in hyperparameter3.names) {
+ 		        if(is.null(dim(hyperparameters[[par]]))) {
+ 		          mcenv[[par]] <- hyperparameters[[par]][simu]
+ 		        } else {
+ 		          mcenv[[par]] <- hyperparameters[[par]][simu,]
+ 		        }
+ 		      }
+ 		      sigma.eps.sq <- mcenv$sigma.eps^2
+ 		      sigma.mu.sq <- mcenv$sigma.mu^2
+ 		      sigma.mu.sq.inv <- 1/sigma.mu.sq
+ 		      mu.over.sigma.sq <- mcenv$mu/sigma.mu.sq
+ 		      sigma.rho.sq <- mcenv$sigma.rho^2
+ 		      sigma.rho.sq.inv <- 1/sigma.rho.sq
+ 		      rho.over.sigma.sq <- mcenv$rho/sigma.rho.sq
+ 		      S.eps <- STn <- 0
+ 		      one.minus.rho <- 1-mcenv$rho.c
+ 		      one.minus.rho.sq <- one.minus.rho^2
+ 		      W <- one.minus.rho.sq/sigma.eps.sq
+ 		      for(country in 1:nr.countries) {
+ 		        f.ct <- ardata[[country]][2:Ts[country]]
+ 		        f.ctm1 <- ardata[[country]][1:(Ts[country]-1)]
+ 		        # mu.c
+ 		        s <- sum((f.ct - mcenv$rho.c[country]*f.ctm1)/one.minus.rho[country])
+ 		        nomin <- W[country] * s + mu.over.sigma.sq
+ 		        denom <- (Ts[country]-1) * W[country] + sigma.mu.sq.inv
+ 		        mcenv$mu.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0)	
+ 		        
+ 		        # rho.c
+ 		        d1 <- f.ctm1 - mcenv$mu.c[country]
+ 		        a <- sum(d1^2)/sigma.eps.sq
+ 		        b <- sum(d1*(f.ct - mcenv$mu.c[country]))/sigma.eps.sq
+ 		        nomin <- b + rho.over.sigma.sq
+ 		        denom <- a + sigma.rho.sq.inv
+ 		        mcenv$rho.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0, #high=1-10*.Machine$double.xmin
+ 		                                           high=0.999999)
+ 		        S.eps <- S.eps + sum((f.ct - mcenv$mu.c[country] - mcenv$rho.c[country]*d1)^2)
+ 		        STn <- STn + Ts[country]-1
+ 		      }
+ 		      for (country in 1:nr_countries)
+ 		      {
+ 		        mcmc.update.tfr(countries[country], mcenv)
+ 		      }
+ 		    }
 
          ################################################################### 
          # write samples to disk
@@ -471,6 +552,10 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
          for(var in updated.var.names) {
          	mcmc.orig[[var]] <- mcenv[[var]]
          }
+ 		    if (uncertainty)
+ 		    {
+ 		      mcmc.orig[['meta']][['tfr_all']][, countries] <- mcenv[['meta']][['tfr_all']][, countries]
+ 		    }
          flush.buffer <- FALSE
          append <- TRUE
 		 if (simu == 1) {
@@ -481,8 +566,12 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 		 }
          store.mcmc(mcmc.orig, append=append, flush.buffer=flush.buffer, countries=countries, 
          				verbose=verbose)
+         if (uncertainty) store.mcmc3(mcmc.orig, append=append, flush.buffer=flush.buffer, countries=countries, 
+                                      verbose=verbose)
          
 	}       # end simu loop MCMC
 	mcmc.orig <- .cleanup.mcmc(mcmc.orig)
     return(mcmc.orig)
 }
+
+

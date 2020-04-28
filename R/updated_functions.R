@@ -5,6 +5,7 @@ get.obs.estimate.diff <- function(mcmc)
   mcmc$eps_unc <- list()
   for(country in 1:mcmc$meta$nr_countries)
   {
+    if (is.null(mcmc$meta$raw.data[[country]])) next
     tmp.year <- mcmc$meta$raw.data[[country]]$Year
     tmp.tfr <- mcmc$meta$raw.data[[country]]$DataValue
     if (mcmc$meta$annual.simulation)
@@ -68,6 +69,7 @@ estimate.bias.sd.raw <- function(mcmc)
 {
   for(country in 1:mcmc$meta$nr_countries)
   {
+    if (is.null(mcmc$meta$raw.data[[country]])) next
     source <- factor(as.character(mcmc$meta$raw.data[[country]]$DataProcess))
     estimation.method <- factor(as.character(mcmc$meta$raw.data[[country]]$Estimating.Methods))
     diff <- mcmc$eps_unc[[country]]
@@ -143,9 +145,10 @@ mcmc.update.tfr <- function(country, mcmc)
   sd_tfr_prev <- get.sd.all.phases(mcmc, country)
   eps_tfr_prop <- eps_tfr_prev
   sd_tfr_prop <- sd_tfr_prev
-  
+  if (country %in% mcmc$meta$id_phase3) {id3 <- which(mcmc$meta$id_phase3 == country)}
   for (year in 1:mcmc$meta$T_end)
   {
+    # if ((country == 201) && year == 35) {browser()}
     # if ((mcmc$finished.iter == 146) && (country == 113) && (year == 6)) {browser()}
     tmp.years <- max(1, year-1):min(year, mcmc$meta$T_end -1)
     sd_f <- ifelse(mcmc$finished.iter>=100, 2.4 * max(mcmc$meta$tfr_sd_all[year, country], 0.01), 1)
@@ -175,7 +178,6 @@ mcmc.update.tfr <- function(country, mcmc)
     }
     else if (year > mcmc$meta$lambda_c[country])
     {
-      id3 <- which(mcmc$meta$id_phase3 == country)
       eps_tfr_prop[tmp.years] <- mcmc$meta$tfr_all[tmp.years + 1, country] - mcmc$meta$tfr_all[tmp.years, country] * 
         mcmc$rho.c[id3] - (1-mcmc$rho.c[id3]) * mcmc$mu.c[id3]
     }
@@ -185,7 +187,8 @@ mcmc.update.tfr <- function(country, mcmc)
     if ((year >= mcmc$meta$start_c[country]) && (year < mcmc$meta$lambda_c[country]))
     {
       tmp <- (prop_tfr - mcmc$S_sd) * ifelse(prop_tfr > mcmc$S_sd, -mcmc$a_sd, mcmc$b_sd)
-      sd_tfr_prop[year] <- ifelse(mcmc$const_sd_dummie_Tc[year] == 1, mcmc$const_sd, 1) * ifelse((mcmc$sigma0 + tmp > 0), mcmc$sigma0 + tmp, mcmc$meta$sigma0.min)
+      sd_tfr_prop[year] <- ifelse(mcmc$const_sd_dummie_Tc[year, country] == 1, mcmc$const_sd, 1) * 
+        ifelse((mcmc$sigma0 + tmp > 0), mcmc$sigma0 + tmp, mcmc$meta$sigma0.min)
     }
       
     loglik_new <- loglik_new + sum(dnorm(eps_tfr_prop[tmp.years], mean=0, sd=sd_tfr_prop[tmp.years], log=TRUE))
@@ -222,6 +225,7 @@ mcmc.update.tfr <- function(country, mcmc)
                                                   (mcmc$meta$tfr_all[year, country] - mu) ** 2)/mcmc$finished.iter)
     
   }
+  if (country %in% mcmc$meta3$id_phase3) mcmc$observations[[id3]] <- mcmc$meta$tfr_all[mcmc$meta$lambda_c[country]:mcmc$meta$T_end, country]
   mcmc$data.list[[country]][epsT.idx] <- mcmc$meta$tfr_all[epsT.idx, country]
 }
 
@@ -240,18 +244,18 @@ one.step.mcmc3.sampling <- function(mcmc)
   gamma.rho.up <- if (meta$sigma.rho.prior.range[1] == 0) NA else 1/(meta$sigma.rho.prior.range[1])^2
   gamma.eps.low <- 1/(meta$sigma.eps.prior.range[2])^2
   gamma.eps.up <- if (meta$sigma.eps.prior.range[1] == 0) NA else 1/(meta$sigma.eps.prior.range[1])^2
-  
+
   #### Start MCMC
-  
+
   mu.integral.to.mC <- (mu.rho.integral(mcmc[['mu']], mcmc[['sigma.mu']], low=0))^(-nr.countries)
-  prop.mu <- proposal.mu.rho(mcmc[['mu.c']], mcmc[['sigma.mu']], nr.countries, 
+  prop.mu <- proposal.mu.rho(mcmc[['mu.c']], mcmc[['sigma.mu']], nr.countries,
                              meta[['mu.prior.range']][1], meta[['mu.prior.range']][2])
   accept.prob <- min(((mu.rho.integral(prop.mu, mcmc[['sigma.mu']], low=0))^(-nr.countries))/mu.integral.to.mC, 1)
   if (runif(1) < accept.prob) {
     mcmc[['mu']] <- prop.mu
     mcmc[['recompute.mu.integral']] <- TRUE
   } else mcmc[['recompute.mu.integral']] <- FALSE
-  
+
   # Metropolis-Hastings for sigma_mu=1/sqrt(lambda_mu)
   S <- sum((mcmc[['mu.c']]-mcmc[['mu']])^2)
   if(mcmc[['recompute.mu.integral']]) mu.integral.to.mC <- mu.rho.integral(mcmc[['mu']], mcmc[['sigma.mu']], low=0)^(-nr.countries)
@@ -260,31 +264,31 @@ one.step.mcmc3.sampling <- function(mcmc)
   if (runif(1) < accept.prob) {
     mcmc[['sigma.mu']] <- 1/sqrt(prop.lambda.mu)
     recompute.mu.integral <- TRUE
-  } else recompute.mu.integral <- FALSE	
-  
+  } else recompute.mu.integral <- FALSE
+
   # Slice sampling for rho
-  mcmc[['rho']] <- slice.sampling(mcmc[['rho']], logdensity.mu.rho, 1, 
-                                  low=meta[['rho.prior.range']][1], up=meta[['rho.prior.range']][2], 
-                                  par.c=mcmc[['rho.c']], sd=mcmc[['sigma.rho']], 
+  mcmc[['rho']] <- slice.sampling(mcmc[['rho']], logdensity.mu.rho, 1,
+                                  low=meta[['rho.prior.range']][1], up=meta[['rho.prior.range']][2],
+                                  par.c=mcmc[['rho.c']], sd=mcmc[['sigma.rho']],
                                   c.low=0, c.up=1)
   # Metropolis-Hastings for rho
   # rho.integral.to.mC <- (mu.rho.integral(mcmc[['rho']], mcmc[['sigma.rho']], low=0, up=1))^(-nr.countries)
-  # prop.rho <- proposal.mu.rho(mcmc[['rho.c']], mcmc[['sigma.rho']], nr.countries, 
+  # prop.rho <- proposal.mu.rho(mcmc[['rho.c']], mcmc[['sigma.rho']], nr.countries,
   # meta[['rho.prior.range']][1], meta[['rho.prior.range']][2])
   # accept.prob <- min(((mu.rho.integral(prop.rho, mcmc[['sigma.rho']], low=0, up=1))^(-nr.countries))/rho.integral.to.mC, 1)
   # if (runif(1) < accept.prob) {
   # mcmc[['rho']] <- prop.rho
   # recompute.rho.integral <- TRUE
   # } else recompute.rho.integral <- FALSE
-  
-  mcmc[['sigma.rho']] <- slice.sampling(mcmc[['sigma.rho']], logdensity.sigma.mu.rho, 1, 
-                                        low=meta$sigma.rho.prior.range[1], up=meta$sigma.rho.prior.range[2], 
+
+  mcmc[['sigma.rho']] <- slice.sampling(mcmc[['sigma.rho']], logdensity.sigma.mu.rho, 1,
+                                        low=meta$sigma.rho.prior.range[1], up=meta$sigma.rho.prior.range[2],
                                         par.c=mcmc[['rho.c']], mean=mcmc[['rho']],
                                         c.low=0, c.up=1)
-  
+
   # Metropolis-Hastings for sigma_rho=1/sqrt(lambda_rho)
   # S <- sum((mcmc[['rho.c']]-mcmc[['rho']])^2)
-  # if(recompute.rho.integral) 
+  # if(recompute.rho.integral)
   # rho.integral.to.mC <- (mu.rho.integral(mcmc[['rho']], mcmc[['sigma.rho']], low=0, up=1))^(-nr.countries)
   # prop.lambda.rho <- rgamma.trunc((nr.countries-1)/2, S/2, low=gamma.rho.low, high=gamma.rho.up)
   # accept.prob <- min(((mu.rho.integral(mcmc[['rho']], 1/prop.lambda.rho, low=0, up=1))^(-nr.countries))/rho.integral.to.mC, 1)
@@ -292,7 +296,7 @@ one.step.mcmc3.sampling <- function(mcmc)
   # mcmc[['sigma.rho']] <- 1/sqrt(prop.lambda.rho)
   # recompute.rho.integral <- TRUE
   # } else recompute.rho.integral <- FALSE
-  
+
   sigma.eps.sq <- mcmc$sigma.eps^2
   sigma.mu.sq <- mcmc$sigma.mu^2
   sigma.mu.sq.inv <- 1/sigma.mu.sq
@@ -304,7 +308,7 @@ one.step.mcmc3.sampling <- function(mcmc)
   one.minus.rho <- 1-mcmc$rho.c
   one.minus.rho.sq <- one.minus.rho^2
   W <- one.minus.rho.sq/sigma.eps.sq
-  
+
   # country-specific parameters - Gibbs sampler
   for(country in 1:nr.countries) {
     f.ct <- ardata[[country]][2:Ts[country]]
@@ -313,8 +317,8 @@ one.step.mcmc3.sampling <- function(mcmc)
     s <- sum((f.ct - mcmc$rho.c[country]*f.ctm1)/one.minus.rho[country])
     nomin <- W[country] * s + mu.over.sigma.sq
     denom <- (Ts[country]-1) * W[country] + sigma.mu.sq.inv
-    mcmc$mu.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0)	
-    
+    mcmc$mu.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0)
+
     # rho.c
     d1 <- f.ctm1 - mcmc$mu.c[country]
     a <- sum(d1^2)/sigma.eps.sq
@@ -328,6 +332,6 @@ one.step.mcmc3.sampling <- function(mcmc)
   }
   # Gibbs for sigma.eps
   mcmc$sigma.eps <- 1/sqrt(rgamma.trunc((STn-1)/2, S.eps/2, low=gamma.eps.low, high=gamma.eps.up))
-  
+
 }
 

@@ -363,7 +363,7 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 .do.get.traces <- function(mcmc, par.names, file.postfix='', par.names.postfix='', burnin=0, 
 							thinning.index=NULL, all.standard.names=c(), tran.names=c(), totran.names=c(), 
 							backtran.names=c(), tobacktran.names=c()) {
-	if (length(par.names) == 0) return (NULL)
+  if (length(par.names) == 0) return (NULL)
 	tran.names.l <- nchar(tran.names)
 	ltran.names <- length(tran.names)
 	totran.names.l <- nchar(totran.names)
@@ -680,7 +680,7 @@ get.tfr.parameter.traces.cs <- function(mcmc.list, country.obj, par.names=tfr.pa
 }
 
 get.tfr3.parameter.traces <- function(mcmc.list, par.names=tfr3.parameter.names(), ...)
-	return(get.tfr.parameter.traces(mcmc.list, par.names, ...))
+  return(get.tfr.parameter.traces(mcmc.list, par.names, ...))
 	
 get.tfr3.parameter.traces.cs <- function(mcmc.list, country.obj, par.names=tfr3.parameter.names.cs(), ...)
 	return(get.tfr.parameter.traces.cs(mcmc.list, country.obj, par.names, ...))
