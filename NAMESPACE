@@ -111,7 +111,9 @@ export(
 	get.data.for.worldmap,
 	get.countries.table,
 	tfr.predict.subnat,
-	get.regtfr.prediction
+	get.regtfr.prediction,
+	get.tfr.estimation,
+	tfr.estimation.plot
 )
 
 # register S3 methods

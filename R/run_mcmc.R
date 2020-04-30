@@ -436,7 +436,6 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 												burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 		}
 	}
-	browser()
 	store.bayesTFR.meta.object(meta, meta$output.dir)
 	mcmc.set$meta <- meta
 	cat('\n')
