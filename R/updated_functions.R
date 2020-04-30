@@ -87,7 +87,8 @@ estimate.bias.sd.raw <- function(mcmc)
     abs.residual <- abs(residuals(m1))
     m2 <- lm(as.formula(paste0('abs.residual ~ ', regressor)))
     std <- predict(m2) * sqrt(pi/2)
-    std[std < 1e-6] <- 0.5
+    std[std < 1e-6] <- 0.1
+    std[std < (abs(bias) / 2)] <- abs(bias[std < (abs(bias) / 2)])
     mcmc$meta$raw.data[[country]]$bias <- bias
     mcmc$meta$raw.data[[country]]$std <- std
   }

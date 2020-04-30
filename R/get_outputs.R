@@ -231,8 +231,8 @@ get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL,
   # Set mcmc.dir to NA, if the prediction object should not have a pointer 
   # to the corresponding mcmc traces.
   ############
-  require(countrycode)
   require(data.table)
+  data("iso3166")
   if (is.null(mcmc.list)) 
     mcmc.list <- get.tfr.mcmc(sim.dir)
   if (is.null(mcmc.list)) {
@@ -244,7 +244,7 @@ get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL,
     stop("MCMC does not consider uncertainty of past TFR.")
   }
   if (is.null(country.code))
-    country.code <- countrycode(ISO.code, origin = 'iso3c', destination = 'un')
+    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
   
   country.obj <- get.country.object(country.code, mcmc.list$meta)
   tfr_table <- get.tfr.parameter.traces.cs(mcmc.list$mcmc.list, country.obj, 'tfr', burnin = burnin, thin=thin)

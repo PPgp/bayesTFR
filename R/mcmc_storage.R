@@ -202,7 +202,7 @@ store.mcmc3 <- local({
 	}
 	
 	do.flush.buffers <- function(mcmc, append=FALSE, countries=NULL, verbose=FALSE) {
-		if (verbose)
+	  if (verbose)
 			cat("Flushing results into disk.\n")
 	  if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty) )
 	  {
@@ -245,8 +245,7 @@ store.mcmc3 <- local({
 	store <- function(mcmc, append=FALSE, flush.buffer=FALSE, countries=NULL, verbose=FALSE) {
 	  # If countries is not NULL, only country-specific parameters 
 		# for those countries (given as index) are stored
-	  
-		buffer.size <- mcmc$meta$buffer.size
+	  buffer.size <- mcmc$meta$buffer.size
 		if (is.null(buffer.size)) buffer.size <- default.buffer.size
 		if (is.null(buffer3)) buffers.ini(mcmc, buffer.size, countries=countries)
 		buffers.insert(mcmc, countries=countries)

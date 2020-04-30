@@ -566,7 +566,7 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 		 }
          store.mcmc(mcmc.orig, append=append, flush.buffer=flush.buffer, countries=countries, 
          				verbose=verbose)
-         if (uncertainty) store.mcmc3(mcmc.orig, append=append, flush.buffer=flush.buffer, countries=countries, 
+         if (uncertainty) store.mcmc3(mcmc.orig, append=append, flush.buffer=flush.buffer, countries=1:length(mcmc.orig$meta$id_phase3), 
                                       verbose=verbose)
          
 	}       # end simu loop MCMC

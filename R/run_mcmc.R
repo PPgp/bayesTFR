@@ -355,11 +355,13 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								countries = NULL, my.tfr.file = NULL, iter = NULL,
 								thin=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
 								my.locations.file = NULL,
-								verbose=FALSE, verbose.iter=100, uncertainty=FALSE, ...) {
-									
-	mcmc.set <- get.tfr.mcmc(sim.dir)
+								verbose=FALSE, verbose.iter=100, uncertainty=FALSE, 
+								my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
+								...) {
+  mcmc.set <- get.tfr.mcmc(sim.dir)
 	Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, 
-												my.locations.file=my.locations.file, burnin=burnin, verbose=verbose, uncertainty=uncertainty)
+												my.locations.file=my.locations.file, burnin=burnin, verbose=verbose, uncertainty=uncertainty, 
+												my.tfr.raw.file=my.tfr.raw.file)
 	if(length(Eini$index) <= 0) {
 		cat('\nNothing to be done.\n')
 		return(invisible(mcmc.set))
@@ -375,7 +377,9 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	      Eini$meta[[paste0(par.name, '.', suffix)]] <- mcmc3.set$meta[[paste0(par.name, '.', suffix)]]
 	    }
 	  }
+	  Eini$meta$parent <- mcmc3.set$meta$parent
 	}
+	
 	meta <- Eini$meta
 	chain.ids <- names(mcmc.set$mcmc.list)
 	mcthin <- 1
@@ -432,6 +436,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 												burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 		}
 	}
+	browser()
 	store.bayesTFR.meta.object(meta, meta$output.dir)
 	mcmc.set$meta <- meta
 	cat('\n')
@@ -444,6 +449,7 @@ mcmc.run.chain.extra <- function(chain.id, mcmc.list, countries, posterior.sampl
 	if (verbose)
 		cat('************\n')
 	mcmc <- mcmc.list[[chain.id]]
+	mcmc$uncertainty <- uncertainty
 	
 	if (verbose) 
 		cat('MCMC sampling for additional countries and regions.\n')
