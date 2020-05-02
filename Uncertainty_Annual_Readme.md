@@ -125,6 +125,13 @@ run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burni
 
 ```
 
+To make predictions on these countries, one need to make predictions for all countries first and have a stored version, then call:
+```R
+tfr.predict.extra(sim.dir = output.dir, countries = countries, uncertainty = TRUE)
+```
+
+Here, similar to **tfr.predict**, the uncertainty parameter is used to control the TFR used in prediction, but not for the MCMC parameters.
+
 ## More to come
 - Faster version for Annual estimation
 - More user-friendly interface
