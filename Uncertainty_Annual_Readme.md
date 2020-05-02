@@ -58,7 +58,7 @@ Then, for phase III MCMC and prediction, we don't need to specify annual again a
 ### Estimation with Uncertainty
 An uncertainty option is provided, and we could call them by:
 ```R
-run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, replace.output=TRUE, uncertainty=TRUE, my.tfr.raw.file="TFR_cleaned_2019.csv")
+run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, replace.output=TRUE, uncertainty=TRUE, my.tfr.raw.file=NULL)
 ```
 
 When **uncertainty=TRUE**, the function will by default take the "TFR_cleaned_2019.csv" in the modulize branch. Users are happy to provide their own data with the same format: (and provide the name in my.tfr.raw.file)
@@ -99,21 +99,31 @@ Since running the complete MCMC process takes long, a simpler version for estima
 ```R
 output.dir <- 'bayesTFR.output'
 nr.chains <- 3
-total.iter <- 62000
+total.iter <- 100
 annual <- TRUE
 burnin <- 0
 thin <- 1
 ### Specify with the same setting
-run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, burnin = burnin, thin = thin)
-run.tfr3.mcmc(sim.dir = output.dir, nr.chains = nr.chains, iter = total.iter, thin = thin, burnin = burnin)
+run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
+  burnin = burnin, thin = thin, uncertainty = TRUE)
 
 ## Finish running MCMC for both phase II and phase III
 ## Specify countries of interest, for example Nigeria and the United States
 countries <- c(566, 840)
-run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 50000, burnin=0, uncertainty=TRUE)
+run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burnin=0, uncertainty=TRUE)
 ```
 
 With this method, users could get access to TFR estimations easier without updating the hyper parameter estimation (or can use with the previous estimates). Users could provide raw data with the same format as described before. 
+
+It is worth mentioning that if someone want a faster version, the user could run the first step with setting **uncertainty=FALSE**. In the next step, the function **run.tfr.mcmc.extra** could still work. To make it clear, the user could:
+```R
+run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, burnin = burnin, thin = thin)
+run.tfr3.mcmc(sim.dir = output.dir, nr.chains = nr.chains, iter = total.iter, thin = thin, burnin = burnin)
+
+countries <- c(566, 840)
+run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burnin=0, uncertainty=TRUE)
+
+```
 
 ## More to come
 - Faster version for Annual estimation

@@ -3,7 +3,7 @@ require(mvtnorm)
 get.obs.estimate.diff <- function(mcmc)
 {
   mcmc$eps_unc <- list()
-  for(country in 1:mcmc$meta$nr_countries)
+  for(country in 1:min(mcmc$meta$nr_countries, length(mcmc$meta$raw.data)))
   {
     if (is.null(mcmc$meta$raw.data[[country]])) next
     tmp.year <- mcmc$meta$raw.data[[country]]$Year
@@ -67,7 +67,7 @@ update.obs.estimate.diff <- function(mcmc, country, year)
 
 estimate.bias.sd.raw <- function(mcmc)
 {
-  for(country in 1:mcmc$meta$nr_countries)
+  for(country in 1:min(mcmc$meta$nr_countries, length(mcmc$meta$raw.data)))
   {
     if (is.null(mcmc$meta$raw.data[[country]])) next
     source <- factor(as.character(mcmc$meta$raw.data[[country]]$DataProcess))

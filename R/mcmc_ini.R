@@ -304,8 +304,9 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	)
 	if(uncertainty)
 	{
+	  if (is.null(my.tfr.raw.file)) my.tfr.raw.file <- file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv")
 	  raw.data <- read.csv(my.tfr.raw.file)
-	  output$raw.data <- list()
+	  if (is.null(output$raw.data)) output$raw.data <- list()
 	  count <- 1
 	  for (name in colnames(tfr_matrix_all))
 	  {
@@ -561,7 +562,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	  meta$tfr_all <- meta[['tfr_matrix_all']]
 	  meta$tfr_mu_all <- meta[['tfr_matrix_all']]
 	  meta$tfr_sd_all <- matrix(0, nrow = nrow(meta$tfr_all), ncol=ncol(meta$tfr_all))
-	  meta$raw.data <- list()
+	  if (is.null(meta$raw.data)) meta$raw.data <- list()
 	  for (count in 1:length(Emeta$raw.data))
 	  {
 	    meta$raw.data[[index[count]]] <- Emeta$raw.data[[count]]

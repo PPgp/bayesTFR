@@ -467,7 +467,6 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
     print (q)
     dev.off()
   }
-  print(q)
   return(q)
 }
 

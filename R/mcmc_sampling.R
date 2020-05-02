@@ -421,16 +421,19 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 	{
 	  meta <- mcmc$meta
 	  nr.countries <- meta$nr.countries
-	  countries.index <- meta$id_phase3
-	  ardata <- list()
-	  Ts <- rep(0, nr.countries)
-	  for(country in 1:nr.countries) {
-	    data <- get.observed.tfr(countries.index[country], meta, 'tfr_matrix_all')
-	    ardata[[country]] <- data[meta$lambda_c[countries.index[country]]:meta$T_end_c[countries.index[country]]]
-	    Ts[country] <- length(ardata[[country]])
+	  if (nr.countries > 0)
+	  {
+	    countries.index <- meta$id_phase3
+	    ardata <- list()
+	    Ts <- rep(0, nr.countries)
+	    for(country in 1:nr.countries) {
+	      data <- get.observed.tfr(countries.index[country], meta, 'tfr_matrix_all')
+	      ardata[[country]] <- data[meta$lambda_c[countries.index[country]]:meta$T_end_c[countries.index[country]]]
+	      Ts[country] <- length(ardata[[country]])
+	    }
+	    mcmc$observations <- ardata
+	    mcmc$length_obs <- Ts
 	  }
-	  mcmc$observations <- ardata
-	  mcmc$length_obs <- Ts
 	}
 	matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix')
 	
@@ -499,7 +502,7 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
                 mcmc.update.U(country, mcenv, matrix.name=matrix.name)
          } 
  		
- 		    if (uncertainty)
+ 		    if (uncertainty && (nr.countries > 0))
  		    {
  		      for (par in hyperparameter3.names) {
  		        if(is.null(dim(hyperparameters[[par]]))) {
@@ -539,6 +542,10 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
  		        S.eps <- S.eps + sum((f.ct - mcenv$mu.c[country] - mcenv$rho.c[country]*d1)^2)
  		        STn <- STn + Ts[country]-1
  		      }
+ 		    }
+ 		    
+ 		    if (uncertainty)
+ 		    {
  		      for (country in 1:nr_countries)
  		      {
  		        mcmc.update.tfr(countries[country], mcenv)
@@ -566,7 +573,8 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 		 }
          store.mcmc(mcmc.orig, append=append, flush.buffer=flush.buffer, countries=countries, 
          				verbose=verbose)
-         if (uncertainty) store.mcmc3(mcmc.orig, append=append, flush.buffer=flush.buffer, countries=1:length(mcmc.orig$meta$id_phase3), 
+         if (uncertainty && (length(mcmc.orig$meta$id_phase3)>0)) 
+           store.mcmc3(mcmc.orig, append=append, flush.buffer=flush.buffer, countries=1:length(mcmc.orig$meta$id_phase3), 
                                       verbose=verbose)
          
 	}       # end simu loop MCMC

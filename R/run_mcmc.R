@@ -399,9 +399,12 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		                                                mcmc.set$mcmc.list[[chain]]$meta[[range.var]][1], 
 		                                                mcmc.set$mcmc.list[[chain]]$meta[[range.var]][2])
 		  }
-		  for (country in 1:length(Eini$meta[['id_phase3']]))
-		    mcmc.set$mcmc.list[[chain]]$observations[[country]] <- 
-		      mcmc.set$mcmc.list[[chain]]$meta$tfr_all[meta$lambda_c[meta$id_phase3[country]]:meta$T_end, meta$id_phase3[country]]
+		  if (length(Eini$meta[['id_phase3']]) > 0)
+		  {
+		    for (country in 1:length(Eini$meta[['id_phase3']]))
+		      mcmc.set$mcmc.list[[chain]]$observations[[country]] <- 
+		        mcmc.set$mcmc.list[[chain]]$meta$tfr_all[meta$lambda_c[meta$id_phase3[country]]:meta$T_end, meta$id_phase3[country]]
+		  }
 		}
 		mcthin <- max(mcthin, mcmc.set$mcmc.list[[chain]]$thin)
 		mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff(mcmc.set$mcmc.list[[chain]])
