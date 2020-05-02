@@ -82,12 +82,10 @@ get.burnin.nrtraj.from.diagnostics <- function(sim.dir, ...) {
 }
 
 tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-					prediction.dir=sim.dir, 
-					countries = NULL, save.as.ascii=1000, verbose=TRUE) {
+					prediction.dir=sim.dir, countries = NULL, save.as.ascii=1000, verbose=TRUE, uncertainty=FALSE) {
 	# Run prediction for given countries/regions (as codes). If they are not given it will be set to countries 
 	# for which there are MCMC results but no prediction.
 	# It is to be used after running run.tfr.mcmc.extra
-	
 	mcmc.set <- get.tfr.mcmc(sim.dir)
 	if(is.null(mcmc.set))
 		stop('Error in "sim.dir" argument.')
@@ -117,7 +115,7 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 									use.correlation=pred$use.correlation, mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, 
 									min.tfr=pred$min.tfr, countries=countries.idx, save.as.ascii=0, output.dir=prediction.dir,
 									force.creating.thinned.mcmc=TRUE,
-									write.summary.files=FALSE, write.trajectories=TRUE, verbose=verbose)
+									write.summary.files=FALSE, write.trajectories=TRUE, verbose=verbose, uncertainty=uncertainty)
 									
 	# merge the two predictions
 	code.other.countries <- setdiff(pred$mcmc.set$meta$regions$country_code, 
