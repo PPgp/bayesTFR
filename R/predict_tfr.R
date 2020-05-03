@@ -82,11 +82,12 @@ get.burnin.nrtraj.from.diagnostics <- function(sim.dir, ...) {
 }
 
 tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-					prediction.dir=sim.dir, countries = NULL, save.as.ascii=1000, verbose=TRUE, uncertainty=FALSE) {
+					prediction.dir=sim.dir, countries = NULL, save.as.ascii=1000, verbose=TRUE, uncertainty=FALSE, 
+					save.only.extra.countries=uncertainty) {
 	# Run prediction for given countries/regions (as codes). If they are not given it will be set to countries 
 	# for which there are MCMC results but no prediction.
 	# It is to be used after running run.tfr.mcmc.extra
-	mcmc.set <- get.tfr.mcmc(sim.dir)
+  mcmc.set <- get.tfr.mcmc(sim.dir)
 	if(is.null(mcmc.set))
 		stop('Error in "sim.dir" argument.')
 	pred <- get.tfr.prediction(sim.dir=prediction.dir)
@@ -142,7 +143,9 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	prediction.file <- file.path(pred$output.dir, 'prediction.rda')
 	save(bayesTFR.prediction, file=prediction.file)
 	
-	do.convert.trajectories(pred=bayesTFR.prediction, n=save.as.ascii, output.dir=pred$output.dir, 
+	countries.save <- NULL
+	if (uncertainty) countries.save <- countries
+	do.convert.trajectories(pred=bayesTFR.prediction, n=save.as.ascii, output.dir=pred$output.dir, countries = countries.save,
 							verbose=verbose)
 	tfr.write.projection.summary.and.parameters(pred=bayesTFR.prediction, output.dir=pred$output.dir)
 	
@@ -748,7 +751,8 @@ remove.tfr.traces <- function(mcmc.set) {
 get.traj.ascii.header.bayesTFR.mcmc.meta <- function(meta, ...) 
 	return (list(country_code='LocID', period='Period', year='Year', trajectory='Trajectory', tfr='TF'))
 		
-store.traj.ascii <- function(trajectories, n, output.dir, country.code, meta, index, append=FALSE, present.index=NULL) {
+store.traj.ascii <- function(trajectories, n, output.dir, country.code, file.name=NULL,
+                             meta, index, append=FALSE, present.index=NULL) {
 	# Store trajectories into ASCII files of a specific UN format 
 	#header <- list(country_code='LocID', period='Period', year='Year', trajectory='Trajectory', tfr='TF')
 	header <- get.traj.ascii.header(meta)
@@ -764,7 +768,8 @@ store.traj.ascii <- function(trajectories, n, output.dir, country.code, meta, in
 	}
 	#match column names and header
 	colnames(results)[colnames(results)==names(header)] <- header
-	write.table(results, file=file.path(output.dir, 'ascii_trajectories.csv'), sep=',', 
+	if (is.null(file.name)) file.name <- 'ascii_trajectories.csv'
+	write.table(results, file=file.path(output.dir, file.name), sep=',', 
 					quote=FALSE, row.names=FALSE, col.names=!append, append=append)
 	return(results)
 }
@@ -831,7 +836,7 @@ get.tfr.periods <- function(meta) {
 	return (paste(mid.years-3, mid.years+2, sep='-'))
 }
 
-do.convert.trajectories <- function(pred, n, output.dir, countries=NULL, verbose=FALSE) {
+do.convert.trajectories <- function(pred, n, output.dir, countries=NULL, verbose=FALSE, ...) {
 	# Converts all trajectory rda files into UN ascii, selecting n trajectories by equal spacing.
 	if(n==0) return(NULL)
 	nr.simu <- pred$nr.traj
@@ -872,6 +877,9 @@ do.convert.trajectories <- function(pred, n, output.dir, countries=NULL, verbose
 	convert.countries <- if(is.null(countries)) pred$mcmc.set$meta$regions$country_code else countries
 	lcountries <- length(convert.countries)
 	if(verbose && interactive()) cat('\n')
+	if (!is.null(countries)) file.name <- "ascii_trajectories_extra.csv"
+	else file.name <- NULL
+	
 	for (icountry in 1:lcountries) {
 		country <- convert.countries[icountry]
 		country.obj <- get.country.object(country, pred$mcmc.set$meta)
@@ -886,7 +894,7 @@ do.convert.trajectories <- function(pred, n, output.dir, countries=NULL, verbose
 			append <- length(country.codes) > 0
 			country.codes <- c(country.codes, country.obj$code)
 			country.names <- c(country.names, country.obj$name)			
-			result <- store.traj.ascii(trajectories, n, output.dir, country.obj$code, 
+			result <- store.traj.ascii(trajectories, n, output.dir, country.obj$code, file.name=file.name,
 							pred$mcmc.set$meta, index=index, append=append, present.index=pred$present.year.index)
 			if(!append) {
 				result.wide <- result[,2:5]
@@ -900,7 +908,10 @@ do.convert.trajectories <- function(pred, n, output.dir, countries=NULL, verbose
 	o <- order(country.names)
 	result.wide[,4:ncol(result.wide)] <- result.wide[,3+o]
 	# write transposed version
-	file.wide <- file.path(output.dir, 'ascii_trajectories_wide.csv')
+	if (is.null(countries))
+	  file.wide <- file.path(output.dir, 'ascii_trajectories_wide.csv')
+	else
+	  file.wide <- file.path(output.dir, 'ascii_trajectories_wide_extra.csv')
 	colnames(result.wide) <- c('Period', 'Year', 'Trajectory', country.names[o])
 	write.table(rbind(c(' ', ' ', 'LocID', country.codes[o]), colnames(result.wide)), 
 					file=file.wide, sep=',', 

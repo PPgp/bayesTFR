@@ -333,8 +333,9 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 }
 
 
-.extra.matrix.regions <- function(data, countries, meta, package="bayesTFR", my.locations.file=NULL, verbose=FALSE, annual=FALSE) {
-	tfrs <- data
+.extra.matrix.regions <- function(data, countries, meta, package="bayesTFR", my.locations.file=NULL, 
+                                  verbose=FALSE, annual=FALSE, uncertainty=FALSE) {
+  tfrs <- data
 	country.codes.processed <- meta$regions$country_code
 	ncountries <- get.nr.countries(meta)
 	ncountries.est <- get.nrest.countries(meta)
@@ -350,16 +351,23 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 	idx.countries.processed <- is.element(country.codes.processed, countries.processed)
 	countries.processed.est <- country.codes.processed[1:ncountries.est][idx.countries.processed[1:ncountries.est]]
 
-	if(length(replaced.processed.est)+length(added.processed.est)+length(countries.processed.est)> 0) {
+	if((length(replaced.processed.est)+length(added.processed.est)+length(countries.processed.est)> 0) && !(uncertainty)) {
 		cat('\nCountries', paste(c(replaced.processed.est, added.processed.est, 
 									countries.processed.est), collapse=', '), 
 					'used for estimation and will be excluded from processing.\n')
 	}
-	include.codes <- c(setdiff(tfrs$replaced, replaced.processed.est), 
-					   setdiff(tfrs$added, added.processed.est),
-					   setdiff(countries, countries.processed.est))
 	
-	include.codes <- countries
+	include.codes <- c(setdiff(tfrs$replaced, replaced.processed.est), 
+					   setdiff(tfrs$added, added.processed.est))
+	if (uncertainty)
+	{
+	  include.codes <- c(include.codes, countries)
+	}
+	else
+	{
+	  include.codes <- c(include.codes, setdiff(countries, countries.processed.est))
+	}
+					   
 	if(length(include.codes) > 0) {
 		include <- is.element(tfrs$data$country_code, include.codes)
 		locations <- read.UNlocations(tfrs$data, wpp.year=meta$wpp.year, package=package, my.locations.file=my.locations.file, verbose=verbose)
@@ -378,13 +386,14 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 }
 
 set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, my.locations.file=NULL, 
-                          annual = FALSE, verbose=FALSE) {
+                          annual = FALSE, verbose=FALSE, uncertainty=FALSE) {
 	#'countries' is a vector of country or region codes 
 	un.object <- read.UNtfr(wpp.year=meta$wpp.year, my.tfr.file=my.tfr.file, 
 							present.year=meta$present.year, annual = annual, 
 							verbose=verbose)
 	data <- un.object$data.object
-	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, my.locations.file=my.locations.file, verbose=verbose, annual=annual)
+	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, my.locations.file=my.locations.file, 
+	                                   verbose=verbose, annual=annual, uncertainty=uncertainty)
 	if(!is.null(extra.wpp)) {
 		locations <- read.UNlocations(data$data, wpp.year=meta$wpp.year, my.locations.file=my.locations.file, verbose=verbose)
 		suppl.wpp <- .get.suppl.matrix.and.regions(un.object, extra.wpp, locations$loc_data, 

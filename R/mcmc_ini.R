@@ -454,7 +454,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	meta <- mcmc.set$meta
 	#create tfr matrix only for the extra countries
 	tfr.with.regions <- set.wpp.extra(meta, countries=countries, annual = meta$annual.simulation,
-									  my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose)
+									  my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose, uncertainty=uncertainty)
 	if(is.null(tfr.with.regions)) return(list(meta=meta, index=c()))
 	has.mock.suppl <- FALSE
 	if(is.null(tfr.with.regions$suppl.data$regions) && !is.null(meta$suppl.data$regions)) {
