@@ -28,6 +28,27 @@ get.obs.estimate.diff <- function(mcmc)
   return(mcmc)
 }
 
+get.obs.estimate.diff.original <- function(mcmc)
+{
+  mcmc$meta$raw_data.original$eps <- NA
+  for(year in mcmc$meta$start.year:mcmc$meta$present.year)
+  {
+    year.ind <- year - mcmc$meta$start.year + 1
+    if (length(mcmc$meta$ind.by.year[[year.ind]]) == 0) next
+    if (mcmc$meta$annual.simulation)
+    {
+      ref.tfr <- mcmc$meta$tfr_matrix_all[year.ind, mcmc$meta$country.ind.by.year[[year.ind]]]
+      idx <- mcmc$meta$ind.by.year[[year.ind]]
+      mcmc$meta$raw_data.original$eps[idx] <- mcmc$meta$raw_data.original$DataValue[idx] - ref.tfr
+    }
+    else
+    {
+      #TODO
+    }
+  }
+  return(mcmc)
+}
+
 update.obs.estimate.diff <- function(mcmc, country, year)
 {
   if (mcmc$meta$annual.simulation)
@@ -96,6 +117,42 @@ estimate.bias.sd.raw <- function(mcmc)
   return(mcmc)
 }
 
+estimate.bias.sd.original <- function(mcmc)
+{
+  mcmc$meta$raw_data.original$bias <- NA
+  mcmc$meta$raw_data.original$std <- NA
+  for(country in 1:mcmc$meta$nr_countries)
+  {
+    ISO.code <- get.country.object(country, meta=mcmc$meta, index=TRUE)
+    if (is.na(ISO.code$code)) next
+    index.by.country <- which(mcmc$meta$raw_data.original$ISO.code == ISO.code$code)
+    if (length(index.by.country) == 0) next
+    source <- factor(as.character(mcmc$meta$raw_data.original$DataProcess[index.by.country]))
+    estimation.method <- factor(as.character(mcmc$meta$raw_data.original$Estimating.Methods[index.by.country]))
+    diff <- mcmc$meta$raw_data.original$eps[index.by.country]
+    regressor <- '1'
+    if (length(levels(source)) > 1)
+    {
+      regressor <- paste0(regressor, ' + source')
+    }
+    if (length(levels(estimation.method)) > 1)
+    {
+      regressor <- paste0(regressor, ' + estimation.method')
+    }
+    m1 <- lm(as.formula(paste0('diff ~ ', regressor)))
+    bias <- predict(m1)
+    abs.residual <- abs(residuals(m1))
+    m2 <- lm(as.formula(paste0('abs.residual ~ ', regressor)))
+    std <- predict(m2) * sqrt(pi/2)
+    std[std < 1e-6] <- 0.1
+    std[std < (abs(bias) / 2)] <- abs(bias[std < (abs(bias) / 2)])
+    mcmc$meta$raw_data.original$bias[index.by.country] <- bias
+    mcmc$meta$raw_data.original$std[index.by.country] <- std
+  }
+  
+  return(mcmc)
+}
+
 get.eps.all.phases <- function(Dlpar, mcmc, country)
 {
   eps_return <- numeric(length = mcmc$meta$T_end-1)
@@ -152,7 +209,7 @@ mcmc.update.tfr <- function(country, mcmc)
     # if ((country == 201) && year == 35) {browser()}
     # if ((mcmc$finished.iter == 146) && (country == 113) && (year == 6)) {browser()}
     tmp.years <- max(1, year-1):min(year, mcmc$meta$T_end -1)
-    sd_f <- ifelse(mcmc$finished.iter>=100, 2.4 * max(mcmc$meta$tfr_sd_all[year, country], 0.01), 1)
+    sd_f <- ifelse(mcmc$finished.iter>=100, 2.4 * max(mcmc$meta$tfr_sd_all[year, country], 0.01), 0.2)
     prop_tfr <- rnorm(1, mcmc$meta$tfr_all[year, country], sd_f)
     while (prop_tfr < 0.5) prop_tfr <- rnorm(1, mcmc$meta$tfr_all[year, country], sd_f)
     if (mcmc$meta$annual.simulation)
@@ -229,6 +286,185 @@ mcmc.update.tfr <- function(country, mcmc)
   if (country %in% mcmc$meta3$id_phase3) mcmc$observations[[id3]] <- mcmc$meta$tfr_all[mcmc$meta$lambda_c[country]:mcmc$meta$T_end, country]
   mcmc$data.list[[country]][epsT.idx] <- mcmc$meta$tfr_all[epsT.idx, country]
 }
+
+get.log.lik.year <- function(year.ind, mcmc, Dlpar, phase3par, id_phase1, id_phase2, id_phase3, tfr=NULL, prev=TRUE)
+{
+## Work for computing log-likelihood from year.ind -> year.ind+1
+  if (is.null(tfr))
+  {
+    tfr_0 <- mcmc$meta$tfr_all[year.ind, ]
+    tfr_1 <- mcmc$meta$tfr_all[year.ind + 1, ]
+  }
+  else if (prev)
+  {
+    tfr_0 <- tfr
+    tfr_1 <- mcmc$meta$tfr_all[year.ind + 1, ]
+  }
+  else
+  {
+    tfr_0 <- mcmc$meta$tfr_all[year.ind, ]
+    tfr_1 <- tfr
+  }
+  
+  eps <- numeric(mcmc$meta$nr_countries)
+  eps[id_phase1] <- tfr_1[id_phase1] - tfr_0[id_phase1]
+  if (!is.null(tfr))
+  {
+    dl <- - Dlpar[id_phase2,5]/(1 + exp(- 2*log(9)/Dlpar[id_phase2, 1] * 
+                                          (tfr_0[id_phase2] - 0.5 * Dlpar[id_phase2, 1] - Dlpar[id_phase2, 2] -
+                                             Dlpar[id_phase2, 3] - Dlpar[id_phase2, 4]))) + 
+      Dlpar[id_phase2, 5]/(1 + exp(- 2*log(9)/Dlpar[id_phase2, 3] *
+                                     (tfr_0[id_phase2] - Dlpar[id_phase2, 4] - 0.5*Dlpar[id_phase2,3])))
+    dl <- dl * ifelse(mcmc$meta$annual.simulation, 1, 5)
+    dl[tfr_0[id_phase2] < 1] <- 0
+    dl[dl<0] <- 0
+    eps[id_phase2] <- tfr_1[id_phase2] - (tfr_0[id_phase2] - dl)
+  }
+  else
+  {
+    eps[id_phase2] <- mcmc$eps_Tc[year.ind, id_phase2]
+  }
+  eps[id_phase3] <- tfr_1[id_phase3] - phase3par[id_phase3, 1] - 
+    phase3par[id_phase3, 2] * (tfr_0[id_phase3] - phase3par[id_phase3, 1])
+  
+  std <- numeric(mcmc$meta$nr_countries)
+  std[id_phase1] <- mcmc$sd_eps_tau
+  std[id_phase3] <- mcmc$sigma.eps
+  if (!is.null(tfr))
+  {
+    const_dummy <- ifelse(mcmc$const_sd_dummie_Tc[year.ind, 1], mcmc$const_sd, 1)
+    tmp_add <- tfr_0[id_phase2] - mcmc$S_sd
+    tmp_add[tfr_0[id_phase2] > mcmc$S_sd] <- - tmp_add[tfr_0[id_phase2] > mcmc$S_sd] * mcmc$a_sd
+    tmp_add[tfr_0[id_phase2] <= mcmc$S_sd] <- tmp_add[tfr_0[id_phase2] <= mcmc$S_sd] * mcmc$b_sd
+    std[id_phase2] <- tmp_add + mcmc$sigma0
+    std[std <= 0] <- mcmc$meta$sigma0.min
+  }
+  else std[id_phase2] <- mcmc$sd_Tc[year.ind, id_phase2]
+  
+  log.lik <- dnorm(eps, mean=0, sd=std, log=TRUE)
+  output <- list(log.lik = log.lik)
+  if (!is.null(tfr))
+  {
+    output$eps <- eps
+    output$std <- std
+  }
+  return (output)
+}
+
+get.log.lik.raw <- function(year.ind, mcmc, tfr)
+{
+  ## Work for computing log-likelihood from year.ind -> year.ind+1
+  if (length(mcmc$meta$ind.by.year[[year.ind]]) == 0) return (numeric(mcmc$meta$nr_countries))
+  bias <- mcmc$meta$raw_data.original$bias[mcmc$meta$ind.by.year[[year.ind]]]
+  std <- mcmc$meta$raw_data.original$std[mcmc$meta$ind.by.year[[year.ind]]]
+  delta <- mcmc$meta$raw_data.original$DataValue[mcmc$meta$ind.by.year[[year.ind]]] - tfr[mcmc$meta$country.ind.by.year[[year.ind]]]
+  output.loglik <- numeric(mcmc$meta$nr_countries)
+  loglik.delta <- dnorm(delta, mean=bias, sd=std, log=TRUE)
+  df <- data.frame(idx = mcmc$meta$country.ind.by.year[[year.ind]], loglik = loglik.delta)
+  res <- aggregate(df$loglik, by=list(ind=df$idx), sum)
+  output.loglik[res$ind] <- res$x
+  return (output.loglik)
+}
+
+mcmc.update.tfr.year <- function(mcmc)
+{
+  Dlpar <- cbind((mcmc$U_c - mcmc$Triangle_c4) * 
+                   exp(mcmc$gamma_ci)/ apply(exp(mcmc$gamma_ci), 1, sum), 
+                 mcmc$Triangle_c4, mcmc$d_c)
+  nr_countries <- mcmc$meta$nr_countries
+  phase3par <- matrix(nrow = nr_countries, ncol=2)
+  phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, mcmc$rho.c)
+  ## _r represents phases from year -> year + 1
+  id_phase1_r <- which(mcmc$meta$start_c > 1)
+  id_phase3_r <- which(mcmc$meta$lambda_c == 1)
+  id_phase2_r <- setdiff(1:nr_countries, c(id_phase1_r, id_phase3_r))
+  for (year in 1:mcmc$meta$T_end)
+  {
+    if (year > 1)
+    {
+      id_phase1_l <- id_phase1_r
+      id_phase2_l <- id_phase2_r
+      id_phase3_l <- id_phase3_r
+      id_phase1_r <- which(mcmc$meta$start_c > year)
+      id_phase3_r <- which(mcmc$meta$lambda_c <= year)
+      id_phase2_r <- setdiff(1:nr_countries, c(id_phase1_r, id_phase3_r))
+    }
+    loglik_orig <- numeric(nr_countries)
+    loglik_proposed <- numeric(nr_countries)
+    tfr_orig <- mcmc$meta$tfr_all[year, ]
+    if (mcmc$finished.iter <= 100) sd_f <- 0.2 else sd_f <- pmax(2.4 * mcmc$meta$tfr_sd_all[year, ], 0.01)
+    tfr_proposed <- rnorm(nr_countries, tfr_orig, sd_f)
+    while(any(tfr_proposed < 0.5)) 
+    {
+      idx <- which(tfr_proposed < 0.5)
+      if (mcmc$finished.iter <= 100) sd_f_std <- 0.2 else sd_f_std <- sd_f[idx]
+      tfr_proposed[idx] <- rnorm(length(idx), tfr_orig[idx], sd_f_std)
+    }
+    
+    ## Compute Log likelihood
+    if (year < mcmc$meta$T_end)
+    {
+      loglik_next <- get.log.lik.year(year, mcmc, Dlpar, phase3par, id_phase1_r, id_phase2_r, id_phase3_r)$log.lik
+      loglik_orig <- loglik_orig + loglik_next
+      loglik_next_prop <- get.log.lik.year(year, mcmc, Dlpar, phase3par, id_phase1_r, id_phase2_r, id_phase3_r, tfr_proposed)
+      loglik_proposed <- loglik_proposed + loglik_next_prop$log.lik
+    }
+    if (year > 1)
+    {
+      loglik_orig <- loglik_orig + loglik_prev
+      loglik_prev_prop <- get.log.lik.year(year-1, mcmc, Dlpar, phase3par, id_phase1_l, id_phase2_l, id_phase3_l, tfr_proposed, prev = FALSE)
+      loglik_proposed <- loglik_proposed + loglik_prev_prop$log.lik
+    }
+    loglik_orig <- loglik_orig + get.log.lik.raw(year, mcmc, mcmc$meta$tfr_all[year, ])
+    loglik_proposed <- loglik_proposed + get.log.lik.raw(year, mcmc, tfr_proposed)
+    
+    # Accept those with likelihood not dropping so much
+    accept.prob <- exp(loglik_proposed - loglik_orig)
+    rv_unif <- runif(nr_countries)
+    idx_accept <- which(rv_unif < accept.prob)
+    mcmc$meta$tfr_all[year, idx_accept] <- tfr_proposed[idx_accept]
+    if (year < mcmc$meta$T_end)
+    {
+      idx_update <- intersect(idx_accept, id_phase2_r)
+      mcmc$eps_Tc[year, idx_update] <- loglik_next_prop$eps[idx_update]
+      mcmc$sd_Tc[year, idx_update] <- loglik_next_prop$std[idx_update]
+      tmp <- tfr_proposed[idx_update] - mcmc$S_sd
+      idx <- which(tmp < 0)
+      tmp[tmp > 0] <- tmp[tmp > 0] * (-mcmc$a_sd)
+      tmp[idx] <- tmp[idx] * mcmc$b_sd
+      mcmc$add_to_sd_Tc[year, idx_update] <- tmp
+    }
+    if (year > 1)
+    {
+      idx_update <- intersect(idx_accept, id_phase2_l)
+      mcmc$eps_Tc[year - 1, idx_update] <- loglik_prev_prop$eps[idx_update]
+    }
+    
+    loglik_prev <- loglik_next
+    loglik_prev[idx_accept] <- loglik_next_prop$log.lik[idx_accept]
+    
+    mu0 <- mcmc$meta$tfr_mu_all[year, ]
+    sigma0 <- mcmc$meta$tfr_sd_all[year, ]
+    mcmc$meta$tfr_mu_all[year, ] <- (mcmc$finished.iter * mu0 + mcmc$meta$tfr_all[year, ]) / (mcmc$finished.iter + 1)
+    mu <- mcmc$meta$tfr_mu_all[year, ]
+    mcmc$meta$tfr_sd_all[year, ] <- sqrt(((mcmc$finished.iter-1) * sigma0 ** 2 + 
+                                            mcmc$finished.iter * (mu0 - mu) ** 2 + 
+                                            (mcmc$meta$tfr_all[year, ] - mu) ** 2)/mcmc$finished.iter)
+    
+  }
+  for (country in 1:nr_countries)
+  {
+    idx <- mcmc$meta$lambda_c[country]:(mcmc$meta$T_end-1)
+    if (country %in% mcmc$meta3$id_phase3) 
+    {
+      id3 <- which(mcmc$meta$id_phase3 == country)  
+      mcmc$observations[[id3]] <- mcmc$meta$tfr_all[c(idx, mcmc$meta$T_end), country]
+    }
+    idx2 <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country] - 1)
+    mcmc$data.list[[country]][idx2] <- mcmc$meta$tfr_all[idx2, country]
+  }
+}
+
 
 
 one.step.mcmc3.sampling <- function(mcmc)

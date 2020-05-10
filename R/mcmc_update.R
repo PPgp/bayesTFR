@@ -1,7 +1,7 @@
 
 mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
   # 'what' is one of ('a', 'b', 'S')
-  
+  # if (mcmc$finished.iter == 100) browser()
   var.index <- (1:3)[what == c('a', 'b', 'S')]
   abS.values <- list(a=mcmc$a_sd, b=mcmc$b_sd, S=mcmc$S_sd)
   var.value <- abS.values[[var.index]]
@@ -18,12 +18,17 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
   
   z <- log_cond_abf_sd(mcmc$add_to_sd_Tc, mcmc$const_sd, mcmc$sigma0, eps_Tc_temp, 
                        mcmc$const_sd_dummie_Tc, mcmc$meta$sigma0.min) - rexp(1)
+  # if (what == 'a') cat(mcmc$finished.iter, ":", z, "a:", mcmc$a_sd, "\n")
   v <- runif(1)   
   interval <- c(max(var.value - v*var.width, var.low),
                 min(var.value + (1-v)*var.width,var.up))
   
   add_to_sd_Tc_prop <- matrix(NA, nrow(mcmc$add_to_sd_Tc), ncol(mcmc$add_to_sd_Tc))
-  
+  for (country in 1:mcmc$meta$nr_countries){
+    add_to_sd_Tc_prop[1:length(mcmc$data.list[[country]]), country] <- (mcmc$data.list[[country]] - abS.values$S)*
+      ifelse(mcmc$data.list[[country]] > abS.values$S, 
+             -abS.values$a, abS.values$b)
+  }  
   #while (TRUE){
   for(i in 1:50) {
     var_prop <- runif(1,interval[1], interval[2])

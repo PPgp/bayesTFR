@@ -306,6 +306,23 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	{
 	  if (is.null(my.tfr.raw.file)) my.tfr.raw.file <- file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv")
 	  raw.data <- read.csv(my.tfr.raw.file)
+	  output$raw_data.original <- raw.data
+	  output$raw_data.original <- merge(output$raw_data.original, 
+	                                    data.frame(ISO.code=tfr.with.regions$regions$country_code, country_index = 1:nr_countries), 
+	                                    by = "ISO.code")
+	  index <- 1:nrow(output$raw_data.original)
+	  if (meta$annual.simulation)
+	  {
+	    country.ind.by.year <- list()
+	    ind.by.year <- list()
+	    for (year in meta$start.year:meta$present.year)
+	    {
+	      country.ind.by.year[[year-meta$start.year+1]] <- output$raw_data.original$country_index[which(round(output$raw_data.original$Year+0.01) == year)]
+	      ind.by.year[[year-meta$start.year+1]] <- index[which(round(output$raw_data.original$Year+0.01) == year)]
+	    }
+	    output$country.ind.by.year <- country.ind.by.year
+	    output$ind.by.year <- ind.by.year
+	  }
 	  if (is.null(output$raw.data)) output$raw.data <- list()
 	  count <- 1
 	  for (name in colnames(tfr_matrix_all))
@@ -427,8 +444,10 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	mcmc$eps_Tc <- get_eps_T_all(mcmc)
 	if (uncertainty)
 	{
-	  mcmc <- get.obs.estimate.diff(mcmc)
-	  mcmc <- estimate.bias.sd.raw(mcmc)
+	  # mcmc <- get.obs.estimate.diff(mcmc)
+	  # mcmc <- estimate.bias.sd.raw(mcmc)
+	  mcmc <- get.obs.estimate.diff.original(mcmc)
+	  mcmc <- estimate.bias.sd.original(mcmc)
 	}
 	
 	# mcmc <- as.list(mcmc)

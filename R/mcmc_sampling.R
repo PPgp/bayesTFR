@@ -198,10 +198,13 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
          if (uncertainty)
          {
            one.step.mcmc3.sampling(mcenv)
-           for (country in 1:nr_countries_all)
-           {
-             mcmc.update.tfr(country, mcenv)
-           }
+           # browser()
+           
+           mcmc.update.tfr.year(mcenv)
+           # for (country in 1:nr_countries_all)
+           # {
+           #   mcmc.update.tfr(country, mcenv)
+           # }
          }
          ################################################################### 
          # write samples simu/thin to disk
