@@ -207,10 +207,10 @@ mcmc.meta.ini <- function(...,
 	mcmc.input$present.year <- present.year
 	mcmc.input$wpp.year <- wpp.year
 	if(present.year-3 > wpp.year) warning("present.year is much larger then wpp.year. Make sure WPP data for present.year are available.")
+	
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
 										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, 
 										annual = mcmc.input$annual.simulation, verbose=verbose)
-
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
 						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file)
 	return(structure(c(mcmc.input, meta), class='bayesTFR.mcmc.meta'))
@@ -306,15 +306,16 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	{
 	  if (is.null(my.tfr.raw.file)) my.tfr.raw.file <- file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv")
 	  raw.data <- read.csv(my.tfr.raw.file)
+	  raw.data <- subset(raw.data, ISO.code %in% as.numeric(colnames(output$tfr_matrix_all)))
 	  output$raw_data.original <- raw.data
 	  output$raw_data.original <- merge(output$raw_data.original, 
 	                                    data.frame(ISO.code=tfr.with.regions$regions$country_code, country_index = 1:nr_countries), 
 	                                    by = "ISO.code")
 	  index <- 1:nrow(output$raw_data.original)
+	  country.ind.by.year <- list()
+	  ind.by.year <- list()
 	  if (meta$annual.simulation)
 	  {
-	    country.ind.by.year <- list()
-	    ind.by.year <- list()
 	    for (year in meta$start.year:meta$present.year)
 	    {
 	      country.ind.by.year[[year-meta$start.year+1]] <- output$raw_data.original$country_index[which(round(output$raw_data.original$Year+0.01) == year)]
@@ -323,16 +324,33 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	    output$country.ind.by.year <- country.ind.by.year
 	    output$ind.by.year <- ind.by.year
 	  }
-	  if (is.null(output$raw.data)) output$raw.data <- list()
-	  count <- 1
-	  for (name in colnames(tfr_matrix_all))
+	  else
 	  {
-	    output$raw.data[[count]] <- subset(raw.data, ISO.code == as.numeric(name))
-	    output$raw.data[[count]]$DataProcess <- factor(as.character(output$raw.data[[count]]$DataProcess))
-	    output$raw.data[[count]]$Estimating.Methods <- factor(as.character(output$raw.data[[count]]$Estimating.Methods))
-	    count <- count + 1
+	    left.distance <- list()
+	    years <- as.numeric(rownames(output$tfr_matrix))
+	    count <- 1
+	    for (year in c(years, rev(years)[1]+5))
+	    {
+	      inds <- which((output$raw_data.original$Year <= year) & (output$raw_data.original$Year > year - 5))
+	      country.ind.by.year[[count]] <- output$raw_data.original$country_index[inds]
+	      ind.by.year[[count]] <- index[inds]
+	      left.distance[[count]] <- output$raw_data.original$Year[inds] - year + 5
+	      count <- count + 1
+	    }
+	    output$country.ind.by.year <- country.ind.by.year
+	    output$ind.by.year <- ind.by.year
+	    output$left.distance <- left.distance
 	  }
-	  
+	  # if (is.null(output$raw.data)) output$raw.data <- list()
+	  # count <- 1
+	  # for (name in colnames(tfr_matrix_all))
+	  # {
+	  #   output$raw.data[[count]] <- subset(raw.data, ISO.code == as.numeric(name))
+	  #   output$raw.data[[count]]$DataProcess <- factor(as.character(output$raw.data[[count]]$DataProcess))
+	  #   output$raw.data[[count]]$Estimating.Methods <- factor(as.character(output$raw.data[[count]]$Estimating.Methods))
+	  #   count <- count + 1
+	  # }
+	  # 
 	  output$tfr_all <- output$tfr_matrix_all
 	  output$tfr_mu_all <- output$tfr_all
 	  output$tfr_sd_all <- matrix(0, nrow = nrow(output$tfr_all), ncol=ncol(output$tfr_all))
@@ -581,12 +599,19 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	  meta$tfr_all <- meta[['tfr_matrix_all']]
 	  meta$tfr_mu_all <- meta[['tfr_matrix_all']]
 	  meta$tfr_sd_all <- matrix(0, nrow = nrow(meta$tfr_all), ncol=ncol(meta$tfr_all))
-	  if (is.null(meta$raw.data)) meta$raw.data <- list()
-	  for (count in 1:length(Emeta$raw.data))
+	  # if (is.null(meta$raw.data)) meta$raw.data <- list()
+	  # for (count in 1:length(Emeta$raw.data))
+	  # {
+	  #   meta$raw.data[[index[count]]] <- Emeta$raw.data[[count]]
+	  # }
+	  meta$raw_data.original <- Emeta$raw_data.original
+	  meta$country.ind.by.year <- Emeta$country.ind.by.year
+	  meta$ind.by.year <- Emeta$ind.by.year
+	  if (!meta$annual.simulation) meta$left.distance <- Emeta$left.distance
+	  for (i in 1:length(meta$country.ind.by.year))
 	  {
-	    meta$raw.data[[index[count]]] <- Emeta$raw.data[[count]]
+	    meta$country.ind.by.year[[i]] <- index[meta$country.ind.by.year[[i]]]
 	  }
-	  
 	}
 	
 	return(list(meta=meta, index=index, index.replace=id.replace, 

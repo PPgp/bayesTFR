@@ -198,7 +198,6 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
          if (uncertainty)
          {
            one.step.mcmc3.sampling(mcenv)
-           # browser()
            
            mcmc.update.tfr.year(mcenv)
            # for (country in 1:nr_countries_all)
@@ -549,10 +548,11 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
  		    
  		    if (uncertainty)
  		    {
- 		      for (country in 1:nr_countries)
- 		      {
- 		        mcmc.update.tfr(countries[country], mcenv)
- 		      }
+ 		      mcmc.update.tfr.year(mcenv, countries)
+ 		      # for (country in 1:nr_countries)
+ 		      # {
+ 		      #   mcmc.update.tfr(countries[country], mcenv)
+ 		      # }
  		    }
 
          ################################################################### 

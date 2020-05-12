@@ -409,8 +409,11 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		  }
 		}
 		mcthin <- max(mcthin, mcmc.set$mcmc.list[[chain]]$thin)
-		mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff(mcmc.set$mcmc.list[[chain]])
-		mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.raw(mcmc.set$mcmc.list[[chain]])
+		if(uncertainty)
+		{
+		  mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff.original(mcmc.set$mcmc.list[[chain]])
+		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]])
+		}
 	}
 	
 	if(length(Eini$index_DL) <= 0) {
@@ -425,7 +428,6 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	post.idx <- if (thin > mcthin) unique(round(seq(thin, total.iter, by=thin/mcthin)))
 				else 1:total.iter
 	if (!is.null(mcmc.set$mcmc.list[[1]]$rng.state)) .Random.seed <- mcmc.set$mcmc.list[[1]]$rng.state
-	
 	if (parallel) { # run chains in parallel
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
 		chain.list <- bDem.performParallel(nr.nodes, chain.ids, mcmc.run.chain.extra, 

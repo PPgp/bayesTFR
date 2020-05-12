@@ -31,21 +31,35 @@ get.obs.estimate.diff <- function(mcmc)
 get.obs.estimate.diff.original <- function(mcmc)
 {
   mcmc$meta$raw_data.original$eps <- NA
-  for(year in mcmc$meta$start.year:mcmc$meta$present.year)
+  if (mcmc$meta$annual.simulation)
   {
-    year.ind <- year - mcmc$meta$start.year + 1
-    if (length(mcmc$meta$ind.by.year[[year.ind]]) == 0) next
-    if (mcmc$meta$annual.simulation)
+    for(year in mcmc$meta$start.year:mcmc$meta$present.year)
     {
+      year.ind <- year - mcmc$meta$start.year + 1
+      if (length(mcmc$meta$ind.by.year[[year.ind]]) == 0) next
       ref.tfr <- mcmc$meta$tfr_matrix_all[year.ind, mcmc$meta$country.ind.by.year[[year.ind]]]
       idx <- mcmc$meta$ind.by.year[[year.ind]]
       mcmc$meta$raw_data.original$eps[idx] <- mcmc$meta$raw_data.original$DataValue[idx] - ref.tfr
     }
-    else
-    {
-      #TODO
-    }
   }
+  else 
+  {
+    years <- as.numeric(rownames(mcmc$meta$tfr_matrix_all))
+    count <- 0
+    for (year in c(years, rev(years)[1]+5))
+    {
+      count <- count + 1
+      if (length(mcmc$meta$ind.by.year[[count]]) == 0) next
+      idx <- mcmc$meta$ind.by.year[[count]]
+      tfr.left <- mcmc$meta$tfr_matrix_all[max(count-1, 1), mcmc$meta$country.ind.by.year[[count]]]
+      tfr.right <- mcmc$meta$tfr_matrix_all[min(count, nrow(mcmc$meta$tfr_matrix_all)), mcmc$meta$country.ind.by.year[[count]]]
+      left.distance <- mcmc$meta$left.distance[[count]]
+      ref.tfr <- (tfr.left * (5 - left.distance) + tfr.right * left.distance) / 5
+      mcmc$meta$raw_data.original$eps[idx] <- mcmc$meta$raw_data.original$DataValue[idx] - ref.tfr
+    }
+      #TODO
+  }
+  
   return(mcmc)
 }
 
@@ -354,19 +368,46 @@ get.log.lik.year <- function(year.ind, mcmc, Dlpar, phase3par, id_phase1, id_pha
 get.log.lik.raw <- function(year.ind, mcmc, tfr)
 {
   ## Work for computing log-likelihood from year.ind -> year.ind+1
-  if (length(mcmc$meta$ind.by.year[[year.ind]]) == 0) return (numeric(mcmc$meta$nr_countries))
-  bias <- mcmc$meta$raw_data.original$bias[mcmc$meta$ind.by.year[[year.ind]]]
-  std <- mcmc$meta$raw_data.original$std[mcmc$meta$ind.by.year[[year.ind]]]
-  delta <- mcmc$meta$raw_data.original$DataValue[mcmc$meta$ind.by.year[[year.ind]]] - tfr[mcmc$meta$country.ind.by.year[[year.ind]]]
+  if ((length(mcmc$meta$ind.by.year[[year.ind]]) == 0) && mcmc$meta$annual.simulation) return (numeric(mcmc$meta$nr_countries))
+  if (!mcmc$meta$annual.simulation && (length(mcmc$meta$ind.by.year[[year.ind]]) == 0 && length(mcmc$meta$ind.by.year[[year.ind + 1]]) == 0)) 
+    return (numeric(mcmc$meta$nr_countries))
   output.loglik <- numeric(mcmc$meta$nr_countries)
-  loglik.delta <- dnorm(delta, mean=bias, sd=std, log=TRUE)
-  df <- data.frame(idx = mcmc$meta$country.ind.by.year[[year.ind]], loglik = loglik.delta)
-  res <- aggregate(df$loglik, by=list(ind=df$idx), sum)
-  output.loglik[res$ind] <- res$x
+  
+  if (length(mcmc$meta$ind.by.year[[year.ind]]) > 0)
+  {
+    bias <- mcmc$meta$raw_data.original$bias[mcmc$meta$ind.by.year[[year.ind]]]
+    std <- mcmc$meta$raw_data.original$std[mcmc$meta$ind.by.year[[year.ind]]]
+    if (mcmc$meta$annual.simulation) tfr.ref <- tfr[mcmc$meta$country.ind.by.year[[year.ind]]]
+    else
+    {
+      tfr.ref <- tfr[mcmc$meta$country.ind.by.year[[year.ind]]] * mcmc$meta$left.distance[[year.ind]] / 5
+      tfr.ref <- tfr.ref + mcmc$meta$tfr_matrix_all[max(1, year.ind - 1), mcmc$meta$country.ind.by.year[[year.ind]]] * 
+        (5 - mcmc$meta$left.distance[[year.ind]]) / 5
+    }
+    delta <- mcmc$meta$raw_data.original$DataValue[mcmc$meta$ind.by.year[[year.ind]]] - tfr.ref
+    loglik.delta <- dnorm(delta, mean=bias, sd=std, log=TRUE)
+    df <- data.frame(idx = mcmc$meta$country.ind.by.year[[year.ind]], loglik = loglik.delta)
+    res <- aggregate(df$loglik, by=list(ind=df$idx), sum)
+    output.loglik[res$ind] <- res$x
+  }
+  if (!mcmc$meta$annual.simulation && length(mcmc$meta$ind.by.year[[year.ind + 1]]) > 0)
+  {
+    bias <- mcmc$meta$raw_data.original$bias[mcmc$meta$ind.by.year[[year.ind + 1]]]
+    std <- mcmc$meta$raw_data.original$std[mcmc$meta$ind.by.year[[year.ind + 1]]]
+    tfr.ref <- tfr[mcmc$meta$country.ind.by.year[[year.ind + 1]]] * (5 - mcmc$meta$left.distance[[year.ind + 1]]) / 5
+    tfr.ref <- tfr.ref + mcmc$meta$tfr_matrix_all[min(mcmc$meta$T_end, year.ind + 1), mcmc$meta$country.ind.by.year[[year.ind + 1]]] * 
+      mcmc$meta$left.distance[[year.ind + 1]] / 5
+    delta <- mcmc$meta$raw_data.original$DataValue[mcmc$meta$ind.by.year[[year.ind + 1]]] - tfr.ref
+    loglik.delta <- dnorm(delta, mean=bias, sd=std, log=TRUE)
+    df <- data.frame(idx = mcmc$meta$country.ind.by.year[[year.ind + 1]], loglik = loglik.delta)
+    res <- aggregate(df$loglik, by=list(ind=df$idx), sum)
+    output.loglik[res$ind] <- output.loglik[res$ind] + res$x
+  }
+  
   return (output.loglik)
 }
 
-mcmc.update.tfr.year <- function(mcmc)
+mcmc.update.tfr.year <- function(mcmc, countries = NULL)
 {
   Dlpar <- cbind((mcmc$U_c - mcmc$Triangle_c4) * 
                    exp(mcmc$gamma_ci)/ apply(exp(mcmc$gamma_ci), 1, sum), 
@@ -378,6 +419,12 @@ mcmc.update.tfr.year <- function(mcmc)
   id_phase1_r <- which(mcmc$meta$start_c > 1)
   id_phase3_r <- which(mcmc$meta$lambda_c == 1)
   id_phase2_r <- setdiff(1:nr_countries, c(id_phase1_r, id_phase3_r))
+  if (!is.null(countries))
+  {
+    id_phase1_r <- intersect(id_phase1_r, countries)
+    id_phase3_r <- intersect(id_phase3_r, countries)
+    id_phase2_r <- intersect(id_phase2_r, countries)
+  }
   for (year in 1:mcmc$meta$T_end)
   {
     if (year > 1)
@@ -388,12 +435,22 @@ mcmc.update.tfr.year <- function(mcmc)
       id_phase1_r <- which(mcmc$meta$start_c > year)
       id_phase3_r <- which(mcmc$meta$lambda_c <= year)
       id_phase2_r <- setdiff(1:nr_countries, c(id_phase1_r, id_phase3_r))
+      if (!is.null(countries))
+      {
+        id_phase1_r <- intersect(id_phase1_r, countries)
+        id_phase3_r <- intersect(id_phase3_r, countries)
+        id_phase2_r <- intersect(id_phase2_r, countries)
+      }
     }
     loglik_orig <- numeric(nr_countries)
     loglik_proposed <- numeric(nr_countries)
     tfr_orig <- mcmc$meta$tfr_all[year, ]
     if (mcmc$finished.iter <= 100) sd_f <- 0.2 else sd_f <- pmax(2.4 * mcmc$meta$tfr_sd_all[year, ], 0.01)
-    tfr_proposed <- rnorm(nr_countries, tfr_orig, sd_f)
+    tfr_proposed <- rep(1, nr_countries)
+    if (is.null(countries))
+      tfr_proposed <- rnorm(nr_countries, tfr_orig, sd_f)
+    else
+      tfr_proposed[countries] <- rnorm(length(countries), tfr_orig[countries], sd_f[countries])
     while(any(tfr_proposed < 0.5)) 
     {
       idx <- which(tfr_proposed < 0.5)
@@ -454,6 +511,7 @@ mcmc.update.tfr.year <- function(mcmc)
   }
   for (country in 1:nr_countries)
   {
+    if (!is.null(countries) && !(country %in% countries)) next
     idx <- mcmc$meta$lambda_c[country]:(mcmc$meta$T_end-1)
     if (country %in% mcmc$meta3$id_phase3) 
     {
