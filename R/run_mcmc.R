@@ -28,7 +28,8 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	save.all.parameters = FALSE, compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
 						verbose=FALSE, verbose.iter = 10, uncertainty = FALSE, 
-						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), ...) {
+						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), ...) 
+{
 
 	if(file.exists(output.dir)) {
 		if(length(list.files(output.dir)) > 0 & !replace.output)
@@ -77,7 +78,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 		const.ini <- ifelse(rep(nr.chains==1, nr.chains), 
 					 		(const.low+const.up)/2, 
 					 		seq(const.low, to=const.up, length=nr.chains))
-					 		
+	
 	bayesTFR.mcmc.meta <- mcmc.meta.ini(
 						nr.chains=nr.chains,
 						start.year=start.year, present.year=present.year, 
@@ -244,7 +245,8 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
     	names(sv) <- c('S', 'a', 'b', 'sigma0', 'Triangle_c4', 'const', 'gamma')
     	print(sv)
     }
-
+  
+  
 	mcmc <- mcmc.ini(chain.id, meta, iter=iter[chain.id],
                                      S.ini=S.ini[chain.id],
                                      a.ini=a.ini[chain.id],
@@ -407,8 +409,11 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		  }
 		}
 		mcthin <- max(mcthin, mcmc.set$mcmc.list[[chain]]$thin)
-		mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff(mcmc.set$mcmc.list[[chain]])
-		mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.raw(mcmc.set$mcmc.list[[chain]])
+		if(uncertainty)
+		{
+		  mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff.original(mcmc.set$mcmc.list[[chain]])
+		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]])
+		}
 	}
 	
 	if(length(Eini$index_DL) <= 0) {
@@ -423,7 +428,6 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	post.idx <- if (thin > mcthin) unique(round(seq(thin, total.iter, by=thin/mcthin)))
 				else 1:total.iter
 	if (!is.null(mcmc.set$mcmc.list[[1]]$rng.state)) .Random.seed <- mcmc.set$mcmc.list[[1]]$rng.state
-	
 	if (parallel) { # run chains in parallel
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
 		chain.list <- bDem.performParallel(nr.nodes, chain.ids, mcmc.run.chain.extra, 
