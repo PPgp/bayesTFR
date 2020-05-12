@@ -97,7 +97,7 @@ Here, all parameters mentioned in previous function is as the same. **pis** repr
 ### Run with single or a few countries
 Since running the complete MCMC process takes long, a simpler version for estimation TFR is available. To do that, take annual version as an example:
 ```R
-output.dir <- 'bayesTFR.output'
+output.dir <- 'bayesTFR.extra'
 nr.chains <- 3
 total.iter <- 100
 annual <- TRUE
@@ -125,16 +125,19 @@ run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burni
 
 ```
 
-To make predictions on these countries, one need to make predictions for all countries first and have a stored version, then call:
+To make predictions on these countries, one need to **make predictions for all countries first** and have a stored version, then call:
 ```R
+tfr.predict(sim.dir = output.dir, nr.traj = total.iter, burnin = 0, burnin3 = 0)
+
 tfr.predict.extra(sim.dir = output.dir, countries = countries, uncertainty = TRUE)
 ```
 
 Here, similar to **tfr.predict**, the uncertainty parameter is used to control the TFR used in prediction, but not for the MCMC parameters.
 
+### Faster Version for bayesTFR with uncertainty
+With the new version of the code, users could run **run.tfr.mcmc** at a fast speed. For 3 chains with 62000 iterations each without parallel, it will take at most 1.5 days to finish running.
+
 ## More to come
-- Faster version for Annual estimation
-- More user-friendly interface
 - Email me for for requirements
 
 
