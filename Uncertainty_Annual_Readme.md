@@ -97,6 +97,7 @@ Here, all parameters mentioned in previous function is as the same. **pis** repr
 ### Change of plotting forecast with uncertainty
 After users make forecast of TFR with uncertainty considered in the past, they could making the plot showing uncertainty for both estimation and projections. This could be done simply by calling:
 ```R
+tfr.pred <- get.tfr.prediction(sim.dir="bayesTFR.output")
 tfr.trajectories.plot(tfr.pred=tfr.pred, country =566, nr.traj = 20, uncertainty=TRUE)
 ```
 
