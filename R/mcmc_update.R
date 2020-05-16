@@ -55,7 +55,7 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
   }
   mcmc[[var.name]] <- var_prop
   mcmc$add_to_sd_Tc <- add_to_sd_Tc_prop
-  stop("Cannot find likelihood increase for ", what, ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
+  warning("Cannot find likelihood increase for ", what, ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
           "New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
 }
 
