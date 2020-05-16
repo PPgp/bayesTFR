@@ -1,7 +1,6 @@
 
 mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
   # 'what' is one of ('a', 'b', 'S')
-  # if (mcmc$finished.iter == 100) browser()
   var.index <- (1:3)[what == c('a', 'b', 'S')]
   abS.values <- list(a=mcmc$a_sd, b=mcmc$b_sd, S=mcmc$S_sd)
   var.value <- abS.values[[var.index]]
@@ -56,7 +55,7 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
   }
   mcmc[[var.name]] <- var_prop
   mcmc$add_to_sd_Tc <- add_to_sd_Tc_prop
-  warning("Cannot find likelihood increase for ", what, ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
+  stop("Cannot find likelihood increase for ", what, ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
           "New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
 }
 

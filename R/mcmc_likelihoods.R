@@ -9,7 +9,7 @@
 ############################################
 log_cond_abf_sd <- function (add_to_sd_Tc, const_sd, sigma0, eps_Tc, const_sd_dummie_Tc, sigma0_min) {
     sd_Tc_prop = ifelse(const_sd_dummie_Tc == 1, const_sd, 1) * 
-        ifelse((sigma0 + add_to_sd_Tc) > 0, sigma0 + add_to_sd_Tc, 
+        ifelse((sigma0 + add_to_sd_Tc) > sigma0_min, sigma0 + add_to_sd_Tc, 
             sigma0_min)
     return(sum(dnorm(eps_Tc, mean = 0, sd =  sd_Tc_prop, log = TRUE), na.rm = TRUE))
 }
@@ -17,14 +17,14 @@ log_cond_abf_sd <- function (add_to_sd_Tc, const_sd, sigma0, eps_Tc, const_sd_du
 
 log_cond_sigma0 <- function (add_to_sd_Tc, const_sd, sigma0, eps_Tc, const_sd_dummie_Tc, sigma0_min) {
     sd_Tc_prop = ifelse(const_sd_dummie_Tc == 1, const_sd, 1) * 
-        ifelse((sigma0 + add_to_sd_Tc) > 0, sigma0 + add_to_sd_Tc, 
+        ifelse((sigma0 + add_to_sd_Tc) > sigma0_min, sigma0 + add_to_sd_Tc, 
             sigma0_min)
     return(sum(dnorm(eps_Tc, mean = 0, sd =  sd_Tc_prop, log = TRUE), na.rm = TRUE))
 }
 
 log_cond_const_sd <- function (add_to_sd_Tc, const_sd, sigma0, eps_Tc, const_sd_dummie_Tc, sigma0_min) {
     sd_Tc_prop = ifelse(const_sd_dummie_Tc == 1, const_sd, 1) * 
-        ifelse((sigma0 + add_to_sd_Tc) > 0, sigma0 + add_to_sd_Tc, 
+        ifelse((sigma0 + add_to_sd_Tc) > sigma0_min, sigma0 + add_to_sd_Tc, 
             sigma0_min)
     return(sum(dnorm(eps_Tc, mean = 0, sd =  sd_Tc_prop, log = TRUE), na.rm = TRUE))
 }

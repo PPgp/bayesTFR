@@ -260,7 +260,7 @@ mcmc.update.tfr <- function(country, mcmc)
     {
       tmp <- (prop_tfr - mcmc$S_sd) * ifelse(prop_tfr > mcmc$S_sd, -mcmc$a_sd, mcmc$b_sd)
       sd_tfr_prop[year] <- ifelse(mcmc$const_sd_dummie_Tc[year, country] == 1, mcmc$const_sd, 1) * 
-        ifelse((mcmc$sigma0 + tmp > 0), mcmc$sigma0 + tmp, mcmc$meta$sigma0.min)
+        ifelse((mcmc$sigma0 + tmp > mcmc$meta$sigma0.min), mcmc$sigma0 + tmp, mcmc$meta$sigma0.min)
     }
       
     loglik_new <- loglik_new + sum(dnorm(eps_tfr_prop[tmp.years], mean=0, sd=sd_tfr_prop[tmp.years], log=TRUE))
@@ -351,7 +351,7 @@ get.log.lik.year <- function(year.ind, mcmc, Dlpar, phase3par, id_phase1, id_pha
     tmp_add[tfr_0[id_phase2] > mcmc$S_sd] <- - tmp_add[tfr_0[id_phase2] > mcmc$S_sd] * mcmc$a_sd
     tmp_add[tfr_0[id_phase2] <= mcmc$S_sd] <- tmp_add[tfr_0[id_phase2] <= mcmc$S_sd] * mcmc$b_sd
     std[id_phase2] <- tmp_add + mcmc$sigma0
-    std[std <= 0] <- mcmc$meta$sigma0.min
+    std[std <= mcmc$meta$sigma0.min] <- mcmc$meta$sigma0.min
   }
   else std[id_phase2] <- mcmc$sd_Tc[year.ind, id_phase2]
   
