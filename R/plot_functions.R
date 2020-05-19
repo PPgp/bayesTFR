@@ -432,8 +432,11 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   tfr.object <- get.tfr.estimation(mcmc.list=mcmc.list, country.code=country.code, ISO.code=ISO.code, sim.dir=sim.dir, 
                                    burnin=burnin, thin=thin, probs=sort(c((1-pis/100)/2, 0.5, pis/100 + (1-pis/100)/2)))
   if (is.null(country.code))
-    country.code <- countrycode(ISO.code, origin = 'iso3c', destination = 'un')
-  
+  {
+    data("iso3166")
+    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
+  }
+    
   country.obj <- get.country.object(country.code, mcmc.list$meta)
   
   quantile_tbl <- tfr.object$tfr_quantile
