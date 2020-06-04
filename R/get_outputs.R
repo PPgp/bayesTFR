@@ -631,7 +631,7 @@ do.get.tfr.parameter.traces <- function(is.cs, mcmc.list, par.names, country.obj
 										burnin=0, thinning.index=NULL, thin=NULL) {
 	# get parameter traces either from disk or from memory (if they were already loaded)
 	# par.names are either country-independent (if is.cs is FALSE), or country-specific (if is.cs is TRUE)
-	values <- c()
+  values <- c()
 	if (is.null(thinning.index) && !is.null(thin) && thin > mcmc.list[[1]]$thin) {
 		total.iter <- get.stored.mcmc.length(mcmc.list, burnin)
 		thinning.index <- unique(round(seq(1, total.iter, by=thin/mcmc.list[[1]]$thin)))
