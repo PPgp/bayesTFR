@@ -454,7 +454,7 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   
   if (plot.raw)
   {
-    raw.data <- mcmc.list$meta$raw.data[[country.obj$index]]
+    raw.data <- subset(mcmc.list$meta$raw_data.original, country_index == country.obj$index)
     q <- q + geom_point(mapping = aes_string(x="Year", y="DataValue", color=grouping), data=raw.data, size=2)
   }
   
