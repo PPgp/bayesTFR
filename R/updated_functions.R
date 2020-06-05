@@ -131,7 +131,8 @@ estimate.bias.sd.raw <- function(mcmc)
   return(mcmc)
 }
 
-estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL)
+estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('DataProcess', 'Estimating.Methods'), 
+                                      cont_covariates=NULL)
 {
   mcmc$meta$raw_data.original$bias <- NA
   mcmc$meta$raw_data.original$std <- NA
@@ -141,18 +142,38 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL)
     if (is.na(ISO.code$code)) next
     index.by.country <- which(mcmc$meta$raw_data.original$ISO.code == ISO.code$code)
     if (length(index.by.country) == 0) next
-    source <- factor(as.character(mcmc$meta$raw_data.original$DataProcess[index.by.country]))
-    estimation.method <- factor(as.character(mcmc$meta$raw_data.original$Estimating.Methods[index.by.country]))
-    diff <- mcmc$meta$raw_data.original$eps[index.by.country]
     regressor <- '1'
-    if (length(levels(source)) > 1)
+    diff <- mcmc$meta$raw_data.original$eps[index.by.country]
+    if (length(covariates) > 0)
     {
-      regressor <- paste0(regressor, ' + source')
+      for (i in 1:length(covariates))
+      {
+        covariate <- covariates[i]
+        assign(paste0('covariate_', i), factor(as.character(mcmc$meta$raw_data.original[index.by.country, covariate])))
+        if (length(levels(get(paste0('covariate_', i)))) > 1)
+          regressor <- paste0(regressor, ' + covariate_', i)
+      }
     }
-    if (length(levels(estimation.method)) > 1)
+    if (length(cont_covariates) > 0)
     {
-      regressor <- paste0(regressor, ' + estimation.method')
+      for (i in 1:length(cont_covariates))
+      {
+        covariate <- cont_covariates[i]
+        assign(paste0('cont_covariate_', i), mcmc$meta$raw_data.original[index.by.country, covariate])
+        regressor <- paste0(regressor, ' + cont_covariate_', i)
+      }
     }
+    
+    # source <- factor(as.character(mcmc$meta$raw_data.original$DataProcess[index.by.country]))
+    # estimation.method <- factor(as.character(mcmc$meta$raw_data.original$Estimating.Methods[index.by.country]))
+    # if (length(levels(source)) > 1)
+    # {
+    #   regressor <- paste0(regressor, ' + source')
+    # }
+    # if (length(levels(estimation.method)) > 1)
+    # {
+    #   regressor <- paste0(regressor, ' + estimation.method')
+    # }
     m1 <- lm(as.formula(paste0('diff ~ ', regressor)))
     bias <- predict(m1)
     abs.residual <- abs(residuals(m1))
@@ -163,7 +184,7 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL)
     mcmc$meta$raw_data.original$bias[index.by.country] <- bias
     mcmc$meta$raw_data.original$std[index.by.country] <- std
     ## Optional
-    if (ISO.code$code %in% iso.oecd)
+    if (ISO.code$code %in% iso.unbiased)
     {
       index.by.country.vr.estimate <- which((mcmc$meta$raw_data.original$ISO.code == ISO.code$code) & 
                                               (mcmc$meta$raw_data.original$DataProcess %in% c("VR", 'Estimate')))

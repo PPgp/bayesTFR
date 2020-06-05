@@ -318,7 +318,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	  {
 	    for (year in meta$start.year:meta$present.year)
 	    {
-	      country.ind.by.year[[year-meta$start.year+1]] <- output$raw_data.original$country_index[which(round(output$raw_data.original$Year+0.01) == year)]
+	      country.ind.by.year[[year-meta$start.year+1]] <- output$raw_data.original$country_index[which(round(output$raw_data.original$Year-0.01) == year)]
 	      ind.by.year[[year-meta$start.year+1]] <- index[which(round(output$raw_data.original$Year-0.01) == year)]
 	    }
 	    output$raw_data.original$Year <- round(output$raw_data.original$Year - 0.01)
@@ -373,7 +373,8 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 					 gamma.ini=1, Triangle_c4.ini = 1.85,
 					 d.ini=0.17,
 					 save.all.parameters=FALSE,
-					 verbose=FALSE, uncertainty=FALSE, iso.unbiased=NULL
+					 verbose=FALSE, uncertainty=FALSE, iso.unbiased=NULL,
+					 covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL
 					 ) {
 				 		 	
 	nr_countries <- mcmc.meta$nr_countries
@@ -467,7 +468,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	  # mcmc <- get.obs.estimate.diff(mcmc)
 	  # mcmc <- estimate.bias.sd.raw(mcmc)
 	  mcmc <- get.obs.estimate.diff.original(mcmc)
-	  mcmc <- estimate.bias.sd.original(mcmc, iso.unbiased)
+	  mcmc <- estimate.bias.sd.original(mcmc, iso.unbiased, covariates, cont_covariates)
 	}
 	
 	# mcmc <- as.list(mcmc)
