@@ -131,7 +131,7 @@ estimate.bias.sd.raw <- function(mcmc)
   return(mcmc)
 }
 
-estimate.bias.sd.original <- function(mcmc)
+estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL)
 {
   mcmc$meta$raw_data.original$bias <- NA
   mcmc$meta$raw_data.original$std <- NA
@@ -162,6 +162,14 @@ estimate.bias.sd.original <- function(mcmc)
     std[std < (abs(bias) / 2)] <- abs(bias[std < (abs(bias) / 2)])
     mcmc$meta$raw_data.original$bias[index.by.country] <- bias
     mcmc$meta$raw_data.original$std[index.by.country] <- std
+    ## Optional
+    if (ISO.code$code %in% iso.oecd)
+    {
+      index.by.country.vr.estimate <- which((mcmc$meta$raw_data.original$ISO.code == ISO.code$code) & 
+                                              (mcmc$meta$raw_data.original$DataProcess %in% c("VR", 'Estimate')))
+      mcmc$meta$raw_data.original$bias[index.by.country.vr.estimate] <- 0
+      mcmc$meta$raw_data.original$std[index.by.country.vr.estimate] <- 0.016
+    }
   }
   
   return(mcmc)

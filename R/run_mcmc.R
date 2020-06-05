@@ -28,7 +28,8 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	save.all.parameters = FALSE, compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
 						verbose=FALSE, verbose.iter = 10, uncertainty = FALSE, 
-						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), ...) 
+						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
+						iso.unbiased=NULL, ...) 
 {
 
 	if(file.exists(output.dir)) {
@@ -195,7 +196,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 						thin=thin, starting.values=starting.values, iter=iter, S.ini=S.ini, a.ini=a.ini,
                         b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
                         gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, 
-                        verbose.iter=verbose.iter, uncertainty=uncertainty, ...)
+                        verbose.iter=verbose.iter, uncertainty=uncertainty, iso.unbiased=iso.unbiased, ...)
 	} else { # run chains sequentially
 		chain.set <- list()
 		for (chain in 1:nr.chains) {
@@ -203,7 +204,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	iter=iter, S.ini=S.ini, a.ini=a.ini, b.ini=b.ini, 
 					 	sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini, 
 					 	gamma.ini=gamma.ini, save.all.parameters=save.all.parameters,
-					 	verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
+					 	verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty, iso.unbiased=iso.unbiased)
 		}
 	}
 	names(chain.set) <- 1:nr.chains
@@ -234,7 +235,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NULL, 
 							S.ini, a.ini, b.ini, sigma0.ini, Triangle_c4.ini, const.ini, gamma.ini=1,
 							save.all.parameters=FALSE,
-							verbose=FALSE, verbose.iter=10, uncertainty=FALSE) {
+							verbose=FALSE, verbose.iter=10, uncertainty=FALSE, iso.unbiased=NULL) {
 								
 	cat('\n\nChain nr.', chain.id, '\n')
     if (verbose) {
@@ -256,7 +257,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
                                      const.ini=const.ini[chain.id],
                                      gamma.ini=gamma.ini[chain.id],
                                      save.all.parameters=save.all.parameters,
-                                     verbose=verbose, uncertainty=uncertainty)
+                                     verbose=verbose, uncertainty=uncertainty, iso.unbiased=iso.unbiased)
 	if (uncertainty)
 	{
 	  this.sv <- list()
@@ -359,7 +360,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								my.locations.file = NULL,
 								verbose=FALSE, verbose.iter=100, uncertainty=FALSE, 
 								my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
-								...) {
+								iso.unbiased=NULL, ...) {
   mcmc.set <- get.tfr.mcmc(sim.dir)
 	Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, 
 												my.locations.file=my.locations.file, burnin=burnin, verbose=verbose, uncertainty=uncertainty, 
@@ -412,7 +413,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		if(uncertainty)
 		{
 		  mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff.original(mcmc.set$mcmc.list[[chain]])
-		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]])
+		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]], iso.unbiased)
 		}
 	}
 	

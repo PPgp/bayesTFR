@@ -319,8 +319,9 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	    for (year in meta$start.year:meta$present.year)
 	    {
 	      country.ind.by.year[[year-meta$start.year+1]] <- output$raw_data.original$country_index[which(round(output$raw_data.original$Year+0.01) == year)]
-	      ind.by.year[[year-meta$start.year+1]] <- index[which(round(output$raw_data.original$Year+0.01) == year)]
+	      ind.by.year[[year-meta$start.year+1]] <- index[which(round(output$raw_data.original$Year-0.01) == year)]
 	    }
+	    output$raw_data.original$Year <- round(output$raw_data.original$Year - 0.01)
 	    output$country.ind.by.year <- country.ind.by.year
 	    output$ind.by.year <- ind.by.year
 	  }
@@ -372,7 +373,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 					 gamma.ini=1, Triangle_c4.ini = 1.85,
 					 d.ini=0.17,
 					 save.all.parameters=FALSE,
-					 verbose=FALSE, uncertainty=FALSE
+					 verbose=FALSE, uncertainty=FALSE, iso.unbiased=NULL
 					 ) {
 				 		 	
 	nr_countries <- mcmc.meta$nr_countries
@@ -460,12 +461,13 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	# note: the eps will always be NA outside (tau_c, lambda-1)!!
 	# ini the epsilons
 	mcmc$eps_Tc <- get_eps_T_all(mcmc)
+	if (mcmc.meta$annual.simulation) mcmc$rho.phase2 <- 0
 	if (uncertainty)
 	{
 	  # mcmc <- get.obs.estimate.diff(mcmc)
 	  # mcmc <- estimate.bias.sd.raw(mcmc)
 	  mcmc <- get.obs.estimate.diff.original(mcmc)
-	  mcmc <- estimate.bias.sd.original(mcmc)
+	  mcmc <- estimate.bias.sd.original(mcmc, iso.unbiased)
 	}
 	
 	# mcmc <- as.list(mcmc)
