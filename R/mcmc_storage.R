@@ -25,6 +25,7 @@ store.mcmc <- local({
 				if (is.element(par, mcmc$dontsave)) next
 				buffer[[par]][counter,] <<- mcmc[[par]]
 			}
+		  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) buffer[['rho.phase2']][counter,] <<- mcmc[["rho.phase2"]]
 			country.index <- mcmc$meta$id_DL
 		} else {
 			country.index <- countries
@@ -58,6 +59,7 @@ store.mcmc <- local({
 				if (is.element(par, mcmc$dontsave)) next
 				buffer[[par]] <<- matrix(NA, ncol=length(mcmc[[par]]), nrow=size)
 			}
+		  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) buffer[['rho.phase2']] <<- matrix(NA, ncol=1, nrow=size)
 			country.index <- mcmc$meta$id_DL
 		} else {
 			country.index <- countries
@@ -95,7 +97,7 @@ store.mcmc <- local({
 			dir.create(output.dir)
 		open <- if(append) 'a' else 'w'
 		if (is.null(countries)) {
-			for(par in par.names) { # write country-independent parameters
+		  for(par in par.names) { # write country-independent parameters
 				if (is.null(buffer[[par]])) next
 				if (counter == 1) {
 					values <- t(buffer[[par]][1:counter,])
@@ -104,7 +106,17 @@ store.mcmc <- local({
 				}
 				write.values.into.file.cindep(par, values, output.dir, mode=open, 
 												compression.type=mcmc$compression.type)
-			}
+		  }
+		  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
+		  {
+		    if (counter == 1) {
+		      values <- t(buffer[['rho.phase2']][1:counter,])
+		    } else {
+		      values <- buffer[['rho.phase2']][1:counter,]
+		    }
+		    write.values.into.file.cindep('rho_phase2', values, output.dir, mode=open, 
+		                                  compression.type=mcmc$compression.type)
+		  }
 			country.index <- mcmc$meta$id_DL	
 		} else {
 			country.index <- countries

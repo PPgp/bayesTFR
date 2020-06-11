@@ -26,7 +26,13 @@ get.eps.T <- function (DLpar, country, meta, ...)
     tfr <- get.observed.tfr(country, meta, ...)[meta$start_c[country]:meta$lambda_c[country]]
     ldl <- length(tfr)-1
     dl <- DLcurve(DLpar, tfr[1:ldl], meta$dl.p1, meta$dl.p2, annual = meta$annual.simulation)
-    return(tfr[2:(ldl+1)] - tfr[1:ldl] + dl)
+    eps <- tfr[2:(ldl+1)] - tfr[1:ldl] + dl
+    if (!is.null(meta$ar.phase2) && meta$ar.phase2) 
+    {
+      args <- list(...)
+      if ('rho.phase2' %in% names(args)) eps <- c(eps[1], eps[2:ldl]-args[['rho.phase2']] * eps[1:(ldl-1)])
+    }
+    return (eps)
 }
 
 get_eps_T_all <- function (mcmc, ...) {
@@ -85,7 +91,7 @@ find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
 	return(c(start, sum(!isna.tfr) + start - 1))
 } 
 
-get.observed.tfr <- function(country.index, meta, matrix.name='tfr_matrix', matrix.name.suppl=matrix.name)
+get.observed.tfr <- function(country.index, meta, matrix.name='tfr_matrix', matrix.name.suppl=matrix.name, ...)
 	return(get.observed.with.supplemental(country.index, meta[[matrix.name]], meta$suppl.data, matrix.name.suppl))
 
 get.observed.with.supplemental <- function(country.index, matrix, suppl.data, matrix.name='tfr_matrix') {
@@ -196,8 +202,8 @@ mcmc.meta.ini <- function(...,
 						wpp.year=2019, my.tfr.file = NULL, my.locations.file = NULL,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						verbose=FALSE, uncertainty=FALSE,
-						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL)
-					 ) {
+						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
+						ar.phase2=FALSE) {
 	# Initialize meta parameters - those that are common to all chains.
 	args <- list(...)
 	mcmc.input <- list()
@@ -212,14 +218,16 @@ mcmc.meta.ini <- function(...,
 										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, 
 										annual = mcmc.input$annual.simulation, verbose=verbose)
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
-						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file)
+						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, 
+						uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2)
 	return(structure(c(mcmc.input, meta), class='bayesTFR.mcmc.meta'))
 }
 	
 	
 do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
 						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE, uncertainty=FALSE, 
-						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL)) {
+						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
+						ar.phase2=FALSE) {
   results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, annual = meta$annual.simulation,
 	                                               suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
@@ -342,21 +350,21 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	    output$ind.by.year <- ind.by.year
 	    output$left.distance <- left.distance
 	  }
-	  # if (is.null(output$raw.data)) output$raw.data <- list()
-	  # count <- 1
-	  # for (name in colnames(tfr_matrix_all))
-	  # {
-	  #   output$raw.data[[count]] <- subset(raw.data, ISO.code == as.numeric(name))
-	  #   output$raw.data[[count]]$DataProcess <- factor(as.character(output$raw.data[[count]]$DataProcess))
-	  #   output$raw.data[[count]]$Estimating.Methods <- factor(as.character(output$raw.data[[count]]$Estimating.Methods))
-	  #   count <- count + 1
-	  # }
-	  # 
 	  output$tfr_all <- output$tfr_matrix_all
 	  output$tfr_mu_all <- output$tfr_all
 	  output$tfr_sd_all <- matrix(0, nrow = nrow(output$tfr_all), ncol=ncol(output$tfr_all))
+	  output$id_phase1_by_year <- list()
+	  output$id_phase2_by_year <- list()
+	  output$id_phase3_by_year <- list()
+	  for (year in 1:output$T_end)
+	  {
+	    output$id_phase1_by_year[[year]] <- which(output$start_c > year)
+	    output$id_phase3_by_year[[year]] <- which(output$lambda_c <= year)
+	    output$id_phase2_by_year[[year]] <- setdiff(1:nr_countries, c(output$id_phase1_by_year[[year]], output$id_phase3_by_year[[year]]))
+	  }
 	}
 	
+	if (meta$annual.simulation) output$ar.phase2 <- ar.phase2
 	
 	return(output)
 
@@ -374,8 +382,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 					 d.ini=0.17,
 					 save.all.parameters=FALSE,
 					 verbose=FALSE, uncertainty=FALSE, iso.unbiased=NULL,
-					 covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL
-					 ) {
+					 covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL) {
 				 		 	
 	nr_countries <- mcmc.meta$nr_countries
 
@@ -461,8 +468,8 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	##################################################################
 	# note: the eps will always be NA outside (tau_c, lambda-1)!!
 	# ini the epsilons
-	mcmc$eps_Tc <- get_eps_T_all(mcmc)
-	if (mcmc.meta$annual.simulation) mcmc$rho.phase2 <- 0
+	if (!is.null(mcmc.meta$ar.phase2) && mcmc.meta$ar.phase2) mcmc$rho.phase2 <- 0.7
+	mcmc$eps_Tc <- get_eps_T_all(mcmc, rho.phase2=mcmc$rho.phase2)
 	if (uncertainty)
 	{
 	  # mcmc <- get.obs.estimate.diff(mcmc)

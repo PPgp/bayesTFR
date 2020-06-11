@@ -228,6 +228,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	
 	var.par.values <- get.tfr.parameter.traces(load.mcmc.set$mcmc.list, 
 											var.par.names, burnin=0)
+	if (!is.null(mcmc.set$meta$ar.phase2) && mcmc.set$meta$ar.phase2) 
+	  rho.phase2.values <- get.tfr.parameter.traces(load.mcmc.set$mcmc.list, 'rho_phase2', burnin=0)
 											
 	prediction.countries <- if(is.null(countries)) 1:meta$nr_countries else countries
 	nr_countries <- meta$nr_countries
@@ -343,6 +345,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	# index of the last period within all.f_ps that is observed
 	fps.end.obs.index <- dim(tfr_matrix_reconstructed)[1] - all.T_end.min + suppl.T + 1
 	first.projection <- rep(1, nr_countries_real)
+	if (!is.null(mcmc.set$meta$ar.phase2) && (mcmc.set$meta$ar.phase2)) f_ps_previous <- matrix(NA, nrow = nr_simu, ncol=nr_countries_real)
 	for (icountry in 1:nr_countries_real) {
 		# fill the result array with observed data 
 	  if (uncertainty)
@@ -352,11 +355,15 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	                                'tfr', burnin=0)
 	    for(year in 1:fps.end.obs.index)
 	      all.f_ps[icountry,year,] <- tfr.table[,all.T_end.min+year-1]
+	    if (!is.null(mcmc.set$meta$ar.phase2) && (mcmc.set$meta$ar.phase2))
+	      f_ps_previous[, icountry] <- tfr.table[,all.T_end.min+year-2]
 	  }
 	  else
 	  {
 	    for(year in 1:fps.end.obs.index) 
 	      all.f_ps[icountry,year,] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min+year-1]
+	    if (!is.null(mcmc.set$meta$ar.phase2) && (mcmc.set$meta$ar.phase2))
+	      f_ps_previous[, icountry] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min+year-2]
 	  }
 		first.two.na <- which(is.na(all.f_ps[icountry,,1]))[1:2]
 		which.Wsecond[icountry] <- first.two.na[2]
@@ -492,6 +499,16 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 							if(use.correlation && !is.na(epsilons[country])) sigma_eps <- rnorm(1, eps.mean, sigma_eps)
 						} else {
 							eps.mean <- 0
+							if (!is.null(mcmc.set$meta$ar.phase2) && (mcmc.set$meta$ar.phase2))
+							{
+							  if(year == first.projection[icountry]) 
+							    tfr_prev <- f_ps_previous[s, icountry]
+							  else
+							    tfr_prev <- all.f_ps[icountry, year-2, s]
+							  tfr_mean <- tfr_prev - DLcurve(theta_si.list[[country]][s,], tfr_prev, meta$dl.p1, meta$dl.p2, meta$annual.simulation)
+							  eps_prev <- all.f_ps[icountry, year-1, s] - tfr_mean
+							  eps.mean <- eps_prev * rho.phase2.values[s]
+							}
 							sigma_eps <- max(var.par.values[s,'sigma0'] + (all.f_ps[icountry, year -1,s] - var.par.values[s,'S_sd'])*
 		  									ifelse(all.f_ps[icountry, year -1,s] > var.par.values[s,'S_sd'], 
 		  											-var.par.values[s,'a_sd'], var.par.values[s,'b_sd']), meta$sigma0.min)
@@ -503,7 +520,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		                    	if( (new.tfr + err) > min.tfr && 
 		                    		(new.tfr + err) <= cs.par.values.list[[country]][s,cs.var.names[[country]]$U] ) {passed <- TRUE; break}
 		                	}
-		                	if(!passed) err <- min(max(err, min.tfr-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
+		                if(!passed) err <- min(max(err, min.tfr-new.tfr), cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr)
 		                } else { # joint predictions
 		                	err <- sigma_eps*epsilons[country]
 		                	if(err < min.tfr - new.tfr || err > cs.par.values.list[[country]][s,cs.var.names[[country]]$U]-new.tfr) {# TFR outside of bounds

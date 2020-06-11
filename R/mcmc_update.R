@@ -99,6 +99,42 @@ mcmc.update.sigma0const <- function(what, log.like.func, eps_Tc_temp, mcmc) {
           "New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
 }
 
+mcmc.update.rho.phase2 <- function(mcmc, matrix.name) {
+  # 'what' is one of ('sigma0', 'const')
+  var.value <- mcmc$rho.phase2
+  var.low <- 0
+  var.up <- 0.9
+  var.width <- 0.1
+  
+  z <- sum(dnorm(mcmc$eps_Tc, mean = 0, sd =  mcmc$sd_Tc, log = TRUE), na.rm = TRUE) - rexp(1)
+  v <- runif(1)
+  interval <- c(max(var.value - v*var.width, var.low), min(var.value + (1-v)*var.width,var.up))
+  
+  #while (TRUE){
+  for(i in 1:50) {
+    var_prop <- runif(1,interval[1], interval[2])
+    eps_prop <- get_eps_T_all(mcmc, matrix.name=matrix.name, rho.phase2=var_prop)
+    like <- sum(dnorm(eps_prop, mean = 0, sd =  mcmc$sd_Tc, log = TRUE), na.rm = TRUE)
+    if (like >= z) {
+      mcmc$rho.phase2 <- var_prop
+      mcmc$eps_Tc <- eps_prop
+      return()
+    } else {
+      # shrink interval
+      if (var_prop < var.value){
+        interval[1] <- var_prop
+      } else {
+        interval[2] <- var_prop
+      }
+      if(abs(interval[1]-interval[2]) < 1e-10) break
+    } # end else
+  }
+  mcmc$rho.phase2 <- var_prop
+  mcmc$eps_Tc <- eps_prop
+  warning("Cannot find likelihood increase for ", "rho phase2", ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
+          "New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
+}
+
 mcmc.update.abSsigma0const <- function(mcmc, id.not.early.index) {
   # updates a_sd, b_sd, f_sd, sigma0, and const_sd
   #################################

@@ -5,7 +5,7 @@
 
 tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose.iter=10, uncertainty=FALSE) {
   if (!is.null(mcmc$rng.state)) .Random.seed <- mcmc$rng.state
-	  nr_simu <- mcmc$iter
+    nr_simu <- mcmc$iter
     nr_countries <- mcmc$meta$nr_countries_estimation
     nr_countries_all <- mcmc$meta$nr_countries
     has_extra_countries <- nr_countries != nr_countries_all
@@ -71,7 +71,12 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     mcenv$thin <- thin
     ones <- matrix(1, ncol=nr_DL, nrow=3)
   
-  if(is.null(mcenv$eps_Tc)) mcenv$eps_Tc <- get_eps_T_all(mcmc)
+  if(is.null(mcenv$eps_Tc)) 
+  {
+    if (mcenv$meta$ar.phase2) mcenv$eps_Tc <- get_eps_T_all(mcmc, rho.phase2=mcenv$rho.phase2)
+    else mcenv$eps_Tc <- get_eps_T_all(mcmc)
+  }
+    
 	
 	if(has_extra_countries) {
 		if (verbose)
@@ -106,7 +111,8 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
 	mcenv$mean_eps_Tc[idx.tau_c.id.notearly.all] <- mcenv$mean_eps_tau
 	
 	idx.tau_c.id.notearly <- matrix(c(mcenv$meta$tau_c[id_notearly], id_notearly), ncol=2)
-    ################################################################### 
+	mcenv$rho.phase2 <- ifelse(!is.null(mcenv$meta$ar.phase2) && mcenv$meta$ar.phase2, mcenv$rho.phase2, NULL)
+  ################################################################### 
     # Start MCMC
 	############
 	  for (simu in start.iter:nr_simu) {
@@ -164,20 +170,25 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
         sum_dt2 = sum(  (Triangle_c4_transformed - mcenv$Triangle4)^2)
         mcenv$delta4 <- sqrt(1/rgamma(1,nu4_D/2, rate = 1/2*(prod_delta4_0 + sum_dt2)))
 
+        if (!is.null(mcenv$meta$ar.phase2) && mcenv$meta$ar.phase2)
+        {
+          mcmc.update.rho.phase2(mcenv, matrix.name=matrix.name)
+          # mcenv$rho.phase2 <- 0.7
+        }
         #################################################################### 
         # country-specific parameters: d_c, gamma's, U_c and Triangle_c4
         ##################################################################
         
         for (country in id_DL_all){
-                mcmc.update.d(country, mcenv, matrix.name=matrix.name)
-                mcmc.update.gamma(country, mcenv, matrix.name=matrix.name)
-                mcmc.update.Triangle_c4(country, mcenv, matrix.name=matrix.name)
+                mcmc.update.d(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
+                mcmc.update.gamma(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
+                mcmc.update.Triangle_c4(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
                 #print(c(country, mcmc$Triangle_c4[country]))
         } 
  
          # U_c updated only for countries with early decline
          for (country in id_early_all){
-                mcmc.update.U(country, mcenv, matrix.name=matrix.name)
+                mcmc.update.U(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
          } 
 
          ##################################################################
@@ -195,15 +206,12 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
          ##################################################################
          # Phase III
          ##################################################################
+         
          if (uncertainty)
          {
            one.step.mcmc3.sampling(mcenv)
            
            mcmc.update.tfr.year(mcenv)
-           # for (country in 1:nr_countries_all)
-           # {
-           #   mcmc.update.tfr(country, mcenv)
-           # }
          }
          ################################################################### 
          # write samples simu/thin to disk
@@ -221,6 +229,8 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
 	}       # end simu loop MCMC
 	.cleanup.mcmc(mcenv)
 	resmc <- as.list(mcenv)
+	store.bayesTFR.meta.object(mcenv$meta, mcenv$meta$output.dir)
+	
 	class(resmc) <- class(mcmc)
     return(resmc)
 }
@@ -405,6 +415,8 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
       hyperparameters[[par]] <- hyperparameters[[par]][sampled.index,]
     }
   }
+  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) hyperparameter.names <- c(hyperparameter.names, 'rho_phase2')
+  else mcmc$rho.phase2 <- NULL
   for (par in hyperparameter.names) {
     hyperparameters[[par]] <- c()
     for(mc in mcmc.list) {
@@ -494,14 +506,14 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
         # country-specific parameters: d_c, gamma's, U_c and Triangle_c4
         ##################################################################
         for (country in id_DL) {
-        	mcmc.update.d(country, mcenv, matrix.name=matrix.name)
-          mcmc.update.gamma(country, mcenv, matrix.name=matrix.name)
-          mcmc.update.Triangle_c4(country, mcenv, matrix.name=matrix.name)
+        	mcmc.update.d(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
+          mcmc.update.gamma(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
+          mcmc.update.Triangle_c4(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
         } 
  
          # U_c updated only for countries with early decline
          for (country in id_early){
-                mcmc.update.U(country, mcenv, matrix.name=matrix.name)
+                mcmc.update.U(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
          } 
  		
  		    if (uncertainty && (nr.countries > 0))

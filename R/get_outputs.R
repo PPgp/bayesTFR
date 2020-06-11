@@ -85,7 +85,7 @@ get.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0) {
 	
 create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL, verbose=TRUE, uncertainty=FALSE) {
 	#Return a thinned mcmc.set object with burnin removed and all chanins collapsed into one
-	mcthin <- max(sapply(mcmc.set$mcmc.list, function(x) x$thin))
+  mcthin <- max(sapply(mcmc.set$mcmc.list, function(x) x$thin))
 	thin <- max(c(thin, mcthin))
 	meta <- mcmc.set$meta
 	total.iter <- get.stored.mcmc.length(mcmc.set$mcmc.list, burnin=burnin)
@@ -126,6 +126,12 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 		values <- get.tfr.parameter.traces(mcmc.set$mcmc.list, par, burnin,
 											thinning.index=thin.index)
 		write.values.into.file.cindep(par, values, outdir.thin.mcmc, compression.type=thinned.mcmc$compression.type)
+	}
+	if (!is.null(mcmc.set$meta$ar.phase2) && mcmc.set$meta$ar.phase2) 
+	{
+	  values <- get.tfr.parameter.traces(mcmc.set$mcmc.list, 'rho_phase2', burnin,
+	                                     thinning.index=thin.index)
+	  write.values.into.file.cindep('rho_phase2', values, outdir.thin.mcmc, compression.type=thinned.mcmc$compression.type)
 	}
 	if(verbose) cat('done.\nStoring country-specific parameters ...')
 	par.names.cs <- tfr.parameter.names.cs(trans=FALSE)
@@ -346,7 +352,7 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 	# Load traces from the disk
 	if(is.null(mcmc$meta$phase) || mcmc$meta$phase == 2) {
 		all.standard.names <- c(tfr.parameter.names(), get.trans.parameter.names(), 
-							tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE), 'tfr')
+							tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE), 'tfr', 'rho_phase2')
 		tran.names <- c(get.trans.parameter.names(), get.trans.parameter.names(cs=TRUE))
 		totran.names <- c(get.totrans.parameter.names(), get.totrans.parameter.names(cs=TRUE))
 		backtran.names <- get.backtrans.parameter.names(cs=TRUE)
@@ -364,7 +370,7 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 							thinning.index=NULL, all.standard.names=c(), tran.names=c(), totran.names=c(), 
 							backtran.names=c(), tobacktran.names=c()) {
   if (length(par.names) == 0) return (NULL)
-	tran.names.l <- nchar(tran.names)
+  tran.names.l <- nchar(tran.names)
 	ltran.names <- length(tran.names)
 	totran.names.l <- nchar(totran.names)
 	has.tran <- rep(FALSE, ltran.names)

@@ -460,6 +460,7 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   
   wpp.data <- get.observed.tfr(country.obj$index, mcmc.list$meta, "tfr_matrix_all")
   wpp.data <- data.frame(year=quantile_tbl$year, TFR = as.numeric(wpp.data))
+  wpp.data <- wpp.data[wpp.data$year %% 5 == 3,]
   q <- q + geom_line(data = wpp.data, aes(x=year, y=TFR), size = 0.8) + theme_bw() + 
     geom_point(data = wpp.data,aes(x=year, y=TFR))
   
