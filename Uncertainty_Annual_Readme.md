@@ -141,8 +141,67 @@ tfr.predict.extra(sim.dir = output.dir, countries = countries, uncertainty = TRU
 
 Here, similar to **tfr.predict**, the uncertainty parameter is used to control the TFR used in prediction, but not for the MCMC parameters.
 
+### Special Treatment of VR data
+With our observation, some countries, especially for some OECD countries such as the United States, the VR records are very accurate. Since the current UN estimates are 5-year based, the major source of bias estimated for these VR records is the gap between calendar year records and five-year average, which will over-smooth the phase III estimates. Thus, we add another option **iso.unbiased** for this purpose. Users could call:
+```R
+output.dir <- 'bayesTFR.extra'
+nr.chains <- 3
+total.iter <- 100
+annual <- TRUE
+burnin <- 0
+thin <- 1
+### Specify with the same setting
+run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
+  burnin = burnin, thin = thin, uncertainty = TRUE, iso.unbiased = c(36,40,56,124,203,208,246,250,276,300,352,372,380,392,410,428, 
+                                         442,528,554,578,620,724,752,756,792,826,840))
+```
+
+The example showed above includes all OECD countries, which may be further analyzed. For countries listed in **iso.unbiased**, the estimated bias of VR records and official estimates is 0, and the standard deviation of VR records and official estimates is 0.0161.
+
+*With the same setting as above, the low uncertainty in phase III prediction is partly resolved.*
+
+### User-input covariates
+As Patrick requires, we may include raw data sets with different covariates, including continuous covariates. Thus, we add two options, **covariates** for categorical variables and **cont_covariates** for continuous variables. 
+
+|Country.or.area|ISO.code|Year|DataValue|Estimating.Methods|DataProcessShort|TimeLag|
+|---------------|--------|----|---------|------------------|-----------|-------|
+|Afghanistan|4|1965|7.97|Indirect|Census|3.5|
+
+users could call:
+```R
+mcmc.list <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
+  burnin = burnin, thin = thin, uncertainty = TRUE, iso.unbiased = c(36,40,56,124,203,208,246,250,276,300,352,372,380,392,410,428, 
+                                         442,528,554,578,620,724,752,756,792,826,840), my.tfr.raw.file = 'tfr_raw_v1.csv'),
+                                         covariates = c('Estimating.Methods', 'DataProcessShort'), cont_covariates=c('TimeLag'))
+```
+Note that if users specified their own covariates, then when using **tfr.estimation.plot** with **plot.raw=TRUE**, users need to specify grouping as one of the covariates. For example:
+```R
+tfr.estimation.plot(mcmc.list = mcmc.list, country.code=566, grouping='DataProcessShort')
+```
+
+### Auto-correlation for phase II
+Currently, the model for phase II is
+$$ f_{c,t+1} = f_{c,t} - g(f_{c,t}|\theta_c) + \varepsilon_{c,t} $$
+where $$g_{c,t} = g(f_{c,t}|\theta_c)$$ is the double-logistic decline.
+
+With five-year version of the data, this is OK. However, with annual version of the data, the auto-correlation of the $\varepsilon_{c,t}$ for phase II is severe. Thus, we introduce a different model:
+$$ f_{c,t+1} = f_{c,t} - d_{c,t} \\ d_{c,t+1} - g_{c,t+1} = \phi(d_{c,t} - g_{c,t}) + \varepsilon_{c,t}$$
+
+We introduce this as an option **ar.phase2** for **run.tfr.mcmc**. Users who are interested in using this could call:
+```R
+mcmc.list.ar <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
+  burnin = burnin, thin = thin, uncertainty = TRUE, iso.unbiased = c(36,40,56,124,203,208,246,250,276,300,352,372,380,392,410,428, 
+                                         442,528,554,578,620,724,752,756,792,826,840), ar.phase2=TRUE)
+
+```
+Note that if users set **ar.phase2=TRUE**, they will keep it the same when calling **run.tfr.mcmc.extra** at the same directory.
+
+### Discussion of Uncertainty and Smoothness
+
+
 ### Faster Version for bayesTFR with uncertainty
-With the new version of the code, users could run **run.tfr.mcmc** at a fast speed. For 3 chains with 62000 iterations each without parallel, it will take at most 1.5 days to finish running.
+With the new version of the code, users could run **run.tfr.mcmc** at a fast speed. For 3 chains with 62000 iterations each without parallel, it will take at most 1.5 days to finish running. For example, with the following data input with name **tfr_raw_v1.csv**,
+
 
 ## More to come
 - Email me for for requirements
