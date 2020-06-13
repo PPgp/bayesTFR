@@ -111,7 +111,6 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
 	mcenv$mean_eps_Tc[idx.tau_c.id.notearly.all] <- mcenv$mean_eps_tau
 	
 	idx.tau_c.id.notearly <- matrix(c(mcenv$meta$tau_c[id_notearly], id_notearly), ncol=2)
-	mcenv$rho.phase2 <- ifelse(!is.null(mcenv$meta$ar.phase2) && mcenv$meta$ar.phase2, mcenv$rho.phase2, NULL)
   ################################################################### 
     # Start MCMC
 	############

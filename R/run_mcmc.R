@@ -250,8 +250,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
     	print(sv)
     }
   
-  
-	mcmc <- mcmc.ini(chain.id, meta, iter=iter[chain.id],
+  mcmc <- mcmc.ini(chain.id, meta, iter=iter[chain.id],
 	                 S.ini=S.ini[chain.id],
 	                 a.ini=a.ini[chain.id],
 	                 b.ini=b.ini[chain.id],
