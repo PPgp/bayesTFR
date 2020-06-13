@@ -172,13 +172,14 @@ users could call:
 mcmc.list <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
   burnin = burnin, thin = thin, uncertainty = TRUE, iso.unbiased = c(36,40,56,124,203,208,246,250,276,300,352,372,380,392,410,428, 
                                          442,528,554,578,620,724,752,756,792,826,840), my.tfr.raw.file = 'tfr_raw_v1.csv'),
-                                         covariates = c('Estimating.Methods', 'DataProcessShort'), cont_covariates=c('TimeLag'))
+                                         covariates = c('DataProcessShort', 'Estimating.Methods'), cont_covariates=c('TimeLag'))
 ```
 Note that if users specified their own covariates, then when using **tfr.estimation.plot** with **plot.raw=TRUE**, users need to specify grouping as one of the covariates. For example:
 ```R
 tfr.estimation.plot(mcmc.list = mcmc.list, country.code=566, grouping='DataProcessShort')
 ```
 
+**Note: If users want to use the iso.unbiased and covariates together, they need to provide the first name of covariates for the source of the data (where we could find VR in categories). Otherwise the iso.unbiased will not work (but the process could continue).**
 ### Auto-correlation for phase II
 Currently, the model for phase II is
 $$ f_{c,t+1} = f_{c,t} - g(f_{c,t}|\theta_c) + \varepsilon_{c,t} $$
@@ -196,8 +197,37 @@ mcmc.list.ar <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, ite
 ```
 Note that if users set **ar.phase2=TRUE**, they will keep it the same when calling **run.tfr.mcmc.extra** at the same directory.
 
-### Discussion of Uncertainty and Smoothness
+### Obtain model estimation for bias and measurement error variance
+After running MCMC steps with uncertainty, users could obtain the bias and measurement error standard deviation used in the estimation process with **get.bias.model** and **get.std.model** as follows:
+```R
+return_list <- get.bias.model(sim.dir = "bayesTFR.output", country.code=566)
+# return_list <- get.std.model(sim.dir = "bayesTFR.output", country.code=566)
+summary(return_list$model)
 
+head(return_list$table)
+```
+The function will return a list with two elements. **model** is the estimated linear model for bias or standard deviation. **table** is the bias (or standard deviation) used in the model estimation. If we only used categorical variables, then we only kept those distinct combinations in the table.
+
+Note that for standard deviation, the final estimation is different from the model by a factor of $\sqrt{\frac{2}{\pi}}$, and we also made some adjustments and thus the estimation could be different between the model and the table for some cases. We adjusted those cases with large bias but little standard deviations estimated, which usually because we have so little data in that group. Moreover, if some countries are included in the **iso.unbiased**, then for the VR records, the bias and standard deviation estimated in the model are not used, but the value in the table is used.
+
+### Discussion of Uncertainty and Smoothness
+Here we discuss briefly for the users to understand the bias, standard deviations and uncertainty in estimation in our experiments. Since this is not a formal paper, I will discuss about the ideas of how things work for the whole bayesTFR MCMC process.
+
+The model used in BayesTFR with uncertainty is a Bayesian Hierarchical Model. Roughly speaking, we are assuming that the underlying TFR is unknown, and all data are used to provide evidences for obtaining those values. On the other hand, based on the knowledge as well as the historical observation of the total fertility rates, demographers have concluded three phase model which could be used to describe (and predict) the movement of the total fertility rates. This means that in general for most countries where the population is not extremely small, they should follow this pattern, but with different speed, shape and other features.
+
+Therefore, the idea of the model is the balance between data and the model. For each countries, we assume that their past TFR should follow this model, and the data could help us identify the detailed shape and variability (of their TFR). For countries with better data quality as well as more data, the data will tell us more than the model, and vice versa. For example for the United States, the vital registration system is nearly perfect, and thus, we don't need any model to estimate their past TFR. However, for example for Nigeria, all historical data sources were not perfect with possible large bias and measurement error variance, and thus the model will contribute more on the estimation.
+
+Thus, we could conclude: **With better data with little variance, the estimated median will become less smooth, and the estimated model variance would become larger.** This is observed when we set VR records unbiased for most OECD countries. 
+
+It could be inferred that the opposite should also hold, that is **When the estimated model variance is smaller, the estimated median will become smoother, and the data will contribute less in the estimation process.** This is observed when we introduce **ar.phase2=TRUE** in the model. Since we have bring another source of freedom in the model, which based on our analysis could explain about at least 50% uncertainty in phase II transition, the estimated standard deviation of the model goes low, which is universal for all countries (since this parameter is not country-specific, and also don't need). This problem become extreme when TFR is high. Note that the MCMC estimation process is the balance of likelihoods, when the uncertainty of the model goes extremely low (less than 0.01 for standard deviation), the likelihood change for a small change in TFR will be huge for model part, but less for data parts. This will make the estimation trust the model instead of data, unless the data is extremely convincing even more than VR. This is unstable, and it will also bring problems, since we won't expect that the uncertainty of next year's TFR for countries at the starting part of fertility transition, is much smaller than countries which has gone into phase III for a long time. Therefore, **I suggest that when running the MCMC process, we set the sigma.min=0.04, especially when auto-correlation of the noise in phase II is considered.** For example,
+```R
+run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
+  burnin = burnin, thin = thin, uncertainty = TRUE, sigma.min=0.04, ar.phase2=TRUE)
+```
+
+In summary, the way to control the smoothness of the estimated median, is to balance the standard deviation of the model and the data. If we want a smoother median, we should avoid extreme low standard deviation estimates in the data (*in the current code, the measurement error standard deviation is not allowed to be smaller than half of the absolute value of bias*), and if we want to avoid over-confidence in model, we should set the minimum of the model standard deviation.
+
+Anyone interested in this part could email me for details.
 
 ### Faster Version for bayesTFR with uncertainty
 With the new version of the code, users could run **run.tfr.mcmc** at a fast speed. For 3 chains with 62000 iterations each without parallel, it will take at most 1.5 days to finish running. For example, with the following data input with name **tfr_raw_v1.csv**,

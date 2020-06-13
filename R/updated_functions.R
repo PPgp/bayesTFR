@@ -136,6 +136,8 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('Dat
 {
   mcmc$meta$raw_data.original$bias <- NA
   mcmc$meta$raw_data.original$std <- NA
+  mcmc$meta$bias_model <- list()
+  mcmc$meta$std_model <- list()
   for(country in 1:mcmc$meta$nr_countries)
   {
     ISO.code <- get.country.object(country, meta=mcmc$meta, index=TRUE)
@@ -180,11 +182,14 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('Dat
     if (ISO.code$code %in% iso.unbiased)
     {
       index.by.country.vr.estimate <- which((mcmc$meta$raw_data.original$ISO.code == ISO.code$code) & 
-                                              (mcmc$meta$raw_data.original$DataProcess %in% c("VR", 'Estimate')))
+                                              (mcmc$meta$raw_data.original[, covariates[1]] %in% c("VR", 'Estimate')))
       mcmc$meta$raw_data.original$bias[index.by.country.vr.estimate] <- 0
       mcmc$meta$raw_data.original$std[index.by.country.vr.estimate] <- 0.016
     }
+    mcmc$meta$bias_model[[country]] <- m1
+    mcmc$meta$std_model[[country]] <- m2
   }
+  
   
   return(mcmc)
 }

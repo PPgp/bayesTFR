@@ -231,6 +231,60 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
 	return(pred)
 }
 
+get.bias.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL) {
+  ############
+  # Returns an object of class bayesTFR.prediction
+  # Set mcmc.dir to NA, if the prediction object should not have a pointer 
+  # to the corresponding mcmc traces.
+  ############
+  data("iso3166")
+  if (is.null(mcmc.list)) 
+    mcmc.list <- get.tfr.mcmc(sim.dir)
+  if (is.null(mcmc.list)) {
+    warning('MCMC does not exist.')
+    return(NULL)
+  }
+  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
+  {
+    stop("MCMC does not consider uncertainty of past TFR.")
+  }
+  if (is.null(country.code))
+    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
+  
+  country.obj <- get.country.object(country.code, mcmc.list$meta)
+  model_est <- subset(mcmc.list.test$meta$raw_data.original, ISO.code == country.obj$code)
+  model_est <- model_est[, !(names(model_est) %in% c('ISO.code', 'Country.or.area', 'Year', 'DataValue', 'country_index', 'eps', 'std'))]
+  model_est <- model_est[!duplicated(model_est),]
+  return(list(model=mcmc.list$meta$bias_model[[country.obj$index]], table=model_est))
+}
+
+get.std.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL) {
+  ############
+  # Returns an object of class bayesTFR.prediction
+  # Set mcmc.dir to NA, if the prediction object should not have a pointer 
+  # to the corresponding mcmc traces.
+  ############
+  data("iso3166")
+  if (is.null(mcmc.list)) 
+    mcmc.list <- get.tfr.mcmc(sim.dir)
+  if (is.null(mcmc.list)) {
+    warning('MCMC does not exist.')
+    return(NULL)
+  }
+  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
+  {
+    stop("MCMC does not consider uncertainty of past TFR.")
+  }
+  if (is.null(country.code))
+    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
+  
+  country.obj <- get.country.object(country.code, mcmc.list$meta)
+  model_est <- subset(mcmc.list.test$meta$raw_data.original, ISO.code == country.obj$code)
+  model_est <- model_est[, !(names(model_est) %in% c('ISO.code', 'Country.or.area', 'Year', 'DataValue', 'country_index', 'eps', 'bias'))]
+  model_est <- model_est[!duplicated(model_est),]
+  return(list(model=mcmc.list$meta$std_model[[country.obj$index]], table=model_est))
+}
+
 get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1, probs=NULL) {
   ############
   # Returns an object of class bayesTFR.prediction
