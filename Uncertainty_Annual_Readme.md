@@ -129,7 +129,6 @@ run.tfr3.mcmc(sim.dir = output.dir, nr.chains = nr.chains, iter = total.iter, th
 
 countries <- c(566, 840)
 run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burnin=0, uncertainty=TRUE)
-
 ```
 
 To make predictions on these countries, one need to **make predictions for all countries first** and have a stored version, then call:
@@ -137,6 +136,13 @@ To make predictions on these countries, one need to **make predictions for all c
 tfr.predict(sim.dir = output.dir, nr.traj = total.iter, burnin = 0, burnin3 = 0)
 
 tfr.predict.extra(sim.dir = output.dir, countries = countries, uncertainty = TRUE)
+```
+
+**Note**, if users want to have different raw data files, or different covariates, it is allowed to run:
+```R
+run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burnin=0, uncertainty=TRUE, 
+    my.tfr.raw.file='tfr_raw_v1.csv', covariates=c('cov1', 'cov2'), cont_covariates=c('cov3'))
+
 ```
 
 Here, similar to **tfr.predict**, the uncertainty parameter is used to control the TFR used in prediction, but not for the MCMC parameters.

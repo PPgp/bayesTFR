@@ -113,7 +113,9 @@ export(
 	tfr.predict.subnat,
 	get.regtfr.prediction,
 	get.tfr.estimation,
-	tfr.estimation.plot
+	tfr.estimation.plot,
+	get.bias.model,
+	get.std.model
 )
 
 # register S3 methods
