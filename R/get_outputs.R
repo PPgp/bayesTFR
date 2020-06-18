@@ -821,7 +821,7 @@ coda.mcmc.bayesTFR.mcmc <- function(mcmc, country=NULL, par.names=NULL,
 	thin <- btobject$thin
 	th.burnin <- btobject$burnin
 	if(!is.null(btobject$index)) index <- btobject$index
-	if(missing(par.names)) 
+	if(is.null(country) && missing(par.names)) 
 		par.names <- if(!is.null(mcmc$meta$phase) && mcmc$meta$phase == 3)
 			tfr3.parameter.names() else tfr.parameter.names()
 	if(missing(par.names.cs)) 
@@ -1006,8 +1006,8 @@ country.names <- function(meta, countries=NULL, index=FALSE) {
 summary.bayesTFR.mcmc <- function(object, country=NULL, 
 								par.names=NULL, par.names.cs=NULL, 
 								thin=1, burnin=0, ...) {
-	if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
-	if(is.null(par.names))
+  if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
+	if(is.null(country) && is.null(par.names))
 	 	par.names <- if(is.null(object$meta$phase) || object$meta$phase == 2) tfr.parameter.names(trans=TRUE) 
 	 					else tfr3.parameter.names()
 	if(is.null(par.names.cs) && !is.null(country))
@@ -1029,13 +1029,13 @@ summary.bayesTFR.mcmc <- function(object, country=NULL,
 summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL, 
 								par.names=NULL, par.names.cs=NULL, 
 								meta.only=FALSE, thin=1, burnin=0, ...) {
-	if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
+  if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
 	if(is.null(object$meta$phase) || object$meta$phase == 2) {
-		if(is.null(par.names)) par.names <- tfr.parameter.names(trans=TRUE)
+		if(is.null(country) && is.null(par.names)) par.names <- tfr.parameter.names(trans=TRUE)
 		if(!is.null(country) && is.null(par.names.cs)) par.names.cs <- tfr.parameter.names.cs(trans=TRUE)
 		.summary.mcmc.set.phaseII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
 	} else { # phase III
-		if(is.null(par.names)) par.names <- tfr3.parameter.names()
+		if(is.null(country) && is.null(par.names)) par.names <- tfr3.parameter.names()
 		if(!is.null(country) && is.null(par.names.cs)) par.names.cs <- tfr3.parameter.names.cs()
 		.summary.mcmc.set.phaseIII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
 	}
