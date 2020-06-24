@@ -855,7 +855,7 @@ do.plot.tfr.pardensity <- function(mcmc.list, func, par.names, par.names.ext, ma
 tfr.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 									chain.ids=NULL, par.names=tfr.parameter.names(trans=TRUE), 
 									burnin=NULL, dev.ncol=5, low.memory=TRUE, ...) {
-	if (is.null(mcmc.list))
+  if (is.null(mcmc.list))
 		mcmc.list <- get.tfr.mcmc(sim.dir, low.memory=low.memory)
 	par.names.ext <- get.full.par.names(par.names, tfr.parameter.names.extended())
 	if(length(par.names.ext) <= 0)

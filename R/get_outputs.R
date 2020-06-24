@@ -604,6 +604,7 @@ get.other.parameter.names <- function(cs=FALSE) {
 }
 
 get.all.parameter.names.extended <- function(cs=FALSE) {
+  browser()
 	pars <- c()
 	all.pars <- if(cs) get.all.parameter.names.cs() else get.all.parameter.names()
 	for (ipar in 1:length(all.pars)) {
@@ -616,6 +617,7 @@ get.all.parameter.names.extended <- function(cs=FALSE) {
 			pars <- c(pars, if (paropt[2] > 1) paste(name, 1:paropt[2], sep='_') else name)
 		}
 	}
+	pars <- c(pars, "rho_phase2")
 	return(pars)
 }
 

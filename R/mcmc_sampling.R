@@ -71,10 +71,12 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     mcenv$thin <- thin
     ones <- matrix(1, ncol=nr_DL, nrow=3)
   
+  matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix')
+    
   if(is.null(mcenv$eps_Tc)) 
   {
-    if (mcenv$meta$ar.phase2) mcenv$eps_Tc <- get_eps_T_all(mcmc, rho.phase2=mcenv$rho.phase2)
-    else mcenv$eps_Tc <- get_eps_T_all(mcmc)
+    if (mcenv$meta$ar.phase2) mcenv$eps_Tc <- get_eps_T_all(mcmc, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
+    else mcenv$eps_Tc <- get_eps_T_all(mcmc, matrix.name=matrix.name)
   }
     
 	
@@ -84,8 +86,6 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
 							'not included in the estimation.\n')
 	}
 
-  matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix')
-    
     # sd_Tc with sigma0 and sd_tau_eps
     # the non-constant variance is sum of sigma0 and add_to_sd_Tc
     # matrix with each column one country
