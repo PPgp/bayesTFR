@@ -604,8 +604,7 @@ get.other.parameter.names <- function(cs=FALSE) {
 }
 
 get.all.parameter.names.extended <- function(cs=FALSE) {
-  browser()
-	pars <- c()
+  pars <- c()
 	all.pars <- if(cs) get.all.parameter.names.cs() else get.all.parameter.names()
 	for (ipar in 1:length(all.pars)) {
 		par <- all.pars[ipar]
