@@ -442,7 +442,7 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   quantile_tbl <- tfr.object$tfr_quantile
   names(quantile_tbl)[1:(1 + 2 * length(pis))] <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
   names.col <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
-  require(ggplot2)
+  requireNamespace('ggplot2', quietly=TRUE)
   q <- ggplot(data=quantile_tbl)  + xlab("Year") + ylab("TFR")
   q <- q + geom_ribbon(aes_string(x="year", ymin=names.col[1], ymax=names.col[length(names.col)]), alpha=0.2, fill='red') +
     geom_line(aes_string(x="year", y="Q50"), size = 0.8, color="red") +

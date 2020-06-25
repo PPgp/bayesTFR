@@ -291,7 +291,6 @@ get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL,
   # Set mcmc.dir to NA, if the prediction object should not have a pointer 
   # to the corresponding mcmc traces.
   ############
-  require(data.table)
   data("iso3166")
   if (is.null(mcmc.list)) 
     mcmc.list <- get.tfr.mcmc(sim.dir)
