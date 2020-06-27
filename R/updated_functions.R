@@ -673,7 +673,7 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     loglik_orig <- numeric(nr_countries)
     loglik_proposed <- numeric(nr_countries)
     tfr_orig <- mcmc$meta$tfr_all[year, ]
-    if (mcmc$finished.iter <= 100) sd_f <- 0.2 else sd_f <- pmax(2.4 * mcmc$meta$tfr_sd_all[year, ], 0.01)
+    if (mcmc$finished.iter <= 100) sd_f <- rep(0.2, nr_countries) else sd_f <- pmax(2.4 * mcmc$meta$tfr_sd_all[year, ], 0.01)
     tfr_proposed <- rep(1, nr_countries)
     if (is.null(countries))
       tfr_proposed <- rnorm(nr_countries, tfr_orig, sd_f)

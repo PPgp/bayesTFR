@@ -213,7 +213,6 @@ mcmc.meta.ini <- function(...,
 	mcmc.input$present.year <- present.year
 	mcmc.input$wpp.year <- wpp.year
 	if(present.year-3 > wpp.year) warning("present.year is much larger then wpp.year. Make sure WPP data for present.year are available.")
-	
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
 										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, 
 										annual = mcmc.input$annual.simulation, verbose=verbose)
@@ -314,7 +313,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	{
 	  if (is.null(my.tfr.raw.file)) my.tfr.raw.file <- file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv")
 	  raw.data <- read.csv(my.tfr.raw.file)
-	  raw.data <- subset(raw.data, ISO.code %in% as.numeric(colnames(output$tfr_matrix_all)))
+	  raw.data <- raw.data[raw.data$ISO.code %in% as.numeric(colnames(output$tfr_matrix_all)),]
 	  output$raw_data.original <- raw.data
 	  output$raw_data.original <- merge(output$raw_data.original, 
 	                                    data.frame(ISO.code=tfr.with.regions$regions$country_code, country_index = 1:nr_countries), 

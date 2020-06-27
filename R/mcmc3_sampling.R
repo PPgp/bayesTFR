@@ -29,6 +29,8 @@ tfr3.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbos
     unblock.gtk('bDem.TFRmcmc')
 		# Metropolis-Hastings for mu
 		one.step.mcmc3.sampling(mcenv)
+		mcenv$finished.iter <- mcenv$finished.iter + 1
+		mcenv$rng.state <- .Random.seed
     if (iter %% thin == 0){
       mcenv$length <- mcenv$length + 1
       flush.buffer <- FALSE

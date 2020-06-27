@@ -13,7 +13,7 @@ Runs (or continues running) MCMCs for simulating the total fertility rate of all
 \usage{
 run.tfr.mcmc(nr.chains = 3, iter = 62000, 
     output.dir = file.path(getwd(), "bayesTFR.output"), 
-    thin = 1, replace.output = FALSE, 
+    thin = 1, replace.output = FALSE, annual = FALSE,
     start.year = 1950, present.year = 2020, wpp.year = 2019, 
     my.tfr.file = NULL, my.locations.file = NULL, buffer.size = 100, 
     U.c.low = 5.5, U.up = 8.8, U.width = 3,
@@ -24,21 +24,23 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     S.low = 3.5, S.up = 6.5, S.width = 0.5, 
     a.low = 0, a.up = 0.2, a.width = 0.02, 
     b.low = a.low, b.up = a.up, b.width = 0.05, 
-    sigma0.low = 0.01, sigma0.up = 0.6, sigma0.width = 0.1, 
+    sigma0.low = if (annual) 0.0045 else 0.01, sigma0.up = 0.6, sigma0.width = 0.1, 
     sigma0.min = 0.001, 
     const.low = 0.8, const.up = 2, const.width = 0.3, 
     d.low = 0.05, d.up = 0.5, d.trans.width = 1, 
     chi0 = -1.5, psi0 = 0.6, nu.psi0 = 2, 
     alpha0.p = c(-1, 0.5, 1.5), delta0 = 1, nu.delta0 = 2, 
-    dl.p1 = 9, dl.p2 = 9, 
+    dl.p1 = 9, dl.p2 = 9, phase3.parameter=NULL,
     S.ini = NULL, a.ini = NULL, b.ini = NULL, sigma0.ini = NULL, 
-    Triangle_c4.ini = NULL, const.ini = NULL, gamma.ini = 1, 
+    Triangle_c4.ini = NULL, const.ini = NULL, gamma.ini = 1, phase3.starting.values=NULL,
     proposal_cov_gammas = NULL,
     seed = NULL, parallel = FALSE, nr.nodes = nr.chains, 
     save.all.parameters = FALSE, compression.type = 'None',
     auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, 
         nr.chains=3, thin=80, burnin=2000),
-    verbose = FALSE, verbose.iter = 10, \dots)
+    verbose = FALSE, verbose.iter = 10, uncertainty = FALSE, 
+    my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
+    iso.unbiased=NULL, covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL, ar.phase2=FALSE, \dots)
 		
 continue.tfr.mcmc(iter, chain.ids=NULL, 
     output.dir=file.path(getwd(), "bayesTFR.output"), 
@@ -52,6 +54,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{output.dir}{Directory which the simulation output should be written into.}
   \item{thin}{Thinning interval between consecutive observations to be stored on disk.}
   \item{replace.output}{If \code{TRUE}, existing outputs in \code{output.dir} will be replaced by results of this simulation.}
+  \item{annual}{If \code{TRUE}, the model will be trained based on annual TFR data.}
   \item{start.year}{Start year for using historical data.}
   \item{present.year}{End year for using historical data.}
   \item{wpp.year}{Year for which WPP data is used. The functions loads a package called \pkg{wpp}\eqn{x} where \eqn{x} is the \code{wpp.year} and uses the \code{tfr*} datasets.}
@@ -85,6 +88,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{delta0}{Prior standard deviation of the \eqn{\alpha_i}{alpha_i} parameters. It is a single value, i.e. the same standard deviation is used for all \eqn{i}.}
   \item{nu.delta0}{The shape parameter of the prior Gamma distribution of \eqn{1/\delta_i^2}{1/delta_i^2} is \code{nu.delta0}/2. \eqn{\delta_i}{1/delta_i} is the standard deviation of \eqn{\gamma_{ci}}{gamma_{ci}}.}
   \item{dl.p1, dl.p2}{Values of the parameters \eqn{p_1} and \eqn{p_2} of the double logistic function.}
+  \item{phase3.parameter}{When \code{uncertainty=TRUE}, we need to combine the MCMC process for Phase II and Phase III together. This parameter is used to provide a list for phase3 initial ranges, such as \code{mu.prior.range}. If the input is \code{NULL}, the default values will be used.}
   \item{S.ini}{Initial value for the \eqn{S} parameter. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the interval [\code{S.low, S.up}]. Otherwise, it is equally spaced distributed between \code{S.low} and \code{S.up}.}
   \item{a.ini}{Initial value for the \eqn{a} parameter. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the interval [\code{a.low, a.up}]. Otherwise, it is equally spaced distributed between \code{a.low} and \code{a.up}.}
   \item{b.ini}{Initial value for the \eqn{b} parameter. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the interval [\code{b.low, b.up}]. Otherwise, it is equally spaced distributed between \code{b.low} and \code{b.up}.}
@@ -92,6 +96,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{Triangle_c4.ini}{Initial value for the \eqn{\Delta_{c4}}{Triangle_c4} parameter. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the interval [\code{Triangle_c4.low, Triangle_c4.up}]. Otherwise, it is equally spaced distributed between \code{Triangle_c4.low} and \code{Triangle_c4.up}.}
   \item{const.ini}{Initial value for the \eqn{c} parameter. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the interval [\code{const.low, const.up}]. Otherwise, it is equally spaced distributed between \code{const.low} and \code{const.up}.}
   \item{gamma.ini}{Initial value for the \eqn{\gamma_c}{gamma_c} parameter. The same value is used for all countries.}
+  \item{phase3.starting.values}{This parameter is used to provide a list for phase3 initial values, such as \code{mu.ini}. If the input is \code{NULL}, the default values will be used.}
   \item{proposal_cov_gammas}{Proposal for the gamma covariance matrices for each country. It should be a list with two values: \code{values} and \code{country_codes}. The structure corresponds to the object returned by the function \code{\link{get.cov.gammas}}. By default the covariance matrices are obtained using \code{data(proposal_cov_gammas_cii)}. This argument overwrite the defaults for countries contained the argument.}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible results.}
   \item{parallel}{Logical determining if the simulation should run multiple chains in parallel. If it is \code{TRUE}, the package \pkg{\link[snowFT]{snowFT}} is required. In such a case further arguments can be passed, see description of \dots.}
@@ -101,6 +106,11 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{auto.conf}{List containing a configuration for an \sQuote{automatic} run (see description of argument \code{iter}). Item \code{iter} gives the number of iterations in the first chunk of the MCMC simulation; item \code{iter.incr} gives the number of iterations in the following chunks; \code{nr.chains} gives the number of chains in all chunks of the MCMC simulation; items \code{thin} and \code{burnin} are used in the convergence diagnostics following each chunk; \code{max.loops} controls the maximum number of chunks. All items must be integer values. This argument is only used if the function argument \code{iter} is set to \sQuote{auto}.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{verbose.iter}{Integer determining how often (in number of iterations) log messages are outputted during the estimation.}
+  \item{uncertainty}{Logical: if \code{TRUE}, the model described with uncertainty of past TFR observations is considered. It will take the data from my.tfr.raw.file as the observations, estimate the distribution of these observations with respect to the true TFR. Then instead of treating the observed data as true data, assume true TFR are unknown and include an extra step for estimating past TFR.}
+  \item{my.tfr.raw.file}{File name of the raw TFR, used when uncertainty is \code{TRUE}. See details below.}
+  \item{iso.unbiased}{Countries whose Vital registration TFR estimates are considered unbiased with 0.0161 standard deviation. See details below.}
+  \item{covariates, cont_covariates}{Categorical and continuous features used in estimating bias and standard deviation. See details below.}
+  \item{ar.phase2}{Logical: \code{TRUE} implies that the autoregressive component on the residual (for Phase II) is considered as a global parameter. See details below.}
   \item{\dots}{Additional parameters to be passed to the function \code{\link[snowFT]{performParallel}}, if \code{parallel} is \code{TRUE}. For example \code{cltype} which is \sQuote{SOCK} by default but can be set to \sQuote{MPI}.}
   \item{chain.ids}{Array of chain identifiers that should be resumed. If it is \code{NULL}, all existing chains in \code{output.dir} are resumed.}
   }
@@ -130,7 +140,7 @@ The package contains a dataset called \file{my_tfr_template} (in \file{extdata} 
 L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
 }
 \author{
-	Hana Sevcikova, Leontine Alkema
+	Hana Sevcikova, Leontine Alkema, Peiran Liu
 }
 %\note{
 %%  ~~further notes~~

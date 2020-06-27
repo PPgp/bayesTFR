@@ -72,6 +72,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 								sigma.eps.ini=sigma.eps.ini, sigma.eps.ini.range=sigma.eps.ini.range,
 								compression.type=compression.type, buffer.size=buffer.size, auto.conf=auto.conf
 								), class='bayesTFR.mcmc.meta')	
+	bayesTFR.mcmc.meta$annual.simulation <- mc$meta$annual.simulation
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
 	meta <- bayesTFR.mcmc.meta
 	if(meta$nr.countries <= 0) return(NULL)

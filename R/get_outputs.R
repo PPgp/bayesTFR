@@ -237,7 +237,9 @@ get.bias.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim
   # Set mcmc.dir to NA, if the prediction object should not have a pointer 
   # to the corresponding mcmc traces.
   ############
-  data("iso3166")
+  e <- new.env()
+  data('iso3166', envir=e)
+  iso3166 <- e$iso3166
   if (is.null(mcmc.list)) 
     mcmc.list <- get.tfr.mcmc(sim.dir)
   if (is.null(mcmc.list)) {
@@ -264,7 +266,9 @@ get.std.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.
   # Set mcmc.dir to NA, if the prediction object should not have a pointer 
   # to the corresponding mcmc traces.
   ############
-  data("iso3166")
+  e <- new.env()
+  data('iso3166', envir=e)
+  iso3166 <- e$iso3166
   if (is.null(mcmc.list)) 
     mcmc.list <- get.tfr.mcmc(sim.dir)
   if (is.null(mcmc.list)) {
@@ -291,7 +295,9 @@ get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL,
   # Set mcmc.dir to NA, if the prediction object should not have a pointer 
   # to the corresponding mcmc traces.
   ############
-  data("iso3166")
+  e <- new.env()
+  data('iso3166', envir=e)
+  iso3166 <- e$iso3166
   if (is.null(mcmc.list)) 
     mcmc.list <- get.tfr.mcmc(sim.dir)
   if (is.null(mcmc.list)) {

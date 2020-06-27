@@ -31,8 +31,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
 						iso.unbiased=NULL, covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL, ar.phase2=FALSE, ...) 
 {
-
-	if(file.exists(output.dir)) {
+  if(file.exists(output.dir)) {
 		if(length(list.files(output.dir)) > 0 & !replace.output)
 			stop('Non-empty directory ', output.dir, 
 			' already exists.\nSet replace.output=TRUE if you want to overwrite existing results.')
@@ -152,11 +151,11 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	                         sigma.mu.prior.range=sigma.mu.prior.range, 
 	                         sigma.rho.prior.range=sigma.rho.prior.range,
 	                         sigma.eps.prior.range=sigma.eps.prior.range,
-	                         mu.ini = mu.ini, mu.ini.range=mu.ini.range, 
-	                         rho.ini=rho.ini, rho.ini.range=rho.ini.range, 
-	                         sigma.mu.ini=sigma.mu.ini, sigma.mu.ini.range=sigma.mu.ini.range,
-	                         sigma.rho.ini=sigma.rho.ini, sigma.rho.ini.range=sigma.rho.ini.range,
-	                         sigma.eps.ini=sigma.eps.ini, sigma.eps.ini.range=sigma.eps.ini.range,
+	                         mu.ini = get("mu.ini"), mu.ini.range=get("mu.ini.range"), 
+	                         rho.ini=get("rho.ini"), rho.ini.range=get("rho.ini.range"), 
+	                         sigma.mu.ini=get("sigma.mu.ini"), sigma.mu.ini.range=get("sigma.mu.ini.range"),
+	                         sigma.rho.ini=get("sigma.rho.ini"), sigma.rho.ini.range=get("sigma.rho.ini.range"),
+	                         sigma.eps.ini=get("sigma.eps.ini"), sigma.eps.ini.range=get("sigma.eps.ini.range"),
 	                         compression.type=compression.type, buffer.size=buffer.size, auto.conf=auto.conf
 	  ), class='bayesTFR.mcmc.meta')	
 	  store.bayesTFR.meta.object(meta, file.path(output.dir, 'phaseIII'))
@@ -189,7 +188,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 				assign(var, rep(get(var)[1], nr.chains))
 				}
 			}
-		}
+	}
 	if (parallel) { # run chains in parallel
 		chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc.run.chain, 
 						initfun=init.nodes, seed = seed, meta=bayesTFR.mcmc.meta, 
@@ -210,7 +209,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 		}
 	}
 	names(chain.set) <- 1:nr.chains
-	mcmc.set <- structure(list(meta=bayesTFR.mcmc.meta, mcmc.list=chain.set), class='bayesTFR.mcmc.set')
+	mcmc.set <- structure(list(meta=chain.set[[1]]$meta, mcmc.list=chain.set), class='bayesTFR.mcmc.set')
 	cat('\nResults stored in', output.dir,'\n')
 	
 	if(auto.run) {
@@ -420,6 +419,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		}
 	}
 	
+	meta <- mcmc.set$mcmc.list[[1]]$meta
 	if(length(Eini$index_DL) <= 0) {
 		cat('\nNo DL countries or regions. Nothing to be done.\n')
 		store.bayesTFR.meta.object(meta, meta$output.dir)
@@ -469,6 +469,7 @@ mcmc.run.chain.extra <- function(chain.id, mcmc.list, countries, posterior.sampl
 									iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 	return(mcmc)
 }
+
 
 init.nodes <- function() {
 	library(bayesTFR)

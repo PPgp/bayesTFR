@@ -14,6 +14,7 @@ importFrom("stats", "cov", "dnorm", "dunif", "lm", "mahalanobis", "median", "pga
 importFrom("utils", "read.delim", "read.table", "write.table")
 importFrom("stats", "aggregate", "as.formula", "predict", "residuals")
 importFrom("utils", "data", "read.csv")
+importFrom("data.table", "data.table")
 
 # export functions
 export(

@@ -75,11 +75,11 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     
   if(is.null(mcenv$eps_Tc)) 
   {
-    if (mcenv$meta$ar.phase2) mcenv$eps_Tc <- get_eps_T_all(mcmc, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
+    if (!is.null(mcenv$meta$ar.phase2) && mcenv$meta$ar.phase2) 
+      mcenv$eps_Tc <- get_eps_T_all(mcmc, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
     else mcenv$eps_Tc <- get_eps_T_all(mcmc, matrix.name=matrix.name)
   }
     
-	
 	if(has_extra_countries) {
 		if (verbose)
 			cat('\nCountries', mcmc$meta$regions$country_code[(nr_countries+1):nr_countries_all], 
@@ -94,9 +94,10 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     for (country in 1:nr_countries_all){
     	# could exclude 1:(tau_c-1) here
       this.data <- array(dim = mcenv$meta$T_end_c[country] - 1)
-    	this.data[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)] <- 
-    	  get.observed.tfr(country, mcenv$meta, matrix.name=matrix.name)[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)]
-    	
+      if (country %in% id_DL)
+      	this.data[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)] <- 
+      	  get.observed.tfr(country, mcenv$meta, matrix.name=matrix.name)[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)]
+      	
     	mcenv$data.list[[country]] <- this.data
     	mcenv$add_to_sd_Tc[1:(mcenv$meta$T_end_c[country]-1),country] <- (
         			this.data - mcenv$S_sd)*ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
