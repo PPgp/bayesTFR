@@ -103,7 +103,8 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	dl.p1=dl.p1, dl.p2=dl.p2, 
 					 	proposal_cov_gammas = proposal_cov_gammas,
 					 	buffer.size=buffer.size, compression.type=compression.type, 
-					 	auto.conf=auto.conf, verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2)
+					 	auto.conf=auto.conf, package.version = packageVersion("bayesTFR"),
+						verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2)
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
 	
 	starting.values <- NULL

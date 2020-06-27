@@ -439,7 +439,10 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 	values <- c()
  	valnames <- c()
  	loaded.files <- c()
- 	compr.settings <- .get.compression.settings(mcmc$compression.type)
+ 	if(is.null(mcmc$meta$package.version) || mcmc$meta$package.version < "7.0.0") 
+ 	    compr.settings <- .get.compression.settings.obsolete(mcmc$compression.type)
+ 	else
+ 	    compr.settings <- .get.compression.settings(mcmc$compression.type)
  	for(name in par.names) {
  		if(lbacktran.names > 0) {
  			new.has.backtran <- backtran.names %in% sapply(backtran.names.l, function(x) substr(name, 1, x))
@@ -471,18 +474,22 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
  		#file.name <- paste(name.to.load, file.postfix, '.txt.bz2',sep='')
  		file.name <- paste(name.to.load, file.postfix, '.txt', compr.settings[2], sep='') 		
  		if (any(file.name == loaded.files)) next
- 		#con <- bzfile(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name), open="rb")
- 		#con <- file(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name), open="r")
- 		con <- do.call(compr.settings[1], list(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name), 
+ 		if(is.null(mcmc$meta$package.version) || mcmc$meta$package.version < "7.0.0" || 
+ 		   compr.settings[1] %in% c("xzfile", "bzfile")) { # old ways of reading files
+ 		    #con <- bzfile(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name), open="rb")
+ 		    #con <- file(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name), open="r")
+ 		    con <- do.call(compr.settings[1], list(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name), 
  								open=paste("r", compr.settings[3], sep='')))
- 		if(compr.settings[3]=='b')  # binary connection
- 			raw.con <- textConnection(readLines(con))
- 		else raw.con <- con
- 		#close(con)
-		vals <- as.matrix(read.table(file = raw.con))
-		close(raw.con)
-		#vals <- as.matrix(read.table(file = con))
-		if(compr.settings[3]=='b') close(con)
+ 		    if(compr.settings[3]=='b')  # binary connection
+ 		    	raw.con <- textConnection(readLines(con))
+ 		    #else raw.con <- con
+ 		    #close(con)
+		    vals <- as.matrix(read.table(file = raw.con))
+		    close(raw.con)
+		    #vals <- as.matrix(read.table(file = con))
+		    if(compr.settings[3]=='b') close(con)
+ 		} else # new way of reading files using data.table
+ 		    vals <- as.matrix(data.table::fread(file.path(mcmc$meta$output.dir, mcmc$output.dir, file.name)))
 		loaded.files <- c(loaded.files, file.name)
 		if (dim(vals)[2] > 1) { #2d parameters get postfix
 			valnames <- c(valnames, paste(name.to.load, '_', 1:dim(vals)[2], par.names.postfix, sep=''))
