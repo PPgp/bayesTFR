@@ -317,7 +317,7 @@ get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL,
   if (!is.null(probs))
   {
     tfr_quantile <- apply(tfr_table, 2, quantile, probs = probs)
-    tfr_quantile <- data.table(t(tfr_quantile))
+    tfr_quantile <- data.table::data.table(t(tfr_quantile))
     start.year <- mcmc.list$meta$start.year
     end.year <- mcmc.list$meta$present.year
     if (mcmc.list$meta$annual.simulation)
@@ -482,8 +482,8 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
  								open=paste("r", compr.settings[3], sep='')))
  		    if(compr.settings[3]=='b')  # binary connection
  		    	raw.con <- textConnection(readLines(con))
- 		    #else raw.con <- con
- 		    #close(con)
+ 		    else raw.con <- con
+ 		    # close(con)
 		    vals <- as.matrix(read.table(file = raw.con))
 		    close(raw.con)
 		    #vals <- as.matrix(read.table(file = con))
