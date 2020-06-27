@@ -220,23 +220,35 @@ store.mcmc3 <- local({
 
 })
 
+.get.compression.settings.obsolete <- function(compression.type='None') {
+    if(is.null(compression.type)) compression.type <- 'None'
+    return(switch(compression.type,
+                  None=c('file', '', ''),
+                  xz = c('xzfile', '.xz', 'b'),
+                  bz = c('bzfile', '.bz2','b'),
+                  gz = c('gzfile', '.gz', 'b')))
+}
 
 .get.compression.settings <- function(compression.type='None') {
 	if(is.null(compression.type)) compression.type <- 'None'
 	return(switch(compression.type,
-							None=c('file', '', ''),
+							None=c('none', '', ''),
 							xz = c('xzfile', '.xz', 'b'),
 							bz = c('bzfile', '.bz2','b'),
-							gz = c('gzfile', '.gz', 'b')))
+							gz = c('gzip', '.gz', '')))
 }
 
 do.write.values.into.file <- function(filename, data, mode, compression.type='None') {
 	cmd.suffix.mode <- .get.compression.settings(compression.type)
-	#con <- bzfile(filename, open=mode)
-	con <- do.call(cmd.suffix.mode[1], list(paste(filename, cmd.suffix.mode[2], sep=''), 
-				open=paste(mode, cmd.suffix.mode[3], sep='')))
-	write.table(data, file=con, row.names=FALSE, col.names = FALSE, sep=" ")
-	close(con)
+	if(cmd.suffix.mode[1] %in% c("xzfile", "bzfile")) {
+	    #con <- bzfile(filename, open=mode)
+	    con <- do.call(cmd.suffix.mode[1], list(paste(filename, cmd.suffix.mode[2], sep=''), 
+	    			open=paste(mode, cmd.suffix.mode[3], sep='')))
+	    write.table(data, file=con, row.names=FALSE, col.names = FALSE, sep=" ")
+	    close(con)
+	} else
+    data.table::fwrite(data.table::data.table(data), file = paste0(filename, cmd.suffix.mode[2]), 
+                       showProgress = FALSE, compress = cmd.suffix.mode[1], append = mode == "a", col.names = FALSE)
 }
 
 write.values.into.file.cindep <- function(par, data, output.dir, mode='w', compression.type='None') {
