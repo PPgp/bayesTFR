@@ -312,7 +312,15 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	if(uncertainty)
 	{
 	  if (is.null(my.tfr.raw.file)) my.tfr.raw.file <- file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv")
-	  raw.data <- read.csv(my.tfr.raw.file)
+	  file.type <- substr(my.tfr.raw.file, nchar(my.tfr.raw.file)-2, nchar(my.tfr.raw.file))
+	  if (file.type == 'txt')
+	    raw.data <- read.table(my.tfr.raw.file)
+	  else if (file.type == 'csv')
+	    raw.data <- read.csv(my.tfr.raw.file)
+	  else 
+	  {
+	    stop("File type not detectible. Please use txt or csv files.")
+	  }
 	  raw.data <- raw.data[raw.data$ISO.code %in% as.numeric(colnames(output$tfr_matrix_all)),]
 	  raw.data <- raw.data[raw.data$Year < meta$present.year,]
 	  raw.data <- raw.data[raw.data$Year > meta$start.year,]
