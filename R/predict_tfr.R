@@ -258,8 +258,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 
 	if (verbose) cat('Load hierarchical parameters.\n')
   
-  # browser()
-	alpha.vars <- paste('alpha_',1:3, sep='')
+  alpha.vars <- paste('alpha_',1:3, sep='')
 	delta.vars <- paste('delta_',1:3, sep='')
 	other.vars <- c('chi', 'psi', 'Triangle4', 'delta4')
 	cs.par.values_hier <- newPointer(get.tfr.parameter.traces(load.mcmc.set$mcmc.list, 

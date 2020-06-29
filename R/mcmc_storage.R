@@ -292,6 +292,11 @@ store.mcmc3 <- local({
 
 do.write.values.into.file <- function(filename, data, mode, compression.type='None') {
 	cmd.suffix.mode <- .get.compression.settings(compression.type)
+	# con <- do.call(cmd.suffix.mode[1], list(paste(filename, cmd.suffix.mode[2], sep=''), 
+	#                                         open=paste(mode, cmd.suffix.mode[3], sep='')))
+	# write.table(data, file=con, row.names=FALSE, col.names = FALSE, sep=" ")
+	# close(con)
+	# # return()
 	if(cmd.suffix.mode[1] %in% c("xzfile", "bzfile")) {
 	    #con <- bzfile(filename, open=mode)
 	    con <- do.call(cmd.suffix.mode[1], list(paste(filename, cmd.suffix.mode[2], sep=''), 

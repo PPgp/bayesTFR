@@ -317,6 +317,7 @@ get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL,
   if (!is.null(probs))
   {
     tfr_quantile <- apply(tfr_table, 2, quantile, probs = probs)
+    if (is.null(dim(tfr_quantile))) tfr_quantile <- matrix(tfr_quantile, nrow = 1)
     tfr_quantile <- data.table::data.table(t(tfr_quantile))
     start.year <- mcmc.list$meta$start.year
     end.year <- mcmc.list$meta$present.year
@@ -505,7 +506,7 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 		values <- cbind(values, vals)
 	} # end of loading loop
 	#stop('')
-	colnames(values) <- valnames
+ 	colnames(values) <- valnames
 	if(ltran.names == 0 && lbacktran.names == 0 ) return(values)
 	# get transformed variables (alpha, delta, gamma)
 	if(ltran.names > 0 && any(has.tran)) {
@@ -529,7 +530,7 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 	#stop('')
 	# get back-transformed variables (Triangle_c1-3)
 	if(lbacktran.names > 0 && any(has.backtran)) {
-		vals <- c()
+	  vals <- c()
 		for(i in 1:length(tobacktran.names)) {		
 			full.names <- grep(paste0(tobacktran.names[i],'_'), valnames, value=TRUE)
 			if (length(grep(paste0('^', tobacktran.names[i], '(_|$)'), valnames)) == 0) { # load gamma, U, Triangle_c4

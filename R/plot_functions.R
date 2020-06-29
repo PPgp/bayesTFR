@@ -154,25 +154,34 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     main = NULL, show.legend=TRUE, col=c('black', 'red', "#00000020"), ...
     ) 
 {	
-	if(class(mcmc.list) == 'bayesTFR.prediction') {
+  if(class(mcmc.list) == 'bayesTFR.prediction') {
 		if(!is.null(burnin) && burnin != mcmc.list$burnin)
 			warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin)
 		burnin <- 0 # because burnin was already cut of the traces
 	}
 	col <- .match.colors.with.default(col, c('black', 'red', "#00000020"))
 	if(is.null(burnin)) burnin <- 0
-    mcmc.list <- get.mcmc.list(mcmc.list)
-    meta <- mcmc.list[[1]]$meta
-    country.obj <- get.country.object(country, meta)
-    if(is.null(country.obj$code)) stop("Country ", country, " not found.")
-    country <- country.obj
+	  mcmc.list <- get.mcmc.list(mcmc.list)
+	  meta <- mcmc.list[[1]]$meta
+	  country.obj <- get.country.object(country, meta)
+	  if(is.null(country.obj$code)) stop("Country ", country, " not found.")
+	  country <- country.obj
+	  
+	if (!is.null(mcmc.list[[1]]$uncertainty) && mcmc.list[[1]]$uncertainty) 
+	{
+	  mcmc.list.tmp <- list(meta = meta, mcmc.list = mcmc.list)
+	  obs.data <- unlist(array(get.tfr.estimation(mcmc.list.tmp, country.obj$code, probs = 0.5)$tfr_quantile[,1]))
+	}
+  else
+	  obs.data <- get.observed.tfr(country$index, meta, 'tfr_matrix_observed', 'tfr_matrix_all')[1:meta$T_end_c[country$index]]
+	  
     #stop.if.country.not.DL(country, meta)
     tfr_plot <- seq(0, tfr.max, 0.1)
     dlc <- tfr.get.dlcurves(tfr_plot, mcmc.list, country$code, country$index, burnin, nr.curves, 
     						predictive.distr=predictive.distr)
     miny <- min(dlc)
     maxy <- max(dlc)
-    obs.data <- get.observed.tfr(country$index, meta, 'tfr_matrix_observed', 'tfr_matrix_all')[1:meta$T_end_c[country$index]]
+      
     decr <- -diff(obs.data)
     dl.obs.idx <- if(max(meta$tau_c[country$index],1) >= meta$lambda_c[country$index]) c()
     				else seq(max(meta$tau_c[country$index],1), meta$lambda_c[country$index]-1)
