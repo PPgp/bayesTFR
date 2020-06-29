@@ -8,7 +8,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						min.tfr=0.5, use.correlation=FALSE,
 						save.as.ascii=1000, output.dir = NULL,
 						low.memory=TRUE,
-						seed=NULL, verbose=TRUE, ...) {
+						seed=NULL, verbose=TRUE, uncertainty=FALSE, ...) {
 	if(!is.null(mcmc.set)) {
 		if (class(mcmc.set) != 'bayesTFR.mcmc.set') {
 			stop('Wrong type of mcmc.set. Must be of type bayesTFR.mcmc.set.')
@@ -16,6 +16,10 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 	} else {		
 		mcmc.set <- get.tfr.mcmc(sim.dir, low.memory=low.memory, verbose=verbose)
 	}
+  if (uncertainty)
+  {
+    if (is.null(mcmc.set$mcmc.list[[1]]$uncertainty) || !mcmc.set$mcmc.list[[1]]$uncertainty) uncertainty <- FALSE
+  }
 	has.phase3 <- FALSE
 	if(use.tfr3) {
 	  has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
@@ -49,7 +53,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 					start.year=start.year, nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, burnin3=burnin3,
 					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1, min.tfr=min.tfr, use.correlation=use.correlation,
 					save.as.ascii=save.as.ascii,
-					output.dir=output.dir, verbose=verbose, ...))			
+					output.dir=output.dir, verbose=verbose, uncertainty=uncertainty, ...))			
 }
 
 .find.burnin.nr.traj.from.diag <- function(diag.list, verbose = FALSE) {
@@ -82,8 +86,7 @@ get.burnin.nrtraj.from.diagnostics <- function(sim.dir, ...) {
 }
 
 tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-					prediction.dir=sim.dir, countries = NULL, save.as.ascii=1000, verbose=TRUE, uncertainty=FALSE, 
-					save.only.extra.countries=uncertainty) {
+					prediction.dir=sim.dir, countries = NULL, save.as.ascii=1000, verbose=TRUE, uncertainty=FALSE) {
 	# Run prediction for given countries/regions (as codes). If they are not given it will be set to countries 
 	# for which there are MCMC results but no prediction.
 	# It is to be used after running run.tfr.mcmc.extra

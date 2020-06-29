@@ -126,6 +126,10 @@ The function loads observed data (further denoted as WPP dataset) from the \code
 	
 For simulation of the hyperparameters of the Bayesian hierarchical model, all countries are used that are included in the WPP dataset, possibly complemented by the \code{my.tfr.file}, that have \code{include_code} equal to 2. The hyperparameters are used to simulate country-specific parameters, which is done for all countries with \code{include_code} equal 1 or 2. The following values of \code{include_code} in \code{my.tfr.file} are recognized: -1 (do not overwrite the default include code), 0 (ignore), 1 (include in prediction but not estimation), 2 (include in both, estimation and prediction). Thus, the set of countries included in the estimation and prediction can be fully user-specific.
 
+The parameter \code{uncertainty} is set to control whether past TFR is set to be precise, or need to be estimated based on raw data. If \code{uncertainty=TRUE}, an extra layer for the raw TFR observations (input by \code{my.tfr.raw.file}) will be input in the Bayesian hierarchical model, and the past TFR will be considered unknown and will be estimated and stored in \code{output.dir}. The detail model is described in Liu and Raftery (2018). The covariates, cont_covariates for categorical and continuous features for estimating bias and standard deviation of past TFR observations. The user could also set \code{iso.unbiased} to some countries, and these countries will estimate their past VR records to be 0 bias and 0.0161 standard deviation.
+
+If users has set \code{annual=TRUE}, which implies using annual data for training the model, the parameter \code{ar.phase2} will be activated. If \code{ar.phase2} is set to be true, then the model of phase II will change from \eqn{d_{c,t} = g_{c,t} + \epsilon_{c,t}} to \eqn{d_{c,t}-g_{c,t} = \phi(d_{c,t-1}-g_{c,t-1}) + \epsilon_{c,t}}. \eqn{\phi} is considered as country-independent and is coded with \code{rho_phase2}.
+
 Optionally, \code{my.tfr.file} can contain a column called \code{last.observed} containing the year of the last observation for each country. In such a case, the code would ignore any data after that time point. Furthermore, the function \code{\link{tfr.predict}} fills in the missing values using the median of the BHM procedure (stored in \code{tfr_matrix_reconstructed} of the \code{\link{bayesTFR.prediction}} object). For \code{last.observed} values that are below a middle year of a time interval \eqn{[t_i, t_{i+1}]} (computed as \eqn{t_i+3}) the last valid data point is the time interval \eqn{[t_{i-1}, t_i]}, whereas for values larger equal a middle year, the data point in \eqn{[t_i, t_{i+1}]} is valid.
 
 The package contains a dataset called \file{my_tfr_template} (in \file{extdata} directory) which is a template for user-specified \code{my.tfr.file}.
@@ -138,6 +142,8 @@ The package contains a dataset called \file{my_tfr_template} (in \file{extdata} 
 }
 \references{
 L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
+
+P. Liu, and A. E. Raftery. \href{https://arxiv.org/pdf/1806.01513.pdf}{Accounting for Uncertainty About Past Values In Probabilistic Projections of the Total Fertility Rate for All Countries.} arXiv preprint arXiv:1806.01513 (2018).
 }
 \author{
 	Hana Sevcikova, Leontine Alkema, Peiran Liu

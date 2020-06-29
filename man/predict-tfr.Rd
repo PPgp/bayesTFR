@@ -17,7 +17,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
     use.diagnostics = FALSE, use.tfr3 = TRUE, burnin3 = 2000,
     mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016, min.tfr = 0.5,
     use.correlation = FALSE, save.as.ascii = 1000, output.dir = NULL, 
-    low.memory = TRUE, seed = NULL, verbose = TRUE, \dots)
+    low.memory = TRUE, seed = NULL, verbose = TRUE, uncertainty = FALSE, \dots)
 }
 
 \arguments{
@@ -42,6 +42,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
   \item{use.correlation}{Logical. If \code{TRUE} the model errors are sampled jointly for all countries (Fosdick and Raftery, 2014).}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible projections.}
   \item{verbose}{Logical switching log messages on and off.}
+  \item{uncertainty}{Logical. If the MCMC steps has considered uncertainty of past TFR and \code{uncertainty=TRUE}, starting point of prediction trajectories will be the last estimated trajectories of TFR. Otherwise, it will use last observed TFR as starting point of prediction.}
   \item{\dots}{Further arguments passed to the underlying functions.}
 }
 \details{

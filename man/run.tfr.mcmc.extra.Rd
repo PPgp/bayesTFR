@@ -12,7 +12,9 @@ run.tfr.mcmc.extra(sim.dir = file.path(getwd(), "bayesTFR.output"),
     countries = NULL, my.tfr.file = NULL, 
     iter = NULL, thin = 1, burnin = 2000,
     parallel = FALSE, nr.nodes = NULL,  my.locations.file = NULL,
-    verbose = FALSE, verbose.iter = 100, ...)
+    verbose = FALSE, verbose.iter = 100, uncertainty=FALSE, 
+    my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL),
+    iso.unbiased=NULL, covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL, ...)
 }
 \arguments{
   \item{sim.dir}{
@@ -43,6 +45,10 @@ Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes fo
 Logical switching log messages on and off.
 }
 \item{verbose.iter}{Integer determining how often (in number of iterations) log messages are outputted during the estimation.}
+\item{uncertainty}{Whether past TFR uncertainty is considered. If past TFR uncertainty is considered, countries listed in \code{countries} will be re-simulated with the model account for past TFR estimation. It will take the data from my.tfr.raw.file as the observations, estimate the distribution of these observations with respect to the true TFR. Then instead of treating the observed data as true data, assume true TFR are unknown and include an extra step for estimating past TFR.}
+\item{my.tfr.raw.file}{File name of the raw TFR, used when uncertainty is \code{TRUE}. See details in \code{run.tfr.mcmc}.}
+\item{iso.unbiased}{Countries whose Vital registration TFR estimates are considered unbiased with 0.0161 standard deviation. See details in \code{run.tfr.mcmc}.}
+\item{covariates, cont_covariates}{Categorical and continuous features used in estimating bias and standard deviation. See details in \code{run.tfr.mcmc}.}
 \item{\dots}{Additional parameters to be passed to the function \code{\link[snowFT]{performParallel}}, if \code{parallel} is \code{TRUE}.}
 }
 \details{
