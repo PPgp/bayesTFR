@@ -304,7 +304,7 @@ do.write.values.into.file <- function(filename, data, mode, compression.type='No
 	    write.table(data, file=con, row.names=FALSE, col.names = FALSE, sep=" ")
 	    close(con)
 	} else
-    data.table::fwrite(data.table::data.table(data), file = paste0(filename, cmd.suffix.mode[2]), 
+    data.table::fwrite(data.table::data.table(data), file = paste0(filename, cmd.suffix.mode[2]), sep = "\t",
                        showProgress = FALSE, compress = cmd.suffix.mode[1], append = mode == "a", col.names = FALSE)
 }
 
