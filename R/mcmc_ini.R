@@ -314,6 +314,8 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	  if (is.null(my.tfr.raw.file)) my.tfr.raw.file <- file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv")
 	  raw.data <- read.csv(my.tfr.raw.file)
 	  raw.data <- raw.data[raw.data$ISO.code %in% as.numeric(colnames(output$tfr_matrix_all)),]
+	  raw.data <- raw.data[raw.data$Year < meta$present.year,]
+	  raw.data <- raw.data[raw.data$Year > meta$start.year,]
 	  output$raw_data.original <- raw.data
 	  output$raw_data.original <- merge(output$raw_data.original, 
 	                                    data.frame(ISO.code=tfr.with.regions$regions$country_code, country_index = 1:nr_countries), 
