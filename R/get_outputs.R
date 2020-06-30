@@ -138,7 +138,6 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	if (uncertainty) par.names.cs <- c(par.names.cs, 'tfr')
 	for (country in mcmc.set$meta$id_DL){
 		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
-		# if (country == 11) {browser()}
 		for (par in par.names.cs) {
 			values <- get.tfr.parameter.traces.cs(mcmc.set$mcmc.list, country.obj, par, 
 											burnin=burnin, thinning.index=thin.index)

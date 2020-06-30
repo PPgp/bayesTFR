@@ -136,8 +136,11 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('Dat
 {
   mcmc$meta$raw_data.original$bias <- NA
   mcmc$meta$raw_data.original$std <- NA
-  mcmc$meta$bias_model <- list()
-  mcmc$meta$std_model <- list()
+  if (is.null(mcmc$meta$bias_model))
+  {
+    mcmc$meta$bias_model <- list()
+    mcmc$meta$std_model <- list()
+  }
   for(country in 1:mcmc$meta$nr_countries)
   {
     ISO.code <- get.country.object(country, meta=mcmc$meta, index=TRUE)
@@ -162,7 +165,7 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('Dat
       {
         covariate <- cont_covariates[i]
         assign(paste0('cont_covariate_', i), mcmc$meta$raw_data.original[index.by.country, covariate])
-        if (max(get('cont_covariate_', i)) - min(get('cont_covariate_', i)) > 1e-6)
+        if (max(get(paste0('cont_covariate_', i))) - min(get(paste0('cont_covariate_', i))) > 1e-6)
         {
           regressor <- paste0(regressor, ' + cont_covariate_', i)
         }

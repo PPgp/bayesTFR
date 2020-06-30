@@ -365,6 +365,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
 								iso.unbiased=NULL, covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL, ...) {
   mcmc.set <- get.tfr.mcmc(sim.dir)
+  meta.old <- mcmc.set$meta
   Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, 
 												my.locations.file=my.locations.file, burnin=burnin, verbose=verbose, uncertainty=uncertainty, 
 												my.tfr.raw.file=my.tfr.raw.file)

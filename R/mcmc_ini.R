@@ -314,9 +314,9 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	  if (is.null(my.tfr.raw.file)) my.tfr.raw.file <- file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv")
 	  file.type <- substr(my.tfr.raw.file, nchar(my.tfr.raw.file)-2, nchar(my.tfr.raw.file))
 	  if (file.type == 'txt')
-	    raw.data <- read.table(my.tfr.raw.file)
+	    raw.data <- read.delim(my.tfr.raw.file, sep='\t')
 	  else if (file.type == 'csv')
-	    raw.data <- read.csv(my.tfr.raw.file)
+	    raw.data <- read.delim(my.tfr.raw.file, sep=',')
 	  else 
 	  {
 	    stop("File type not detectible. Please use txt or csv files.")
