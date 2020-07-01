@@ -43,7 +43,7 @@ store.mcmc <- local({
 			}
 		}
 	  
-		if ('tfr_all' %in% names(mcmc$meta))
+		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
 		{
 		  for (country in country.index){
 		    result <- mcmc$meta[['tfr_all']][, country]
@@ -78,7 +78,7 @@ store.mcmc <- local({
 			}
 		}
 		
-		if ('tfr_all' %in% names(mcmc$meta))
+		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
 		{
 		  for (country in country.index){
 		    v <- mcmc$meta[['tfr_all']][, country]
@@ -134,7 +134,7 @@ store.mcmc <- local({
 											compression.type=mcmc$compression.type)
 			}
 		}
-		if ('tfr' %in% names(buffer.cs))
+		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
 		{
 		  for (country in country.index){
 		    if (counter == 1) {

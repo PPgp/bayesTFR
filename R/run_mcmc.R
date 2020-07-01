@@ -366,6 +366,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								iso.unbiased=NULL, covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL, ...) {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta.old <- mcmc.set$meta
+  
   Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, 
 												my.locations.file=my.locations.file, burnin=burnin, verbose=verbose, uncertainty=uncertainty, 
 												my.tfr.raw.file=my.tfr.raw.file)
@@ -390,6 +391,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	meta <- Eini$meta
 	chain.ids <- names(mcmc.set$mcmc.list)
 	mcthin <- 1
+	
 	if(verbose) cat('\n')
 	for (chain in chain.ids) { # update meta in each chain
 		if(verbose) cat('Updating meta in chain', chain, '\n')
@@ -418,6 +420,17 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		{
 		  mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff.original(mcmc.set$mcmc.list[[chain]])
 		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]], iso.unbiased, covariates, cont_covariates)
+		  if (is.null(mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra)) mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra <- list()
+		  for (country in countries)
+		  {
+		    df_country <- mcmc.set$mcmc.list[[chain]]$meta$raw_data.original
+		    country.obj <- get.country.object(country, meta.old)
+		    if (!is.null(country.obj$index))
+		    {
+		      df_country <- df_country[df_country$ISO.code == country,]
+		      mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra[[country.obj$index]] <- df_country
+		    }
+		  }
 		}
 	}
 	
@@ -449,7 +462,25 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 												burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 		}
 	}
-	store.bayesTFR.meta.object(meta, meta$output.dir)
+	if(uncertainty)
+	{
+	  if (!dir.exists(file.path(meta$output.dir, 'extra.meta'))) dir.create(file.path(meta$output.dir, 'extra.meta'))
+	  if (!dir.exists(file.path(meta$output.dir, 'extra.meta', countries[1]))) dir.create(file.path(meta$output.dir, 'extra.meta', countries[1]))
+	  store.bayesTFR.meta.object(meta, file.path(meta$output.dir, 'extra.meta', countries[1]))
+	  for (name in c("country.ind.by.year", "ind.by.year", "id_phase1_by_year", "id_phase2_by_year", "id_phase3_by_year", 
+	                 "id_phase3", "nr.countries"))
+	  {
+	    meta[[name]] <- meta.old[[name]]
+	  }
+	  if (is.null(meta[['extra']])) meta[['extra']] <- c()
+	  for (country in countries)
+	  {
+	    country.idx <- get.country.object(country, meta.old)$index
+	    if (!is.null(country.idx)) meta[['extra']] <- c(meta[['extra']], country.idx)
+	  }
+	  meta[['extra']] <- sort(unique(meta[['extra']]))
+	}
+	store.bayesTFR.meta.object(meta, file.path(meta$output.dir))
 	mcmc.set$meta <- meta
 	cat('\n')
 	invisible(mcmc.set)
