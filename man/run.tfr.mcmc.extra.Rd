@@ -10,7 +10,7 @@ Run MCMC for extra countries, areas or regions. It uses the posterior distributi
 \usage{
 run.tfr.mcmc.extra(sim.dir = file.path(getwd(), "bayesTFR.output"), 
     countries = NULL, my.tfr.file = NULL, 
-    iter = NULL, thin = 1, burnin = 2000,
+    iter = NULL, thin = 1, thin.extra = 1, burnin = 2000,
     parallel = FALSE, nr.nodes = NULL,  my.locations.file = NULL,
     verbose = FALSE, verbose.iter = 100, uncertainty=FALSE, 
     my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL),
@@ -30,6 +30,9 @@ Number of iterations to be used for sampling from the posterior distribution of 
 }
   \item{thin}{
 Thinning interval for sampling from the posterior distribution of the hyperparameters.
+}
+  \item{thin.extra}{
+Thinning interval for the MCMC run for extra countries.
 }
   \item{burnin}{
 Number of iterations discarded before sampling from the posterior distribution of the hyperparameters. It is also used when computing proposal of gamma covariance matrices (see \code{\link{get.cov.gammas}}).

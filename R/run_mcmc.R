@@ -128,8 +128,6 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	  else {sigma.rho.prior.range <- c(1e-5,0.289)}
 	  if ('sigma.eps.prior.range' %in% names(phase3.parameter)) {sigma.eps.prior.range <- phase3.parameter[['sigma.eps.prior.range']]}
 	  else {sigma.eps.prior.range <- c(1e-5, 0.5)}
-	  if ('use.extra.countries' %in% names(phase3.parameter)) {use.extra.countries <- phase3.parameter[['use.extra.countries']]}
-	  else {use.extra.countries <- FALSE}
 	  
 	  for (varname in c('mu', 'rho', 'sigma.mu', 'sigma.rho', 'sigma.eps'))
 	  {
@@ -143,7 +141,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	      assign(paste0(varname, '.ini'), get.init.values(get(paste0(varname, '.prior.range'))))
 	    }
 	  }
-	  c.index <- 1: (if(use.extra.countries) get.nr.countries(bayesTFR.mcmc.meta) else get.nrest.countries(bayesTFR.mcmc.meta))
+	  c.index <- 1:get.nr.countries(bayesTFR.mcmc.meta)
 	  meta <- structure(list(nr.chains=nr.chains,
 	                         my.tfr.file=my.tfr.file, output.dir=output.dir,
 	                         phase=3, id_phase3 = which(bayesTFR.mcmc.meta$lambda_c[c.index] < bayesTFR.mcmc.meta$T_end_c[c.index]),
@@ -359,7 +357,7 @@ mcmc.continue.chain <- function(chain.id, mcmc.list, iter, verbose=FALSE, verbos
 
 run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 								countries = NULL, my.tfr.file = NULL, iter = NULL,
-								thin=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
+								thin=1, thin.extra=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
 								my.locations.file = NULL,
 								verbose=FALSE, verbose.iter=100, uncertainty=FALSE, 
 								my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
@@ -420,6 +418,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		{
 		  mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff.original(mcmc.set$mcmc.list[[chain]])
 		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]], iso.unbiased, covariates, cont_covariates)
+		  mcmc.set$mcmc.list[[chain]]$eps_unc <- list()
 		  if (is.null(mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra)) mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra <- list()
 		  for (country in countries)
 		  {
@@ -429,6 +428,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		    {
 		      df_country <- df_country[df_country$ISO.code == country,]
 		      mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra[[country.obj$index]] <- df_country
+		      mcmc.set$mcmc.list[[chain]]$eps_unc[[country.obj$index]] <- df_country$eps
 		    }
 		  }
 		}
@@ -451,14 +451,14 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
 		chain.list <- bDem.performParallel(nr.nodes, chain.ids, mcmc.run.chain.extra, 
 						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, countries=Eini$index_DL, 
-						posterior.sample=post.idx, iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, 
+						posterior.sample=post.idx, iter=iter, thin = thin.extra, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, 
 						uncertainty=uncertainty, ...)
 		for (i in 1:length(chain.ids))
 			mcmc.set$mcmc.list[[chain.ids[i]]] <- chain.list[[i]]
 	} else { # run chains sequentially
 		for (chain.id in chain.ids) {
 			mcmc.set$mcmc.list[[chain.id]] <- mcmc.run.chain.extra(chain.id, mcmc.set$mcmc.list, 
-												countries=Eini$index_DL, posterior.sample=post.idx, iter=iter,  
+												countries=Eini$index_DL, posterior.sample=post.idx, iter=iter, thin = thin.extra,
 												burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 		}
 	}
@@ -473,10 +473,17 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	    meta[[name]] <- meta.old[[name]]
 	  }
 	  if (is.null(meta[['extra']])) meta[['extra']] <- c()
+	  if (is.null(meta[['extra_iter']])) meta[['extra_iter']] <- numeric(get.nrest.countries(meta.old))
+	  if (is.null(meta[['extra_thin']])) meta[['extra_thin']] <- numeric(get.nrest.countries(meta.old))
 	  for (country in countries)
 	  {
 	    country.idx <- get.country.object(country, meta.old)$index
-	    if (!is.null(country.idx)) meta[['extra']] <- c(meta[['extra']], country.idx)
+	    if (!is.null(country.idx)) 
+	    {
+	      meta[['extra']] <- c(meta[['extra']], country.idx)
+	      meta[['extra_iter']][country.idx] <- iter
+	      meta[['extra_thin']][country.idx] <- thin.extra
+	    }
 	  }
 	  meta[['extra']] <- sort(unique(meta[['extra']]))
 	}
@@ -487,7 +494,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 }
 	
 mcmc.run.chain.extra <- function(chain.id, mcmc.list, countries, posterior.sample, 
-												iter=NULL, burnin=2000, verbose=FALSE, verbose.iter=100, uncertainty=FALSE) {
+												iter=NULL, burnin=2000, thin=1, verbose=FALSE, verbose.iter=100, uncertainty=FALSE) {
 	cat('\n\nChain nr.', chain.id, '\n')
 	if (verbose)
 		cat('************\n')
@@ -499,7 +506,7 @@ mcmc.run.chain.extra <- function(chain.id, mcmc.list, countries, posterior.sampl
 
 	mcmc <- tfr.mcmc.sampling.extra(mcmc, mcmc.list=mcmc.list, countries=countries, 
 									posterior.sample=posterior.sample, 
-									iter=iter, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
+									iter=iter, burnin=burnin, thin=thin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 	return(mcmc)
 }
 

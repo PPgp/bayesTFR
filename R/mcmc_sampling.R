@@ -360,7 +360,7 @@ unblock.gtk <- function(option, options.list=NULL) {
 }
 
 tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample,
-											 iter=NULL, burnin=2000, verbose=FALSE, verbose.iter=100, uncertainty=FALSE) {
+											 iter=NULL, thin = 1, burnin=2000, verbose=FALSE, verbose.iter=100, uncertainty=FALSE) {
 	#run mcmc sampling for countries given by the index 'countries'
   nr_simu <- iter
 	if (is.null(iter))
@@ -560,11 +560,14 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
  		    
  		    if (uncertainty)
  		    {
- 		      mcmc.update.tfr.year(mcenv, countries)
- 		      # for (country in 1:nr_countries)
- 		      # {
- 		      #   mcmc.update.tfr(countries[country], mcenv)
- 		      # }
+ 		      if (length(countries) > 3) mcmc.update.tfr.year(mcenv, countries)
+ 		      else
+ 		      {
+ 		        for (country in countries)
+ 		        {
+ 		          mcmc.update.tfr(country, mcenv)
+ 		        }
+ 		      }
  		    }
 
          ################################################################### 
@@ -580,17 +583,18 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
  		    }
          flush.buffer <- FALSE
          append <- TRUE
-		 if (simu == 1) {
+		 if (simu <= thin) {
 			append <- FALSE
 			flush.buffer <- TRUE
 		 } else {
-			if (simu + 1 > nr_simu) flush.buffer <- TRUE
+			if (simu + thin > nr_simu) flush.buffer <- TRUE
 		 }
+         if (simu %% thin == 0){
          store.mcmc(mcmc.orig, append=append, flush.buffer=flush.buffer, countries=countries, 
          				verbose=verbose)
          if (uncertainty && (length(mcmc.orig$meta$id_phase3)>0)) 
            store.mcmc3(mcmc.orig, append=append, flush.buffer=flush.buffer, countries=1:length(mcmc.orig$meta$id_phase3), 
-                                      verbose=verbose)
+                                      verbose=verbose)}
          
 	}       # end simu loop MCMC
 	mcmc.orig <- .cleanup.mcmc(mcmc.orig)

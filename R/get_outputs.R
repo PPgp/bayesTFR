@@ -138,9 +138,28 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	if (uncertainty) par.names.cs <- c(par.names.cs, 'tfr')
 	for (country in mcmc.set$meta$id_DL){
 		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
+		if (country.obj$index %in% mcmc.set$meta$extra)
+		{
+		  nr.points.cs <- floor(mcmc.set$meta$extra_iter[country.obj$index] / mcmc.set$meta$extra_thin[country.obj$index])
+		  nr.points.cs <- nr.points.cs * length(mcmc.set$mcmc.list)
+		  if (nr.points.cs >= nr.points) thin.index.cs <- round(seq(1, nr.points.cs, length.out = nr.points))
+		  else 
+		  {
+		    warning('Country ',country.obj$index,' has less stored iterations. Samples are used repeatedly.\n')
+		    thin.index.cs <- rep(1:nr.points.cs, ceiling(nr.points/nr.points.cs))[1:nr.points]
+		  }
+		}
 		for (par in par.names.cs) {
-			values <- get.tfr.parameter.traces.cs(mcmc.set$mcmc.list, country.obj, par, 
-											burnin=burnin, thinning.index=thin.index)
+		  if (country.obj$index %in% mcmc.set$meta$extra)
+		  {
+		    values <- get.tfr.parameter.traces.cs(mcmc.set$mcmc.list, country.obj, par, 
+		                                          burnin=burnin, thinning.index=thin.index.cs)
+		  }
+		  else
+		  {
+		    values <- get.tfr.parameter.traces.cs(mcmc.set$mcmc.list, country.obj, par, 
+		                                          burnin=burnin, thinning.index=thin.index)
+		  }
 			write.values.into.file.cdep(par, values, outdir.thin.mcmc, country.code=country.obj$code,
 										compression.type=thinned.mcmc$compression.type)
 		}
@@ -714,12 +733,24 @@ do.get.tfr.parameter.traces <- function(is.cs, mcmc.list, par.names, country.obj
 	at.iter <- 1
 	for(mcmc in mcmc.list) {
 		this.thinning.index <- NULL
-		th.burnin <- get.thinned.burnin(mcmc, burnin)
+		if (!is.null(country.obj) && country.obj$index %in% mcmc$meta$extra)
+		{
+		  th.burnin <- ceiling(burnin / mcmc$meta$extra_thin[country.obj$index])
+		}
+		else
+		{
+		  th.burnin <- get.thinned.burnin(mcmc, burnin)
+		}
 		if(!is.null(thinning.index)) {
+		  step.size <- mcmc$length
+		  if (!is.null(country.obj) && country.obj$index %in% mcmc$meta$extra)
+		  {
+		    step.size <- floor(mcmc$meta$extra_iter[country.obj$index] /mcmc$meta$extra_thin[country.obj$index])
+		  }
 			this.thinning.index <- thinning.index[(thinning.index >= at.iter) & 
-									(thinning.index < at.iter+mcmc$length-th.burnin)] - at.iter+1
+									(thinning.index < at.iter+step.size-th.burnin)] - at.iter+1
 			if (length(this.thinning.index) == 0) {
-				at.iter <- at.iter+mcmc$length-th.burnin
+				at.iter <- at.iter+step.size-th.burnin
 				next
 			}
 		}
@@ -734,7 +765,11 @@ do.get.tfr.parameter.traces <- function(is.cs, mcmc.list, par.names, country.obj
             		  else get.burned.tfr.traces(mcmc, par.names, th.burnin, thinning.index=this.thinning.index)
         }
        	values <- rbind(values, traces)
-       	at.iter <- at.iter+mcmc$length-th.burnin
+       	if(!is.null(thinning.index))
+       	{
+       	  at.iter <- at.iter + step.size - th.burnin
+       	}
+       	else at.iter <- at.iter+mcmc$length-th.burnin
     }
     return(values)
 }

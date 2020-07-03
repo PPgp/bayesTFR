@@ -184,6 +184,18 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	burn <- if(is.mcmc.set.thinned) 0 else burnin
 	total.iter <- get.total.iterations(mcmc.set$mcmc.list, burn)
 	stored.iter <- get.stored.mcmc.length(mcmc.set$mcmc.list, burn)
+	if (!is.null(mcmc.set$meta$extra) && !is.null(countries)) 
+	{
+	  stored.iter.extra <- stored.iter
+	  for (country in mcmc.set$meta$extra)
+	  {
+	    if (country %in% countries)
+	    {
+	      stored.iter.extra <- min(stored.iter.extra, 
+	                               floor((mcmc.set$meta$extra_iter[country] - burn) / mcmc.set$meta$extra_thin[country]) * length(mcmc.set$mcmc.list))
+	    }
+	  }
+	}
 	mcthin <- max(sapply(mcmc.set$mcmc.list, function(x) x$thin))
 	if(!is.null(nr.traj) && !is.null(thin)) {
 		warning('Both nr.traj and thin are given. Argument thin will be ignored.')
@@ -288,8 +300,20 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		sigmaAR1 <- mean(m3.par.values[,'sigma.eps'])
 		mu.c.mean <- rho.c.mean <- rep(NA, nr_countries)
 		meta3 <- mcmc3$meta
+		if (!is.null(mcmc.set$meta$extra))
+		{
+		  mcmc3$meta$extra <- mcmc.set$meta$extra
+		  mcmc3$meta$extra_iter <- mcmc.set$meta$extra_iter
+		  mcmc3$meta$extra_thin <- mcmc.set$meta$extra_thin
+		  for (i in 1:length(mcmc3$mcmc.list))
+		  {
+		    mcmc3$mcmc.list[[i]]$meta <- mcmc3$meta
+		  }
+		}
 		mc.meta3.pointer <- newPointer(mcmc3$meta)
 		mcmc3.list.pointer <- newPointer(mcmc3$mcmc.list)
+		
+		  
 	}
 	max.nr.project <- nr_project
 	all.T_end.min <- ltfr_matrix.all
@@ -352,7 +376,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		# fill the result array with observed data 
 	  if (uncertainty)
 	  {
-	    country.obj <- get.country.object(icountry, meta, index=TRUE)
+	    country.obj <- get.country.object(prediction.countries[icountry], meta, index=TRUE)
 	    tfr.table <- get.tfr.parameter.traces.cs(getValue(load.mcmc.list.pointer), country.obj, 
 	                                'tfr', burnin=0)
 	    for(year in 1:fps.end.obs.index)
@@ -688,8 +712,24 @@ getValue <- function(pointer)
 	}
 	m3.par.values.cs <- NULL
 	if(has.phase3 && !is.null(getValue(meta3)) && is.element(country, getValue(meta3)$id_phase3))
-			m3.par.values.cs <- get.tfr3.parameter.traces.cs(getValue(mcmc3.list), country.obj=country.obj,
-											par.names=c('mu.c', 'rho.c'), burnin=burnin3, thinning.index=thinning.index)
+	{
+	  if (country.obj$index %in% getValue(load.meta)$extra)
+	  {
+	    nr.points <- length(thinning.index)
+	    nr.points.cs <- floor(getValue(load.meta)$extra_iter[country.obj$index] / getValue(load.meta)$extra_thin[country.obj$index])
+	    nr.points.cs <- nr.points.cs * length(getValue(mcmc.list))
+	    if (nr.points.cs >= nr.points) thin.index.cs <- round(seq(1, nr.points.cs, length.out = nr.points))
+	    else thin.index.cs <- rep(1:nr.points.cs, ceiling(nr.points/nr.points.cs))[1:nr.points]
+	    m3.par.values.cs <- get.tfr3.parameter.traces.cs(getValue(mcmc3.list), country.obj=country.obj,
+	                                                     par.names=c('mu.c', 'rho.c'), burnin=burnin3, thinning.index=thin.index.cs)
+	  }
+	  else
+	  {
+	    m3.par.values.cs <- get.tfr3.parameter.traces.cs(getValue(mcmc3.list), country.obj=country.obj,
+	                                                     par.names=c('mu.c', 'rho.c'), burnin=burnin3, thinning.index=thinning.index)
+	  }
+	}
+			
 	return(list(U.var=U.var, Triangle_c4.var=Triangle_c4.var, theta_si=theta_si, cs.par.values=cs.par.values,
 			m3.par.values.cs=m3.par.values.cs))
 }
