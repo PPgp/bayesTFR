@@ -649,7 +649,8 @@ get.all.parameter.names.extended <- function(cs=FALSE) {
 			pars <- c(pars, if (paropt[2] > 1) paste(name, 1:paropt[2], sep='_') else name)
 		}
 	}
-	pars <- c(pars, "rho_phase2")
+	if (cs) pars <- c(pars, 'tfr')
+	else pars <- c(pars, "rho_phase2")
 	return(pars)
 }
 

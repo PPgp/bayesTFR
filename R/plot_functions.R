@@ -789,8 +789,7 @@ tfr.partraces.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayes
 tfr.partraces.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 									chain.ids=NULL, par.names=tfr.parameter.names.cs(trans=TRUE),
 									nr.points=NULL, dev.ncol=3, low.memory=TRUE, ...) {
-
-	if (is.null(mcmc.list))
+  if (is.null(mcmc.list))
 		mcmc.list <- get.tfr.mcmc(sim.dir, low.memory=low.memory)
 	mcmc.list <- get.mcmc.list(mcmc.list)
 	country.obj <- get.country.object(country, mcmc.list[[1]]$meta)
@@ -855,7 +854,13 @@ do.plot.tfr.pardensity <- function(mcmc.list, func, par.names, par.names.ext, ma
 	}
 	args <- extract.plot.args(...)
 	par.cur <- par(mfrow=c(nrows,ncols))
+	tfr_flag <- FALSE
 	for (para in par.names) {
+	  if (!tfr_flag && length(grep('tfr_*', para) > 0))
+	  {
+	    para <- 'tfr'
+	    tfr_flag <- TRUE
+	  }
 		values <- eval(do.call(func, c(list(mcmc.list, par.names=para, burnin=burnin), func.args)))
 		values <-  filter.traces(values, par.names)
 		for (par.name in colnames(values)) {
@@ -882,7 +887,7 @@ tfr.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'baye
 tfr.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 									chain.ids=NULL, par.names=tfr.parameter.names.cs(trans=TRUE), 
 									burnin=NULL, dev.ncol=3, low.memory=TRUE, ...) {
-	if (is.null(mcmc.list))
+  if (is.null(mcmc.list))
 		mcmc.list <- get.tfr.mcmc(sim.dir, low.memory=low.memory)
 	mcmc.l <- get.mcmc.list(mcmc.list)
 	country.obj <- get.country.object(country, mcmc.l[[1]]$meta)
@@ -891,8 +896,10 @@ tfr.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(ge
 	stop.if.country.not.DL(country.obj, mcmc.l[[1]]$meta)
 	par.names.ext <- get.full.par.names.cs(par.names, 
 											tfr.parameter.names.cs.extended(country.obj$code))
-	if(length(par.names.ext) <= 0)
+	if(length(par.names.ext) <= 0 && length(grep('tfr_*', par.names)) <= 0)
 		stop('Parameter names are not valid country-specific parameters.\nUse function tfr.parameter.names.cs(...) or valid parameter names.')
+	else if (length(par.names.ext) <= 0)
+	  par.names.ext <- paste0('tfr_c', country.obj$code)
 	do.plot.tfr.pardensity(mcmc.list, 'get.tfr.parameter.traces.cs', chain.ids=chain.ids, par.names=par.names,
 							par.names.ext=par.names.ext,
 							main.postfix=paste('(',country.obj$name,')', sep=''),
