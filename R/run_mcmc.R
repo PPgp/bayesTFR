@@ -175,7 +175,6 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	  }
 	}
 	
-	
 	# propagate initial values for all chains if needed
 	for (var in c('S.ini', 'a.ini', 'b.ini', 'sigma0.ini', 'const.ini', 'gamma.ini', 'Triangle_c4.ini', 'iter')) {
 		if (length(get(var)) < nr.chains) {
