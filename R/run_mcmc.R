@@ -28,8 +28,8 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	save.all.parameters = FALSE, compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
 						verbose=FALSE, verbose.iter = 10, uncertainty = FALSE, 
-						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
-						iso.unbiased=NULL, covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL, ar.phase2=FALSE, ...) 
+						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL), 
+						iso.unbiased=NULL, covariates=c('source', 'method'), cont_covariates=NULL, ar.phase2=FALSE, ...) 
 {
   if(file.exists(output.dir)) {
 		if(length(list.files(output.dir)) > 0 & !replace.output)
@@ -235,7 +235,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 							S.ini, a.ini, b.ini, sigma0.ini, Triangle_c4.ini, const.ini, gamma.ini=1,
 							save.all.parameters=FALSE,
 							verbose=FALSE, verbose.iter=10, uncertainty=FALSE, iso.unbiased=NULL, 
-							covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL) {
+							covariates=c('source', 'method'), cont_covariates=NULL) {
 								
 	cat('\n\nChain nr.', chain.id, '\n')
     if (verbose) {
@@ -359,8 +359,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								thin=1, thin.extra=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
 								my.locations.file = NULL,
 								verbose=FALSE, verbose.iter=100, uncertainty=FALSE, 
-								my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
-								iso.unbiased=NULL, covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL, ...) {
+								my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL), 
+								iso.unbiased=NULL, covariates=c('source', 'method'), cont_covariates=NULL, ...) {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta.old <- mcmc.set$meta
   
@@ -425,7 +425,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		    country.obj <- get.country.object(country, meta.old)
 		    if (!is.null(country.obj$index))
 		    {
-		      df_country <- df_country[df_country$ISO.code == country,]
+		      df_country <- df_country[df_country$country_code == country,]
 		      mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra[[country.obj$index]] <- df_country
 		      mcmc.set$mcmc.list[[chain]]$eps_unc[[country.obj$index]] <- df_country$eps
 		    }

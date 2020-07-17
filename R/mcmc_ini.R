@@ -202,7 +202,7 @@ mcmc.meta.ini <- function(...,
 						wpp.year=2019, my.tfr.file = NULL, my.locations.file = NULL,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						verbose=FALSE, uncertainty=FALSE,
-						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
+						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL), 
 						ar.phase2=FALSE) {
 	# Initialize meta parameters - those that are common to all chains.
 	args <- list(...)
@@ -225,7 +225,7 @@ mcmc.meta.ini <- function(...,
 	
 do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
 						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE, uncertainty=FALSE, 
-						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL), 
+						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL), 
 						ar.phase2=FALSE) {
   results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, annual = meta$annual.simulation,
 	                                               suppl.data=tfr.with.regions$suppl.data)
@@ -311,7 +311,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	)
 	if(uncertainty)
 	{
-	  if (is.null(my.tfr.raw.file)) my.tfr.raw.file <- file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv")
+	  if (is.null(my.tfr.raw.file)) my.tfr.raw.file <- file.path(find.package("bayesTFR"), "data", "rawTFR.csv")
 	  file.type <- substr(my.tfr.raw.file, nchar(my.tfr.raw.file)-2, nchar(my.tfr.raw.file))
 	  if (file.type == 'txt')
 	    raw.data <- read.delim(my.tfr.raw.file, sep='\t')
@@ -321,13 +321,13 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	  {
 	    stop("File type not detectible. Please use txt or csv files.")
 	  }
-	  raw.data <- raw.data[raw.data$ISO.code %in% as.numeric(colnames(output$tfr_matrix_all)),]
-	  raw.data <- raw.data[raw.data$Year < meta$present.year,]
-	  raw.data <- raw.data[raw.data$Year > meta$start.year,]
+	  raw.data <- raw.data[raw.data$country_code %in% as.numeric(colnames(output$tfr_matrix_all)),]
+	  raw.data <- raw.data[raw.data$year < meta$present.year,]
+	  raw.data <- raw.data[raw.data$year > meta$start.year,]
 	  output$raw_data.original <- raw.data
 	  output$raw_data.original <- merge(output$raw_data.original, 
-	                                    data.frame(ISO.code=tfr.with.regions$regions$country_code, country_index = 1:nr_countries), 
-	                                    by = "ISO.code")
+	                                    data.frame(country_code=tfr.with.regions$regions$country_code, country_index = 1:nr_countries), 
+	                                    by = "country_code")
 	  index <- 1:nrow(output$raw_data.original)
 	  country.ind.by.year <- list()
 	  ind.by.year <- list()
@@ -335,10 +335,10 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	  {
 	    for (year in meta$start.year:meta$present.year)
 	    {
-	      country.ind.by.year[[year-meta$start.year+1]] <- output$raw_data.original$country_index[which(round(output$raw_data.original$Year-0.01) == year)]
-	      ind.by.year[[year-meta$start.year+1]] <- index[which(round(output$raw_data.original$Year-0.01) == year)]
+	      country.ind.by.year[[year-meta$start.year+1]] <- output$raw_data.original$country_index[which(round(output$raw_data.original$year-0.01) == year)]
+	      ind.by.year[[year-meta$start.year+1]] <- index[which(round(output$raw_data.original$year-0.01) == year)]
 	    }
-	    output$raw_data.original$Year <- round(output$raw_data.original$Year - 0.01)
+	    output$raw_data.original$year <- round(output$raw_data.original$year - 0.01)
 	    output$country.ind.by.year <- country.ind.by.year
 	    output$ind.by.year <- ind.by.year
 	  }
@@ -349,10 +349,10 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	    count <- 1
 	    for (year in c(years, rev(years)[1]+5))
 	    {
-	      inds <- which((output$raw_data.original$Year <= year) & (output$raw_data.original$Year > year - 5))
+	      inds <- which((output$raw_data.original$year <= year) & (output$raw_data.original$year > year - 5))
 	      country.ind.by.year[[count]] <- output$raw_data.original$country_index[inds]
 	      ind.by.year[[count]] <- index[inds]
-	      left.distance[[count]] <- output$raw_data.original$Year[inds] - year + 5
+	      left.distance[[count]] <- output$raw_data.original$year[inds] - year + 5
 	      count <- count + 1
 	    }
 	    output$country.ind.by.year <- country.ind.by.year
@@ -391,7 +391,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 					 d.ini=0.17,
 					 save.all.parameters=FALSE,
 					 verbose=FALSE, uncertainty=FALSE, iso.unbiased=NULL,
-					 covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL) {
+					 covariates=c('source', 'method'), cont_covariates=NULL) {
 				 		 	
 	nr_countries <- mcmc.meta$nr_countries
 
@@ -493,7 +493,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 
 mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL, 
 									my.locations.file=NULL, burnin = 200, verbose=FALSE, uncertainty=FALSE, 
-									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL)) {
+									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL)) {
 	update.regions <- function(reg, ereg, id.replace, is.new, is.old) {
 		nreg <- list()
 		for (name in c('code', 'area_code', 'country_code')) {

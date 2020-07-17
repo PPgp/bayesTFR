@@ -1,1 +1,0 @@
-TFR_cleaned_2019 <- read.delim(file='TFR_cleaned_2019.csv', header=TRUE, sep=",")

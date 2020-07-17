@@ -1,13 +1,11 @@
-require(mvtnorm)
-
 get.obs.estimate.diff <- function(mcmc)
 {
   mcmc$eps_unc <- list()
   for(country in 1:min(mcmc$meta$nr_countries, length(mcmc$meta$raw.data)))
   {
     if (is.null(mcmc$meta$raw.data[[country]])) next
-    tmp.year <- mcmc$meta$raw.data[[country]]$Year
-    tmp.tfr <- mcmc$meta$raw.data[[country]]$DataValue
+    tmp.year <- mcmc$meta$raw.data[[country]]$year
+    tmp.tfr <- mcmc$meta$raw.data[[country]]$tfr
     if (mcmc$meta$annual.simulation)
     {
       tmp.ind <- (tmp.year - mcmc$meta$start.year + 1)
@@ -39,7 +37,7 @@ get.obs.estimate.diff.original <- function(mcmc)
       if (length(mcmc$meta$ind.by.year[[year.ind]]) == 0) next
       ref.tfr <- mcmc$meta$tfr_matrix_all[year.ind, mcmc$meta$country.ind.by.year[[year.ind]]]
       idx <- mcmc$meta$ind.by.year[[year.ind]]
-      mcmc$meta$raw_data.original$eps[idx] <- mcmc$meta$raw_data.original$DataValue[idx] - ref.tfr
+      mcmc$meta$raw_data.original$eps[idx] <- mcmc$meta$raw_data.original$tfr[idx] - ref.tfr
     }
   }
   else 
@@ -55,7 +53,7 @@ get.obs.estimate.diff.original <- function(mcmc)
       tfr.right <- mcmc$meta$tfr_matrix_all[min(count, nrow(mcmc$meta$tfr_matrix_all)), mcmc$meta$country.ind.by.year[[count]]]
       left.distance <- mcmc$meta$left.distance[[count]]
       ref.tfr <- (tfr.left * (5 - left.distance) + tfr.right * left.distance) / 5
-      mcmc$meta$raw_data.original$eps[idx] <- mcmc$meta$raw_data.original$DataValue[idx] - ref.tfr
+      mcmc$meta$raw_data.original$eps[idx] <- mcmc$meta$raw_data.original$tfr[idx] - ref.tfr
     }
   }
   return(mcmc)
@@ -65,17 +63,17 @@ update.obs.estimate.diff <- function(mcmc, country, year)
 {
   if (mcmc$meta$annual.simulation)
   {
-    indices <- which(round(mcmc$meta$raw_data_extra[[country]]$Year - mcmc$meta$start.year + 1.01) == year)
+    indices <- which(round(mcmc$meta$raw_data_extra[[country]]$year - mcmc$meta$start.year + 1.01) == year)
   }
   else
   {
-    indices <- which((mcmc$meta$raw_data_extra[[country]]$Year < (year * 5 + mcmc$meta$start.year + 3)) & 
-                       (mcmc$meta$raw_data_extra[[country]]$Year > (year * 5 + mcmc$meta$start.year -7)))
+    indices <- which((mcmc$meta$raw_data_extra[[country]]$year < (year * 5 + mcmc$meta$start.year + 3)) & 
+                       (mcmc$meta$raw_data_extra[[country]]$year > (year * 5 + mcmc$meta$start.year -7)))
   }
   if (length(indices) > 0)
   {
-    tmp.tfr <- mcmc$meta$raw_data_extra[[country]]$DataValue[indices]
-    tmp.year <- mcmc$meta$raw_data_extra[[country]]$Year[indices]
+    tmp.tfr <- mcmc$meta$raw_data_extra[[country]]$tfr[indices]
+    tmp.year <- mcmc$meta$raw_data_extra[[country]]$year[indices]
     if (mcmc$meta$annual.simulation)
     {
       tmp.ind <- (tmp.year - mcmc$meta$start.year + 1)
@@ -103,8 +101,8 @@ estimate.bias.sd.raw <- function(mcmc)
   for(country in 1:min(mcmc$meta$nr_countries, length(mcmc$meta$raw.data)))
   {
     if (is.null(mcmc$meta$raw.data[[country]])) next
-    source <- factor(as.character(mcmc$meta$raw.data[[country]]$DataProcess))
-    estimation.method <- factor(as.character(mcmc$meta$raw.data[[country]]$Estimating.Methods))
+    source <- factor(as.character(mcmc$meta$raw.data[[country]]$source))
+    estimation.method <- factor(as.character(mcmc$meta$raw.data[[country]]$method))
     diff <- mcmc$eps_unc[[country]]
     regressor <- '1'
     if (length(levels(source)) > 1)
@@ -129,7 +127,7 @@ estimate.bias.sd.raw <- function(mcmc)
   return(mcmc)
 }
 
-estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('DataProcess', 'Estimating.Methods'), 
+estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('source', 'method'), 
                                       cont_covariates=NULL)
 {
   mcmc$meta$raw_data.original$bias <- NA
@@ -143,7 +141,7 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('Dat
   {
     ISO.code <- get.country.object(country, meta=mcmc$meta, index=TRUE)
     if (is.na(ISO.code$code)) next
-    index.by.country <- which(mcmc$meta$raw_data.original$ISO.code == ISO.code$code)
+    index.by.country <- which(mcmc$meta$raw_data.original$country_code == ISO.code$code)
     if (length(index.by.country) == 0) next
     regressor <- '1'
     diff <- mcmc$meta$raw_data.original$eps[index.by.country]
@@ -182,10 +180,17 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('Dat
     ## Optional
     if (ISO.code$code %in% iso.unbiased)
     {
-      index.by.country.vr.estimate <- which((mcmc$meta$raw_data.original$ISO.code == ISO.code$code) & 
-                                              (mcmc$meta$raw_data.original[, covariates[1]] %in% c("VR", 'Estimate')))
-      mcmc$meta$raw_data.original$bias[index.by.country.vr.estimate] <- 0
-      mcmc$meta$raw_data.original$std[index.by.country.vr.estimate] <- 0.016
+      if ("source" %in% covariates)
+      {
+        index.by.country.vr.estimate <- which((mcmc$meta$raw_data.original$country_code == ISO.code$code) & 
+                                                (mcmc$meta$raw_data.original[, "source"] %in% c("VR", 'Estimate')))
+        mcmc$meta$raw_data.original$bias[index.by.country.vr.estimate] <- 0
+        mcmc$meta$raw_data.original$std[index.by.country.vr.estimate] <- 0.016
+      }
+      else
+      {
+        warning("Covariate source not found. iso.unbiased is not used.\n")
+      }
     }
     mcmc$meta$bias_model[[country]] <- m1
     mcmc$meta$std_model[[country]] <- m2
@@ -260,12 +265,12 @@ mcmc.update.tfr <- function(country, mcmc)
     while (prop_tfr < 0.5) prop_tfr <- rnorm(1, mcmc$meta$tfr_all[year, country], sd_f)
     if (mcmc$meta$annual.simulation)
     {
-      indices <- which(round(mcmc$meta$raw_data_extra[[country]]$Year - mcmc$meta$start.year + 1.01) == year)
+      indices <- which(round(mcmc$meta$raw_data_extra[[country]]$year - mcmc$meta$start.year + 1.01) == year)
     }
     else
     {
-      indices <- which((mcmc$meta$raw_data_extra[[country]]$Year < (year * 5 + mcmc$meta$start.year + 3)) & 
-                         (mcmc$meta$raw_data_extra[[country]]$Year > (year * 5 + mcmc$meta$start.year - 7)))
+      indices <- which((mcmc$meta$raw_data_extra[[country]]$year < (year * 5 + mcmc$meta$start.year + 3)) & 
+                         (mcmc$meta$raw_data_extra[[country]]$year > (year * 5 + mcmc$meta$start.year - 7)))
     }
     tfr_old <- mcmc$meta$tfr_all[year, country]
     eps_prev <- mcmc$eps_unc[[country]][indices]
@@ -519,7 +524,7 @@ get.log.lik.raw <- function(year.ind, mcmc, tfr)
       tfr.ref <- tfr.ref + mcmc$meta$tfr_matrix_all[max(1, year.ind - 1), mcmc$meta$country.ind.by.year[[year.ind]]] * 
         (5 - mcmc$meta$left.distance[[year.ind]]) / 5
     }
-    delta <- mcmc$meta$raw_data.original$DataValue[mcmc$meta$ind.by.year[[year.ind]]] - tfr.ref
+    delta <- mcmc$meta$raw_data.original$tfr[mcmc$meta$ind.by.year[[year.ind]]] - tfr.ref
     loglik.delta <- dnorm(delta, mean=bias, sd=std, log=TRUE)
     df <- data.frame(idx = mcmc$meta$country.ind.by.year[[year.ind]], loglik = loglik.delta)
     res <- aggregate(df$loglik, by=list(ind=df$idx), sum)
@@ -532,7 +537,7 @@ get.log.lik.raw <- function(year.ind, mcmc, tfr)
     tfr.ref <- tfr[mcmc$meta$country.ind.by.year[[year.ind + 1]]] * (5 - mcmc$meta$left.distance[[year.ind + 1]]) / 5
     tfr.ref <- tfr.ref + mcmc$meta$tfr_matrix_all[min(mcmc$meta$T_end, year.ind + 1), mcmc$meta$country.ind.by.year[[year.ind + 1]]] * 
       mcmc$meta$left.distance[[year.ind + 1]] / 5
-    delta <- mcmc$meta$raw_data.original$DataValue[mcmc$meta$ind.by.year[[year.ind + 1]]] - tfr.ref
+    delta <- mcmc$meta$raw_data.original$tfr[mcmc$meta$ind.by.year[[year.ind + 1]]] - tfr.ref
     loglik.delta <- dnorm(delta, mean=bias, sd=std, log=TRUE)
     df <- data.frame(idx = mcmc$meta$country.ind.by.year[[year.ind + 1]], loglik = loglik.delta)
     res <- aggregate(df$loglik, by=list(ind=df$idx), sum)

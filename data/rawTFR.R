@@ -1,0 +1,1 @@
+rawTFR <- read.delim(file='rawTFR.csv', header=TRUE, sep=",")

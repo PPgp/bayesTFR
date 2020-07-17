@@ -273,8 +273,8 @@ get.bias.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim
   
   country.obj <- get.country.object(country.code, mcmc.list$meta)
   if (country.obj$index %in% mcmc.list$meta$extra) model_est <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
-  else model_est <- subset(mcmc.list$meta$raw_data.original, ISO.code == country.obj$code)
-  model_est <- model_est[, !(names(model_est) %in% c('ISO.code', 'Country.or.area', 'Year', 'DataValue', 'country_index', 'eps', 'std'))]
+  else model_est <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code,]
+  model_est <- model_est[, !(names(model_est) %in% c('country_code', 'Country.or.area', 'year', 'tfr', 'country_index', 'eps', 'std'))]
   model_est <- model_est[!duplicated(model_est),]
   return(list(model=mcmc.list$meta$bias_model[[country.obj$index]], table=model_est))
 }
@@ -303,8 +303,8 @@ get.std.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.
   
   country.obj <- get.country.object(country.code, mcmc.list$meta)
   if (country.obj$index %in% mcmc.list$meta$extra) model_est <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
-  else model_est <- subset(mcmc.list$meta$raw_data.original, ISO.code == country.obj$code)
-  model_est <- model_est[, !(names(model_est) %in% c('ISO.code', 'Country.or.area', 'Year', 'DataValue', 'country_index', 'eps', 'bias'))]
+  else model_est <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code,]
+  model_est <- model_est[, !(names(model_est) %in% c('country_code', 'Country.or.area', 'year', 'tfr', 'country_index', 'eps', 'bias'))]
   model_est <- model_est[!duplicated(model_est),]
   return(list(model=mcmc.list$meta$std_model[[country.obj$index]], table=model_est))
 }

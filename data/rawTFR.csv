@@ -1,4 +1,4 @@
-ISO.code,Year,DataValue,Estimating.Methods,DataProcess
+country_code,year,tfr,method,source
 4,1965,7.97,Indirect,Census
 4,1966,8.21,Indirect,Census
 4,1967,8.32,Indirect,Census

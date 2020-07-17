@@ -13,8 +13,8 @@ run.tfr.mcmc.extra(sim.dir = file.path(getwd(), "bayesTFR.output"),
     iter = NULL, thin = 1, thin.extra = 1, burnin = 2000,
     parallel = FALSE, nr.nodes = NULL,  my.locations.file = NULL,
     verbose = FALSE, verbose.iter = 100, uncertainty=FALSE, 
-    my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "TFR_cleaned_2019.csv"), NULL),
-    iso.unbiased=NULL, covariates=c('DataProcess', 'Estimating.Methods'), cont_covariates=NULL, ...)
+    my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL),
+    iso.unbiased=NULL, covariates=c('source', 'method'), cont_covariates=NULL, ...)
 }
 \arguments{
   \item{sim.dir}{

@@ -426,7 +426,7 @@ get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 
 tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1,
                                 pis = c(80, 95), plot.raw = TRUE,
-                                grouping = 'DataProcess', save.image=TRUE, plot.dir = 'Estimation.plot')
+                                grouping = 'source', save.image=TRUE, plot.dir = 'Estimation.plot')
 {
   if (is.null(mcmc.list)) 
     mcmc.list <- get.tfr.mcmc(sim.dir)
@@ -454,7 +454,7 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   names(quantile_tbl)[1:(1 + 2 * length(pis))] <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
   names.col <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
   requireNamespace('ggplot2', quietly=TRUE)
-  q <- ggplot2::ggplot(data=quantile_tbl)  + ggplot2::xlab("Year") + ggplot2::ylab("TFR")
+  q <- ggplot2::ggplot(data=quantile_tbl)  + ggplot2::xlab("year") + ggplot2::ylab("TFR")
   q <- q + ggplot2::geom_ribbon(ggplot2::aes_string(x="year", ymin=names.col[1], ymax=names.col[length(names.col)]), alpha=0.2, fill='red') +
     ggplot2::geom_line(ggplot2::aes_string(x="year", y="Q50"), size = 0.8, color="red") +
     ggplot2::geom_point(ggplot2::aes_string(x="year", y="Q50"), size = 1, color="red") + 
@@ -468,15 +468,15 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
     if (country.obj$index %in% mcmc.list$meta$extra) raw.data <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
     else raw.data <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_index == country.obj$index, ]
     ngroups <- t(unique(subset(raw.data, select=grouping)))
-    q <- q + ggplot2::geom_point(mapping = ggplot2::aes_string(x="Year", y="DataValue", color=grouping, shape=grouping), 
+    q <- q + ggplot2::geom_point(mapping = ggplot2::aes_string(x="year", y="tfr", color=grouping, shape=grouping), 
                                  data=raw.data, size=2.5) + ggplot2::scale_shape_manual(values=rep(15:18, len=length(ngroups)))
   }
   
   wpp.data <- get.observed.tfr(country.obj$index, mcmc.list$meta, "tfr_matrix_all")
-  wpp.data <- data.frame(year=quantile_tbl$year, TFR = as.numeric(wpp.data))
+  wpp.data <- data.frame(year=quantile_tbl$year, tfr = as.numeric(wpp.data))
   wpp.data <- wpp.data[wpp.data$year %% 5 == 3,]
-  q <- q + ggplot2::geom_line(data = wpp.data, ggplot2::aes_string(x="year", y="TFR"), size = 0.8) + ggplot2::theme_bw() + 
-    ggplot2::geom_point(data = wpp.data, ggplot2::aes_string(x="year", y="TFR"))
+  q <- q + ggplot2::geom_line(data = wpp.data, ggplot2::aes_string(x="year", y="tfr"), size = 0.8) + ggplot2::theme_bw() + 
+    ggplot2::geom_point(data = wpp.data, ggplot2::aes_string(x="year", y="tfr"))
   
   if (save.image)
   {
