@@ -122,7 +122,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	store.bayesTFR.object(thinned.mcmc, outdir.thin.mcmc)
 	
 	if(verbose) cat('\nStoring country-independent parameters ...')
-	for (par in tfr.parameter.names(trans=FALSE)) {
+	for (par in tfr.parameter.names(trans=FALSE, meta = meta)) {
 		values <- get.tfr.parameter.traces(mcmc.set$mcmc.list, par, burnin,
 											thinning.index=thin.index)
 		write.values.into.file.cindep(par, values, outdir.thin.mcmc, compression.type=thinned.mcmc$compression.type)
@@ -431,8 +431,8 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 	tran.names <- totran.names <- all.standard.names <- backtran.names <- tobacktran.names <- c()
 	# Load traces from the disk
 	if(is.null(mcmc$meta$phase) || mcmc$meta$phase == 2) {
-		all.standard.names <- c(tfr.parameter.names(), get.trans.parameter.names(), 
-							tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE), 'tfr', 'rho_phase2')
+		all.standard.names <- c(tfr.parameter.names(meta=mcmc$meta), get.trans.parameter.names(), 
+							tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE), 'tfr')
 		tran.names <- c(get.trans.parameter.names(), get.trans.parameter.names(cs=TRUE))
 		totran.names <- c(get.totrans.parameter.names(), get.totrans.parameter.names(cs=TRUE))
 		backtran.names <- get.backtrans.parameter.names(cs=TRUE)
@@ -667,7 +667,7 @@ tfr.parameter.names.cs.extended <- function(country.code=NULL) {
 	return(pars)
 }
 
-tfr.parameter.names <- function(trans=NULL) {
+tfr.parameter.names <- function(trans=NULL, meta=NULL) {
 	# Return all country-independent parameter names. 
 	# trans can be NULL or logical.
 	# If 'trans' is TRUE,
@@ -676,6 +676,7 @@ tfr.parameter.names <- function(trans=NULL) {
 	# If 'trans' is NULL, all parameter names, 
 	# including the transformable parameters are returned.
 	other.pars <- get.other.parameter.names(cs=FALSE)
+	if (!is.null(meta) && !is.null(meta$ar.phase2) && meta$ar.phase2) other.pars <- c(other.pars, 'rho_phase2')
 	if (is.null(trans)) return (c(get.totrans.parameter.names(), get.trans.parameter.names(), other.pars))
 	if (trans) return (c(get.trans.parameter.names(), other.pars))
 	return (c(get.totrans.parameter.names(), other.pars))
@@ -874,7 +875,7 @@ coda.mcmc.bayesTFR.mcmc <- function(mcmc, country=NULL, par.names=NULL,
 	if(!is.null(btobject$index)) index <- btobject$index
 	if(is.null(country) && missing(par.names)) 
 		par.names <- if(!is.null(mcmc$meta$phase) && mcmc$meta$phase == 3)
-			tfr3.parameter.names() else tfr.parameter.names()
+			tfr3.parameter.names() else tfr.parameter.names(meta = mcmc$meta)
 	if(missing(par.names.cs)) 
 		par.names.cs <- if(!is.null(mcmc$meta$phase) && mcmc$meta$phase == 3)
 			tfr3.parameter.names.cs() else tfr.parameter.names.cs()
@@ -1059,7 +1060,7 @@ summary.bayesTFR.mcmc <- function(object, country=NULL,
 								thin=1, burnin=0, ...) {
   if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
 	if(is.null(country) && is.null(par.names))
-	 	par.names <- if(is.null(object$meta$phase) || object$meta$phase == 2) tfr.parameter.names(trans=TRUE) 
+	 	par.names <- if(is.null(object$meta$phase) || object$meta$phase == 2) tfr.parameter.names(trans=TRUE, meta = object$meta) 
 	 					else tfr3.parameter.names()
 	if(is.null(par.names.cs) && !is.null(country))
 		par.names.cs <- if(is.null(object$meta$phase) || object$meta$phase == 2) tfr.parameter.names.cs(trans=TRUE) 
@@ -1082,9 +1083,34 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 								meta.only=FALSE, thin=1, burnin=0, ...) {
   if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
 	if(is.null(object$meta$phase) || object$meta$phase == 2) {
-		if(is.null(country) && is.null(par.names)) par.names <- tfr.parameter.names(trans=TRUE)
-		if(!is.null(country) && is.null(par.names.cs)) par.names.cs <- tfr.parameter.names.cs(trans=TRUE)
-		.summary.mcmc.set.phaseII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
+	  all.standard.names <- c(tfr.parameter.names(meta=object$meta), get.trans.parameter.names(), 
+	                          tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE), 'tfr')
+	  par.names3 <- par.names[par.names %in% tfr3.parameter.names()]
+	  par.names3.cs <- par.names.cs[par.names.cs %in% tfr3.parameter.names.cs()]
+	  par.names <- par.names[!(par.names %in% tfr3.parameter.names())]
+	  par.names.cs <- par.names.cs[!(par.names.cs %in% tfr3.parameter.names.cs())]
+		if(is.null(country) && is.null(par.names)) 
+		{
+		  par.names <- tfr.parameter.names(trans=TRUE, meta = object$meta)
+		  if (!is.null(object$mcmc.list[[1]]$uncertainty) && object$mcmc.list[[1]]$uncertainty)
+		    par.names3 <- tfr3.parameter.names()
+		}
+		if(!is.null(country) && is.null(par.names.cs)) 
+		{
+		  par.names.cs <- tfr.parameter.names.cs(trans=TRUE)
+		  if (!is.null(object$mcmc.list[[1]]$uncertainty) && object$mcmc.list[[1]]$uncertainty)
+		    par.names3.cs <- tfr3.parameter.names.cs()
+		}
+	  if (length(par.names) > 0 || length(par.names.cs) > 0)
+	    print(.summary.mcmc.set.phaseII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...))
+	  if (length(par.names3) > 0 || length(par.names3.cs) > 0)
+	  {
+	    if (!is.null(object$mcmc.list[[1]]$uncertainty) && object$mcmc.list[[1]]$uncertainty)
+	    {
+	      object3 <- get.tfr3.mcmc(object$meta$output.dir)
+	      .summary.mcmc.set.phaseIII(object3, country, chain.id, par.names3, par.names3.cs, meta.only, thin, burnin, ...)
+	    }
+	  }
 	} else { # phase III
 		if(is.null(country) && is.null(par.names)) par.names <- tfr3.parameter.names()
 		if(!is.null(country) && is.null(par.names.cs)) par.names.cs <- tfr3.parameter.names.cs()
