@@ -1116,9 +1116,15 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	        quant <- res3$quantiles
 	        if(is.null(dim(stat))) { # need to add name of the par
 	            dim(stat) <- c(1, length(stat))
-	            dimnames(stat)[[1]] <- c(par.names3, par.names3.cs)
+	            dimnames(stat) <- list(c(par.names3, par.names3.cs), names(res3$statistics))
 	            dim(quant) <- c(1, length(quant))
-	            dimnames(quant)[[1]] <- c(par.names3, par.names3.cs)
+	            dimnames(quant) <- list(c(par.names3, par.names3.cs), names(res3$quantiles))
+	        }
+	        if(is.null(dim(res$statistics))) { # need to add name of the par
+	          dim(res$statistics) <- c(1, length(res$statistics))
+	          dimnames(res$statistics) <- list(c(par.names, par.names.cs), names(res$statistics))
+	          dim(res$quantiles) <- c(1, length(res$quantiles))
+	          dimnames(res$quantiles) <- list(c(par.names, par.names.cs), names(res$quantiles))
 	        }
 	        res$statistics <- rbind(res$statistics, stat)
 	        res$quantiles <- rbind(res$quantiles, quant)
