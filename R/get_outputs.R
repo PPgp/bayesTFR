@@ -1112,8 +1112,21 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	      res3 <- .summary.mcmc.set.phaseIII(object3, country, chain.id, par.names3, par.names3.cs, meta.only, thin, burnin, ...)
 	      if (exists("res"))
 	      {
-	        res$statistics <- rbind(res$statistics, res3$statistics)
-	        res$quantiles <- rbind(res$quantiles, res3$quantiles)
+	        stat <- res3$statistics
+	        quant <- res3$quantiles
+	        if(is.null(dim(stat))) { # need to add name of the par
+	            dim(stat) <- c(1, length(stat))
+	            dimnames(stat)[[1]] <- c(par.names3, par.names3.cs)
+	            dim(quant) <- c(1, length(quant))
+	            dimnames(quant)[[1]] <- c(par.names3, par.names3.cs)
+	        }
+	        res$statistics <- rbind(res$statistics, stat)
+	        res$quantiles <- rbind(res$quantiles, quant)
+	        res$start3 <- res3$start
+	        res$end3 <- res3$end
+	        res$thin3 <- res3$thin
+	        res$nchain3 <- res3$nchain
+	        class(res) <- "summary.combinedTFRphases"
 	      }
 	      else res <- res3
 	    }
@@ -1186,6 +1199,24 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 							par.names.cs=par.names.cs, thin=thin, burnin=burnin), ...)	
 }
 
+print.summary.combinedTFRphases <- function(x, digits = max(3, .Options$digits - 3), ...) {
+    cat('\nPhase II Iterations = ', x$start, ":", x$end, "\n")
+    cat("Phase II Thinning interval =", x$thin, "\n")
+    cat("Phase II Number of chains =", x$nchain, "\n")
+    cat("Phase II Sample size per chain =", (x$end - x$start)/x$thin + 
+            1, "\n\n")
+    cat('\nPhase III Iterations = ', x$start3, ":", x$end3, "\n")
+    cat("Phase III Thinning interval =", x$thin3, "\n")
+    cat("Phase III Number of chains =", x$nchain3, "\n")
+    cat("Phase III Sample size per chain =", (x$end3 - x$start3)/x$thin3 + 1, "\n")
+    cat("\n1. Empirical mean and standard deviation for each variable,")
+    cat("\n   plus standard error of the mean:\n\n")
+    print(x$statistics, digits = digits, ...)
+    cat("\n2. Quantiles for each variable:\n\n")
+    print(x$quantiles, digits = digits, ...)
+    cat("\n")
+    invisible(x)
+}
 
 get.meta.only <- function(object) {
 	get.iter <- function(x) x$finished.iter
