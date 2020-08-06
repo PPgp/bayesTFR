@@ -143,7 +143,6 @@ S3method(summary, bayesTFR.convergence)
 
 S3method(print, summary.bayesTFR.prediction)
 S3method(print, summary.bayesTFR.mcmc.set.meta)
-S3method(print, summary.combinedTFRphases)
 
 S3method(get.traj.ascii.header, bayesTFR.mcmc.meta)
 S3method(get.nr.countries, bayesTFR.mcmc.meta)
