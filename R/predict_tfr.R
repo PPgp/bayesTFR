@@ -16,10 +16,9 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 	} else {		
 		mcmc.set <- get.tfr.mcmc(sim.dir, low.memory=low.memory, verbose=verbose)
 	}
-  if (uncertainty)
-  {
-    if (is.null(mcmc.set$mcmc.list[[1]]$uncertainty) || !mcmc.set$mcmc.list[[1]]$uncertainty) uncertainty <- FALSE
-  }
+    is.one.step.est <- !is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty
+    uncertainty <- uncertainty && is.one.step.est
+
 	has.phase3 <- FALSE
 	if(use.tfr3) {
 	  has.phase3 <- has.tfr3.mcmc(mcmc.set$meta$output.dir)
@@ -35,6 +34,9 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 				sigmaAR1 <- res$sigmaAR1
 		}
 	}
+	if (is.one.step.est && has.phase3 && missing(burnin3) && !use.diagnostics)
+	    burnin3 <- burnin
+	
 	if(verbose) {
 		if(has.phase3) cat('\nAR(1) simulated using phase III MCMCs.\n')
 		else cat('\nAR(1) parameters for all countries: mu=', mu, ', rho=', rho, ', sigma=', sigmaAR1, '\n')
