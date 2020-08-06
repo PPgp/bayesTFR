@@ -1102,15 +1102,23 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 		    par.names3.cs <- tfr3.parameter.names.cs()
 		}
 	  if (length(par.names) > 0 || length(par.names.cs) > 0)
-	    print(.summary.mcmc.set.phaseII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...))
+	    res <- .summary.mcmc.set.phaseII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
 	  if (length(par.names3) > 0 || length(par.names3.cs) > 0)
 	  {
 	    if (!is.null(object$mcmc.list[[1]]$uncertainty) && object$mcmc.list[[1]]$uncertainty)
 	    {
 	      object3 <- get.tfr3.mcmc(object$meta$output.dir)
-	      .summary.mcmc.set.phaseIII(object3, country, chain.id, par.names3, par.names3.cs, meta.only, thin, burnin, ...)
+	      res3 <- .summary.mcmc.set.phaseIII(object3, country, chain.id, par.names3, par.names3.cs, meta.only, thin, burnin, ...)
+	      if (exists("res"))
+	      {
+	        res$statistics <- rbind(res$statistics, res3$statistics)
+	        res$quantiles <- rbind(res$quantiles, res3$quantiles)
+	      }
+	      else res <- res3
 	    }
 	  }
+	  print(res)
+	  res
 	} else { # phase III
 		if(is.null(country) && is.null(par.names)) par.names <- tfr3.parameter.names()
 		if(!is.null(country) && is.null(par.names.cs)) par.names.cs <- tfr3.parameter.names.cs()
