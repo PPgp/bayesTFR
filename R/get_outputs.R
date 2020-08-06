@@ -1118,7 +1118,6 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	      else res <- res3
 	    }
 	  }
-	  print(res)
 	  res
 	} else { # phase III
 		if(is.null(country) && is.null(par.names)) par.names <- tfr3.parameter.names()
