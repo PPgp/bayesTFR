@@ -1087,9 +1087,7 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	                          tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE), 'tfr')
 	  par.names3 <- par.names[par.names %in% tfr3.parameter.names()]
 	  par.names3.cs <- par.names.cs[par.names.cs %in% tfr3.parameter.names.cs()]
-	  par.names <- par.names[!(par.names %in% tfr3.parameter.names())]
-	  par.names.cs <- par.names.cs[!(par.names.cs %in% tfr3.parameter.names.cs())]
-		if(is.null(country) && is.null(par.names)) 
+	  if(is.null(country) && is.null(par.names)) 
 		{
 		  par.names <- tfr.parameter.names(trans=TRUE, meta = object$meta)
 		  if (!is.null(object$mcmc.list[[1]]$uncertainty) && object$mcmc.list[[1]]$uncertainty)
@@ -1101,6 +1099,9 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 		  if (!is.null(object$mcmc.list[[1]]$uncertainty) && object$mcmc.list[[1]]$uncertainty)
 		    par.names3.cs <- tfr3.parameter.names.cs()
 		}
+	  par.names <- par.names[!(par.names %in% tfr3.parameter.names())]
+	  par.names.cs <- par.names.cs[!(par.names.cs %in% tfr3.parameter.names.cs())]
+	  
 	  if (length(par.names) > 0 || length(par.names.cs) > 0)
 	    res <- .summary.mcmc.set.phaseII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
 	  if (length(par.names3) > 0 || length(par.names3.cs) > 0)
