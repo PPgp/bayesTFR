@@ -309,6 +309,38 @@ get.std.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.
   return(list(model=mcmc.list$meta$std_model[[country.obj$index]], table=model_est))
 }
 
+tfr.bias.sd <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL) {
+  ############
+  # Returns an object of class bayesTFR.prediction
+  # Set mcmc.dir to NA, if the prediction object should not have a pointer 
+  # to the corresponding mcmc traces.
+  ############
+  e <- new.env()
+  data('iso3166', envir=e)
+  iso3166 <- e$iso3166
+  if (is.null(mcmc.list)) 
+    mcmc.list <- get.tfr.mcmc(sim.dir)
+  if (is.null(mcmc.list)) {
+    warning('MCMC does not exist.')
+    return(NULL)
+  }
+  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
+  {
+    stop("MCMC does not consider uncertainty of past TFR.")
+  }
+  if (is.null(country.code))
+    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
+  
+  country.obj <- get.country.object(country.code, mcmc.list$meta)
+  if (country.obj$index %in% mcmc.list$meta$extra) model_est <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
+  else model_est <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code,]
+  model_est <- model_est[, !(names(model_est) %in% c('country_code', 'Country.or.area', 'year', 'tfr', 'country_index', 'eps'))]
+  model_est <- model_est[!duplicated(model_est),]
+  return(list(model_bias=mcmc.list$meta$bias_model[[country.obj$index]], 
+              model_sd=mcmc.list$meta$std_model[[country.obj$index]], 
+              table=model_est))
+}
+
 get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1, probs=NULL) {
   ############
   # Returns an object of class bayesTFR.prediction
@@ -1110,7 +1142,7 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	    {
 	      object3 <- get.tfr3.mcmc(object$meta$output.dir)
 	      res3 <- .summary.mcmc.set.phaseIII(object3, country, chain.id, par.names3, par.names3.cs, meta.only, thin, burnin, ...)
-	      if (exists("res"))
+	      if (exists("res") && !meta.only)
 	      {
 	        stat <- res3$statistics
 	        quant <- res3$quantiles

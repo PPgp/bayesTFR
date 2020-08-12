@@ -6,7 +6,7 @@ tfr.raftery.diag <- function(mcmc=NULL,
 							 country.sampling.prop=1,
 							 verbose=TRUE, ...
 							 ) {
-	is.error <- function(rd) {
+  is.error <- function(rd) {
 		if(is.null(dim(rd[[1]]$resmatrix))) {
 			print(rd)
 			return(TRUE)
@@ -89,6 +89,14 @@ tfr.raftery.diag <- function(mcmc=NULL,
 			ncols <- ncol(thin.ind.025)
 			colnames(thin.ind.025)[(ncols-npar+1):ncols] <- rownames(rd.025[[1]]$resmatrix)
 			rd.975 <- raftery.diag(coda.mc.cs, r=0.0125, q=0.975)
+			for (idx.chain in 1:length(rd.975)) 
+			{
+			  for (par in c('M', 'N', 'I')) 
+			  {
+			    rd.975[[idx.chain]]$resmatrix[is.na(rd.975[[idx.chain]]$resmatrix[, par]), par] <- max(rd.975[[idx.chain]]$resmatrix[, par], na.rm = T)
+			  }
+			}
+			
 			if(is.error(rd.975)) return()
 			thin.ind.975 <- cbind(thin.ind.975, diag.thin.indep(coda.mc.cs, q=0.975))
 			colnames(thin.ind.975)[(ncols-npar+1):ncols] <- rownames(rd.025[[1]]$resmatrix)
@@ -198,6 +206,12 @@ tfr.raftery.diag <- function(mcmc=NULL,
 	if (is.null(country) && !is.null(full.par.names.cs)) {
 		short.par.names.cs <- strsplit(full.par.names.cs, "_c.*") # removes the '_c*' postfix
 		short.par.names.cs <- unique(short.par.names.cs)
+		tfr.idx <- grep('^tfr_', unlist(short.par.names.cs))
+		if (length(tfr.idx) > 0)
+		{
+		  short.par.names.cs <- short.par.names.cs[setdiff(1:length(short.par.names.cs), tfr.idx)]
+		  short.par.names.cs[[length(short.par.names.cs) + 1]] <- 'tfr'
+		}
 	} else short.par.names.cs <- full.par.names.cs
 	qcs <- qbics <- matrix(NA, nrow=2, ncol=length(short.par.names.cs)+length(full.par.names),
 						dimnames=list(c(), c(short.par.names.cs, full.par.names)))
@@ -206,8 +220,16 @@ tfr.raftery.diag <- function(mcmc=NULL,
 		for (pname in short.par.names.cs) {
 			colidx <- grep(paste('^', pname, '_', sep=''), par.names.all)
 			for (j in 1:2) {
-				qcs[j,pname] <- max(s[j,colidx])
-				qbics[j,pname] <- max(bi[j,colidx])
+			  if (pname == 'tfr')
+			  {
+			    qcs[j,pname] <- quantile(s[j,colidx], 0.95)
+			    qbics[j,pname] <- quantile(bi[j,colidx], 0.95)
+			  }
+			  else
+			  {
+			    qcs[j,pname] <- max(s[j,colidx])
+			    qbics[j,pname] <- max(bi[j,colidx])
+			  }
 			}
 		}
 	} else {
@@ -256,7 +278,6 @@ process.not.converged.parameters <- function(diag, iter) {
 		cindex <- as.numeric(cindex[length(cindex)])
 		return(get.country.object(cindex, meta=mcmc.set$meta)$name)
 	}
-
 	mcmc.set <- do.call(paste('get.', type, '.mcmc', sep=''), 
 						list(sim.dir=sim.dir, low.memory=TRUE))
 	if(is.null(mcmc.set))
@@ -267,8 +288,9 @@ process.not.converged.parameters <- function(diag, iter) {
 							') given the total number of iterations (', iter, ').', sep=''))
 	#run raftery.diag on country-independent parameters
 	diag.procedure <- paste(type, '.raftery.diag', sep='')
+	par.names <- if(mcmc.set$meta$phase == 2) tfr.parameter.names(trans=TRUE, meta=mcmc.set$meta) else tfr3.parameter.names()
 	raftery.diag.res <- do.call(diag.procedure, 
-								list(mcmc.set, par.names.cs=NULL, thin=thin,
+								list(mcmc=mcmc.set, par.names=par.names, par.names.cs=NULL, thin=thin,
 								burnin=burnin, verbose=verbose))
 	if (is.null(raftery.diag.res)) stop(paste('Problem in', diag.procedure))
 	raftery.diag.res.cs <- NULL
@@ -276,8 +298,14 @@ process.not.converged.parameters <- function(diag, iter) {
 	if(!express &&((!is.null(country.sampling.prop) && (country.sampling.prop>0)) 
 						|| is.null(country.sampling.prop))) {
 		#run raftery.diag on country-specific parameters
+	  if (mcmc.set$meta$phase == 3) 
+	    par.names.cs <- tfr3.parameter.names.cs()
+	  else if (!is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty) 
+	    par.names.cs <- c(tfr.parameter.names.cs(trans=TRUE, back.trans=FALSE), 'tfr')
+	  else 
+	    par.names.cs <- tfr.parameter.names.cs(trans=TRUE, back.trans=FALSE)
 		raftery.diag.res.cs <- do.call(diag.procedure, list(mcmc.set, 
-								par.names = NULL,
+								par.names = NULL, par.names.cs = par.names.cs,
 								thin=thin,  burnin=burnin,
 								country.sampling.prop=if(is.null(country.sampling.prop)) 1 else country.sampling.prop,
 								verbose=verbose
@@ -326,7 +354,7 @@ process.not.converged.parameters <- function(diag, iter) {
 					express=express, 
 					nr.countries=nr.countries),
 				 class=class.name)
-	if(verbose) summary(diag)
+	# if(verbose) summary(diag)
 	save.dir <- file.path(mcmc.set$meta$output.dir, 'diagnostics')
 	if(!file.exists(save.dir)) 
 		dir.create(save.dir, recursive=TRUE)
@@ -338,9 +366,100 @@ process.not.converged.parameters <- function(diag, iter) {
 
 tfr.diagnose <- function(sim.dir, thin=80, burnin=2000, express=FALSE, 
 							country.sampling.prop=NULL, keep.thin.mcmc=FALSE, verbose=TRUE) {
-	invisible(.do.diagnose(type='tfr', class.name='bayesTFR.convergence', 
+  mcmc.set <- get.tfr.mcmc(sim.dir, low.memory = T)
+	diag2 <- .do.diagnose(type='tfr', class.name='bayesTFR.convergence', 
 							sim.dir=sim.dir, thin=thin, burnin=burnin, express=express,
-							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,	verbose=verbose))
+							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,	verbose=verbose)
+	if (!is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty)
+	{
+	  diag3 <- .do.diagnose(type='tfr3', class.name='bayesTFR.convergence', 
+	                        sim.dir=sim.dir, thin=thin, burnin=burnin, express=express,
+	                        country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,	verbose=verbose)
+	  diag2 <- .combine.diagnosis(diag2, diag3, keep.thin.mcmc = keep.thin.mcmc)
+	}
+	if (verbose) summary(diag2)
+	invisible(diag2)
+}
+
+.combine.diagnosis <- function(diag1, diag2, keep.thin.mcmc=FALSE)
+{
+  result <- rbind(diag1$result, diag2$result)
+  lresult.country.independent <- diag1$lresult.country.independent + diag2$lresult.country.independent
+  country.independent <- .combine.lists(diag1$country.independent, diag2$country.independent)
+  country.specific <- .combine.lists(diag1$country.specific, diag2$country.specific)
+  iter.needed <- max(diag1$iter.needed, diag2$iter.needed)
+  iter.total <- diag1$iter.total
+  use.nr.traj <- diag1$use.nr.traj
+  if (diag1$status['red'] || diag2$status['red']) status <- c(red=TRUE, green=FALSE)
+  else status <- c(red=FALSE, green=TRUE)
+  mcmc.set <- if (diag1$mcmc.set$meta$phase == 2) diag1$mcmc.set else diag2$mcmc.set
+  if (keep.thin.mcmc) 
+  {
+    thin.mcmc <- if (diag1$thin.mcmc$meta$phase == 2) diag1$thin.mcmc else diag2$thin.mcmc
+  }
+  else thin.mcmc <- NULL
+  burnin <- diag1$burnin
+  thin <- diag1$thin
+  express <- diag1$express
+  nr.countries <- pmax(diag1$nr.countries, diag2$nr.countries)
+  
+  
+  return_list <- structure(list(
+    result = result, lresult.country.independent = lresult.country.independent, country.independent = country.independent,
+    country.specific = country.specific, iter.needed = iter.needed, iter.total = iter.total, use.nr.traj = use.nr.traj,
+    status = status, mcmc.set = mcmc.set, thin.mcmc = thin.mcmc, burnin = burnin, thin = thin,
+    express = express, nr.countries = nr.countries
+  ), class = class(diag1))
+  invisible(return_list)
+}
+
+.combine.lists <- function(list1, list2)
+{
+  if (!is.null(list1) && !is.null(list2))
+  {
+    Nmedian <- cbind(list1$Nmedian, list2$Nmedian)
+    burnin <- cbind(list1$burnin,list2$burnin)
+    not.converged.parameters <- list()
+    not.converged.parameters[['0.025']] <- 
+      .combine.na.table(list1$not.converged.parameters$`0.025`, 
+                        list2$not.converged.parameters$`0.025`)
+    not.converged.parameters[['0.975']] <- 
+      .combine.na.table(list1$not.converged.parameters$`0.975`, 
+                        list2$not.converged.parameters$`0.975`)
+    not.converged.inchain.parameters <- list()
+    not.converged.inchain.parameters[['0.025']] <- 
+      .combine.na.table(list1$not.converged.inchain.parameters$`0.025`, 
+                        list2$not.converged.inchain.parameters$`0.025`)
+    not.converged.inchain.parameters[['0.975']] <- 
+      .combine.na.table(list1$not.converged.inchain.parameters$`0.975`, 
+                        list2$not.converged.inchain.parameters$`0.975`)
+    N.country.indep <- rbind(list1$N.country.indep, list2$N.country.indep)
+    N.country.spec <- rbind(list1$N.country.spec, list2$N.country.spec)
+    Nmedian.country.spec <- cbind(list1$Nmedian.country.spec, list2$Nmedian.country.spec)
+    thin.ind <- list()
+    for (name in c("0.025", "0.975", "median"))
+    {
+      thin.ind[[name]] <- cbind(list1$thin.ind[[name]],  list2$thin.ind[[name]])
+    }
+    nr.countries <- pmax(list1$nr.countries, list2$nr.countries)
+    ret_list <- list(
+      Nmedian = Nmedian, burnin = burnin, not.converged.parameters = not.converged.parameters,
+      not.converged.inchain.parameters = not.converged.inchain.parameters, N.country.indep = N.country.indep,
+      N.country.spec = N.country.spec, Nmedian.country.spec = Nmedian.country.spec, thin.ind = thin.ind, nr.countries = nr.countries
+    )
+  }
+  else if (!is.null(list1)) ret_list <- list1
+  else ret_list <- list2
+  
+  invisible(ret_list)
+}
+
+.combine.na.table <- function(table1, table2)
+{
+  if (class(table1) != "data.frame" && class(table2) != "data.frame") return (NA)
+  else if (class(table1) != "data.frame") return (table2)
+  else if (class(table2) != "data.frame") return (table1)
+  else return (rbind(table1, table2))
 }
 
 tfr3.raftery.diag <- function(mcmc=NULL, 
@@ -358,9 +477,11 @@ tfr3.raftery.diag <- function(mcmc=NULL,
 
 tfr3.diagnose <- function(sim.dir, thin=60, burnin=10000, express=TRUE, 
 						country.sampling.prop=NULL, verbose=TRUE, ...) {
-	invisible(.do.diagnose(type='tfr3', class.name='bayesTFR.convergence', 
+	diag3 <- .do.diagnose(type='tfr3', class.name='bayesTFR.convergence', 
 							sim.dir=sim.dir, thin=thin, burnin=burnin, express=express,
-							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=FALSE, verbose=verbose))
+							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=FALSE, verbose=verbose)
+	if (verbose) summary(diag3)
+	invisible(diag3)
 }
 
 diag.thin.indep <- function(mcmc.list, q) {
@@ -375,12 +496,12 @@ diag.thin.indep <- function(mcmc.list, q) {
 thinindep <- function(x,q){
 	## find the smallest integer k that makes the thinned chain independent ## 
 	## x is the MCMC samples, and q is the quantile being estimated ##
-	k=0
+  k=0
 	bic=0
 	n0=length(x)
 	qx=quantile(x,q)
-	while(bic>=0){
-		k=k+1
+	while(bic>=0 && k < 50){
+	  k=k+1
 		u=x[seq(1,n0,by=k)]
 		n=length(u)
 		## change the continuous chain to 0-1 chain ##
