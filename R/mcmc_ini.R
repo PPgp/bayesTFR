@@ -202,7 +202,7 @@ mcmc.meta.ini <- function(...,
 						wpp.year=2019, my.tfr.file = NULL, my.locations.file = NULL,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						verbose=FALSE, uncertainty=FALSE,
-						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL), 
+						my.tfr.raw.file=NULL, 
 						ar.phase2=FALSE) {
 	# Initialize meta parameters - those that are common to all chains.
 	args <- list(...)
@@ -225,7 +225,7 @@ mcmc.meta.ini <- function(...,
 	
 do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
 						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE, uncertainty=FALSE, 
-						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL), 
+						my.tfr.raw.file=NULL, 
 						ar.phase2=FALSE) {
   results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, annual = meta$annual.simulation,
 	                                               suppl.data=tfr.with.regions$suppl.data)
@@ -311,20 +311,26 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	)
 	if(uncertainty)
 	{
-	  if (is.null(my.tfr.raw.file)) my.tfr.raw.file <- file.path(find.package("bayesTFR"), "data", "rawTFR.csv")
-	  file.type <- substr(my.tfr.raw.file, nchar(my.tfr.raw.file)-2, nchar(my.tfr.raw.file))
-	  if (file.type == 'txt')
-	    raw.data <- read.delim(my.tfr.raw.file, sep='\t')
-	  else if (file.type == 'csv')
-	    raw.data <- read.delim(my.tfr.raw.file, sep=',')
-	  else 
+	  if (is.null(my.tfr.raw.file)) 
 	  {
-	    stop("File type not detectible. Please use txt or csv files.")
+	    data("rawTFR")
 	  }
-	  raw.data <- raw.data[raw.data$country_code %in% as.numeric(colnames(output$tfr_matrix_all)),]
-	  raw.data <- raw.data[raw.data$year < meta$present.year,]
-	  raw.data <- raw.data[raw.data$year > meta$start.year,]
-	  output$raw_data.original <- raw.data
+	  else
+	  {
+	    file.type <- substr(my.tfr.raw.file, nchar(my.tfr.raw.file)-2, nchar(my.tfr.raw.file))
+	    if (file.type == 'txt')
+	      rawTFR <- read.delim(my.tfr.raw.file, sep='\t')
+	    else if (file.type == 'csv')
+	      rawTFR <- read.delim(my.tfr.raw.file, sep=',')
+	    else 
+	    {
+	      stop("File type not detectible. Please use txt or csv files.")
+	    }
+	  }
+	  rawTFR <- rawTFR[rawTFR$country_code %in% as.numeric(colnames(output$tfr_matrix_all)),]
+	  rawTFR <- rawTFR[rawTFR$year < meta$present.year,]
+	  rawTFR <- rawTFR[rawTFR$year > meta$start.year,]
+	  output$raw_data.original <- rawTFR
 	  output$raw_data.original <- merge(output$raw_data.original, 
 	                                    data.frame(country_code=tfr.with.regions$regions$country_code, country_index = 1:nr_countries), 
 	                                    by = "country_code")
@@ -618,11 +624,6 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	  meta$tfr_all <- meta[['tfr_matrix_all']]
 	  meta$tfr_mu_all <- meta[['tfr_matrix_all']]
 	  meta$tfr_sd_all <- matrix(0, nrow = nrow(meta$tfr_all), ncol=ncol(meta$tfr_all))
-	  # if (is.null(meta$raw.data)) meta$raw.data <- list()
-	  # for (count in 1:length(Emeta$raw.data))
-	  # {
-	  #   meta$raw.data[[index[count]]] <- Emeta$raw.data[[count]]
-	  # }
 	  meta$raw_data.original <- Emeta$raw_data.original
 	  meta$country.ind.by.year <- Emeta$country.ind.by.year
 	  meta$ind.by.year <- Emeta$ind.by.year

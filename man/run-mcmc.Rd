@@ -39,7 +39,7 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, 
         nr.chains=3, thin=80, burnin=2000),
     verbose = FALSE, verbose.iter = 10, uncertainty = FALSE, 
-    my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL), 
+    my.tfr.raw.file=NULL, 
     iso.unbiased=NULL, covariates=c('source', 'method'), cont_covariates=NULL, ar.phase2=FALSE, \dots)
 		
 continue.tfr.mcmc(iter, chain.ids=NULL, 

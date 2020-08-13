@@ -28,7 +28,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	save.all.parameters = FALSE, compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
 						verbose=FALSE, verbose.iter = 10, uncertainty = FALSE, 
-						my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL), 
+						my.tfr.raw.file=NULL, 
 						iso.unbiased=NULL, covariates=c('source', 'method'), cont_covariates=NULL, ar.phase2=FALSE, ...) 
 {
   if(file.exists(output.dir)) {
@@ -105,6 +105,11 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	buffer.size=buffer.size, compression.type=compression.type, 
 					 	auto.conf=auto.conf, package.version = packageVersion("bayesTFR"),
 						verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2)
+	if (uncertainty)
+	{
+	  bayesTFR.mcmc.meta[["covariates"]] <- covariates
+	  bayesTFR.mcmc.meta[["cont_covariates"]] <- cont_covariates
+	}
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
 	
 	starting.values <- NULL
@@ -359,7 +364,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								thin=1, thin.extra=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
 								my.locations.file = NULL,
 								verbose=FALSE, verbose.iter=100, uncertainty=FALSE, 
-								my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL), 
+								my.tfr.raw.file=NULL, 
 								iso.unbiased=NULL, covariates=c('source', 'method'), cont_covariates=NULL, ...) {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta.old <- mcmc.set$meta
@@ -474,6 +479,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	  if (is.null(meta[['extra']])) meta[['extra']] <- c()
 	  if (is.null(meta[['extra_iter']])) meta[['extra_iter']] <- numeric(get.nrest.countries(meta.old))
 	  if (is.null(meta[['extra_thin']])) meta[['extra_thin']] <- numeric(get.nrest.countries(meta.old))
+	  if (is.null(meta[['extra_covariates']])) meta[['extra_covariates']] <- list()
+	  if (is.null(meta[['extra_cont_covariates']])) meta[['extra_cont_covariates']] <- list()
 	  for (country in countries)
 	  {
 	    country.idx <- get.country.object(country, meta.old)$index
@@ -482,6 +489,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	      meta[['extra']] <- c(meta[['extra']], country.idx)
 	      meta[['extra_iter']][country.idx] <- iter
 	      meta[['extra_thin']][country.idx] <- thin.extra
+	      meta[['extra_covariates']][[country.idx]] <- covariates
+	      meta[['extra_cont_covariates']][[country.idx]] <- cont_covariates
 	    }
 	  }
 	  meta[['extra']] <- sort(unique(meta[['extra']]))

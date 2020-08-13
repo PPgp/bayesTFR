@@ -118,7 +118,8 @@ export(
 	get.tfr.estimation,
 	tfr.estimation.plot,
 	get.bias.model,
-	get.std.model
+	get.std.model,
+	tfr.bias.sd
 )
 
 # register S3 methods
