@@ -56,6 +56,7 @@
 \alias{get.TFRmatrix.and.regions}
 \alias{get.tfr.reconstructed}
 \alias{get.tfr.shift}
+\alias{get.tfr.shift.estimation}
 \alias{get.thinned.burnin}
 \alias{get.thinning.index}
 \alias{get.totrans.parameter.names} 

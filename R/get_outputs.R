@@ -341,7 +341,7 @@ tfr.bias.sd <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.di
               table=model_est))
 }
 
-get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1, probs=NULL) {
+get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1, probs=NULL, adjust=TRUE) {
   ############
   # Returns an object of class bayesTFR.prediction
   # Set mcmc.dir to NA, if the prediction object should not have a pointer 
@@ -365,6 +365,11 @@ get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL,
   
   country.obj <- get.country.object(country.code, mcmc.list$meta)
   tfr_table <- get.tfr.parameter.traces.cs(mcmc.list$mcmc.list, country.obj, 'tfr', burnin = burnin, thin=thin)
+  if (adjust)
+  {
+    shift <- get.tfr.shift.estimation(country.obj$code, mcmc.list$meta)
+    if (!is.null(shift)) tfr_table <- t(t(tfr_table) + shift)
+  }
   output <- list(tfr_table=tfr_table, country.obj = country.obj)
   if (!is.null(probs))
   {

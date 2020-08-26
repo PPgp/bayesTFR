@@ -7,7 +7,7 @@ Get Past TFR Estimation
 Get past TFR estimation, including trajectories and quantiles if required.
 }
 \usage{
-get.tfr.estimation(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1, probs=NULL)
+get.tfr.estimation(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1, probs=NULL, adjust=TRUE)
 }
 \arguments{
   \item{mcmc.list}{Object of class \code{\link{bayesTFR.mcmc.set}} corresponding Phase II MCMCs. If it is \code{NULL}, the object is loaded from the directory given by \code{sim.dir}.}
@@ -17,6 +17,7 @@ get.tfr.estimation(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NUL
   \item{burnin}{Burn-in for getting trajectories and quantiles. A positive burn-in \eqn{x} will throw first \eqn{x} iterations of estimations for each chain.}
   \item{thin}{Thin for getting trajectories and quantiles. Thinning level \eqn{x} greater than 1 will store one iteration per \eqn{x} samples}
   \item{probs}{A vector of numbers between \eqn{[0,1]}. If it is set to be \code{NULL} then this step will be skipped.  Otherwise, quantiles of estimation for each year will be outputted.}
+  \item{adjust}{Logical indicating whether the adjusted median and trajectories should be output.}
 }
 \details{
 This function is used to obtain the TFR trajectories as well as corresponding quantiles if the \code{mcmc.list} is obtained when \code{uncertainty=TRUE}. This is used to visualize past estimates as well as prediction. Quantiles could also be obtained if \code{probs} is not \code{NULL}.
