@@ -381,6 +381,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	    country.obj <- get.country.object(prediction.countries[icountry], meta, index=TRUE)
 	    tfr.table <- get.tfr.parameter.traces.cs(getValue(load.mcmc.list.pointer), country.obj, 
 	                                'tfr', burnin=0)
+	    shift <- get.tfr.shift.estimation(country.obj$code, getValue(meta.pointer))
+	    if (!is.null(shift)) tfr.table <- t(t(tfr.table) + shift)
 	    for(year in 1:fps.end.obs.index)
 	      all.f_ps[icountry,year,] <- tfr.table[,all.T_end.min+year-1]
 	    if (!is.null(mcmc.set$meta$ar.phase2) && (mcmc.set$meta$ar.phase2))
