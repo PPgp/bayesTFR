@@ -369,6 +369,12 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta.old <- mcmc.set$meta
   
+  if(is.null(covariates) && is.null(cont_covariates) && uncertainty)
+  {
+    covariates <- meta.old[['covariates']]
+    cont_covariates <- meta.old[['cont_covariates']]
+  }
+  
   Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, 
 												my.locations.file=my.locations.file, burnin=burnin, verbose=verbose, uncertainty=uncertainty, 
 												my.tfr.raw.file=my.tfr.raw.file)

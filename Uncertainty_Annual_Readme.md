@@ -49,7 +49,7 @@ mcmc.list <- run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, nr.chains=1, an
 My.tfr.file should be look like:
 
 |country_code|name|1950|1951|...|2020|
-|---------------|--------|----|---------|------------------|-----------|
+|------|----|----|---------|------------------|-----------|
 |4|Afghanistan|7.45|7.45|...|4.176|
 
 
@@ -61,11 +61,13 @@ An uncertainty option is provided, and we could call them by:
 run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, replace.output=TRUE, uncertainty=TRUE, my.tfr.raw.file=NULL)
 ```
 
-When **uncertainty=TRUE**, the function will by default take the "TFR_cleaned_2019.csv" in the modulize branch. Users are happy to provide their own data with the same format: (and provide the name in my.tfr.raw.file)
+When **uncertainty=TRUE**, the function will by default take the "rawTFR.csv" in the modulize branch. Users are happy to provide their own data with the same format: (and provide the name in my.tfr.raw.file)
 
-|Country.or.area|ISO.code|Year|DataValue|Estimating.Methods|DataProcess|
-|---------------|--------|----|---------|------------------|-----------|
-|Afghanistan|4|1965|7.97|Indirect|Census|
+|country_code|year|tfr|method|source|
+|--------|----|---------|------------------|-----------|
+|4|1965|7.97|Indirect|Census|
+
+Note that columns **country_code, year, tfr** should always be provided.
 
 If specify **annual=TRUE**, the function will estimate the past annual TFR for countries with uncertainty. (** Currently, running with the full MCMC with annual=TRUE and uncertainty=TRUE will take a long time.**) Otherwise it will estimate 5-year average.
 
@@ -169,23 +171,24 @@ The example showed above includes all OECD countries, which may be further analy
 ### User-input covariates
 As Patrick requires, we may include raw data sets with different covariates, including continuous covariates. Thus, we add two options, **covariates** for categorical variables and **cont_covariates** for continuous variables. 
 
-|Country.or.area|ISO.code|Year|DataValue|Estimating.Methods|DataProcessShort|TimeLag|
-|---------------|--------|----|---------|------------------|-----------|-------|
-|Afghanistan|4|1965|7.97|Indirect|Census|3.5|
+
+|country_code|year|tfr|method|source|lag|
+|--------|----|---------|------------------|-----------|------|
+|4|1965|7.97|Indirect|Census|3.5|
 
 users could call:
 ```R
 mcmc.list <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
   burnin = burnin, thin = thin, uncertainty = TRUE, iso.unbiased = c(36,40,56,124,203,208,246,250,276,300,352,372,380,392,410,428, 
                                          442,528,554,578,620,724,752,756,792,826,840), my.tfr.raw.file = 'tfr_raw_v1.csv'),
-                                         covariates = c('DataProcessShort', 'Estimating.Methods'), cont_covariates=c('TimeLag'))
+                                         covariates = c('source', 'method'), cont_covariates=c('lag'))
 ```
 Note that if users specified their own covariates, then when using **tfr.estimation.plot** with **plot.raw=TRUE**, users need to specify grouping as one of the covariates. For example:
 ```R
-tfr.estimation.plot(mcmc.list = mcmc.list, country.code=566, grouping='DataProcessShort')
+tfr.estimation.plot(mcmc.list = mcmc.list, country.code=566, grouping='source')
 ```
 
-**Note: If users want to use the iso.unbiased and covariates together, they need to provide the first name of covariates for the source of the data (where we could find VR in categories). Otherwise the iso.unbiased will not work (but the process could continue).**
+**Note: If users want to use the iso.unbiased and covariates together, they need to have one covariate with the name "source" including the source of the data (where we could find VR in categories). Otherwise the iso.unbiased will not work (but the process could continue).**
 ### Auto-correlation for phase II
 Currently, the model for phase II is
 $$ f_{c,t+1} = f_{c,t} - g(f_{c,t}|\theta_c) + \varepsilon_{c,t} $$
