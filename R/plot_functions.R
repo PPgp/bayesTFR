@@ -301,14 +301,17 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
 }
 
 tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.variant=TRUE) {
+  browser()
 	if (missing(country)) {
 		stop('Argument "country" must be given.')
 	}
 	country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	if(is.null(country.obj$code)) stop("Country ", country, " not found.")
 	country <- country.obj
-	uncertainty <- (!is.null(tfr.pred$mcmc.set$mcmc.list[[1]]$uncertainty) && tfr.pred$mcmc.set$mcmc.list[[1]]$uncertainty) || 
-	  (country$index %in% tfr.pred$mcmc.set$meta$extra)
+	uncertainty <- FALSE
+	if ((length(tfr.pred$mcmc.set$mcmc.list)>0 && !is.null(tfr.pred$mcmc.set$mcmc.list[[1]]$uncertainty) && 
+	     tfr.pred$mcmc.set$mcmc.list[[1]]$uncertainty) || (country$index %in% tfr.pred$mcmc.set$meta$extra))
+	  uncertainty <- TRUE
 	obs.data <- get.data.for.country.imputed(tfr.pred, country$index)
 	if(!is.null(tfr.pred$present.year.index)) obs.data <- obs.data[1:min(length(obs.data), tfr.pred$present.year.index.all)]
 	pred.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
