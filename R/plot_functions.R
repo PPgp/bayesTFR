@@ -301,8 +301,7 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
 }
 
 tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.variant=TRUE) {
-  browser()
-	if (missing(country)) {
+  if (missing(country)) {
 		stop('Argument "country" must be given.')
 	}
 	country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
