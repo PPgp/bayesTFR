@@ -595,7 +595,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
       points.y <- points.y[-elim.idx]
     }
   }
-  if (!uncertainty)
+  if (!uncertainty || mark.estimation.points)
     points(points.x, points.y, type=type, lwd=lwd[1], col=col[1], ...)
   if(lpart2 > 0) { # imputed values
     lines(x1[(lpart1+1): length(x1)], y1.part2, pch=2, type='b', col=col[2], lwd=lwd[2])

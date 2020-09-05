@@ -850,7 +850,7 @@ get.predORest.year.index <- function(pred, year) {
 get.prediction.year.index <- function(pred, year) {
 	years <- get.all.prediction.years(pred)
 	lyears <- length(years)
-	if(pred$mcmc.set$meta$annual.simulation) {
+	if(!is.null(pred$mcmc.set$meta$annual.simulation) && pred$mcmc.set$meta$annual.simulation) {
 	    idx <- which(years == year)
 	    return(if(length(idx)==0) NULL else idx[1])
 	}
@@ -866,13 +866,13 @@ get.all.prediction.years <- function(pred) {
 get.prediction.years <- function(meta, n, present.year.index=NULL) {
 	if(is.null(present.year.index)) present.year.index <- nrow(get.data.matrix(meta))
 	present.year <-  as.numeric(rownames(get.data.matrix(meta))[present.year.index])
-	year.step <- if(meta$annual.simulation) 1 else 5
+	year.step <- if(!is.null(meta$annual.simulation) && meta$annual.simulation) 1 else 5
 	return (seq(present.year, length=n, by=year.step))
 }
 
 get.prediction.periods <- function(meta, n, ...) {
 	mid.years <- get.prediction.years(meta, n, ...)
-	if(meta$annual.simulation)
+	if(!is.null(meta$annual.simulation) && meta$annual.simulation)
 	    return(mid.years)
 	return (paste(mid.years-3, mid.years+2, sep='-'))
 }
@@ -883,7 +883,7 @@ get.estimation.years <- function(meta)
 get.estimation.year.index <- function(meta, year) {
 	years <- get.estimation.years(meta)
 	lyears <- length(years)
-	if(meta$annual.simulation) {
+	if(!is.null(meta$annual.simulation) && meta$annual.simulation) {
 	    idx <- which(years == year)
 	    return(if(length(idx)==0) NULL else idx[1])
 	}
@@ -894,7 +894,7 @@ get.estimation.year.index <- function(meta, year) {
 
 get.tfr.periods <- function(meta) {
 	mid.years <- get.estimation.years(meta)
-	if(meta$annual.simulation)
+	if(!is.null(meta$annual.simulation) && meta$annual.simulation)
 	    return(mid.years)
 	return (paste(mid.years-3, mid.years+2, sep='-'))
 }
@@ -1127,7 +1127,7 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 	un.time.label <- as.character(e$UN_time$TLabel)
 	l.un.time.label <- length(un.time.label)
 	filter <- e$UN_time$Tinterval == 0
-	if(pred$mcmc.set$meta$annual.simulation) filter <- filter & e$UN_time$TimeID > 1000
+	if(!is.null(pred$mcmc.set$meta$annual.simulation) && pred$mcmc.set$meta$annual.simulation) filter <- filter & e$UN_time$TimeID > 1000
 	for (i in 1:ltfr) 
 		un.time.idx <- c(un.time.idx, which(un.time.label==tfr.years[i] & filter)[1])
 	for (i in 1:nr.proj) {
@@ -1258,7 +1258,7 @@ tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, 
 	pred.years <- as.numeric(dimnames(pred$quantiles)[[3]])
 	nr.proj <- pred$nr.projections+1 
 	if(is.null(years)) years <- pred.years[2:nr.proj]
-	if(!meta$annual.simulation) 
+	if(is.null(meta$annual.simulation) || !meta$annual.simulation) 
 	    mid.years <- cut(years, labels=pred.years, 
 					    breaks=seq(from=pred.years[1]-3, to=pred.years[nr.proj]+2, by=5))
 	else mid.years <- years
