@@ -32,7 +32,8 @@ Peiran Liu, Hana Sevcikova
 }
 \examples{
 \dontrun{
-mcmc.set <- run.tfr.mcmc(nr.chains=1, iter=10, output.dir='test.dir', replace.output=TRUE, uncertainty=TRUE)
+mcmc.set <- run.tfr.mcmc(nr.chains = 1, iter = 10, output.dir = "test.dir", 
+    replace.output = TRUE, uncertainty = TRUE)
 # add the median of the hierarchical DL curves
 get.bias.model(mcmc.set, 'Nigeria')}
 }

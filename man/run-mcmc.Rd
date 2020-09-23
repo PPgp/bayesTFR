@@ -24,28 +24,28 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     S.low = 3.5, S.up = 6.5, S.width = 0.5, 
     a.low = 0, a.up = 0.2, a.width = 0.02, 
     b.low = a.low, b.up = a.up, b.width = 0.05, 
-    sigma0.low = if (annual) 0.0045 else 0.01, sigma0.up = 0.6, sigma0.width = 0.1, 
-    sigma0.min = 0.001, 
+    sigma0.low = if (annual) 0.0045 else 0.01, sigma0.up = 0.6,  
+    sigma0.width = 0.1, sigma0.min = 0.04, 
     const.low = 0.8, const.up = 2, const.width = 0.3, 
     d.low = 0.05, d.up = 0.5, d.trans.width = 1, 
     chi0 = -1.5, psi0 = 0.6, nu.psi0 = 2, 
     alpha0.p = c(-1, 0.5, 1.5), delta0 = 1, nu.delta0 = 2, 
     dl.p1 = 9, dl.p2 = 9, phase3.parameter=NULL,
     S.ini = NULL, a.ini = NULL, b.ini = NULL, sigma0.ini = NULL, 
-    Triangle_c4.ini = NULL, const.ini = NULL, gamma.ini = 1, phase3.starting.values=NULL,
-    proposal_cov_gammas = NULL,
+    Triangle_c4.ini = NULL, const.ini = NULL, gamma.ini = 1, 
+    phase3.starting.values = NULL, proposal_cov_gammas = NULL,
     seed = NULL, parallel = FALSE, nr.nodes = nr.chains, 
     save.all.parameters = FALSE, compression.type = 'None',
-    auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, 
-        nr.chains=3, thin=80, burnin=2000),
+    auto.conf = list(max.loops = 5, iter = 62000, iter.incr = 10000, 
+        nr.chains = 3, thin = 80, burnin = 2000),
     verbose = FALSE, verbose.iter = 10, uncertainty = FALSE, 
-    my.tfr.raw.file=NULL, 
-    iso.unbiased=NULL, covariates=c('source', 'method'), cont_covariates=NULL, ar.phase2=FALSE, \dots)
+    my.tfr.raw.file=NULL, iso.unbiased = NULL, covariates = c("source", "method"), 
+    cont_covariates = NULL, ar.phase2 = FALSE, \dots)
 		
-continue.tfr.mcmc(iter, chain.ids=NULL, 
-    output.dir=file.path(getwd(), "bayesTFR.output"), 
+continue.tfr.mcmc(iter, chain.ids = NULL, 
+    output.dir = file.path(getwd(), "bayesTFR.output"), 
     parallel = FALSE, nr.nodes = NULL, auto.conf = NULL,
-    verbose=FALSE, verbose.iter = 10, \dots)
+    verbose = FALSE, verbose.iter = 10, \dots)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

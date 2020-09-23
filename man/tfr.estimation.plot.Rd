@@ -7,8 +7,9 @@ Plot TFR Estimation
 Plot past TFR estimation after a simulation accounting for past TFR is considered.
 }
 \usage{
-tfr.estimation.plot(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1,
-pis = c(80, 95), plot.raw = TRUE, grouping = 'source', save.image=TRUE, plot.dir = 'Estimation.plot')
+tfr.estimation.plot(mcmc.list = NULL, country.code = NULL, ISO.code = NULL, 
+    sim.dir = NULL, burnin = 0, thin = 1, pis = c(80, 95), plot.raw = TRUE, 
+    grouping = "source", save.image = TRUE, plot.dir = "Estimation.plot")
 }
 \arguments{
   \item{mcmc.list}{Object of class \code{\link{bayesTFR.mcmc.set}} corresponding Phase II MCMCs. If it is \code{NULL}, the object is loaded from the directory given by \code{sim.dir}.}
@@ -33,7 +34,8 @@ Peiran Liu, Hana Sevcikova
 
 \examples{
 \dontrun{
-mcmc.set <- run.tfr.mcmc(nr.chains=1, iter=10, output.dir='test.dir', replace.output=TRUE, uncertainty=TRUE)
+mcmc.set <- run.tfr.mcmc(nr.chains = 1, iter = 10, output.dir = "test.dir", 
+    replace.output = TRUE, uncertainty = TRUE)
 # add the median of the hierarchical DL curves
-tfr.estimation.plot(mcmc.set, 'Nigeria', save.image=F)}
+tfr.estimation.plot(mcmc.set, "Nigeria", save.image = FALSE)}
 }

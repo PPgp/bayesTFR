@@ -17,7 +17,8 @@ tfr.trajectories.plot(tfr.pred, country, pi = c(80, 95),
     xlim = NULL, ylim = NULL, type = 'b', xlab = 'Year', ylab = 'TFR', 
     main = NULL, lwd = c(2, 2, 2, 2, 2, 1), 
     col=c('black', 'green', 'red', 'red', 'blue', '#00000020'),
-    show.legend = TRUE, add = FALSE, uncertainty=FALSE, thin=NULL, burnin=NULL, col_unc="purple", \dots)
+    show.legend = TRUE, add = FALSE, uncertainty = FALSE, 
+    thin = NULL, burnin = NULL, col_unc = "purple", \dots)
 	
 tfr.trajectories.plot.all(tfr.pred, 
     output.dir = file.path(getwd(), 'TFRtrajectories'),

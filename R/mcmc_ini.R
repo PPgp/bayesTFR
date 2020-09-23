@@ -313,7 +313,9 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	{
 	  if (is.null(my.tfr.raw.file)) 
 	  {
-	    data("rawTFR")
+	    ertfr <- new.env()
+	    data("rawTFR", envir = ertfr)
+	    rawTFR <- ertfr$rawTFR
 	  }
 	  else
 	  {

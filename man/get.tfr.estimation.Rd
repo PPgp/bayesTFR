@@ -7,7 +7,8 @@ Get Past TFR Estimation
 Get past TFR estimation, including trajectories and quantiles if required.
 }
 \usage{
-get.tfr.estimation(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1, probs=NULL, adjust=TRUE)
+get.tfr.estimation(mcmc.list = NULL, country.code = NULL, ISO.code = NULL, 
+    sim.dir = NULL, burnin = 0, thin = 1, probs = NULL, adjust = TRUE)
 }
 \arguments{
   \item{mcmc.list}{Object of class \code{\link{bayesTFR.mcmc.set}} corresponding Phase II MCMCs. If it is \code{NULL}, the object is loaded from the directory given by \code{sim.dir}.}
@@ -32,8 +33,9 @@ Peiran Liu, Hana Sevcikova
 }
 \examples{
 \dontrun{
-mcmc.set <- run.tfr.mcmc(nr.chains=1, iter=10, output.dir='test.dir', replace.output=TRUE, uncertainty=TRUE)
+mcmc.set <- run.tfr.mcmc(nr.chains = 1, iter = 10, output.dir = "test.dir",
+    replace.output = TRUE, uncertainty = TRUE)
 # add the median of the hierarchical DL curves
-res <- get.tfr.estimation(mcmc.set, 'Nigeria', probs=0.5)}
+res <- get.tfr.estimation(mcmc.set, "Nigeria", probs = 0.5)}
 
 }
