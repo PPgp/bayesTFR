@@ -332,9 +332,20 @@ tfr.bias.sd <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.di
     country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
   
   country.obj <- get.country.object(country.code, mcmc.list$meta)
-  if (country.obj$index %in% mcmc.list$meta$extra) model_est <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
-  else model_est <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code,]
+  if (country.obj$index %in% mcmc.list$meta$extra) 
+  {
+    model_est <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
+    covariates <- mcmc.list$meta$extra_covariates[[country.obj$index]]
+  }
+  else 
+  {
+    model_est <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code,]
+    covariates <- mcmc.list$meta$covariates
+  }
   model_est <- model_est[, !(names(model_est) %in% c('country_code', 'Country.or.area', 'year', 'tfr', 'country_index', 'eps'))]
+  model_est <- data.table::as.data.table(model_est)
+  model_est[, count:=.N, by=eval(covariates)]
+  model_est <- as.data.frame(model_est)
   model_est <- model_est[!duplicated(model_est),]
   return(list(model_bias=mcmc.list$meta$bias_model[[country.obj$index]], 
               model_sd=mcmc.list$meta$std_model[[country.obj$index]], 

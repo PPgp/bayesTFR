@@ -4,10 +4,10 @@ This is the beta version for running bayesTFR with uncertainty into consideratio
 
 ## Install:
 
-Users must install **bayesTFR** with the version **modulize** to test the function of this part. To install this, run the following part of the code:
+Users must install **bayesTFR** with the version **dev** to test the function of this part. To install this, run the following part of the code:
 ```R
 library(devtools)
-install_github("PPgp/bayesTFR", ref = "modulize")
+install_github("PPgp/bayesTFR", ref = "dev")
 ```
 
 Then if bayesTFR has been loaded previously, users could switch to the new version either by re-starting the r session or
@@ -16,7 +16,16 @@ detach(package:bayesTFR, unload=TRUE); library(bayesTFR)
 ```
 
 ## Usage
-### Original 5-year version
+We would elaborate the usage of the package case by case, according to the following table:
+
+|Annual |Uncertainty  ||
+|------|:----:|:----:|
+| |True|False|
+|True|one-step estimation(**A**)<br/> Phase-II AR(1) Allowed|two-step estimation(**B**)<br/> Phase-II AR(1) Allowed|
+|False|one-step estimation(**C**) | two-step estimation(**D**) |
+
+The cell **D** represents the original **bayesTFR**, while other cells are representing new functions of this package.
+###  5-year version (Cell D)
 We should keep the same as:
 ```R
 mcmc.list <- run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, nr.chains=1)
@@ -34,16 +43,26 @@ pred.list <- tfr.predict(sim.dir="bayesTFR.output", burnin=0, burnin3=0)
 
 The process is the same with the original **bayesTFR** package.
 
-### Annual Version
+### Annual Version (Cell A and B)
+For the rest of this tutorial, we will keep using the following settings:
+```R
+output.dir <- 'bayesTFR.tutorial'
+nr.chains <- 3
+total.iter <- 100
+annual <- TRUE
+burnin <- 0
+thin <- 1
+```
+
 There is an **annual** option implemented. To be specific, if we want to run annual version of bayesTFR, then 
 ```R
-mcmc.list <- run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, nr.chains=1, annual=TRUE)
+mcmc.list <- run.tfr.mcmc(output.dir=output.dir, iter=total.iter, nr.chains=nr.chains, annual=annual, replace.output=TRUE)
 ```
 This will take UN estimates, and interpolate TFR estimates with linear interpolation.
 
 If users are interested in using their own annual TFR files, then they could call:
 ```R
-mcmc.list <- run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, nr.chains=1, annual=TRUE, my.tfr.file="sample_tfr.txt")
+mcmc.list <- run.tfr.mcmc(output.dir=output.dir, iter=total.iter, nr.chains=nr.chains, annual=annual, my.tfr.file="sample_tfr.txt", replace.output=TRUE)
 ```
 
 My.tfr.file should be look like:
@@ -55,10 +74,25 @@ My.tfr.file should be look like:
 
 Then, for phase III MCMC and prediction, we don't need to specify annual again and could call with the same setting as 5-year version.
 
-### Estimation with Uncertainty
+#### Auto-correlation for phase II (Cell A and B)
+Currently, the model for phase II is
+$$ f_{c,t+1} = f_{c,t} - g(f_{c,t}|\theta_c) + \varepsilon_{c,t} $$
+where $$g_{c,t} = g(f_{c,t}|\theta_c)$$ is the double-logistic decline.
+
+With five-year version of the data, this is OK. However, with annual version of the data, the auto-correlation of the $\varepsilon_{c,t}$ for phase II is severe. Thus, we introduce a different model:
+$$ f_{c,t+1} = f_{c,t} - d_{c,t} \\ d_{c,t+1} - g_{c,t+1} = \phi(d_{c,t} - g_{c,t}) + \varepsilon_{c,t}$$
+
+We introduce this as an option **ar.phase2** for **run.tfr.mcmc**. Users who are interested in using this could call:
+```R
+mcmc.list.ar <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, ar.phase2=TRUE, replace.output=TRUE)
+
+```
+Note that if users set **ar.phase2=TRUE**, they will keep it the same when calling **run.tfr.mcmc.extra** at the same directory.
+
+### Estimation with Uncertainty (Cell A and C)
 An uncertainty option is provided, and we could call them by:
 ```R
-run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, replace.output=TRUE, uncertainty=TRUE, my.tfr.raw.file=NULL)
+run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, replace.output=TRUE, uncertainty=TRUE, my.tfr.raw.file=NULL, replace.output=TRUE)
 ```
 
 When **uncertainty=TRUE**, the function will by default take the "rawTFR.csv" in the modulize branch. Users are happy to provide their own data with the same format: (and provide the name in my.tfr.raw.file)
@@ -69,9 +103,9 @@ When **uncertainty=TRUE**, the function will by default take the "rawTFR.csv" in
 
 Note that columns **country_code, year, tfr** should always be provided.
 
-If specify **annual=TRUE**, the function will estimate the past annual TFR for countries with uncertainty. (** Currently, running with the full MCMC with annual=TRUE and uncertainty=TRUE will take a long time.**) Otherwise it will estimate 5-year average.
+If specify **annual=TRUE**, the function will estimate the past annual TFR for countries with uncertainty. Otherwise it will estimate 5-year average.
 
-Note that when uncertainty is taken into consideration, phase III needs to be run simultaneously, and this part has already be included so users will **NOT** need run **run.tfr3.mcmc** again.
+Note that when uncertainty is taken into consideration, phase III needs to be run simultaneously, and this part has already be included so users will **NOT** need run **run.tfr3.mcmc** again. This is the reason why we call estimation with uncertainty **one step estimation**.
 
 For prediction, and option for uncertainty is provided. If someone wants to use the prediction with past TFR estimation as trajectories, then call:
 ```R
@@ -79,6 +113,80 @@ pred.list <- tfr.predict(sim.dir="bayesTFR.output", burnin=0, burnin3=0, uncerta
 ```
 
 Otherwise, it will take the past TFR as the input in my.tfr.file, and if that is not provided it will take the linearly interpolated UN estimates as input (but still use the estimated parameters with uncertainty considered).
+
+#### Special Treatment of VR data
+With our observation, some countries, especially for some OECD countries such as the United States, the VR records are very accurate. Since the current UN estimates are 5-year based, the major source of bias estimated for these VR records is the gap between calendar year records and five-year average, which will over-smooth the phase III estimates. Thus, we add another option **iso.unbiased** for this purpose. Users could call:
+```R
+### Specify with the same setting
+run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
+  burnin = burnin, thin = thin, uncertainty = TRUE, iso.unbiased = c(36,40,56,124,203,208,246,250,276,300,352,372,380,392,410,428, 
+                                         442,528,554,578,620,724,752,756,792,826,840))
+```
+
+The example showed above includes all OECD countries, which may be further analyzed. For countries listed in **iso.unbiased**, the estimated bias of VR records and official estimates is 0, and the standard deviation of VR records and official estimates is 0.0161.
+
+*With the same setting as above, the low uncertainty in phase III prediction is partly resolved.*
+
+#### User-input covariates
+We may include raw data sets with different covariates, including continuous covariates. Thus, we add two options, **covariates** for categorical variables and **cont_covariates** for continuous variables. 
+
+|country_code|year|tfr|method|source|lag|
+|--------|----|---------|------------------|-----------|------|
+|4|1965|7.97|Indirect|Census|3.5|
+
+users could call:
+```R
+mcmc.list <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
+  burnin = burnin, thin = thin, uncertainty = TRUE, my.tfr.raw.file = 'tfr_raw_v1.csv'),
+                                         covariates = c('source', 'method'), cont_covariates=c('lag'))
+```
+Note that if users specified their own covariates, then when using **tfr.estimation.plot** with **plot.raw=TRUE**, users need to specify grouping as one of the covariates. For example:
+```R
+tfr.estimation.plot(mcmc.list = mcmc.list, country.code=566, grouping='source')
+```
+
+**Note: If users want to use the iso.unbiased and covariates together, they need to have one covariate with the name "source" including the source of the data (where we could find VR in categories). Otherwise the iso.unbiased will not work (but the process could continue).**
+
+#### Run with single or a few countries
+Since running the complete MCMC process takes long, a simpler version for estimation TFR is available. To do that, take annual version as an example:
+```R
+output.dir.extra <- "bayesTFR.tutorial.extra"
+### Specify with the same setting
+run.tfr.mcmc(output.dir = output.dir.extra, nr.chains = nr.chains, iter = total.iter, annual = annual, 
+  burnin = burnin, thin = thin, uncertainty = TRUE)
+
+## Finish running MCMC for both phase II and phase III
+## Specify countries of interest, for example Nigeria and the United States
+countries <- c(566, 840)
+run.tfr.mcmc.extra(sim.dir = output.dir.extra, countries = countries, iter= 100, burnin=0, uncertainty=TRUE)
+```
+
+With this method, users could get access to TFR estimations easier without updating the hyper parameter estimation (or can use with the previous estimates). Users could provide raw data with the same format as described before. 
+
+It is worth mentioning that if someone want a faster version, the user could run the first step with setting **uncertainty=FALSE**. In the next step, the function **run.tfr.mcmc.extra** could still work. To make it clear, the user could:
+```R
+run.tfr.mcmc(output.dir = output.dir.extra, nr.chains = nr.chains, iter = total.iter, annual = annual, burnin = burnin, thin = thin, replace.output = TRUE)
+run.tfr3.mcmc(sim.dir = output.dir, nr.chains = nr.chains, iter = total.iter, thin = thin, burnin = burnin, replace.output = TRUE)
+
+countries <- c(566, 840)
+run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burnin=0, uncertainty=TRUE)
+```
+
+To make predictions on these countries, one need to **make predictions for all countries first** and have a stored version, then call:
+```R
+tfr.predict(sim.dir = output.dir, nr.traj = total.iter, burnin = 0, burnin3 = 0)
+
+tfr.predict.extra(sim.dir = output.dir, countries = countries, uncertainty = TRUE)
+```
+
+**Note**, if users want to have different raw data files, or different covariates, it is allowed to run:
+```R
+run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burnin=0, uncertainty=TRUE, 
+    my.tfr.raw.file='tfr_raw_v1.csv', covariates=c('cov1', 'cov2'), cont_covariates=c('cov3'))
+
+```
+
+Here, similar to **tfr.predict**, the uncertainty parameter is used to control the TFR used in prediction, but not for the MCMC parameters.
 
 ### Obtain estimation and plotting
 To obtain the estimated uncertainty, users could call:
@@ -102,109 +210,6 @@ After users make forecast of TFR with uncertainty considered in the past, they c
 tfr.pred <- get.tfr.prediction(sim.dir="bayesTFR.output")
 tfr.trajectories.plot(tfr.pred=tfr.pred, country =566, nr.traj = 20, uncertainty=TRUE)
 ```
-
-### Run with single or a few countries
-Since running the complete MCMC process takes long, a simpler version for estimation TFR is available. To do that, take annual version as an example:
-```R
-output.dir <- 'bayesTFR.extra'
-nr.chains <- 3
-total.iter <- 100
-annual <- TRUE
-burnin <- 0
-thin <- 1
-### Specify with the same setting
-run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
-  burnin = burnin, thin = thin, uncertainty = TRUE)
-
-## Finish running MCMC for both phase II and phase III
-## Specify countries of interest, for example Nigeria and the United States
-countries <- c(566, 840)
-run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burnin=0, uncertainty=TRUE)
-```
-
-With this method, users could get access to TFR estimations easier without updating the hyper parameter estimation (or can use with the previous estimates). Users could provide raw data with the same format as described before. 
-
-It is worth mentioning that if someone want a faster version, the user could run the first step with setting **uncertainty=FALSE**. In the next step, the function **run.tfr.mcmc.extra** could still work. To make it clear, the user could:
-```R
-run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, burnin = burnin, thin = thin)
-run.tfr3.mcmc(sim.dir = output.dir, nr.chains = nr.chains, iter = total.iter, thin = thin, burnin = burnin)
-
-countries <- c(566, 840)
-run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burnin=0, uncertainty=TRUE)
-```
-
-To make predictions on these countries, one need to **make predictions for all countries first** and have a stored version, then call:
-```R
-tfr.predict(sim.dir = output.dir, nr.traj = total.iter, burnin = 0, burnin3 = 0)
-
-tfr.predict.extra(sim.dir = output.dir, countries = countries, uncertainty = TRUE)
-```
-
-**Note**, if users want to have different raw data files, or different covariates, it is allowed to run:
-```R
-run.tfr.mcmc.extra(sim.dir = output.dir, countries = countries, iter= 100, burnin=0, uncertainty=TRUE, 
-    my.tfr.raw.file='tfr_raw_v1.csv', covariates=c('cov1', 'cov2'), cont_covariates=c('cov3'))
-
-```
-
-Here, similar to **tfr.predict**, the uncertainty parameter is used to control the TFR used in prediction, but not for the MCMC parameters.
-
-### Special Treatment of VR data
-With our observation, some countries, especially for some OECD countries such as the United States, the VR records are very accurate. Since the current UN estimates are 5-year based, the major source of bias estimated for these VR records is the gap between calendar year records and five-year average, which will over-smooth the phase III estimates. Thus, we add another option **iso.unbiased** for this purpose. Users could call:
-```R
-output.dir <- 'bayesTFR.extra'
-nr.chains <- 3
-total.iter <- 100
-annual <- TRUE
-burnin <- 0
-thin <- 1
-### Specify with the same setting
-run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
-  burnin = burnin, thin = thin, uncertainty = TRUE, iso.unbiased = c(36,40,56,124,203,208,246,250,276,300,352,372,380,392,410,428, 
-                                         442,528,554,578,620,724,752,756,792,826,840))
-```
-
-The example showed above includes all OECD countries, which may be further analyzed. For countries listed in **iso.unbiased**, the estimated bias of VR records and official estimates is 0, and the standard deviation of VR records and official estimates is 0.0161.
-
-*With the same setting as above, the low uncertainty in phase III prediction is partly resolved.*
-
-### User-input covariates
-As Patrick requires, we may include raw data sets with different covariates, including continuous covariates. Thus, we add two options, **covariates** for categorical variables and **cont_covariates** for continuous variables. 
-
-
-|country_code|year|tfr|method|source|lag|
-|--------|----|---------|------------------|-----------|------|
-|4|1965|7.97|Indirect|Census|3.5|
-
-users could call:
-```R
-mcmc.list <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
-  burnin = burnin, thin = thin, uncertainty = TRUE, iso.unbiased = c(36,40,56,124,203,208,246,250,276,300,352,372,380,392,410,428, 
-                                         442,528,554,578,620,724,752,756,792,826,840), my.tfr.raw.file = 'tfr_raw_v1.csv'),
-                                         covariates = c('source', 'method'), cont_covariates=c('lag'))
-```
-Note that if users specified their own covariates, then when using **tfr.estimation.plot** with **plot.raw=TRUE**, users need to specify grouping as one of the covariates. For example:
-```R
-tfr.estimation.plot(mcmc.list = mcmc.list, country.code=566, grouping='source')
-```
-
-**Note: If users want to use the iso.unbiased and covariates together, they need to have one covariate with the name "source" including the source of the data (where we could find VR in categories). Otherwise the iso.unbiased will not work (but the process could continue).**
-### Auto-correlation for phase II
-Currently, the model for phase II is
-$$ f_{c,t+1} = f_{c,t} - g(f_{c,t}|\theta_c) + \varepsilon_{c,t} $$
-where $$g_{c,t} = g(f_{c,t}|\theta_c)$$ is the double-logistic decline.
-
-With five-year version of the data, this is OK. However, with annual version of the data, the auto-correlation of the $\varepsilon_{c,t}$ for phase II is severe. Thus, we introduce a different model:
-$$ f_{c,t+1} = f_{c,t} - d_{c,t} \\ d_{c,t+1} - g_{c,t+1} = \phi(d_{c,t} - g_{c,t}) + \varepsilon_{c,t}$$
-
-We introduce this as an option **ar.phase2** for **run.tfr.mcmc**. Users who are interested in using this could call:
-```R
-mcmc.list.ar <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, 
-  burnin = burnin, thin = thin, uncertainty = TRUE, iso.unbiased = c(36,40,56,124,203,208,246,250,276,300,352,372,380,392,410,428, 
-                                         442,528,554,578,620,724,752,756,792,826,840), ar.phase2=TRUE)
-
-```
-Note that if users set **ar.phase2=TRUE**, they will keep it the same when calling **run.tfr.mcmc.extra** at the same directory.
 
 ### Obtain model estimation for bias and measurement error variance
 After running MCMC steps with uncertainty, users could obtain the bias and measurement error standard deviation used in the estimation process with **get.bias.model** and **get.std.model** as follows:
