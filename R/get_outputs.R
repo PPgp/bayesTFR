@@ -344,7 +344,7 @@ tfr.bias.sd <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.di
   }
   model_est <- model_est[, !(names(model_est) %in% c('country_code', 'Country.or.area', 'year', 'tfr', 'country_index', 'eps'))]
   model_est <- data.table::as.data.table(model_est)
-  model_est[, count:=.N, by=eval(covariates)]
+  model_est[, 'count':=.N, by=eval(covariates)]
   model_est <- as.data.frame(model_est)
   model_est <- model_est[!duplicated(model_est),]
   return(list(model_bias=mcmc.list$meta$bias_model[[country.obj$index]], 

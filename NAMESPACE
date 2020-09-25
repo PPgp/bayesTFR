@@ -4,6 +4,7 @@ useDynLib(bayesTFR, .registration = TRUE)
 import(mvtnorm)
 import(coda)
 import(wpp2019)
+import(data.table)
 importFrom(MASS, mvrnorm)
 #importFrom(rworldmap, getMap, mapDevice, addMapLegend, mapCountryData)
 
@@ -14,7 +15,6 @@ importFrom("stats", "cov", "dnorm", "dunif", "lm", "mahalanobis", "median", "pga
 importFrom("utils", "read.delim", "read.table", "write.table", "packageVersion")
 importFrom("stats", "aggregate", "as.formula", "predict", "residuals")
 importFrom("utils", "data", "read.csv")
-importFrom("data.table", "data.table", ".N")
 
 # export functions
 export(
