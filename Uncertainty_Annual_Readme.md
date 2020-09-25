@@ -204,14 +204,16 @@ tfr.estimation.plot(mcmc.list=NULL, country.code=840, ISO.code=NULL, sim.dir="ba
 
 Here, all parameters mentioned in previous function is as the same. **pis** represents probability interval, where it could be length 1 or 2, and should be values between 50 and 100. **plot.raw** is to control whether the raw data (used for estimation) should be plot, and grouping is for how the colors should be assigned based on groups (could be **"DataProcess"** or **"Estimating.Methods"**). **save.image** will control whether the image is saved, and if yes, users could provide their own plot directory or using the default.
 
-### Change of plotting forecast with uncertainty
+Moreover, **tfr.estimation.table** is updated for both forecast and estimation uncertainties.
+
+#### Change of plotting forecast with uncertainty
 After users make forecast of TFR with uncertainty considered in the past, they could making the plot showing uncertainty for both estimation and projections. This could be done simply by calling:
 ```R
 tfr.pred <- get.tfr.prediction(sim.dir="bayesTFR.output")
 tfr.trajectories.plot(tfr.pred=tfr.pred, country =566, nr.traj = 20, uncertainty=TRUE)
 ```
 
-### Obtain model estimation for bias and measurement error variance
+#### Obtain model estimation for bias and measurement error variance
 After running MCMC steps with uncertainty, users could obtain the bias and measurement error standard deviation used in the estimation process with **get.bias.model** and **get.std.model** as follows:
 ```R
 return_list <- get.bias.model(sim.dir = "bayesTFR.output", country.code=566)
@@ -223,6 +225,9 @@ head(return_list$table)
 The function will return a list with two elements. **model** is the estimated linear model for bias or standard deviation. **table** is the bias (or standard deviation) used in the model estimation. If we only used categorical variables, then we only kept those distinct combinations in the table.
 
 Note that for standard deviation, the final estimation is different from the model by a factor of $\sqrt{\frac{2}{\pi}}$, and we also made some adjustments and thus the estimation could be different between the model and the table for some cases. We adjusted those cases with large bias but little standard deviations estimated, which usually because we have so little data in that group. Moreover, if some countries are included in the **iso.unbiased**, then for the VR records, the bias and standard deviation estimated in the model are not used, but the value in the table is used.
+
+### Change in Diagnosis
+Use of **tfr.diagnose** is the same as before. However, we have updated for doing diagnosis for TFR estimation. Instead of requiring all parameters to converge, now we only require 95% TFR estimations to converge as it is almost impossible to achieve convergence for all of the parameters together.
 
 ### Discussion of Uncertainty and Smoothness
 Here we discuss briefly for the users to understand the bias, standard deviations and uncertainty in estimation in our experiments. Since this is not a formal paper, I will discuss about the ideas of how things work for the whole bayesTFR MCMC process.
@@ -243,11 +248,8 @@ In summary, the way to control the smoothness of the estimated median, is to bal
 
 Anyone interested in this part could email me for details.
 
-### Faster Version for bayesTFR with uncertainty
-With the new version of the code, users could run **run.tfr.mcmc** at a fast speed. For 3 chains with 62000 iterations each without parallel, it will take at most 1.5 days to finish running. For example, with the following data input with name **tfr_raw_v1.csv**,
-
 
 ## More to come
-- Email me for for requirements
+- Email prliu@uw.edu for for requirements
 
 
