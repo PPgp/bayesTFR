@@ -1,57 +1,79 @@
 # bayesTFR
 
-[![Travis-CI Build Status](https://travis-ci.org/PPgp/bayesTFR.svg?branch=master)](https://travis-ci.org/PPgp/bayesTFR)
+[![Travis-CI Build Status](https://travis-ci.org/PPgp/bayesTFR.svg?branch=dev)](https://travis-ci.org/PPgp/bayesTFR)
 
 
 R package for projecting probabilistic total fertility rate. 
 
-# bayesTFR-Annual Version with Uncertainty
+# Annual Version with Uncertainty
 
-This is the dev version for running bayesTFR with uncertainty into consideration and the annual version.
+The dev branch of the bayesTFR repository implements an annual version of the model with taking uncertainty about the estimation into account. 
+
 
 ## Install:
 
-Users must install **bayesTFR** with the version **dev** to test the function of this part. To install this, run the following part of the code:
+To install this version, run the following:
+
 ```R
 library(devtools)
 install_github("PPgp/bayesTFR", ref = "dev")
 ```
 
 Then if bayesTFR has been loaded previously, users could switch to the new version either by re-starting the r session or
+
 ```R
 detach(package:bayesTFR, unload=TRUE); library(bayesTFR)
 ```
 
 ## Usage
-We would elaborate the usage of the package case by case, according to the following table:
+
+There are two ways to estimate the model:
+
+1. **Two-step estimation**: 
+	1. Estimate Phase II using `run.tfr.mcmc`.
+	2. Estimate Phase III using `run.tfr3.mcmc`.
+2. **One-step estimation**:
+	* Phase II and Phase III are estimated jointly via `run.tfr.mcmc`.
+
+Moreover, additional autocorrelation in Phase II can be taken into account using an AR(1) model. This will be denoted as "Phase II AR(1)".
+
+The following table shows the availability of the various options depending on whether an annual version is used and whether uncertainty is taken into account:
+
 
 |Annual |Uncertainty  ||
 |------|:----:|:----:|
-| |True|False|
-|True|one-step estimation(**A**)<br/> Phase-II AR(1) Allowed|two-step estimation(**B**)<br/> Phase-II AR(1) Allowed|
-|False|one-step estimation(**C**) | two-step estimation(**D**) |
+| |TRUE|FALSE|
+|TRUE|**A**<br/>one-step estimation<br/> Phase-II AR(1) allowed|**B**<br/>two-step estimation<br/> Phase-II AR(1) allowed|
+|FALSE|**C**<br/>one-step estimation | **D**<br/>two-step estimation |
 
-The cell **D** represents the original **bayesTFR**, while other cells are representing new functions of this package.
+Cell **D** represents the original **bayesTFR** (available on CRAN and the master branch), while the other cells represent new functionalities available on this branch.
+
 ###  5-year version (Cell D)
-We should keep the same as:
+
+Here is a toy example of estimating Phase II:
+
 ```R
-mcmc.list <- run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, nr.chains=1)
+mcmc.list <- run.tfr.mcmc(output.dir = "bayesTFR.output", iter = 10, nr.chains = 1)
 ```
 
-If we want to run the phase III part, then:
+Then to estimate Phase III, one can do:
+
 ```R
-mcmc3.list <- run.tfr3.mcmc(sim.dir="bayesTFR.output", iter=10, nr.chains=1, thin=1)
+mcmc3.list <- run.tfr3.mcmc(sim.dir = "bayesTFR.output", iter = 10, nr.chains = 1, thin = 1)
 ```
 
-For prediction:
+To generate TFR predictions for this example, do:
+
 ```R
-pred.list <- tfr.predict(sim.dir="bayesTFR.output", burnin=0, burnin3=0)
+pred <- tfr.predict(sim.dir = "bayesTFR.output", burnin = 0, burnin3 = 0)
 ```
 
-The process is the same with the original **bayesTFR** package.
+See [Sevcikova et al (2011)](https://www.jstatsoft.org/article/view/v043i01) for more details.
 
 ### Annual Version (Cell A and B)
-For the rest of this tutorial, we will keep using the following settings:
+
+For the rest of this tutorial, we will use a toy example with the following settings:
+
 ```R
 output.dir <- 'bayesTFR.tutorial'
 nr.chains <- 3
@@ -61,27 +83,32 @@ burnin <- 0
 thin <- 1
 ```
 
-There is an **annual** option implemented. To be specific, if we want to run annual version of bayesTFR, then 
-```R
-mcmc.list <- run.tfr.mcmc(output.dir=output.dir, iter=total.iter, nr.chains=nr.chains, annual=annual, replace.output=TRUE)
-```
-This will take UN estimates, and interpolate TFR estimates with linear interpolation.
+The **annual** option is implemented in the logical argument `annual` which is passed to the `run.tfr.mcmc` function, regardless if two-step or one-step estimation is used. To be specific, if we want to estimate using annual data, then 
 
-If users are interested in using their own annual TFR files, then they could call:
 ```R
-mcmc.list <- run.tfr.mcmc(output.dir=output.dir, iter=total.iter, nr.chains=nr.chains, annual=annual, my.tfr.file="sample_tfr.txt", replace.output=TRUE)
+mcmc.list <- run.tfr.mcmc(output.dir = output.dir, iter = total.iter, 
+	nr.chains = nr.chains, annual = annual)
 ```
 
-My.tfr.file should be look like:
+By default the WPP UN 5-year TFR estimates are linearly interpolated and used for the estimation. If users are interested in using their own annual TFR file, the name of the file is passed into the `my.tfr.file` argument:
+
+```R
+mcmc.list <- run.tfr.mcmc(output.dir = output.dir, iter = total.iter, 
+	nr.chains = nr.chains, annual = annual, my.tfr.file = "sample_tfr.txt")
+```
+
+The `my.tfr.file` should be a tab-separated file of the following format:
 
 |country_code|name|1950|1951|...|2020|
 |------|----|----|---------|------------------|-----------|
 |4|Afghanistan|7.45|7.45|...|4.176|
 
 
-Then, for phase III MCMC and prediction, we don't need to specify annual again and could call with the same setting as 5-year version.
+For Phase III estimation and for prediction, the `annual` argument is not needed. Thus, the same settings as for the 5-year version can be used.
 
-#### Auto-correlation for phase II (Cell A and B)
+#### Phase II AR(1) option
+
+Cells A and B can account for additional auto-correlation in Phase II. 
 Currently, the model for phase II is
 $$ f_{c,t+1} = f_{c,t} - g(f_{c,t}|\theta_c) + \varepsilon_{c,t} $$
 where $$g_{c,t} = g(f_{c,t}|\theta_c)$$ is the double-logistic decline.
@@ -89,24 +116,31 @@ where $$g_{c,t} = g(f_{c,t}|\theta_c)$$ is the double-logistic decline.
 With five-year version of the data, this is OK. However, with annual version of the data, the auto-correlation of the $\varepsilon_{c,t}$ for phase II is severe. Thus, we introduce a different model:
 $$ f_{c,t+1} = f_{c,t} - d_{c,t} \\ d_{c,t+1} - g_{c,t+1} = \phi(d_{c,t} - g_{c,t}) + \varepsilon_{c,t}$$
 
-We introduce this as an option **ar.phase2** for **run.tfr.mcmc**. Users who are interested in using this could call:
-```R
-mcmc.list.ar <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter, annual = annual, ar.phase2=TRUE, replace.output=TRUE)
+We introduce this as a logical argument `ar.phase2` of `run.tfr.mcmc`. Users who are interested in using this could call:
 
+```R
+mcmc.list.ar <- run.tfr.mcmc(output.dir = output.dir, iter = total.iter, 
+	nr.chains = nr.chains, annual = annual, ar.phase2 = TRUE)
 ```
-Note that if users set **ar.phase2=TRUE**, they will keep it the same when calling **run.tfr.mcmc.extra** at the same directory.
+
+Note that this setting is inherited by the `run.tfr.mcmc.extra` function, see below. 
 
 ### Estimation with Uncertainty (Cell A and C)
-An uncertainty option is provided, and we could call them by:
+
+To account for uncertainty in the input data, the logical argument `uncertainty` can be used: 
+
 ```R
-run.tfr.mcmc(output.dir="bayesTFR.output", iter=10, replace.output=TRUE, uncertainty=TRUE, my.tfr.raw.file=NULL, replace.output=TRUE)
+run.tfr.mcmc(output.dir = "bayesTFR.output", iter = 10, 
+	uncertainty = TRUE, my.tfr.raw.file = NULL)
 ```
 
-When **uncertainty=TRUE**, the function will by default take the "rawTFR.csv" in the modulize branch. Users are happy to provide their own data with the same format: (and provide the name in my.tfr.raw.file)
+The package contains a dataset `rawTFR` which is used by default to assess the uncertainty. Users can provide their own data in a file with the same format, see `data(rawTFR)`: 
 
 |country_code|year|tfr|method|source|
 |--------|----|---------|------------------|-----------|
 |4|1965|7.97|Indirect|Census|
+
+The name of such file should be passed to the `my.tfr.raw.file` argument.
 
 Note that columns **country_code, year, tfr** should always be provided.
 
@@ -115,6 +149,7 @@ If specify **annual=TRUE**, the function will estimate the past annual TFR for c
 Note that when uncertainty is taken into consideration, phase III needs to be run simultaneously, and this part has already be included so users will **NOT** need run **run.tfr3.mcmc** again. This is the reason why we call estimation with uncertainty **one step estimation**.
 
 For prediction, and option for uncertainty is provided. If someone wants to use the prediction with past TFR estimation as trajectories, then call:
+
 ```R
 pred.list <- tfr.predict(sim.dir="bayesTFR.output", burnin=0, burnin3=0, uncertainty=TRUE)
 ```
