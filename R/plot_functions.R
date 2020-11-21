@@ -117,8 +117,7 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin=0
             exp(traces[, gamma.vars, drop=FALSE])/apply(exp(traces[,gamma.vars, drop=FALSE]), 1, sum)
         theta <- cbind(theta, traces[, Triangle_c4.var], traces[, d.var])
         dl <- t(apply(theta, 1, DLcurve, tfr = x, p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2, 
-                      annual = mcmc$meta$annual.simulation))
-        #stop('')
+                      annual = get.item(mcmc$meta, "annual.simulation", FALSE)))
         if(length(x) == 1) dl <- t(dl)
         if(predictive.distr || return.sigma) {
 			wp.traces <- load.tfr.parameter.traces(mcmc, 
@@ -256,7 +255,7 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
   l <- tfr.pred$nr.projections
 	obs.data <- obs.data[!is.na(obs.data)]
 	x1 <- as.integer(names(obs.data))
-	year.step <- if(tfr.pred$mcmc.set$meta$annual.simulation) 1 else 5
+	year.step <- ifelse(get.item(tfr.pred$mcmc.set$meta, "annual.simulation", FALSE), 1, 5)
 	x2 <- seq(max(x1)+year.step, by=year.step, length=l)
 	if (!uncertainty)
 	  tfr <- as.matrix(obs.data, ncol=1)

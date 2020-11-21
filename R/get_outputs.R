@@ -50,6 +50,7 @@ get.tfr.mcmc <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), chain.id
 }
 
 get.tfr3.mcmc <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), ...) {
+    if(!has.tfr3.mcmc(sim.dir)) stop("Phase III has not been simulated.")
 	parent.mc <- get.tfr.mcmc(sim.dir)
 	mc <- get.tfr.mcmc(file.path(sim.dir, 'phaseIII'), ...)
 	mc$meta$parent <- parent.mc$meta
@@ -1129,7 +1130,8 @@ summary.bayesTFR.mcmc <- function(object, country=NULL,
 summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL, 
 								par.names=NULL, par.names.cs=NULL, 
 								meta.only=FALSE, thin=1, burnin=0, ...) {
-  if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
+    if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
+    res <- list(phase2 = NULL, phase3 = NULL)
 	if(is.null(object$meta$phase) || object$meta$phase == 2) {
 	  all.standard.names <- c(tfr.parameter.names(meta=object$meta), get.trans.parameter.names(), 
 	                          tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE), 'tfr')
@@ -1151,101 +1153,92 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	  par.names.cs <- par.names.cs[!(par.names.cs %in% tfr3.parameter.names.cs())]
 	  
 	  if (length(par.names) > 0 || length(par.names.cs) > 0)
-	    res <- .summary.mcmc.set.phaseII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
+	    res$phase2 <- .summary.mcmc.set.phaseII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
+
 	  if (length(par.names3) > 0 || length(par.names3.cs) > 0)
 	  {
-	    if (!is.null(object$mcmc.list[[1]]$uncertainty) && object$mcmc.list[[1]]$uncertainty)
+	    if (!is.null(object$mcmc.list[[1]]$uncertainty) && object$mcmc.list[[1]]$uncertainty && has.tfr3.mcmc(object$meta$output.dir))
 	    {
 	      object3 <- get.tfr3.mcmc(object$meta$output.dir)
-	      res3 <- .summary.mcmc.set.phaseIII(object3, country, chain.id, par.names3, par.names3.cs, meta.only, thin, burnin, ...)
-	      if (exists("res") && !meta.only)
+	      res$phase3 <- .summary.mcmc.set.phaseIII(object3, country, chain.id, par.names3, par.names3.cs, meta.only, thin, burnin, ...)
+	      if (!is.null(res$phase2) && !meta.only)
 	      {
-	        stat <- res3$statistics
-	        quant <- res3$quantiles
+	        stat <- res$phase3$statistics
+	        quant <- res$phase3$quantiles
 	        if(is.null(dim(stat))) { # need to add name of the par
 	            dim(stat) <- c(1, length(stat))
-	            dimnames(stat) <- list(c(par.names3, par.names3.cs), names(res3$statistics))
+	            dimnames(stat) <- list(c(par.names3, par.names3.cs), names(res$phase3$statistics))
 	            dim(quant) <- c(1, length(quant))
-	            dimnames(quant) <- list(c(par.names3, par.names3.cs), names(res3$quantiles))
+	            dimnames(quant) <- list(c(par.names3, par.names3.cs), names(res$phase3$quantiles))
 	        }
-	        if(is.null(dim(res$statistics))) { # need to add name of the par
-	          dim(res$statistics) <- c(1, length(res$statistics))
-	          dimnames(res$statistics) <- list(c(par.names, par.names.cs), names(res$statistics))
-	          dim(res$quantiles) <- c(1, length(res$quantiles))
-	          dimnames(res$quantiles) <- list(c(par.names, par.names.cs), names(res$quantiles))
+	        if(is.null(dim(res$phase2$statistics))) { # need to add name of the par
+	          dim(res$phase2$statistics) <- c(1, length(res$phase2$statistics))
+	          dimnames(res$phase2$statistics) <- list(c(par.names, par.names.cs), names(res$phase2$statistics))
+	          dim(res$phase2$quantiles) <- c(1, length(res$phase2$quantiles))
+	          dimnames(res$phase2$quantiles) <- list(c(par.names, par.names.cs), names(res$phase2$quantiles))
 	        }
-	        res$statistics <- rbind(res$statistics, stat)
-	        res$quantiles <- rbind(res$quantiles, quant)
+	        res$phase2$statistics <- rbind(res$phase2$statistics, stat)
+	        res$phase2$quantiles <- rbind(res$phase2$quantiles, quant)
 	      }
-	      else res <- res3
 	    }
 	  }
-	  res
 	} else { # phase III
 		if(is.null(country) && is.null(par.names)) par.names <- tfr3.parameter.names()
 		if(!is.null(country) && is.null(par.names.cs)) par.names.cs <- tfr3.parameter.names.cs()
-		.summary.mcmc.set.phaseIII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
+		res$phase3 <- .summary.mcmc.set.phaseIII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
 	}
+    class(res) <- "summary.bayesTFR.mcmc.set"
+    res
 }
 
 .summary.mcmc.set.phaseII <- function(object, country=NULL, chain.id=NULL, 
 								par.names=tfr.parameter.names(trans=TRUE), 
 								par.names.cs=tfr.parameter.names.cs(trans=TRUE), 
 								meta.only=FALSE, thin=1, burnin=0, ...) {
-	cat('\nMCMCs of phase II')
-	cat('\n=================')
-	cat('\nNumber of countries:', object$meta$nr_countries)
-	cat('\nHyperparameters estimated using', 
-		length(object$meta$id_DL[object$meta$id_DL<=object$meta$nr_countries_estimation]), 
-			'countries.\n')
-	cat('\nWPP:', object$meta$wpp.year)
-	cat('\nInput data: TFR for period', object$meta$start.year, '-', object$meta$present.year,'.')
-	cat('\n')
-	if(meta.only) {
-		return(get.meta.only(object))
-	} 
+    res <- list(nr.countries = object$meta$nr_countries, 
+                nr.countries.est = length(object$meta$id_DL[object$meta$id_DL<=object$meta$nr_countries_estimation]),
+                wpp.year = object$meta$wpp.year,
+                est.period = paste(object$meta$start.year, object$meta$present.year, sep = '-')
+                )
+	if(meta.only) 
+		return(c(res, list(meta = get.meta.only(object))))
+	
 	if (!is.null(chain.id))
-		return(summary(object$mcmc.list[[chain.id]], country=country, par.names=par.names,
-							par.names.cs=par.names.cs, thin=thin, burnin=burnin, ...))
+		return(c(res, list(chain = summary(object$mcmc.list[[chain.id]], country=country, par.names=par.names,
+							par.names.cs=par.names.cs, thin=thin, burnin=burnin, ...))))
 	if (!is.null(country)) {
 		country.obj <- get.country.object(country, object$meta)
 		if(is.null(country.obj$name)) stop("Country ", country, " not found.")
-		cat('\nCountry:', country.obj$name, '\n')
-		if (!is.element(country.obj$index, object$meta$id_DL)) {
-			cat('\tnot used for estimation because no decline observed.\n')
-			return(NULL)
-		}
+		res$country.name <- country.obj$name
+		if (!is.element(country.obj$index, object$meta$id_DL)) return(res) # not used for estimation
 		country <- country.obj$code
 	}
-	summary(coda.list.mcmc(object, country=country, par.names=par.names,
-							par.names.cs=par.names.cs, thin=thin, burnin=burnin), ...)		
+	res$results <- summary(coda.list.mcmc(object, country=country, par.names=par.names,
+							par.names.cs=par.names.cs, thin=thin, burnin=burnin), ...)
+	return(res)
 }
 
 .summary.mcmc.set.phaseIII <- function(object, country=NULL, chain.id=NULL, 
 								par.names=NULL, par.names.cs=NULL, 
 								meta.only=FALSE, thin=1, burnin=0, ...) {
-	cat('\nMCMCs of phase III')
-	cat('\n==================')
-	cat('\nNumber of countries:', object$meta$nr.countries)
-	cat('\nNumber of observations:', sum(sapply(object$mcmc.list[[1]]$observations, function(x) length(x)-1)))
-	cat('\nWPP:', object$meta$parent$wpp.year)
-	cat('\n')
-	if(meta.only) return(get.meta.only(object))
+    res <- list(nr.countries = object$meta$nr.countries,
+                nr.est = sum(sapply(object$mcmc.list[[1]]$observations, function(x) length(x)-1)),
+                wpp.year = object$meta$parent$wpp.year
+                )
+    if(meta.only) return(c(res, list(meta = get.meta.only(object))))
 	if (!is.null(chain.id))
-		return(summary(object$mcmc.list[[chain.id]], country=country, par.names=par.names,
-							par.names.cs=par.names.cs, thin=thin, burnin=burnin, ...))
+	    return(c(res, list(chain = summary(object$mcmc.list[[chain.id]], country=country, par.names=par.names,
+							par.names.cs=par.names.cs, thin=thin, burnin=burnin, ...))))
 	if (!is.null(country)) {
 		country.obj <- get.country.object(country, object$meta)
 		if(is.null(country.obj$name)) stop("Country ", country, " not found.")
-		cat('\nCountry:', country.obj$name, '\n')
-		if (!is.element(country.obj$index, object$meta$id_phase3)) {
-			cat('\tnot used for estimation because it has not reached phase III yet.\n')
-			return(NULL)
-		}
+		res$country.name <- country.obj$name
+		if (!is.element(country.obj$index, object$meta$id_phase3)) return(res)
 		country <- country.obj$code
 	}
-	summary(coda.list.mcmc(object, country=country, par.names=par.names,
-							par.names.cs=par.names.cs, thin=thin, burnin=burnin), ...)	
+    res$results <- summary(coda.list.mcmc(object, country=country, par.names=par.names,
+							par.names.cs=par.names.cs, thin=thin, burnin=burnin), ...)
+    return(res)
 }
 
 
@@ -1258,6 +1251,63 @@ get.meta.only <- function(object) {
 	return(res)
 }
  
+print.summary.bayesTFR.mcmc.set <- function(x, ...) {
+    if(!is.null(x$phase2)) {
+        with(x$phase2, {
+            cat('\nMCMCs of phase II')
+            cat('\n=================')
+            cat('\nNumber of countries:', nr.countries)
+            cat('\nHyperparameters estimated using', nr.countries.est, 'countries.\n')
+            cat('\nWPP:', wpp.year)
+            cat('\nInput data: TFR for period', est.period)
+            cat('\n')
+            if(exists("meta")) print(meta)
+            if(exists("chain")) print(chain)
+            if(exists("country.name")){
+                cat('\nCountry:', country.name, '\n')
+                if (!exists("results"))
+                    cat('\tnot used for estimation because no decline observed.\n')
+            }
+            if(exists("results"))
+                print(results)
+        })
+    }
+    if(is.null(x$phase3)) return()
+    with(x$phase3, {
+        cat('\nMCMCs of phase III')
+        cat('\n==================')
+        cat('\nNumber of countries:', nr.countries)
+        cat('\nNumber of observations:', nr.est)
+        cat('\nWPP:', wpp.year)
+        cat('\n')
+        if(exists("meta")) print(meta)
+        if(exists("chain")) print(chain)
+        if(exists("country.name")){
+            cat('\nCountry:', country.name, '\n')
+            if (!exists("results"))
+                cat('\tnot used for estimation because it has not reached phase III yet.\n')
+        }
+        if(exists("results"))
+            print(results)
+    })
+}
+
+print.bayesTFR.mcmc <- function(x, ...) {
+    print(summary(x, ...))
+}
+
+print.bayesTFR.mcmc.set <- function(x, ...) {
+    print(summary(x, ...))
+}
+
+print.bayesTFR.mcmc.set.meta <- function(x, ...) {
+    print(summary(x, ...))
+}
+
+print.bayesTFR.prediction <- function(x, ...) {
+    print(summary(x, ...))
+}
+
 print.summary.bayesTFR.mcmc.set.meta <- function(x, ...) {
 	cat('\nNumber of chains =', x$nr.chains)
 	cat('\nIterations =', paste(1,':',sum(x$iters)))
@@ -1499,3 +1549,5 @@ get.countries.table.bayesTFR.prediction <- function(object, ...) {
 					name=object$mcmc.set$meta$regions$country_name[1:n]))
 }
 
+get.item <- function(l, item, default)
+    ifelse(item %in% names(l), l[[item]], default)

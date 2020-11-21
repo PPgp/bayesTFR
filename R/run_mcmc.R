@@ -382,7 +382,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		cat('\nNothing to be done.\n')
 		return(invisible(mcmc.set))
 	}
-	if (uncertainty)
+	if (uncertainty && has.tfr3.mcmc(sim.dir))
 	{
 	  mcmc3.set <- get.tfr3.mcmc(sim.dir)
 	  Eini$meta[['id_phase3']] <- intersect(mcmc3.set$meta$id_phase3, which(mcmc.set$meta$regions$country_code %in% countries))
