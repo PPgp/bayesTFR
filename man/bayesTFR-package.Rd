@@ -67,7 +67,7 @@ There is a directory \code{ex-data} shipped with the package which contains resu
 }
 
 \author{
-Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Adrian Raftery <raftery@uw.edu>, Bailey Fosdick <bfosdick@uw.edu>, Patrick Gerland (gerland@un.org)
+Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Peiran Liu (prliu@uw.edu), Adrian Raftery <raftery@uw.edu>, Bailey Fosdick <bfosdick@uw.edu>, Patrick Gerland (gerland@un.org)
 
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 }

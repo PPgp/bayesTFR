@@ -14,7 +14,7 @@ importFrom("stats", "cov", "dnorm", "dunif", "lm", "mahalanobis", "median", "pga
            "quantile", "rexp", "rgamma", "rnorm", "runif", "sd", "var")
 importFrom("utils", "read.delim", "read.table", "write.table", "packageVersion")
 importFrom("stats", "aggregate", "as.formula", "predict", "residuals")
-importFrom("utils", "data", "read.csv")
+importFrom("utils", "data", "read.csv", "head")
 
 # export functions
 export(
@@ -142,16 +142,21 @@ S3method(coda.mcmc, bayesTFR.mcmc)
 
 S3method(summary, bayesTFR.mcmc.set)
 S3method(summary, bayesTFR.mcmc)
+S3method(summary, bayesTFR.mcmc.meta)
 S3method(summary, bayesTFR.prediction)
 S3method(summary, bayesTFR.convergence)
 
 S3method(print, bayesTFR.mcmc)
 S3method(print, bayesTFR.mcmc.set)
-S3method(print, bayesTFR.mcmc.set.meta)
+S3method(print, bayesTFR.mcmc.meta)
 S3method(print, bayesTFR.prediction)
+S3method(print, bayesTFR.convergence)
+S3method(print, summary.bayesTFR.mcmc)
 S3method(print, summary.bayesTFR.mcmc.set)
 S3method(print, summary.bayesTFR.prediction)
-S3method(print, summary.bayesTFR.mcmc.set.meta)
+S3method(print, summary.bayesTFR.mcmc.meta)
+S3method(print, summary.bayesTFR.convergence)
+S3method(print, bayesTFR.estimation)
 
 S3method(get.traj.ascii.header, bayesTFR.mcmc.meta)
 S3method(get.nr.countries, bayesTFR.mcmc.meta)

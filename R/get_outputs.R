@@ -39,6 +39,7 @@ get.tfr.mcmc <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), chain.id
 			mc$traces.burnin <- 0
 		}
 		mc$output.dir <- mc.dirs.short[counter]
+		if(is.null(mc$uncertainty)) mc$uncertainty <- FALSE
 		if (verbose)
 			cat('(mcmc.list[[', counter, ']]).\n')
 		mcmc.chains[[counter]] <- mc
@@ -55,6 +56,7 @@ get.tfr3.mcmc <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), ...) {
 	mc <- get.tfr.mcmc(file.path(sim.dir, 'phaseIII'), ...)
 	mc$meta$parent <- parent.mc$meta
 	mc$meta$regions <- parent.mc$meta$regions
+	mc$meta$annual.simulation <- NULL # this needs to be removed as the right value will be taken from meta$parent
 	if(length(mc$mcmc.list) > 0) {
 		for(chain in 1:length(mc$mcmc.list)) {
 			mc$mcmc.list[[chain]]$meta <- mc$meta
@@ -250,115 +252,61 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
 	return(pred)
 }
 
+.get.model.est <- function(excl.what = c(), mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL,
+                           remove.duplicates = TRUE) {
+    e <- new.env()
+    data('iso3166', envir=e)
+    iso3166 <- e$iso3166
+    if (is.null(mcmc.list)) 
+        mcmc.list <- get.tfr.mcmc(sim.dir)
+    if (is.null(mcmc.list)) {
+        warning('MCMC does not exist.')
+        return(NULL)
+    }
+    if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
+    {
+        stop("MCMC does not consider uncertainty of past TFR.")
+    }
+    if (is.null(country.code))
+        country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
+    
+    country.obj <- get.country.object(country.code, mcmc.list$meta)
+    if (country.obj$index %in% mcmc.list$meta$extra) model_est <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
+    else model_est <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code,]
+    model_est <- model_est[, !(names(model_est) %in% c('country_code', 'Country.or.area', 'year', 'tfr', 'country_index', 'eps', excl.what))]
+    if(remove.duplicates)
+        model_est <- model_est[!duplicated(model_est),]
+    return(list(table = model_est, cntry.index = country.obj$index, meta = mcmc.list$meta))
+}
+
 get.bias.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL) {
-  ############
-  # Returns an object of class bayesTFR.prediction
-  # Set mcmc.dir to NA, if the prediction object should not have a pointer 
-  # to the corresponding mcmc traces.
-  ############
-  e <- new.env()
-  data('iso3166', envir=e)
-  iso3166 <- e$iso3166
-  if (is.null(mcmc.list)) 
-    mcmc.list <- get.tfr.mcmc(sim.dir)
-  if (is.null(mcmc.list)) {
-    warning('MCMC does not exist.')
-    return(NULL)
-  }
-  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
-  {
-    stop("MCMC does not consider uncertainty of past TFR.")
-  }
-  if (is.null(country.code))
-    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
-  
-  country.obj <- get.country.object(country.code, mcmc.list$meta)
-  if (country.obj$index %in% mcmc.list$meta$extra) model_est <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
-  else model_est <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code,]
-  model_est <- model_est[, !(names(model_est) %in% c('country_code', 'Country.or.area', 'year', 'tfr', 'country_index', 'eps', 'std'))]
-  model_est <- model_est[!duplicated(model_est),]
-  return(list(model=mcmc.list$meta$bias_model[[country.obj$index]], table=model_est))
+    model_est <- .get.model.est(excl.what = "std", mcmc.list = mcmc.list, country.code = country.code, 
+                                ISO.code = ISO.code, sim.dir = sim.dir)
+    return(list(model = model_est$meta$bias_model[[model_est$cntry.index]], table=model_est$table))
 }
 
 get.std.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL) {
-  ############
-  # Returns an object of class bayesTFR.prediction
-  # Set mcmc.dir to NA, if the prediction object should not have a pointer 
-  # to the corresponding mcmc traces.
-  ############
-  e <- new.env()
-  data('iso3166', envir=e)
-  iso3166 <- e$iso3166
-  if (is.null(mcmc.list)) 
-    mcmc.list <- get.tfr.mcmc(sim.dir)
-  if (is.null(mcmc.list)) {
-    warning('MCMC does not exist.')
-    return(NULL)
-  }
-  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
-  {
-    stop("MCMC does not consider uncertainty of past TFR.")
-  }
-  if (is.null(country.code))
-    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
-  
-  country.obj <- get.country.object(country.code, mcmc.list$meta)
-  if (country.obj$index %in% mcmc.list$meta$extra) model_est <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
-  else model_est <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code,]
-  model_est <- model_est[, !(names(model_est) %in% c('country_code', 'Country.or.area', 'year', 'tfr', 'country_index', 'eps', 'bias'))]
-  model_est <- model_est[!duplicated(model_est),]
-  return(list(model=mcmc.list$meta$std_model[[country.obj$index]], table=model_est))
+    model_est <- .get.model.est(excl.what = "bias", mcmc.list = mcmc.list, country.code = country.code, 
+                                ISO.code = ISO.code, sim.dir = sim.dir)
+    return(list(model=model_est$meta$std_model[[model_est$cntry.index]], table=model_est$table))
 }
 
 tfr.bias.sd <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL) {
-  ############
-  # Returns an object of class bayesTFR.prediction
-  # Set mcmc.dir to NA, if the prediction object should not have a pointer 
-  # to the corresponding mcmc traces.
-  ############
-  e <- new.env()
-  data('iso3166', envir=e)
-  iso3166 <- e$iso3166
-  if (is.null(mcmc.list)) 
-    mcmc.list <- get.tfr.mcmc(sim.dir)
-  if (is.null(mcmc.list)) {
-    warning('MCMC does not exist.')
-    return(NULL)
-  }
-  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
-  {
-    stop("MCMC does not consider uncertainty of past TFR.")
-  }
-  if (is.null(country.code))
-    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
-  
-  country.obj <- get.country.object(country.code, mcmc.list$meta)
-  if (country.obj$index %in% mcmc.list$meta$extra) 
-  {
-    model_est <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
-    covariates <- mcmc.list$meta$extra_covariates[[country.obj$index]]
-  }
-  else 
-  {
-    model_est <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code,]
-    covariates <- mcmc.list$meta$covariates
-  }
-  model_est <- model_est[, !(names(model_est) %in% c('country_code', 'Country.or.area', 'year', 'tfr', 'country_index', 'eps'))]
-  model_est <- data.table::as.data.table(model_est)
-  model_est[, 'count':=.N, by=eval(covariates)]
-  model_est <- as.data.frame(model_est)
-  model_est <- model_est[!duplicated(model_est),]
-  return(list(model_bias=mcmc.list$meta$bias_model[[country.obj$index]], 
-              model_sd=mcmc.list$meta$std_model[[country.obj$index]], 
-              table=model_est))
+    model_est <- .get.model.est(mcmc.list = mcmc.list, country.code = country.code, 
+                                ISO.code = ISO.code, sim.dir = sim.dir, remove.duplicates = FALSE)
+    covariates <- if (model_est$cntry.index %in% model_est$meta$extra) model_est$meta$extra_covariates[[model_est$cntry.index]] else model_est$meta$covariates
+
+    model_est_dt <- data.table::as.data.table(model_est$table)
+    model_est_dt[, 'count':=.N, by=eval(covariates)]
+    model_est_df <- as.data.frame(model_est_dt)
+    model_est_df <- model_est_df[!duplicated(model_est_df),]
+    return(list(model_bias = model_est$meta$bias_model[[model_est$cntry.index]], 
+                model_sd = model_est$meta$std_model[[model_est$cntry.index]], 
+                table = model_est_df))
 }
 
-get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1, probs=NULL, adjust=TRUE) {
-  ############
-  # Returns an object of class bayesTFR.prediction
-  # Set mcmc.dir to NA, if the prediction object should not have a pointer 
-  # to the corresponding mcmc traces.
-  ############
+get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, 
+                               burnin=0, thin = 1, probs=NULL, adjust=TRUE) {
   e <- new.env()
   data('iso3166', envir=e)
   iso3166 <- e$iso3166
@@ -396,7 +344,14 @@ get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL,
       tfr_quantile$year <- seq(start.year+3, end.year-2, 5)
     output$tfr_quantile <- tfr_quantile
   }
+  class(output) <- "bayesTFR.estimation"
   return(output)
+}
+
+print.bayesTFR.estimation <- function(x, ...){
+    res <- list(country.obj = x$country.obj, tfr_table = head(x$tfr_table))
+    if(!is.null(x$tfr_quantile)) res$tfr_quantile <- head(x$tfr_quantile)
+    print(res)
 }
 
 get.regtfr.prediction <- function(sim.dir, country=NULL){
@@ -1104,10 +1059,11 @@ country.names <- function(meta, countries=NULL, index=FALSE) {
 	return(meta$regions$country_name[sapply(countries, get.country.index)])
 }
 
-summary.bayesTFR.mcmc <- function(object, country=NULL, 
-								par.names=NULL, par.names.cs=NULL, 
-								thin=1, burnin=0, ...) {
-  if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
+summary.bayesTFR.mcmc <- function(object, country = NULL, par.names = NULL, par.names.cs = NULL, 
+							        thin = 1, burnin = 0, ...) {
+    res <- list()
+    class(res) <- "summary.bayesTFR.mcmc"
+    if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
 	if(is.null(country) && is.null(par.names))
 	 	par.names <- if(is.null(object$meta$phase) || object$meta$phase == 2) tfr.parameter.names(trans=TRUE, meta = object$meta) 
 	 					else tfr3.parameter.names()
@@ -1116,15 +1072,17 @@ summary.bayesTFR.mcmc <- function(object, country=NULL,
 	 					else tfr3.parameter.names.cs()
 	if (!is.null(country)) {
 		country.obj <- get.country.object(country, object$meta)
-		cat('\nCountry:', country.obj$name, '\n')
-		if (!is.element(country.obj$index, object$meta$id_DL)) {
-			cat('\tnot used for estimation because no decline observed.\n')
-			return(NULL)
-		}
+		if(is.null(country.obj$name)) stop("Country ", country, " not found.")
+		res$country.name <- country.obj$name
+		if((is.null(object$meta$phase) || object$meta$phase == 2) && !is.element(country.obj$index, object$meta$id_DL))
+			return(res)
+		if((!is.null(object$meta$phase) && object$meta$phase == 3) && !is.element(country.obj$index, object$meta$id_phase3))
+		    return(res)
 		country <- country.obj$code
 	} 
-	summary(coda.mcmc(object, country=country, par.names=par.names,
+	res$results <- summary(coda.mcmc(object, country=country, par.names=par.names,
 							par.names.cs=par.names.cs, thin=thin, burnin=burnin), ...)
+	return(res)
 }
 
 summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL, 
@@ -1163,22 +1121,23 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	      res$phase3 <- .summary.mcmc.set.phaseIII(object3, country, chain.id, par.names3, par.names3.cs, meta.only, thin, burnin, ...)
 	      if (!is.null(res$phase2) && !meta.only)
 	      {
-	        stat <- res$phase3$statistics
-	        quant <- res$phase3$quantiles
+	        stat <- res$phase3$results$statistics
+	        quant <- res$phase3$results$quantiles
 	        if(is.null(dim(stat))) { # need to add name of the par
 	            dim(stat) <- c(1, length(stat))
-	            dimnames(stat) <- list(c(par.names3, par.names3.cs), names(res$phase3$statistics))
+	            dimnames(stat) <- list(c(par.names3, par.names3.cs), names(res$phase3$results$statistics))
 	            dim(quant) <- c(1, length(quant))
-	            dimnames(quant) <- list(c(par.names3, par.names3.cs), names(res$phase3$quantiles))
+	            dimnames(quant) <- list(c(par.names3, par.names3.cs), names(res$phase3$results$quantiles))
 	        }
-	        if(is.null(dim(res$phase2$statistics))) { # need to add name of the par
-	          dim(res$phase2$statistics) <- c(1, length(res$phase2$statistics))
-	          dimnames(res$phase2$statistics) <- list(c(par.names, par.names.cs), names(res$phase2$statistics))
-	          dim(res$phase2$quantiles) <- c(1, length(res$phase2$quantiles))
-	          dimnames(res$phase2$quantiles) <- list(c(par.names, par.names.cs), names(res$phase2$quantiles))
+	        if(is.null(dim(res$phase2$results$statistics))) { # need to add name of the par
+	          dim(res$phase2$results$statistics) <- c(1, length(res$phase2$results$statistics))
+	          dimnames(res$phase2$results$statistics) <- list(c(par.names, par.names.cs), names(res$phase2$results$statistics))
+	          dim(res$phase2$results$quantiles) <- c(1, length(res$phase2$results$quantiles))
+	          dimnames(res$phase2$results$quantiles) <- list(c(par.names, par.names.cs), names(res$phase2$results$quantiles))
 	        }
-	        res$phase2$statistics <- rbind(res$phase2$statistics, stat)
-	        res$phase2$quantiles <- rbind(res$phase2$quantiles, quant)
+	        res$phase2$results$statistics <- rbind(res$phase2$results$statistics, stat)
+	        res$phase2$results$quantiles <- rbind(res$phase2$results$quantiles, quant)
+	        res$phase3$results <- NULL
 	      }
 	    }
 	  }
@@ -1195,16 +1154,12 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 								par.names=tfr.parameter.names(trans=TRUE), 
 								par.names.cs=tfr.parameter.names.cs(trans=TRUE), 
 								meta.only=FALSE, thin=1, burnin=0, ...) {
-    res <- list(nr.countries = object$meta$nr_countries, 
-                nr.countries.est = length(object$meta$id_DL[object$meta$id_DL<=object$meta$nr_countries_estimation]),
-                wpp.year = object$meta$wpp.year,
-                est.period = paste(object$meta$start.year, object$meta$present.year, sep = '-')
-                )
+    res <- list(meta = summary(object$meta))
 	if(meta.only) 
-		return(c(res, list(meta = get.meta.only(object))))
+		return(c(res, list(chain.info = chain.info(object))))
 	
 	if (!is.null(chain.id))
-		return(c(res, list(chain = summary(object$mcmc.list[[chain.id]], country=country, par.names=par.names,
+		return(c(res, list(mcmc = summary(object$mcmc.list[[chain.id]], country=country, par.names=par.names,
 							par.names.cs=par.names.cs, thin=thin, burnin=burnin, ...))))
 	if (!is.null(country)) {
 		country.obj <- get.country.object(country, object$meta)
@@ -1221,13 +1176,12 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 .summary.mcmc.set.phaseIII <- function(object, country=NULL, chain.id=NULL, 
 								par.names=NULL, par.names.cs=NULL, 
 								meta.only=FALSE, thin=1, burnin=0, ...) {
-    res <- list(nr.countries = object$meta$nr.countries,
-                nr.est = sum(sapply(object$mcmc.list[[1]]$observations, function(x) length(x)-1)),
-                wpp.year = object$meta$parent$wpp.year
+    res <- list(meta = summary(object$meta),
+                nr.est = sum(sapply(object$mcmc.list[[1]]$observations, function(x) length(x)-1))
                 )
-    if(meta.only) return(c(res, list(meta = get.meta.only(object))))
+    if(meta.only) return(c(res, list(chain.info = chain.info(object))))
 	if (!is.null(chain.id))
-	    return(c(res, list(chain = summary(object$mcmc.list[[chain.id]], country=country, par.names=par.names,
+	    return(c(res, list(mcmc = summary(object$mcmc.list[[chain.id]], country=country, par.names=par.names,
 							par.names.cs=par.names.cs, thin=thin, burnin=burnin, ...))))
 	if (!is.null(country)) {
 		country.obj <- get.country.object(country, object$meta)
@@ -1241,66 +1195,110 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
     return(res)
 }
 
+summary.bayesTFR.mcmc.meta <- function(object, ...) {
+    res <- list(phase = object$phase, 
+                est.period = paste(object$start.year, object$present.year, sep = '-')
+                )
+    if(is.null(res$phase)) res$phase <- 2
+    if(object$phase == 2) {
+        res <- c(res, list(nr.countries = object$nr_countries,
+                            nr.countries.est = length(object$id_DL[object$id_DL <= object$nr_countries_estimation]),
+                           wpp.year = object$wpp.year,
+                           annual = if(!is.null(object$annual.simulation)) object$annual.simulation else FALSE
+                        ))
+    } else { # phase 3
+        res <- c(res, list(nr.countries = object$nr.countries, wpp.year = object$parent$wpp.year,
+                           annual = if(!is.null(object$parent$annual.simulation)) object$parent$annual.simulation else FALSE))
+    }
+    class(res) <- "summary.bayesTFR.mcmc.meta"
+    return(res)
+}
 
-get.meta.only <- function(object) {
+chain.info <- function(object) {
 	get.iter <- function(x) x$finished.iter
-	res <- list(nr.chains=object$meta$nr.chains, 
-					iters=sapply(object$mcmc.list, get.iter),
-					thin=object$mcmc.list[[1]]$thin)
-	class(res) <- paste('summary.', class(object), '.meta', sep='')
+	res <- list(nr.chains = object$meta$nr.chains, 
+				iters = sapply(object$mcmc.list, get.iter),
+				thin = object$mcmc.list[[1]]$thin)
+	class(res) <- 'summary.chain.info'
 	return(res)
 }
- 
-print.summary.bayesTFR.mcmc.set <- function(x, ...) {
-    if(!is.null(x$phase2)) {
-        with(x$phase2, {
-            cat('\nMCMCs of phase II')
-            cat('\n=================')
-            cat('\nNumber of countries:', nr.countries)
-            cat('\nHyperparameters estimated using', nr.countries.est, 'countries.\n')
-            cat('\nWPP:', wpp.year)
-            cat('\nInput data: TFR for period', est.period)
-            cat('\n')
-            if(exists("meta")) print(meta)
-            if(exists("chain")) print(chain)
-            if(exists("country.name")){
-                cat('\nCountry:', country.name, '\n')
-                if (!exists("results"))
-                    cat('\tnot used for estimation because no decline observed.\n')
-            }
-            if(exists("results"))
-                print(results)
-        })
-    }
-    if(is.null(x$phase3)) return()
-    with(x$phase3, {
+
+print.summary.bayesTFR.mcmc.meta <- function(x, ...) {
+    if(x$phase == 2) {
+        cat('\nMCMCs of phase II')
+        cat('\n=================')
+        cat('\nNumber of countries:', x$nr.countries)
+        cat('\nHyperparameters estimated using', x$nr.countries.est, 'countries.')
+        cat('\nWPP:', x$wpp.year)
+        cat('\nInput data: TFR for period', x$est.period)
+    } else { # Phase 3
         cat('\nMCMCs of phase III')
         cat('\n==================')
-        cat('\nNumber of countries:', nr.countries)
-        cat('\nNumber of observations:', nr.est)
-        cat('\nWPP:', wpp.year)
+        cat('\nNumber of countries:', x$nr.countries)
+        cat('\nWPP:', x$wpp.year)
+    }
+    cat('\nTime interval: ')
+    if(x$annual) cat('annual') else cat('5-year') 
+    cat('\n')
+}
+
+print.summary.bayesTFR.mcmc.set <- function(x, ...) {
+    results <- NULL
+    if(!is.null(x$phase2)) {
+        p <- x$phase2
+        print(p$meta)
+        if(!is.null(p$chain.info)) print(p$chain.info)
+        if(!is.null(p$mcmc)) print(p$mcmc)
+        if(!is.null(p$country.name)){
+            cat('\nCountry:', p$country.name, '\n')
+            if (is.null(p$results))
+                cat('\tnot used for estimation because no decline observed.\n')
+        }
+        results <- p$results
+    }
+    if(!is.null(x$phase3)) {
+        p <- x$phase3
+        print(p$meta)
+        cat('Number of observations:', p$nr.est)
         cat('\n')
-        if(exists("meta")) print(meta)
-        if(exists("chain")) print(chain)
-        if(exists("country.name")){
-            cat('\nCountry:', country.name, '\n')
-            if (!exists("results"))
+        if(!is.null(p$chain.info)) print(p$chain.info)
+        if(!is.null(p$mcmc)) print(p$mcmc)
+        if(!is.null(p$country.name)){
+            cat('\nCountry:', p$country.name, '\n')
+            if (is.null(p$results))
                 cat('\tnot used for estimation because it has not reached phase III yet.\n')
         }
-        if(exists("results"))
-            print(results)
-    })
+        if(!is.null(p$results))
+            results <- p$results
+    }
+    if(!is.null(results)) {
+        if(!is.null(x$phase2) && !is.null(x$phase3)) {
+            cat('\nParameter estimates for both phases')
+            cat('\n===================================')
+        }
+        print(results)
+    }
 }
 
 print.bayesTFR.mcmc <- function(x, ...) {
     print(summary(x, ...))
 }
 
+print.summary.bayesTFR.mcmc <- function(x, ...) {
+    if(!is.null(x$country.name)){
+        cat('\nCountry:', x$country.name, '\n')
+        if (is.null(x$results))
+            cat('\tnot used for estimation.\n')
+    }
+    if(!is.null(x$results))
+        print(x$results)
+}
+
 print.bayesTFR.mcmc.set <- function(x, ...) {
     print(summary(x, ...))
 }
 
-print.bayesTFR.mcmc.set.meta <- function(x, ...) {
+print.bayesTFR.mcmc.meta <- function(x, ...) {
     print(summary(x, ...))
 }
 
@@ -1308,7 +1306,7 @@ print.bayesTFR.prediction <- function(x, ...) {
     print(summary(x, ...))
 }
 
-print.summary.bayesTFR.mcmc.set.meta <- function(x, ...) {
+print.summary.chain.info <- function(x, ...) {
 	cat('\nNumber of chains =', x$nr.chains)
 	cat('\nIterations =', paste(1,':',sum(x$iters)))
 	cat('\nThinning interval =', x$thin)
@@ -1323,10 +1321,6 @@ get.prediction.summary.data <- function(object, unchanged.pars, country, compact
 		res[[par]] <- object[[par]]
 	proj.and.present.years <- if(is.null(object$proj.years)) 
 	      as.integer(dimnames(object$quantiles)[[3]]) else object$proj.years
-				#seq(object$end.year-5*object$nr.projections-2, 
-				#						object$end.year-2, by=5)
-							 
-
 	res$projection.years <- proj.and.present.years[2:length(proj.and.present.years)]
 	if(is.null(country)) return(res)
 	if (!is.list(country))
@@ -1395,50 +1389,75 @@ print.summary.bayesTFR.prediction <- function(x, digits = 3, ...) {
 }
 
 
-summary.bayesTFR.convergence <- function(object, expand=FALSE, ...) {
-	cat('\nConvergence diagnostics for burnin =', object$burnin, 'and thin =', object$thin)
-	cat('\n********************************************************')
-	cat('\nFull chains:')
-	cat('\n============')
-	print(summary(object$mcmc.set, meta.only=TRUE))
-
-	if(!is.null(object$thin.mcmc)) {
-		cat('\nThinned, burned and collapsed chain:')
-		cat('\n====================================')
-		print(get.meta.only(object$thin.mcmc))
+summary.bayesTFR.convergence <- function(object, expand = FALSE, ...) {
+    res <- list(burnin = object$burnin, thin = object$thin, express = object$express,
+                results = summary(object$mcmc.set, meta.only=TRUE))
+	if(!is.null(object$thin.mcmc)) 
+	    res$thin.mcmc <- chain.info(object$thin.mcmc)
+	if(!object$express) {
+	    res$nr.countries.used <- object$nr.countries['used']
+	    res$nr.countries.total <- object$nr.countries['total']
 	}
-	
-	if(object$express) cat('\nExpress diagnostics - no country-specific parameters were included.')
-	else {
-		cat('\nConvergence checked on', object$nr.countries['used'], 
-					'countries out of', object$nr.countries['total'], 'countries total.')
-	}
-	cat('\n')
 	if(nrow(object$result) > 0) {
-		if (object$lresult.country.independent > 0) {
-			cat('\nNot converged country-independent parameters:')
-			cat('\n---------------------------------------------\n')
-			print(object$result[1:object$lresult.country.independent,,drop=FALSE])
-		}
-		if (nrow(object$result) - object$lresult.country.independent > 0) {
-			cat('\nNot converged country-specific parameters:')
-			cat('\n-------------------------------------------\n')
-			print(object$result[(object$lresult.country.independent+1):nrow(object$result),,drop=FALSE])
-		}
-		cat('\n\nAt least', object$iter.needed, 'more iterations needed  to achieve convergence.\n')
+		if (object$lresult.country.independent > 0) 
+		    res$hyper.pars <- object$result[1:object$lresult.country.independent,,drop=FALSE]
+		if (nrow(object$result) - object$lresult.country.independent > 0)
+		    res$cntry.pars <- object$result[(object$lresult.country.independent+1):nrow(object$result),,drop=FALSE]
+		res$iter.needed <- object$iter.needed
 	}
-	if(object$status['green']) {
-		cat('\nSimulation has converged.')
-		cat('\nNumber of trajectories to be used:', object$use.nr.traj)
-	}
+	res$status <- names(object$status)[object$status]
+	if(object$status['green']) 
+	    res$use.nr.traj <- object$use.nr.traj
+
 	if(expand && !object$status['green'] && !is.null(object$country.specific) 
-			&& !is.null(object$country.specific$not.converged.parameters)) {
-		cat('\nWarning: ')
-		cat('The following parameters did not converge:\n')
-		print(object$country.specific$not.converged.parameters)
-	}		
-	cat('\nStatus:', names(object$status)[object$status], '\n')
+			&& !is.null(object$country.specific$not.converged.parameters)) 
+	    res$not.converged.pars <- object$country.specific$not.converged.parameters
+	class(res) <- "summary.bayesTFR.convergence"
+	return(res)
 }
+
+print.summary.bayesTFR.convergence <- function(x, ...) {
+    cat('\nConvergence diagnostics for burnin =', x$burnin, 'and thin =', x$thin)
+    cat('\n********************************************************')
+    cat('\nFull chains:')
+    cat('\n============')
+    print(x$results)
+    
+    if(!is.null(x$thin.mcmc)) {
+        cat('\nThinned, burned and collapsed chain:')
+        cat('\n====================================')
+        print(x$thin.mcmc)
+    }
+    if(x$express) cat('\nExpress diagnostics - no country-specific parameters were included.')
+    else cat('\nConvergence checked on', x$nr.countries.used, 
+             'countries out of', x$nr.countries.total, 'countries total.')
+    cat('\n')
+    if(!is.null(x$iter.needed)) {
+        if (!is.null(x$hyper.pars)) {
+            cat('\nNot converged country-independent parameters:')
+            cat('\n---------------------------------------------\n')
+            print(x$hyper.pars)
+        }
+        if (!is.null(x$cntry.pars)) {
+            cat('\nNot converged country-specific parameters:')
+            cat('\n-------------------------------------------\n')
+            print(x$cntry.pars)
+        }
+        cat('\n\nAt least', x$iter.needed, 'more iterations needed  to achieve convergence.\n')
+    }
+    if(x$status == "green") {
+        cat('\nSimulation has converged.')
+        cat('\nNumber of trajectories to be used:', x$use.nr.traj)
+    }
+    if(!is.null(x$not.converged.pars)) {
+        cat('\nWarning: The following parameters did not converge:\n')
+        print(x$not.converged.pars)
+    }
+    cat('\nStatus:', x$status, '\n')
+}
+
+print.bayesTFR.convergence <- function(x, ...) 
+    print(summary(x))
 
 tfr.info <- function(sim.dir) {
 	mc <- get.tfr.mcmc(sim.dir=sim.dir)

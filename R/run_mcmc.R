@@ -1,8 +1,9 @@
 run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 'bayesTFR.output'), 
-						thin=1, replace.output=FALSE, annual = FALSE,
+						thin=1, replace.output=FALSE, annual = FALSE, uncertainty = FALSE, 
 						# meta parameters
 						start.year=1950, present.year=2020, wpp.year=2019,
-						my.tfr.file = NULL, my.locations.file = NULL, buffer.size=100,
+						my.tfr.file = NULL, my.locations.file = NULL, my.tfr.raw.file = NULL, 
+						ar.phase2 = FALSE, buffer.size = 100,
 					 	U.c.low=5.5, U.up=8.8, U.width=3,
 					 	mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2,                                                
         				Triangle_c4.low = 1, Triangle_c4.up = 2.5,
@@ -24,12 +25,11 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	sigma0.ini=NULL, Triangle_c4.ini=NULL, const.ini=NULL, gamma.ini=1, 
 						phase3.starting.values=NULL,
 					 	proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
+						iso.unbiased = NULL, covariates = c('source', 'method'), cont_covariates = NULL, 
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
 					 	save.all.parameters = FALSE, compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
-						verbose=FALSE, verbose.iter = 10, uncertainty = FALSE, 
-						my.tfr.raw.file=NULL, 
-						iso.unbiased=NULL, covariates=c('source', 'method'), cont_covariates=NULL, ar.phase2=FALSE, ...) 
+						verbose=FALSE, verbose.iter = 10, ...) 
 {
   if(file.exists(output.dir)) {
 		if(length(list.files(output.dir)) > 0 & !replace.output)
@@ -363,9 +363,9 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								countries = NULL, my.tfr.file = NULL, iter = NULL,
 								thin=1, thin.extra=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
 								my.locations.file = NULL,
-								verbose=FALSE, verbose.iter=100, uncertainty=FALSE, 
-								my.tfr.raw.file=NULL, 
-								iso.unbiased=NULL, covariates=c('source', 'method'), cont_covariates=NULL, ...) {
+								uncertainty=FALSE, my.tfr.raw.file=NULL, iso.unbiased=NULL, 
+								covariates=c('source', 'method'), cont_covariates=NULL, 
+								verbose=FALSE, verbose.iter=100, ...) {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta.old <- mcmc.set$meta
   
