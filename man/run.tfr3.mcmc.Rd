@@ -6,7 +6,7 @@
 Running Markov Chain Monte Carlo for Parameters of Total Fertility Rate in Phase III
 }
 \description{
-Runs (or continues running) MCMCs for simulating phase III total fertility rate, using a Bayesian hierarchical version of an AR(1) model.
+Runs (or continues running) MCMCs for simulating Phase III total fertility rate, using a Bayesian hierarchical version of an AR(1) model.
 }
 \usage{
 run.tfr3.mcmc(sim.dir, nr.chains = 3, iter = 50000, thin = 10, 

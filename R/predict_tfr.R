@@ -6,7 +6,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						use.tfr3=TRUE, burnin3=2000,
 						mu=2.1, rho=0.8859, sigmaAR1=0.1016,
 						min.tfr=0.5, use.correlation=FALSE,
-						save.as.ascii=1000, output.dir = NULL,
+						save.as.ascii=0, output.dir = NULL,
 						low.memory=TRUE,
 						seed=NULL, verbose=TRUE, uncertainty=FALSE, ...) {
 	if(!is.null(mcmc.set)) {
@@ -88,7 +88,7 @@ get.burnin.nrtraj.from.diagnostics <- function(sim.dir, ...) {
 }
 
 tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-					prediction.dir=sim.dir, countries = NULL, save.as.ascii=1000, verbose=TRUE, uncertainty=FALSE) {
+					prediction.dir=sim.dir, countries = NULL, save.as.ascii=0, verbose=TRUE, uncertainty=FALSE) {
 	# Run prediction for given countries/regions (as codes). If they are not given it will be set to countries 
 	# for which there are MCMC results but no prediction.
 	# It is to be used after running run.tfr.mcmc.extra
@@ -165,7 +165,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 								use.correlation=FALSE, countries = NULL,
 								adj.factor1=NA, adj.factor2=0, forceAR1=FALSE,
 								boost.first.period.in.phase2=TRUE,
-							    save.as.ascii=1000, output.dir = NULL, write.summary.files=TRUE, 
+							    save.as.ascii=0, output.dir = NULL, write.summary.files=TRUE, 
 							    is.mcmc.set.thinned=FALSE, force.creating.thinned.mcmc=FALSE,
 							    write.trajectories=TRUE, 
 							    verbose=verbose, uncertainty=FALSE){

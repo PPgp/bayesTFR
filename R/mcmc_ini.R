@@ -458,6 +458,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
           }
     }
    	dontsave.pars <- c('add_to_sd_Tc', 'const_sd_dummie_Tc', 'meta')
+   	if(uncertainty) dontsave.pars <- c(dontsave.pars, 'meta3')
     if (!save.all.parameters) dontsave.pars <- c(dontsave.pars, 'eps_Tc')
     if (!exists(".Random.seed")) runif(1)	    	
 	mcmc <- structure(list(
@@ -472,7 +473,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
                         d.ini=d.ini, gamma.ini=gamma.ini,Triangle_c4.ini=Triangle_c4.ini,
                         iter=iter, finished.iter=1, length = 1,
                         id=chain.id,
-                        output.dir=paste('mc', chain.id, sep=''),
+                        output.dir=paste0('mc', chain.id),
                         traces=0, traces.burnin=0, 
                         rng.state = .Random.seed,
                         compression.type=mcmc.meta$compression.type,

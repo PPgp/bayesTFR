@@ -781,3 +781,17 @@ test.reproduce.simulation <- function() {
     test.ok(test.name)
     unlink(sim.dir, recursive=TRUE)
 }
+
+test.run.mcmc.simulation.with.uncertainty <- function() {
+    sim.dir <- tempfile()
+    
+    # run MCMC
+    test.name <- 'running MCMC with uncertainty'
+    start.test(test.name)
+    m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, uncertainty = TRUE)
+    stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
+    stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
+    stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))
+    test.ok(test.name)
+    unlink(sim.dir, recursive=TRUE)
+}

@@ -1514,7 +1514,8 @@ tfr.set.identical <- function(mcmc.set1, mcmc.set2, include.output.dir=TRUE) {
 	# Test if two bayesTFR sets are identical
 	if(!include.output.dir) 
 		mcmc.set1$meta$output.dir <- mcmc.set2$meta$output.dir <- NULL
-	same <- setequal(names(mcmc.set1), names(mcmc.set2)) && identical(mcmc.set1$meta, mcmc.set2$meta) && length(mcmc.set1$mcmc.list) == length(mcmc.set2$mcmc.list)
+
+	same <- setequal(names(mcmc.set1), names(mcmc.set2)) && tfr.meta.identical(mcmc.set1$meta, mcmc.set2$meta) && length(mcmc.set1$mcmc.list) == length(mcmc.set2$mcmc.list)
 	if(!same) return(same)
 	for(i in 1:length(mcmc.set1$mcmc.list)) {
 		if(!include.output.dir) mcmc.set1$mcmc.list[[i]]$meta$output.dir <- mcmc.set2$mcmc.list[[i]]$meta$output.dir <- NULL
@@ -1523,10 +1524,15 @@ tfr.set.identical <- function(mcmc.set1, mcmc.set2, include.output.dir=TRUE) {
 	return(same)
 }
 
+tfr.meta.identical <- function(meta1, meta2) {
+    identical(meta1, meta2) || all.equal(meta1, meta2)
+}
+
 tfr.identical <- function(mcmc1, mcmc2) {
-	# Test if two mcmcs are identical	
+	# Test if two mcmcs are identical
 	same <- setequal(names(mcmc1), names(mcmc2))
-	for(item in names(mcmc1)) 
+	if(!same || !tfr.meta.identical(mcmc1$meta, mcmc2$meta)) return(FALSE)
+	for(item in setdiff(names(mcmc1), "meta")) 
 		same <- same && identical(mcmc1[[item]], mcmc2[[item]])
 	return(same)
 }

@@ -9,7 +9,7 @@ Editing median for estimation and projections.
 These functions are to be used by expert analysts. They allow to change the estimation and projection medians to specific values.
 }
 \usage{
-tfr.median.set.all(sim.dir, country, values, years=NULL)
+tfr.median.set.all(sim.dir, country, values, years = NULL)
 
 tfr.median.reset.estimation(sim.dir, countries)
 }
@@ -22,10 +22,12 @@ tfr.median.reset.estimation(sim.dir, countries)
   \item{years}{Numeric vector giving years which \code{values} correspond to. Ideally it should be of the same length as \code{values}.}
 }
 \details{
-These functions are set for experts to adjust both prediction and estimation medians.
+Expert analysts can use these functions to adjust both prediction and estimation medians. Estimation medians can only be adjusted if the simulation was performed with \code{uncertainty = TRUE}. In such a case \code{years} can include past time periods. By default a union of estimation and projection time periods is considered when matched to \code{values}. 
+
+Function \code{tfr.median.reset.estimation} resets previous adjustments obtained using \code{tfr.median.set.all}.
 }
 \value{
-Output is a list. If there are years in estimation, then there will be an object of class \code{\link{bayesTFR.mcmc.meta}}. If there are years in prediction, then there will be an object of class \code{\link{bayesTFR.prediction}}
+Output is a list. If there are time periods matched to estimation, an object of class \code{\link{bayesTFR.mcmc.meta}} is included in the element \code{meta}. If there are time periods matched to years in prediction, then an object of class \code{\link{bayesTFR.prediction}} is included in the element \code{pred}.
 }
 \author{
 Peiran Liu

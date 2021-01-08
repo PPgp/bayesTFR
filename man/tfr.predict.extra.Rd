@@ -11,7 +11,7 @@ Using the posterior parameter samples the function  generates posterior trajecto
 \usage{
 tfr.predict.extra(sim.dir = file.path(getwd(), 'bayesTFR.output'), 
     prediction.dir = sim.dir, countries = NULL, 
-    save.as.ascii = 1000, verbose = TRUE, uncertainty=FALSE)
+    save.as.ascii = 0, verbose = TRUE, uncertainty=FALSE)
 	}
 \arguments{
   \item{sim.dir}{Directory with the MCMC simulation results.}

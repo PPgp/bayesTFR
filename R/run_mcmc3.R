@@ -72,7 +72,6 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 								sigma.eps.ini=sigma.eps.ini, sigma.eps.ini.range=sigma.eps.ini.range,
 								compression.type=compression.type, buffer.size=buffer.size, auto.conf=auto.conf
 								), class='bayesTFR.mcmc.meta')	
-	bayesTFR.mcmc.meta$annual.simulation <- mc$meta$annual.simulation
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
 	meta <- bayesTFR.mcmc.meta
 	if(meta$nr.countries <= 0) return(NULL)
@@ -153,8 +152,7 @@ mcmc3.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NU
 	return(mcmc)
 }
 
-mcmc3.ini <- function(chain.id, mcmc.meta, iter=100, thin=1, starting.values=NULL,
-				     verbose=FALSE) {
+mcmc3.ini <- function(chain.id, mcmc.meta, iter=100, thin=1, starting.values=NULL, uncertainty = FALSE) {
                                                         
     if (!exists(".Random.seed")) runif(1)
   
@@ -164,6 +162,7 @@ mcmc3.ini <- function(chain.id, mcmc.meta, iter=100, thin=1, starting.values=NUL
         				iter=iter, id=chain.id, traces=0,
         				traces.burnin=0, rng.state = .Random.seed,
         				compression.type=mcmc.meta$compression.type,
+        				uncertainty = uncertainty,
         				meta = mcmc.meta)), class='bayesTFR.mcmc')
     # country-specific initial values
     for(varname in c('mu', 'rho')) {

@@ -26,7 +26,7 @@ tfr3.parameter.names.cs(country.code = NULL)
   \item{trans}{It can be \code{NULL} or logical. If \code{TRUE},
 	 names of the transformable parameters (i.e. \sQuote{alpha} in case of country-independent parameters, or \sQuote{gamma} in case of country-specific parameters) are replaced by the names of the transformed parameters (i.e. \sQuote{alphat}, or \sQuote{gammat}). If \code{trans=FALSE}, there is no such replacement. If \code{trans=NULL}, all parameter names, 
 including the transformable parameters are returned.}
-\item{meta}{It can be \code{NULL} or bayesTFR.mcmc.meta object. If \code{NULL}, names of parameters \eqn{phi} of annual model in Phase II will not be considered. If the meta object is provided, then \eqn{phi} will be included if \eqn{rho\_phase2} is considered and estimated in the MCMC process.}
+\item{meta}{It can be \code{NULL} or a \code{\link{bayesTFR.mcmc.meta}} object. If not \code{NULL} and its element \code{ar.phase2} is \code{TRUE} (i.e. the simulation considered an additional AR(1) parameter in the estimation), then the names include also \sQuote{phi}.}
 \item{country.code}{Country code. If it is given, the country-specific parameter names contain the postfix \sQuote{_c\eqn{x}} where \eqn{x} is the \code{country.code}.}
 \item{back.trans}{Logical indicating if back-transformable parameter names (i.e. \sQuote{Triangle_c1}, \dots, \sQuote{Triangle_c3}) should be returned.}
 }

@@ -269,7 +269,8 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 	  for(var in names(starting.values)) {
 	    this.sv[[var]] <- starting.values[[var]][chain.id]
 	  }
-	  mcmc3 <- do.call('mcmc3.ini', c(list(chain.id, meta, iter=iter[chain.id], thin=thin, starting.values=this.sv) ))
+	  mcmc3 <- do.call('mcmc3.ini', c(list(chain.id, meta, iter=iter[chain.id], thin=thin, 
+	                                       starting.values=this.sv, uncertainty = uncertainty) ))
 	  for (name in names(mcmc3))
 	  {
 	    if (!(name %in% names(mcmc)))
@@ -285,7 +286,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 	
 	if (verbose) 
 		cat('Store initial values into ', mcmc$output.dir, '\n')
-	
+
 	store.mcmc(mcmc, append=FALSE, flush.buffer=TRUE, verbose=verbose)
 	if (uncertainty) store.mcmc3(mcmc, append=FALSE, flush.buffer=TRUE, verbose=verbose)
 	
@@ -375,8 +376,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
     cont_covariates <- meta.old[['cont_covariates']]
   }
   
-  Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, 
-												my.locations.file=my.locations.file, burnin=burnin, verbose=verbose, uncertainty=uncertainty, 
+  Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, my.locations.file=my.locations.file, 
+												burnin=burnin, verbose=verbose, uncertainty=uncertainty, 
 												my.tfr.raw.file=my.tfr.raw.file)
 	if(length(Eini$index) <= 0) {
 		cat('\nNothing to be done.\n')

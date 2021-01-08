@@ -16,7 +16,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
     nr.traj = NULL, thin = NULL, burnin = 2000,
     use.diagnostics = FALSE, use.tfr3 = TRUE, burnin3 = 2000,
     mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016, min.tfr = 0.5,
-    use.correlation = FALSE, save.as.ascii = 1000, output.dir = NULL, 
+    use.correlation = FALSE, save.as.ascii = 0, output.dir = NULL, 
     low.memory = TRUE, seed = NULL, verbose = TRUE, uncertainty = FALSE, \dots)
 }
 
