@@ -342,10 +342,10 @@ one.step.mcmc3.sampling <- function(mcmc)
 
 .cleanup.mcmc <- function(mcmc) {
 	if(is.environment(mcmc)) {
-		rm(list=mcmc$dontsave[mcmc$dontsave != 'meta'], envir=mcmc)
+		rm(list=mcmc$dontsave[mcmc$dontsave != 'meta' & mcmc$dontsave %in% ls(mcmc)], envir=mcmc)
 		return(NULL)
 	}
-	for(rmitem in mcmc$dontsave[mcmc$dontsave != 'meta']) mcmc[[rmitem]] <- NULL
+	for(rmitem in mcmc$dontsave[mcmc$dontsave != 'meta'  & mcmc$dontsave %in% names(mcmc)]) mcmc[[rmitem]] <- NULL
 	return(mcmc)
 }
 
