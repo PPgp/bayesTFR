@@ -866,13 +866,13 @@ get.all.prediction.years <- function(pred) {
 get.prediction.years <- function(meta, n, present.year.index=NULL) {
 	if(is.null(present.year.index)) present.year.index <- nrow(get.data.matrix(meta))
 	present.year <-  as.numeric(rownames(get.data.matrix(meta))[present.year.index])
-	year.step <- ifelse(get.item(meta$annual.simulation, "annual.simulation", FALSE), 1, 5)
+	year.step <- ifelse(get.item(meta, "annual.simulation", FALSE), 1, 5)
 	return (seq(present.year, length=n, by=year.step))
 }
 
 get.prediction.periods <- function(meta, n, ...) {
 	mid.years <- get.prediction.years(meta, n, ...)
-	if(get.item(meta$annual.simulation, "annual.simulation", FALSE))
+	if(get.item(meta, "annual.simulation", FALSE))
 	    return(mid.years)
 	return (paste(mid.years-3, mid.years+2, sep='-'))
 }
