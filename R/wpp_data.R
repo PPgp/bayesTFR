@@ -421,7 +421,7 @@ do.read.subnat.file <- function(file.name, present.year=2012) {
 }
 
 set.wpp.subnat <- function(country, start.year=1950, present.year=2010, my.tfr.file=NULL, verbose=FALSE) {
-	tfr_data <- do.read.subnat.file(my.tfr.file)
+	tfr_data <- do.read.subnat.file(my.tfr.file, present.year = present.year)
 	tfr_data <- tfr_data[tfr_data$country_code == country,]
 	locations <- create.sublocation.dataset(tfr_data)
 	loc_data <- locations$loc_data

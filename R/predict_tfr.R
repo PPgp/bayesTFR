@@ -1117,7 +1117,7 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 	tfr.years <- get.tfr.periods(pred$mcmc.set$meta)
 	if(!is.null(pred$present.year.index)) {
 		tfr.years <- tfr.years[1:pred$present.year.index]
-		tfr <- tfr[1:pred$present.year.index,]
+		tfr <- tfr[1:pred$present.year.index,, drop = FALSE]
 	}
 	ltfr <- dim(tfr)[1] - 1
 	nr.proj.all <- nr.proj + ltfr
