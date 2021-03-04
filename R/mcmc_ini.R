@@ -56,7 +56,7 @@ find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
 	    mid.points <- c(0, seq(ranges[1]-2, ranges[2]+3, by = 5))
 	    brks <- seq(ranges[1]-5, ranges[2] + 5, by = 5)
 	    year.bin <- findInterval(years, brks, left.open = TRUE)
-	    tfr <- aggregate(tfr, by = list(year.bin), FUN = mean)[,"x"]
+	    tfr <- aggregate(tfr, by = list(year.bin), FUN = mean, na.rm = TRUE)[,"x"]
 	    T_end <- year.bin[T_end]
 	}
     lambda <- T_end
@@ -77,7 +77,10 @@ find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
 	if(annual)  # convert lambda from 5-year scale to annual scale
 	{
 	  lambda <- min(which(year.bin == lambda) + 2, Tendorig)
-	  if (length(year.bin) - lambda < 5) lambda <- length(year.bin)
+	  if (length(year.bin) - lambda < 5) { # if in the last time period, set it to the end of the period
+	      lambda <- length(year.bin) 
+	      while(is.na(tfrorig[lambda])) lambda <- lambda - 1 # move it before the last NA if any
+	  }
 	}
 
 	return(lambda)

@@ -31,7 +31,8 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, m
 	TFRmatrix.regions <- get.TFRmatrix.and.regions(tfr_data_countries, loc_data, 
 												start.year=start.year, 
 												present.year=present.year,
-												annual = annual, verbose=verbose, my.tfr.file=my.tfr.file)
+												annual = annual, verbose=verbose, 
+												interpolate = annual && is.null(my.tfr.file))
 	if(!annual) {
 	    TFRmatrixsuppl.regions <- .get.suppl.matrix.and.regions(un.object, TFRmatrix.regions, loc_data, 
 									start.year, present.year)
@@ -196,43 +197,35 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
 
 get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950, present.year=2010, annual = FALSE,
 												 datacolnames=c(country.code='country_code', country.name='country', reg.name='reg_name',
-															reg.code='reg_code', area.name='area_name', area.code='area_code'), my.tfr.file = NULL) {
+															reg.code='reg_code', area.name='area_name', area.code='area_code'), 
+												 interpolate = FALSE) {
 	tfr_data <- data
 	nr_countries <- length(tfr_data[,1])
-	if (annual && is.null(my.tfr.file))
+	if (annual && interpolate) # interpolate 5-year data
 	{
-	  tfr_data_new <- tfr_data[, 1:2]
-	  for (year in start.year:present.year)
-	  {
-	    tfr_data_new[, as.character(year)] <- NA
-	    if (year %% 5 == 3)
-	    {
-	      tfr_data_new[, as.character(year)] <- tfr_data[, as.integer((year-1938)/5)]
-	    }
-	    else
-	    {
-	      left_ind <- floor((year-1938)/5)
-	      right_ind <- left_ind + 1
-	      left_ind <- max(left_ind, 3)
-	      right_ind <- min(right_ind, ncol(tfr_data)-2)
-	      left_dis <- year - 1938 - 5*left_ind
-	      right_dis <- 5 - left_dis
-	      tfr_data_new[, as.character(year)] <- (tfr_data[, left_ind] * right_dis + tfr_data[, right_ind] * left_dis) / 5
-	    }
-	  }
+	    names.tfr.data <- names(tfr_data)
+	    num.columns <- grep('^[0-9]{4}.[0-9]{4}$', names.tfr.data)
+	    ncol.tfr <- length(num.columns)
+	    cols.starty <- as.integer(substr(names.tfr.data[num.columns], 1,4))
+	    cols.endy <- as.integer(substr(names.tfr.data[num.columns], 6,9))
+	    years.to.interp.to <- (cols.starty[1]+3):cols.endy[length(cols.endy)]
+	    years.to.interp.from <- seq(cols.starty[1]+3, cols.endy[length(cols.endy)]-2, by = 5)
+	    tfr_data_new <- matrix(NA, nrow = nrow(tfr_data), ncol = length(years.to.interp.to))
+	    for(row in 1:nrow(tfr_data_new)) 
+	        tfr_data_new[row, ] <- approx(years.to.interp.from, tfr_data[row, num.columns], 
+	                                      xout = years.to.interp.to)$y
+	    tfr_data_new <- cbind(tfr_data[, -num.columns], tfr_data_new) 
+	    colnames(tfr_data_new) <- c(colnames(tfr_data)[-num.columns], years.to.interp.to)
 	  tfr_data <- tfr_data_new
 	}
 	names.tfr.data <- names(tfr_data)
 	if(!annual) { # index of year-columns 
-	    #num.columns <- grep('^X[0-9]{4}.[0-9]{4}$', names.tfr.data)
 	    num.columns <- grep('^[0-9]{4}.[0-9]{4}$', names.tfr.data) 
 	} else 
 	    num.columns <- grep('^[0-9]{4}$', names.tfr.data)
 	ncol.tfr <- length(num.columns)
-	#cols.starty <- as.integer(substr(names.tfr.data[num.columns], 2,5))
 	cols.starty <- as.integer(substr(names.tfr.data[num.columns], 1,4))
 	if(!annual) {
-	    #cols.endy <- as.integer(substr(names.tfr.data[num.columns], 7,10))
 	    cols.endy <- as.integer(substr(names.tfr.data[num.columns], 6,9))
 	} else
 	    cols.endy <- cols.starty+0.5
@@ -251,9 +244,7 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
 	present.col <- names.tfr.data[num.columns][present.index[1]]
 
 	tfr_matrix <- t(tfr_data[,which.max(names(tfr_data)==start.col):which.max(names(tfr_data)==present.col)])
-	#start.years <- as.integer(substr(rownames(tfr_matrix), 2,5))
 	start.years <- as.integer(substr(rownames(tfr_matrix), 1,4))
-	#end.years <- as.integer(substr(rownames(tfr_matrix), 7,10))
 	if (!annual) {
 	    end.years <- as.integer(substr(rownames(tfr_matrix), 6,9))
 	    mid.years <- start.years + ceiling((end.years- start.years)/2)
@@ -420,7 +411,7 @@ do.read.subnat.file <- function(file.name, present.year=2012) {
 	return(tfr_data)
 }
 
-set.wpp.subnat <- function(country, start.year=1950, present.year=2010, my.tfr.file=NULL, verbose=FALSE) {
+set.wpp.subnat <- function(country, start.year=1950, present.year=2010, annual = FALSE, my.tfr.file=NULL, verbose=FALSE) {
 	tfr_data <- do.read.subnat.file(my.tfr.file, present.year = present.year)
 	tfr_data <- tfr_data[tfr_data$country_code == country,]
 	locations <- create.sublocation.dataset(tfr_data)
@@ -433,6 +424,7 @@ set.wpp.subnat <- function(country, start.year=1950, present.year=2010, my.tfr.f
 	TFRmatrix.regions <- get.TFRmatrix.and.regions(tfr_data_countries, loc_data, 
 												start.year=start.year, 
 												present.year=present.year,
+												annual = annual, 
 												datacolnames=c(country.code='reg_code', country.name='name', reg.name='reg_name',
 															reg.code='NA', area.name='country', area.code='country_code'),
 												verbose=verbose)
