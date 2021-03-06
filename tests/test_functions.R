@@ -850,3 +850,42 @@ test.run.mcmc.simulation.with.uncertainty <- function() {
 
     unlink(sim.dir, recursive=TRUE)
 }
+
+test.run.annual.simulation <- function() {
+    sim.dir <- tempfile()
+    
+    test.name <- 'running MCMC with annual data'
+    start.test(test.name)
+    m <- run.tfr.mcmc(iter = 5, nr.chains = 1, output.dir = sim.dir, annual = TRUE, ar.phase2 = TRUE,
+                      present.year = 2018)
+    stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
+    stopifnot(all(1953:2018 %in% rownames(m$meta$tfr_matrix)))
+    stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))
+    stopifnot("rho_phase2" %in% tfr.parameter.names(meta = m$meta))
+    test.ok(test.name)
+    
+    test.name <- 'running annual MCMC for extra country'
+    start.test(test.name)
+    countries <- c(900, 908)
+    m <- run.tfr.mcmc.extra(sim.dir = sim.dir, countries = countries, burnin = 0)
+    stopifnot(countries %in% m$meta$regions$country_code)
+    test.ok(test.name)
+    
+    test.name <- 'running Phase III MCMC with annual data'
+    start.test(test.name)
+    m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=20, thin=1, nr.chains=2)
+    stopifnot(get.total.iterations(m3$mcmc.list, 0) == 40)
+    stopifnot(bayesTFR:::tfr.set.identical(m3, get.tfr3.mcmc(sim.dir), include.output.dir=FALSE))
+    test.ok(test.name)
+    
+    test.name <- 'running annual projections'
+    start.test(test.name)
+    pred <- tfr.predict(m, burnin=0, burnin3=0)
+    spred <- summary(pred)
+    stopifnot(spred$nr.traj == 5)
+    stopifnot(all(2019:2100 %in% spred$projection.years))
+    stopifnot(all(c(908, 900) %in% get.countries.table(pred)$code))
+    test.ok(test.name)
+    
+    unlink(sim.dir, recursive=TRUE)
+}

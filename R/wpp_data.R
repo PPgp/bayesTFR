@@ -325,7 +325,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 
 
 .extra.matrix.regions <- function(data, countries, meta, package="bayesTFR", my.locations.file=NULL, 
-                                  verbose=FALSE, annual=FALSE, uncertainty=FALSE) {
+                                  verbose=FALSE, uncertainty=FALSE, ...) {
   tfrs <- data
 	country.codes.processed <- meta$regions$country_code
 	ncountries <- get.nr.countries(meta)
@@ -365,7 +365,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 		TFRmatrix.regions <- get.TFRmatrix.and.regions(tfrs$data[include,], locations$loc_data, 
 												start.year=meta$start.year, 
 												present.year=meta$present.year,
-												annual = annual, verbose=verbose)
+												verbose=verbose, ...)
 		processed.include.codes <- intersect(include.codes, country.codes.processed)
 		return(list(tfr_matrix=TFRmatrix.regions$tfr_matrix,
 				tfr_matrix_all=TFRmatrix.regions$tfr_matrix_all, 
@@ -384,7 +384,8 @@ set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, my.locations.f
 							verbose=verbose)
 	data <- un.object$data.object
 	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, my.locations.file=my.locations.file, 
-	                                   verbose=verbose, annual=annual, uncertainty=uncertainty)
+	                                   verbose=verbose, annual=annual, uncertainty=uncertainty, 
+	                                   interpolate = is.null(my.tfr.file) && annual)
 	if(!is.null(extra.wpp)) {
 		locations <- read.UNlocations(data$data, wpp.year=meta$wpp.year, my.locations.file=my.locations.file, verbose=verbose)
 		suppl.wpp <- .get.suppl.matrix.and.regions(un.object, extra.wpp, locations$loc_data, 
