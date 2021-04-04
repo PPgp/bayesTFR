@@ -1,30 +1,15 @@
 # bayesTFR
 
-[![R build status](https://github.com/PPgp/bayesTFR/workflows/R-CMD-check/badge.svg?branch=dev)](https://github.com/PPgp/bayesTFR/actions?workflow=R-CMD-check)
+[![R build status](https://github.com/PPgp/bayesTFR/workflows/R-CMD-check/badge.svg?branch=master)](https://github.com/PPgp/bayesTFR/actions?workflow=R-CMD-check)
 
 
-R package for projecting probabilistic total fertility rate. See [Documentation on CRAN](https://cran.r-project.org/web/packages/bayesTFR/bayesTFR.pdf). Below we describe the package workflow after a major update in version 7.0.
+R package for projecting probabilistic total fertility rate. See [Documentation on CRAN](https://cran.r-project.org/web/packages/bayesTFR/bayesTFR.pdf). 
+
+For basic usage see [Sevcikova et al (2011)](https://www.jstatsoft.org/article/view/v043i01). Below we describe the package workflow after a major update in version 7.0, which adds the option of taking into account uncertainty about the observed data, as well as estimation and projections for annual data.
 
 
 # Annual Version with Uncertainty
 
-The dev branch of the bayesTFR repository implements an annual version of the model with taking uncertainty about the estimation into account. 
-
-
-## Install:
-
-To install this version, run the following:
-
-```R
-library(devtools)
-install_github("PPgp/bayesTFR", ref = "dev")
-```
-
-If bayesTFR has been loaded previously, users could switch to the new version either by re-starting the R session or
-
-```R
-detach(package:bayesTFR, unload=TRUE); library(bayesTFR)
-```
 
 ## Usage
 
@@ -314,11 +299,8 @@ run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains, iter = total.iter,
 
 In summary, the way to control the smoothness of the estimated median, is to balance the standard deviation of the model and the data. If we want a smoother median, we should avoid extreme low standard deviation estimates in the data (*in the current code, the measurement error standard deviation is not allowed to be smaller than half of the absolute value of bias*), and if we want to avoid over-confidence in model, we should set the minimum of the model standard deviation.
 
-Anyone interested in this part could email me for details.
+Anyone interested in this part could email prliu@uw.edu for details.
 
-
-## More to come
-- Email prliu@uw.edu for requirements
 
 
 
