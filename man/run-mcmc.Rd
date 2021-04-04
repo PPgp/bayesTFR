@@ -142,7 +142,7 @@ If \code{annual=TRUE}, which implies using annual data for training the model, t
 	\item{mcmc.list}{A list of objects of class \code{\link{bayesTFR.mcmc}}, one for each MCMC.}
 }
 \references{
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999/}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
 
 P. Liu, and A. E. Raftery (2020). \href{https://projecteuclid.org/euclid.aoas/1593449321}{Accounting for Uncertainty About Past Values In Probabilistic Projections of the Total Fertility Rate for All Countries.} Annals of Applied Statistics, Vol 14, no. 2, 685-705.
 }

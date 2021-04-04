@@ -74,9 +74,9 @@ The resulting prediction object is saved into \file{\{output.dir\}/predictions}.
 	}
 	
 \references{
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999/}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
 
-Raftery, A.E., Alkema, L. and Gerland, P. (2014). \href{http://www.ncbi.nlm.nih.gov/pubmed/25324591}{Bayesian Population Projections for the United Nations.}
+Raftery, A.E., Alkema, L. and Gerland, P. (2014). \href{https://pubmed.ncbi.nlm.nih.gov/25324591/}{Bayesian Population Projections for the United Nations.}
 Statistical Science, Vol. 29, 58-68. 
 
 Fosdick, B., Raftery, A.E. (2014). \href{http://europepmc.org/articles/pmc4169201}{Regional Probabilistic Fertility Forecasting by Modeling Between-Country Correlations.} Demographic Research, Vol. 30, 1011-1034. 

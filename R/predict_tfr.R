@@ -592,7 +592,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		# Ignore trajectories that go below min.tfr (0.5) 
 		isnotNA <- apply(1-(all.f_ps[icountry,,] < min.tfr), 2, prod) 
 		isnotNA <- ifelse(is.na(isnotNA),0,isnotNA)
-		all.f_ps[icountry,,isnotNA==0] <- NA
+		#all.f_ps[icountry,,isnotNA==0] <- NA
+		all.f_ps[icountry,,isnotNA==0] <- min.tfr # change 2021/03/31 to avoid NA's in trajectories
 		# extract the future trajectories (including the present period)
 		f_ps_future <- all.f_ps[icountry,(dim(all.f_ps)[2]-nr_project):dim(all.f_ps)[2],]
 		if (nmissing[[country]] > 0) { # data imputation
