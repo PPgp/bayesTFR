@@ -18,12 +18,13 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 					 	compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=50000, iter.incr=20000, nr.chains=3, thin=60, burnin=10000),
 						verbose=FALSE, verbose.iter = 1000, ...) {
-	get.init.values <- function(range) {
+  get.init.values <- function(range) {
 		ifelse(rep(nr.chains==1, nr.chains), sum(range)/2, 
 				#seq(range[1], to=range[2], length=nr.chains)
 				runif(nr.chains, range[1], range[2])
 				)
 	}
+	
 	mc <- get.tfr.mcmc(sim.dir)
 	output.dir <- file.path(sim.dir, 'phaseIII')
 	if(file.exists(output.dir)) {
@@ -54,6 +55,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 		if(is.null(get(varname)))
 			assign(varname, get.init.values(get(paste(varname, '.range', sep=''))))
 	}
+	
 	c.index <- 1: (if(use.extra.countries) get.nr.countries(mc$meta) else get.nrest.countries(mc$meta))
 	bayesTFR.mcmc.meta <- structure(list(nr.chains=nr.chains,
 								my.tfr.file=my.tfr.file, output.dir=output.dir,
@@ -130,15 +132,18 @@ mcmc3.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NU
     	cat('************\n')
     	
     this.sv <- list()
+    
 	for(var in names(starting.values)) {
 		this.sv[[var]] <- starting.values[[var]][chain.id]
 	}
+    
 	mcmc <- do.call('mcmc3.ini', c(list(chain.id, meta, iter=iter[chain.id], thin=thin, starting.values=this.sv) ))
 	if (verbose) {
     	cat('Starting values:\n')
 		print(unlist(mcmc[names(starting.values)]))
         cat('Store initial values into ', mcmc$output.dir, '\n')
-    }
+	}
+	
 	store.mcmc3(mcmc, append=FALSE, flush.buffer=TRUE, verbose=verbose)
 	
 	if (verbose) 
@@ -147,16 +152,17 @@ mcmc3.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NU
 	return(mcmc)
 }
 
-mcmc3.ini <- function(chain.id, mcmc.meta, iter=100, thin=1, starting.values=NULL,
-				     verbose=FALSE) {
+mcmc3.ini <- function(chain.id, mcmc.meta, iter=100, thin=1, starting.values=NULL, uncertainty = FALSE) {
                                                         
     if (!exists(".Random.seed")) runif(1)
+  
 	mcmc <- structure(c(starting.values, list(
         				output.dir=paste('mc', chain.id, sep=''), 
         				thin=thin, finished.iter=1, length = 1,
         				iter=iter, id=chain.id, traces=0,
         				traces.burnin=0, rng.state = .Random.seed,
         				compression.type=mcmc.meta$compression.type,
+        				uncertainty = uncertainty,
         				meta = mcmc.meta)), class='bayesTFR.mcmc')
     # country-specific initial values
     for(varname in c('mu', 'rho')) {

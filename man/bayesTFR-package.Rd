@@ -12,14 +12,6 @@ using a Bayesian hierarchical model (BHM) and the United Nations demographic tim
 }
 
 \details{
-\tabular{ll}{
-Package: \tab bayesTFR\cr
-Version: \tab 6.3-1\cr
-Date: \tab 2019-06-10\cr
-License: \tab GPL (>= 2)\cr
-URL: \tab \url{https://bayespop.csss.washington.edu}\cr
-}
-
 The projection follows a method developed by Alkema et al. (2011) and Raftery et al (2013). It uses historical data provided by the United Nations to simulate a posterior distribution of total fertility rates for all countries in the world simultaneously. 
 
 The estimation is split into two parts: 
@@ -28,6 +20,8 @@ The estimation is split into two parts:
 \item BHM for fertility in a post-transition phase (Phase III), as described in Raftery et al (2013).
 }
 The second part is optional and can be replaced by a simple AR(1) process.
+
+In addition, the package allows to assess uncertainty about the past (Liu and Rafftery 2020). Estimation and projection can be performed either for 5-year or 1-year time intervals.
 
 The main functions of the package are:
 \itemize{
@@ -67,7 +61,7 @@ There is a directory \code{ex-data} shipped with the package which contains resu
 }
 
 \author{
-Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Adrian Raftery <raftery@uw.edu>, Bailey Fosdick <bfosdick@uw.edu>, Patrick Gerland (gerland@un.org)
+Hana Sevcikova <hanas@uw.edu>, Leontine Alkema <alkema@nus.edu.sg>, Peiran Liu (prliu@uw.edu), Adrian Raftery <raftery@uw.edu>, Bailey Fosdick <bfosdick@uw.edu>, Patrick Gerland (gerland@un.org)
 
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 }
@@ -75,11 +69,13 @@ Maintainer: Hana Sevcikova <hanas@uw.edu>
 Hana Sevcikova, Leontine Alkema, Adrian E. Raftery (2011). bayesTFR: An
   R Package for Probabilistic Projections of the Total Fertility Rate.
   Journal of Statistical Software, 43(1), 1-29.
-  \url{http://www.jstatsoft.org/v43/i01/}.
+  \url{https://www.jstatsoft.org/v43/i01/}.
 
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999/}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
 
-Raftery, A.E., Alkema, L. and Gerland, P. (2014). \href{http://www.ncbi.nlm.nih.gov/pubmed/25324591}{Bayesian Population Projections for the United Nations.}
+P. Liu, and A. E. Raftery (2020). \href{https://projecteuclid.org/euclid.aoas/1593449321}{Accounting for Uncertainty About Past Values In Probabilistic Projections of the Total Fertility Rate for All Countries.} Annals of Applied Statistics, Vol 14, no. 2, 685-705.
+
+Raftery, A.E., Alkema, L. and Gerland, P. (2014). \href{https://pubmed.ncbi.nlm.nih.gov/25324591/}{Bayesian Population Projections for the United Nations.}
 Statistical Science, Vol. 29, 58-68. 
 }
 

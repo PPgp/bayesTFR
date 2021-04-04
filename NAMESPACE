@@ -4,14 +4,17 @@ useDynLib(bayesTFR, .registration = TRUE)
 import(mvtnorm)
 import(coda)
 import(wpp2019)
+import(data.table)
 importFrom(MASS, mvrnorm)
 #importFrom(rworldmap, getMap, mapDevice, addMapLegend, mapCountryData)
 
 importFrom("graphics", "grid", "hist", "legend", "lines", "par", "plot", "plot.default", "points")
-importFrom("grDevices", "col2rgb", "dev.off", "rainbow", "rgb")
+importFrom("grDevices", "col2rgb", "dev.off", "rainbow", "rgb", "pdf")
 importFrom("stats", "cov", "dnorm", "dunif", "lm", "mahalanobis", "median", "pgamma", "pnorm", "qgamma", 
-           "quantile", "rexp", "rgamma", "rnorm", "runif", "sd", "var")
-importFrom("utils", "read.delim", "read.table", "write.table")
+           "quantile", "rexp", "rgamma", "rnorm", "runif", "sd", "var", "approx")
+importFrom("utils", "read.delim", "read.table", "write.table", "packageVersion")
+importFrom("stats", "aggregate", "as.formula", "predict", "residuals")
+importFrom("utils", "data", "read.csv", "head")
 
 # export functions
 export(
@@ -23,9 +26,12 @@ export(
 	tfr.predict,
 	tfr.predict.extra,
 	tfr.median.shift,
+	tfr.median.set.all,
 	tfr.median.set,
 	tfr.median.reset,
 	get.tfr.shift,
+	get.tfr.shift.estimation,
+	tfr.median.reset.estimation,
 	tfr.median.adjust,
 	get.ar1.parameters,
 	convert.tfr.trajectories,
@@ -111,7 +117,12 @@ export(
 	get.data.for.worldmap,
 	get.countries.table,
 	tfr.predict.subnat,
-	get.regtfr.prediction
+	get.regtfr.prediction,
+	get.tfr.estimation,
+	tfr.estimation.plot,
+	get.bias.model,
+	get.std.model,
+	tfr.bias.sd
 )
 
 # register S3 methods
@@ -131,11 +142,21 @@ S3method(coda.mcmc, bayesTFR.mcmc)
 
 S3method(summary, bayesTFR.mcmc.set)
 S3method(summary, bayesTFR.mcmc)
+S3method(summary, bayesTFR.mcmc.meta)
 S3method(summary, bayesTFR.prediction)
 S3method(summary, bayesTFR.convergence)
 
+S3method(print, bayesTFR.mcmc)
+S3method(print, bayesTFR.mcmc.set)
+S3method(print, bayesTFR.mcmc.meta)
+S3method(print, bayesTFR.prediction)
+S3method(print, bayesTFR.convergence)
+S3method(print, summary.bayesTFR.mcmc)
+S3method(print, summary.bayesTFR.mcmc.set)
 S3method(print, summary.bayesTFR.prediction)
-S3method(print, summary.bayesTFR.mcmc.set.meta)
+S3method(print, summary.bayesTFR.mcmc.meta)
+S3method(print, summary.bayesTFR.convergence)
+S3method(print, bayesTFR.estimation)
 
 S3method(get.traj.ascii.header, bayesTFR.mcmc.meta)
 S3method(get.nr.countries, bayesTFR.mcmc.meta)

@@ -23,6 +23,8 @@ if(!cran) {
 	test.estimate.mcmc.with.suppl.data()
 	test.run.mcmc.simulation()
 	test.run.mcmc.simulation(compression='xz')
+	test.run.mcmc.simulation.with.uncertainty()
+	test.run.annual.simulation()
 	test.imputation()
 	test.thinned.simulation()
 	test.thinned.simulation(compression='bz')

@@ -116,8 +116,8 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin=0
         theta <- (traces[, U.var] - traces[, Triangle_c4.var] ) * 
             exp(traces[, gamma.vars, drop=FALSE])/apply(exp(traces[,gamma.vars, drop=FALSE]), 1, sum)
         theta <- cbind(theta, traces[, Triangle_c4.var], traces[, d.var])
-        dl <- t(apply(theta, 1, DLcurve, tfr = x, p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2))
-        #stop('')
+        dl <- t(apply(theta, 1, DLcurve, tfr = x, p1 = mcmc$meta$dl.p1, p2 = mcmc$meta$dl.p2, 
+                      annual = get.item(mcmc$meta, "annual.simulation", FALSE)))
         if(length(x) == 1) dl <- t(dl)
         if(predictive.distr || return.sigma) {
 			wp.traces <- load.tfr.parameter.traces(mcmc, 
@@ -153,25 +153,34 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     main = NULL, show.legend=TRUE, col=c('black', 'red', "#00000020"), ...
     ) 
 {	
-	if(class(mcmc.list) == 'bayesTFR.prediction') {
+  if(class(mcmc.list) == 'bayesTFR.prediction') {
 		if(!is.null(burnin) && burnin != mcmc.list$burnin)
 			warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin)
 		burnin <- 0 # because burnin was already cut of the traces
 	}
 	col <- .match.colors.with.default(col, c('black', 'red', "#00000020"))
 	if(is.null(burnin)) burnin <- 0
-    mcmc.list <- get.mcmc.list(mcmc.list)
-    meta <- mcmc.list[[1]]$meta
-    country.obj <- get.country.object(country, meta)
-    if(is.null(country.obj$code)) stop("Country ", country, " not found.")
-    country <- country.obj
+	  mcmc.list <- get.mcmc.list(mcmc.list)
+	  meta <- mcmc.list[[1]]$meta
+	  country.obj <- get.country.object(country, meta)
+	  if(is.null(country.obj$code)) stop("Country ", country, " not found.")
+	  country <- country.obj
+	  
+	if (!is.null(mcmc.list[[1]]$uncertainty) && mcmc.list[[1]]$uncertainty) 
+	{
+	  mcmc.list.tmp <- list(meta = meta, mcmc.list = mcmc.list)
+	  obs.data <- unlist(array(get.tfr.estimation(mcmc.list.tmp, country.obj$code, probs = 0.5)$tfr_quantile[,1]))
+	}
+  else
+	  obs.data <- get.observed.tfr(country$index, meta, 'tfr_matrix_observed', 'tfr_matrix_all')[1:meta$T_end_c[country$index]]
+	  
     #stop.if.country.not.DL(country, meta)
     tfr_plot <- seq(0, tfr.max, 0.1)
     dlc <- tfr.get.dlcurves(tfr_plot, mcmc.list, country$code, country$index, burnin, nr.curves, 
     						predictive.distr=predictive.distr)
     miny <- min(dlc)
     maxy <- max(dlc)
-    obs.data <- get.observed.tfr(country$index, meta, 'tfr_matrix_observed', 'tfr_matrix_all')[1:meta$T_end_c[country$index]]
+      
     decr <- -diff(obs.data)
     dl.obs.idx <- if(max(meta$tau_c[country$index],1) >= meta$lambda_c[country$index]) c()
     				else seq(max(meta$tau_c[country$index],1), meta$lambda_c[country$index]-1)
@@ -242,16 +251,25 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
         	)
 }
 
-.get.trajectories.table <- function(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant=FALSE) {
-	l <- tfr.pred$nr.projections
+.get.trajectories.table <- function(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant=FALSE, uncertainty=FALSE) {
+  l <- tfr.pred$nr.projections
 	obs.data <- obs.data[!is.na(obs.data)]
 	x1 <- as.integer(names(obs.data))
-	x2 <- seq(max(x1)+5, by=5, length=l)
-	tfr <- as.matrix(obs.data, ncol=1)
+	year.step <- ifelse(get.item(tfr.pred$mcmc.set$meta, "annual.simulation", FALSE), 1, 5)
+	x2 <- seq(max(x1)+year.step, by=year.step, length=l)
+	if (!uncertainty)
+	  tfr <- as.matrix(obs.data, ncol=1)
+	else
+	{
+	  tmp <- get.tfr.estimation(mcmc.list = tfr.pred$mcmc.set, country.code = country$code, 
+	                            probs = c(0.5, sort(c((100-pi)/200, 1-(100-pi)/200))))
+	  tfr <- as.matrix(tmp$tfr_quantile)[,1:(1+2*length(pi))]
+	}
 	rownames(tfr) <- x1
 	pred.table <- matrix(NA, ncol=2*length(pi)+1, nrow=l)
 	pred.table[,1] <- pred.median[2:(l+1)]
 	colnames(pred.table) <- c('median', rep(NA,ncol(pred.table)-1))
+	if (uncertainty) colnames(tfr) <- c('median', rep(NA,ncol(pred.table)-1))
 	idx <- 2
 	for (i in 1:length(pi)) {
 		al <- (1-pi[i]/100)/2
@@ -267,21 +285,31 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
 	cn <- colnames(pred.table)[2:ncol(pred.table)]
 	pred.table[,2:ncol(pred.table)] <- pred.table[,cn[order(cn)]]
 	colnames(pred.table)[2:ncol(pred.table)] <- cn[order(cn)]
+	if (uncertainty) colnames(tfr)[2:ncol(tfr)] <- cn[order(cn)]
 	if(half.child.variant) {
 		up.low <- get.half.child.variant(median=c(0, pred.table[,1]))
 		pred.table <- cbind(pred.table, t(up.low[,2:ncol(up.low)]))
 		colnames(pred.table)[(ncol(pred.table)-1):ncol(pred.table)] <- c('-0.5child', '+0.5child')
+		if (uncertainty) 
+		{
+		  tfr <- cbind(tfr, matrix(NA, nrow = nrow(tfr), ncol = ncol(pred.table) - ncol(tfr)))
+		  colnames(tfr)[(ncol(tfr)-1):ncol(tfr)] <- c('-0.5child', '+0.5child')
+		}
 	}
-	return(rbind(cbind(tfr, matrix(NA, nrow=nrow(tfr), ncol=ncol(pred.table)-1)), pred.table))
+  return(rbind(cbind(tfr, matrix(NA, nrow=nrow(tfr), ncol=ncol(pred.table)-ncol(tfr))), pred.table))
 }
 
 tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.variant=TRUE) {
-	if (missing(country)) {
+  if (missing(country)) {
 		stop('Argument "country" must be given.')
 	}
 	country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	if(is.null(country.obj$code)) stop("Country ", country, " not found.")
 	country <- country.obj
+	uncertainty <- FALSE
+	if ((length(tfr.pred$mcmc.set$mcmc.list)>0 && !is.null(tfr.pred$mcmc.set$mcmc.list[[1]]$uncertainty) && 
+	     tfr.pred$mcmc.set$mcmc.list[[1]]$uncertainty) || (country$index %in% tfr.pred$mcmc.set$meta$extra))
+	  uncertainty <- TRUE
 	obs.data <- get.data.for.country.imputed(tfr.pred, country$index)
 	if(!is.null(tfr.pred$present.year.index)) obs.data <- obs.data[1:min(length(obs.data), tfr.pred$present.year.index.all)]
 	pred.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
@@ -289,7 +317,7 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 	cqp <- list()
 	for (i in 1:length(pi))
 		cqp[[i]] <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i])
-	return(.get.trajectories.table(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant))
+	return(.get.trajectories.table(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant, uncertainty))
 }
 
 get.typical.trajectory.index <- function(trajectories) {
@@ -413,133 +441,248 @@ get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 	return(rbind(lower, upper))	
 }
 
+tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1,
+                                pis = c(80, 95), plot.raw = TRUE,
+                                grouping = 'source', save.image=TRUE, plot.dir = 'Estimation.plot')
+{
+  if (is.null(mcmc.list)) 
+    mcmc.list <- get.tfr.mcmc(sim.dir)
+  if (is.null(mcmc.list)) {
+    warning('MCMC does not exist.')
+    return(NULL)
+  }
+  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
+  {
+    stop("MCMC does not consider uncertainty of past TFR.")
+  }
+  tfr.object <- get.tfr.estimation(mcmc.list=mcmc.list, country.code=country.code, ISO.code=ISO.code, sim.dir=sim.dir, 
+                                   burnin=burnin, thin=thin, probs=sort(c((1-pis/100)/2, 0.5, pis/100 + (1-pis/100)/2)))
+  if (is.null(country.code))
+  {
+    e <- new.env()
+    data('iso3166', envir=e)
+    iso3166 <- e$iso3166
+    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
+  }
+    
+  country.obj <- get.country.object(country.code, mcmc.list$meta)
+  
+  quantile_tbl <- tfr.object$tfr_quantile
+  names(quantile_tbl)[1:(1 + 2 * length(pis))] <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
+  names.col <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
+  requireNamespace('ggplot2', quietly=TRUE)
+  q <- ggplot2::ggplot(data=quantile_tbl)  + ggplot2::xlab("year") + ggplot2::ylab("TFR")
+  q <- q + ggplot2::geom_ribbon(ggplot2::aes_string(x="year", ymin=names.col[1], ymax=names.col[length(names.col)]), alpha=0.2, fill='red') +
+    ggplot2::geom_line(ggplot2::aes_string(x="year", y="Q50"), size = 0.8, color="red") +
+    ggplot2::geom_point(ggplot2::aes_string(x="year", y="Q50"), size = 1, color="red") + 
+    ggplot2::ggtitle(country.obj$name)
+  
+  if (length(pis) > 1)
+    q <- q + ggplot2::geom_ribbon(ggplot2::aes_string(x="year", ymin=names.col[2], ymax=names.col[length(names.col)-1]), alpha=0.3, fill='red')
+  
+  if (plot.raw)
+  {
+    if (country.obj$index %in% mcmc.list$meta$extra) raw.data <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
+    else raw.data <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_index == country.obj$index, ]
+    ngroups <- t(unique(subset(raw.data, select=grouping)))
+    q <- q + ggplot2::geom_point(mapping = ggplot2::aes_string(x="year", y="tfr", color=grouping, shape=grouping), 
+                                 data=raw.data, size=2.5) + ggplot2::scale_shape_manual(values=rep(15:18, len=length(ngroups)))
+  }
+  
+  wpp.data <- get.observed.tfr(country.obj$index, mcmc.list$meta, "tfr_matrix_all")
+  wpp.data <- data.frame(year=quantile_tbl$year, tfr = as.numeric(wpp.data))
+  wpp.data <- wpp.data[wpp.data$year %% 5 == 3,]
+  q <- q + ggplot2::geom_line(data = wpp.data, ggplot2::aes_string(x="year", y="tfr"), size = 0.8) + ggplot2::theme_bw() + 
+    ggplot2::geom_point(data = wpp.data, ggplot2::aes_string(x="year", y="tfr"))
+  
+  if (save.image)
+  {
+    if(!dir.exists(plot.dir)) dir.create(plot.dir)
+    pdf(file = paste0(plot.dir, '/tfr_country_', country.code, ".pdf"), width=10, height=5)
+    print (q)
+    dev.off()
+  }
+  return(q)
+}
+
 tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95), 
-								  half.child.variant=TRUE, nr.traj=NULL,
-								  adjusted.only = TRUE, typical.trajectory=FALSE,
-								  mark.estimation.points=FALSE,
-								  xlim=NULL, ylim=NULL, type='b', 
-								  xlab='Year', ylab='TFR', main=NULL, lwd=c(2,2,2,2,2,1), 
-								  col=c('black', 'green', 'red', 'red', 'blue', '#00000020'),
-								  show.legend=TRUE, add=FALSE, ...
-								  ) {
-	# lwd/col is a vector of 6 line widths/colors for: 
-	#	1. observed data, 2. imputed missing data, 3. median, 4. quantiles, 5. +- 0.5 child, 6. trajectories
-	if (missing(country)) {
-		stop('Argument "country" must be given.')
-	}
-	if(length(lwd) < 6) {
-		lwd <- rep(lwd, 6)
-		lwd[6] <- 1
-	}
-	col <- .match.colors.with.default(col, c('black', 'green', 'red', 'red', 'blue', '#00000020'))
-	country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
-	if(is.null(country.obj$code)) stop("Country ", country, " not found.")
-	country <- country.obj
-	tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
-	T_end_c <- tfr.pred$mcmc.set$meta$T_end_c
-	if(!is.null(tfr.pred$present.year.index.all)) T_end_c <- pmin(T_end_c, tfr.pred$present.year.index.all)
-	tfr_matrix_reconstructed <- get.tfr.reconstructed(tfr.pred$tfr_matrix_reconstructed, tfr.pred$mcmc.set$meta)
-	suppl.T <- length(tfr_observed) - tfr.pred$mcmc.set$meta$T_end
-	y1.part1 <- tfr_observed[1:T_end_c[country$index]]
-	y1.is.not.na <- which(!is.na(y1.part1))
-	y1.part1 <- y1.part1[y1.is.not.na]
-	lpart1 <- length(y1.part1)
-	y1.part2 <- NULL
-	lpart2 <- min(tfr.pred$mcmc.set$meta$T_end, tfr.pred$present.year.index) - T_end_c[country$index] + suppl.T
-	if (lpart2 > 0) {
-		p2idx <- (T_end_c[country$index]+1-suppl.T):nrow(tfr_matrix_reconstructed)
-		y1.part2 <- tfr_matrix_reconstructed[p2idx,country$index]
-		names(y1.part2) <- rownames(tfr_matrix_reconstructed)[p2idx]
-	}
-	x1 <- as.integer(c(names(y1.part1), names(y1.part2)))
-	x2 <- as.numeric(dimnames(tfr.pred$quantiles)[[3]])
-	trajectories <- get.trajectories(tfr.pred, country$code, nr.traj, typical.trajectory=typical.trajectory)
-	# plot historical data: observed
-	if (!add) {
-		if(is.null(xlim)) xlim <- c(min(x1,x2), max(x1,x2))
-		if(is.null(ylim)) ylim <- c(0, max(trajectories$trajectories, y1.part1, y1.part2, na.rm=TRUE))
-		if(is.null(main)) main <- country$name
-		plot(xlim, ylim, type='n', xlim=xlim, ylim=ylim, ylab=ylab, xlab=xlab, main=main, 
-					panel.first = grid())
-	}
-	points.x <- x1[1:lpart1]
-	points.y <- y1.part1
-	if (mark.estimation.points) {
-		tfr.est <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix')[1:T_end_c[country$index]][y1.is.not.na]
-		end.na <- which(!is.na(tfr.est))
-		end.na <- if(length(end.na)==0) length(tfr.est) else end.na[1]
-		if(end.na > 1) {
-			na.idx <- 1:end.na
-			points(points.x[na.idx], points.y[na.idx], type=type, lwd=lwd[1], col=rgb(t(col2rgb(col[1])/255), alpha=0.1), ...)
-			points.x <- points.x[-na.idx[-end.na]]
-			points.y <- points.y[-na.idx[-end.na]]
-		}
-	}
-	points(points.x, points.y, type=type, lwd=lwd[1], col=col[1], ...)
-	if(lpart2 > 0) { # imputed values
-		lines(x1[(lpart1+1): length(x1)], y1.part2, pch=2, type='b', col=col[2], lwd=lwd[2])
-		lines(x1[lpart1:(lpart1+1)], c(y1.part1[lpart1], y1.part2[1]), col=col[2], lwd=lwd[2]) # connection between the two parts
-	}
-	
-	# plot trajectories
-	if(!is.null(trajectories$trajectories)) { 
-		for (i in 1:length(trajectories$index)) {
-			lines(x2, trajectories$trajectories[,trajectories$index[i]], type='l', col=col[6], lwd=lwd[6])
-		}
-	}
-	# plot median
-	tfr.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
-	lines(x2, tfr.median, type='l', col=col[3], lwd=lwd[3]) 
-	# plot given CIs
-	lty <- 2:(length(pi)+1)
-	for (i in 1:length(pi)) {
-		cqp <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i])
-		if (!is.null(cqp)) {
-			lines(x2, cqp[1,], type='l', col=col[4], lty=lty[i], lwd=lwd[4])
-			lines(x2, cqp[2,], type='l', col=col[4], lty=lty[i], lwd=lwd[4])
-		}
-	}
-	legend <- c()
-	cols <- c()
-	lwds <- c()
-	lty <- c(1, lty)
-	if(!adjusted.only) { # plot unadjusted median
-		bhm.median <- get.median.from.prediction(tfr.pred, country$index, country$code, adjusted=FALSE)
-		lines(x2, bhm.median, type='l', col=col[3], lwd=lwd[3], lty=max(lty)+1)
-		legend <- c(legend, 'BHM median')
-		cols <- c(cols, col[3])
-		lwds <- c(lwds, lwd[3])
-		lty <- c(max(lty)+1, lty)
-	}
-	median.legend <- if(adjusted.only) 'median' else 'adj. median'
-	legend <- c(legend, median.legend, paste(pi, '% PI', sep=''))
-	cols <- c(cols, col[3], rep(col[4], length(pi)))
-	lwds <- c(lwds, lwd[3], rep(lwd[4], length(pi)))
-	if (half.child.variant) {
-		lty <- c(lty, max(lty)+1)
-		llty <- length(lty)
-		up.low <- get.half.child.variant(median=tfr.median)
-		lines(x2, up.low[1,], type='l', col=col[5], lty=lty[llty], lwd=lwd[5])
-		lines(x2, up.low[2,], type='l', col=col[5], lty=lty[llty], lwd=lwd[5])
-		legend <- c(legend, '+/- 0.5 child')
-		cols <- c(cols, col[5])
-		lwds <- c(lwds, lwd[5])
-	}
-	if(show.legend) {
-		legend <- c(legend, 'observed TFR')
-		cols <- c(cols, col[1])
-		lty <- c(lty, 1)
-		pch <- c(rep(-1, length(legend)-1), 1)
-		lwds <- c(lwds, lwd[1])
-		if(lpart2 > 0) {
-			legend <- c(legend, 'imputed TFR')
-			cols <- c(cols, col[2])
-			lty <- c(lty, 1)
-			pch <- c(pch, 2)
-			lwds <- c(lwds, lwd[2])
-		}
-		legend('bottomleft', legend=legend, lty=lty, bty='n', col=cols, pch=pch, lwd=lwds)
-	}
+                                  half.child.variant=TRUE, nr.traj=NULL,
+                                  adjusted.only = TRUE, typical.trajectory=FALSE,
+                                  mark.estimation.points=FALSE,
+                                  xlim=NULL, ylim=NULL, type='b', 
+                                  xlab='Year', ylab='TFR', main=NULL, lwd=c(2,2,2,2,2,1), 
+                                  col=c('black', 'green', 'red', 'red', 'blue', '#00000020'),
+                                  show.legend=TRUE, add=FALSE, uncertainty=FALSE, thin=NULL, burnin=NULL, col_unc="purple", ...
+) {
+  # lwd/col is a vector of 6 line widths/colors for: 
+  #	1. observed data, 2. imputed missing data, 3. median, 4. quantiles, 5. +- 0.5 child, 6. trajectories
+  if (missing(country)) {
+    stop('Argument "country" must be given.')
+  }
+  if(length(lwd) < 6) {
+    lwd <- rep(lwd, 6)
+    lwd[6] <- 1
+  }
+  if (uncertainty)
+  {
+    sim.dir <- file.path(tfr.pred$output.directory, "..")
+    if (missing(thin) || is.null(thin)) thin <- tfr.pred$thin
+    if (missing(burnin) || is.null(burnin)) burnin <- tfr.pred$burnin
+    tfr.object <- get.tfr.estimation(mcmc.list=NULL, country.code=country, ISO.code=NULL, sim.dir=sim.dir, 
+                                     burnin=burnin, thin=thin, probs=sort(c((1-pi/100)/2, 0.5, pi/100 + (1-pi/100)/2)))
+    
+  }
+  col <- .match.colors.with.default(col, c('black', 'green', 'red', 'red', 'blue', '#00000020'))
+  country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
+  if(is.null(country.obj$code)) stop("Country ", country, " not found.")
+  country <- country.obj
+  tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
+  T_end_c <- tfr.pred$mcmc.set$meta$T_end_c
+  if(!is.null(tfr.pred$present.year.index.all)) T_end_c <- pmin(T_end_c, tfr.pred$present.year.index.all)
+  tfr_matrix_reconstructed <- get.tfr.reconstructed(tfr.pred$tfr_matrix_reconstructed, tfr.pred$mcmc.set$meta)
+  suppl.T <- length(tfr_observed) - tfr.pred$mcmc.set$meta$T_end
+  y1.part1 <- tfr_observed[1:T_end_c[country$index]]
+  y1.is.not.na <- which(!is.na(y1.part1))
+  y1.part1 <- y1.part1[y1.is.not.na]
+  lpart1 <- length(y1.part1)
+  y1.part2 <- NULL
+  lpart2 <- min(tfr.pred$mcmc.set$meta$T_end, tfr.pred$present.year.index) - T_end_c[country$index] + suppl.T
+  if (lpart2 > 0) {
+    p2idx <- (T_end_c[country$index]+1-suppl.T):nrow(tfr_matrix_reconstructed)
+    y1.part2 <- tfr_matrix_reconstructed[p2idx,country$index]
+    names(y1.part2) <- rownames(tfr_matrix_reconstructed)[p2idx]
+  }
+  x1 <- as.integer(c(names(y1.part1), names(y1.part2)))
+  x2 <- as.numeric(dimnames(tfr.pred$quantiles)[[3]])
+  trajectories <- get.trajectories(tfr.pred, country$code, nr.traj, typical.trajectory=typical.trajectory)
+  # plot historical data: observed
+  if (!add) {
+    if(is.null(xlim)) xlim <- c(min(x1,x2), max(x1,x2))
+    if(is.null(ylim))
+    {
+      ylim <- c(0, max(trajectories$trajectories, y1.part1, y1.part2, na.rm=TRUE))
+      if (uncertainty)
+      {
+        ylim[2] <- max(ylim[2], max(tfr.object$tfr_quantile[,5]))
+      }
+    }
+    if(is.null(main)) main <- country$name
+    plot(xlim, ylim, type='n', xlim=xlim, ylim=ylim, ylab=ylab, xlab=xlab, main=main, 
+         panel.first = grid())
+  }
+  points.x <- x1[1:lpart1]
+  points.y <- y1.part1
+  if (mark.estimation.points) {
+    tfr.est <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix')[1:T_end_c[country$index]][y1.is.not.na]
+    elim.idx <- c()
+    # Phase I
+    end.na <- which(!is.na(tfr.est))
+    end.na <- if(length(end.na)==0) length(tfr.est) else end.na[1]
+    if(end.na > 1) {
+      na.idx <- 1:end.na
+      points(points.x[na.idx], points.y[na.idx], type=type, lwd=lwd[1], col=rgb(t(col2rgb(col[1])/255), alpha=0.1), ...)
+      elim.idx <- c(elim.idx, na.idx[-end.na])
+    }
+    # Phase III
+    p3.idx <- if(tfr.pred$mcmc.set$meta$lambda_c[country$index]>=length(tfr.est)) c() else seq(tfr.pred$mcmc.set$meta$lambda_c[country$index], length(tfr.est))
+    if(length(p3.idx) > 0) {
+      points(points.x[p3.idx], points.y[p3.idx], type=type, lwd=lwd[1], col=rgb(t(col2rgb(col[1])/255), alpha=0.3), pch = 4, ...)
+      elim.idx <- c(elim.idx, p3.idx)
+    }
+    if(length(elim.idx) > 0) {
+      points.x <- points.x[-elim.idx]
+      points.y <- points.y[-elim.idx]
+    }
+  }
+  if (!uncertainty || mark.estimation.points)
+    points(points.x, points.y, type=type, lwd=lwd[1], col=col[1], ...)
+  if(lpart2 > 0) { # imputed values
+    lines(x1[(lpart1+1): length(x1)], y1.part2, pch=2, type='b', col=col[2], lwd=lwd[2])
+    lines(x1[lpart1:(lpart1+1)], c(y1.part1[lpart1], y1.part2[1]), col=col[2], lwd=lwd[2]) # connection between the two parts
+  }
+  
+  # plot trajectories
+  if(!is.null(trajectories$trajectories)) { 
+    for (i in 1:length(trajectories$index)) {
+      lines(x2, trajectories$trajectories[,trajectories$index[i]], type='l', col=col[6], lwd=lwd[6])
+    }
+  }
+  # plot median
+  tfr.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
+  lines(x2, tfr.median, type='l', col=col[3], lwd=lwd[3]) 
+  # plot given CIs
+  lty <- 2:(length(pi)+1)
+  for (i in 1:length(pi)) {
+    cqp <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i])
+    if (!is.null(cqp)) {
+      lines(x2, cqp[1,], type='l', col=col[4], lty=lty[i], lwd=lwd[4])
+      lines(x2, cqp[2,], type='l', col=col[4], lty=lty[i], lwd=lwd[4])
+    }
+  }
+  if (uncertainty)
+  {
+    col_median <- length(pi)+1
+    lines(tfr.object$tfr_quantile$year, as.data.frame(tfr.object$tfr_quantile)[, col_median], type='l', col=col_unc, lwd=lwd[3]) 
+    
+    for (i in 1:length(pi)) {
+      lines(tfr.object$tfr_quantile$year, as.data.frame(tfr.object$tfr_quantile)[, length(pi)+1-i], type='l', col=col_unc, lty=lty[i], lwd=lwd[4])
+      lines(tfr.object$tfr_quantile$year, as.data.frame(tfr.object$tfr_quantile)[, length(pi)+1+i], type='l', col=col_unc, lty=lty[i], lwd=lwd[4])
+    }
+  }
+  legend <- c()
+  cols <- c()
+  lwds <- c()
+  lty <- c(1, lty)
+  if(!adjusted.only) { # plot unadjusted median
+    bhm.median <- get.median.from.prediction(tfr.pred, country$index, country$code, adjusted=FALSE)
+    lines(x2, bhm.median, type='l', col=col[3], lwd=lwd[3], lty=max(lty)+1)
+    legend <- c(legend, 'BHM median')
+    cols <- c(cols, col[3])
+    lwds <- c(lwds, lwd[3])
+    lty <- c(max(lty)+1, lty)
+  }
+  median.legend <- if(adjusted.only) 'median' else 'adj. median'
+  legend <- c(legend, median.legend, paste(pi, '% PI', sep=''))
+  cols <- c(cols, col[3], rep(col[4], length(pi)))
+  lwds <- c(lwds, lwd[3], rep(lwd[4], length(pi)))
+  if (half.child.variant) {
+    lty <- c(lty, max(lty)+1)
+    llty <- length(lty)
+    up.low <- get.half.child.variant(median=tfr.median)
+    lines(x2, up.low[1,], type='l', col=col[5], lty=lty[llty], lwd=lwd[5])
+    lines(x2, up.low[2,], type='l', col=col[5], lty=lty[llty], lwd=lwd[5])
+    legend <- c(legend, '+/- 0.5 child')
+    cols <- c(cols, col[5])
+    lwds <- c(lwds, lwd[5])
+  }
+  if(show.legend) {
+    pch <- rep(-1, length(legend))
+    if (!uncertainty)
+    {
+      legend <- c(legend, 'observed TFR')
+      cols <- c(cols, col[1])
+      lty <- c(lty, 1)
+      pch <- c(pch, 1)
+      lwds <- c(lwds, lwd[1])
+    }
+    
+    if(!uncertainty && (lpart2 > 0)) {
+      legend <- c(legend, 'imputed TFR')
+      cols <- c(cols, col[2])
+      lty <- c(lty, 1)
+      pch <- c(pch, 2)
+      lwds <- c(lwds, lwd[2])
+    }
+    if (uncertainty) 
+    {
+      legend <- c(legend, 'Uncertainty')
+      lty <- c(lty, 1)
+      pch <- c(pch, -1)
+      cols <- c(cols, col_unc)
+      lwds <- c(lwds, lwd[1])
+    }
+    legend('bottomleft', legend=legend, lty=lty, bty='n', col=cols, pch=pch, lwd=lwds)
+  }
 }
 
 extract.plot.args <- function(...) {
@@ -663,8 +806,7 @@ tfr.partraces.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayes
 tfr.partraces.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'),
 									chain.ids=NULL, par.names=tfr.parameter.names.cs(trans=TRUE),
 									nr.points=NULL, dev.ncol=3, low.memory=TRUE, ...) {
-
-	if (is.null(mcmc.list))
+  if (is.null(mcmc.list))
 		mcmc.list <- get.tfr.mcmc(sim.dir, low.memory=low.memory)
 	mcmc.list <- get.mcmc.list(mcmc.list)
 	country.obj <- get.country.object(country, mcmc.list[[1]]$meta)
@@ -729,7 +871,13 @@ do.plot.tfr.pardensity <- function(mcmc.list, func, par.names, par.names.ext, ma
 	}
 	args <- extract.plot.args(...)
 	par.cur <- par(mfrow=c(nrows,ncols))
+	tfr_flag <- FALSE
 	for (para in par.names) {
+	  if (!tfr_flag && length(grep('tfr_*', para) > 0))
+	  {
+	    para <- 'tfr'
+	    tfr_flag <- TRUE
+	  }
 		values <- eval(do.call(func, c(list(mcmc.list, par.names=para, burnin=burnin), func.args)))
 		values <-  filter.traces(values, par.names)
 		for (par.name in colnames(values)) {
@@ -743,7 +891,7 @@ do.plot.tfr.pardensity <- function(mcmc.list, func, par.names, par.names.ext, ma
 tfr.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 									chain.ids=NULL, par.names=tfr.parameter.names(trans=TRUE), 
 									burnin=NULL, dev.ncol=5, low.memory=TRUE, ...) {
-	if (is.null(mcmc.list))
+  if (is.null(mcmc.list))
 		mcmc.list <- get.tfr.mcmc(sim.dir, low.memory=low.memory)
 	par.names.ext <- get.full.par.names(par.names, tfr.parameter.names.extended())
 	if(length(par.names.ext) <= 0)
@@ -756,7 +904,7 @@ tfr.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'baye
 tfr.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
 									chain.ids=NULL, par.names=tfr.parameter.names.cs(trans=TRUE), 
 									burnin=NULL, dev.ncol=3, low.memory=TRUE, ...) {
-	if (is.null(mcmc.list))
+  if (is.null(mcmc.list))
 		mcmc.list <- get.tfr.mcmc(sim.dir, low.memory=low.memory)
 	mcmc.l <- get.mcmc.list(mcmc.list)
 	country.obj <- get.country.object(country, mcmc.l[[1]]$meta)
@@ -765,8 +913,10 @@ tfr.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(ge
 	stop.if.country.not.DL(country.obj, mcmc.l[[1]]$meta)
 	par.names.ext <- get.full.par.names.cs(par.names, 
 											tfr.parameter.names.cs.extended(country.obj$code))
-	if(length(par.names.ext) <= 0)
+	if(length(par.names.ext) <= 0 && length(grep('tfr_*', par.names)) <= 0)
 		stop('Parameter names are not valid country-specific parameters.\nUse function tfr.parameter.names.cs(...) or valid parameter names.')
+	else if (length(par.names.ext) <= 0)
+	  par.names.ext <- paste0('tfr_c', country.obj$code)
 	do.plot.tfr.pardensity(mcmc.list, 'get.tfr.parameter.traces.cs', chain.ids=chain.ids, par.names=par.names,
 							par.names.ext=par.names.ext,
 							main.postfix=paste('(',country.obj$name,')', sep=''),
@@ -942,10 +1092,10 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=N
 		projection <- TRUE
 		if(!is.null(year)) {
 			ind.proj <- get.predORest.year.index(pred, year)
+			if(! 'index' %in% names(ind.proj))
+			    stop('Projection year ', year, ' not found.')
 			projection.index <- ind.proj['index']
 			projection <- ind.proj['is.projection']
-			if(is.null(projection.index)) 
-				if(is.null(projection.index)) stop('Projection year ', year, ' not found.')
 		}
 		if(projection) {
 			if(!all(is.element(as.character(quantiles), dimnames(pred$quantiles)[[2]])))

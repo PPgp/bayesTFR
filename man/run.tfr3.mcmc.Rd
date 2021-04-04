@@ -6,7 +6,7 @@
 Running Markov Chain Monte Carlo for Parameters of Total Fertility Rate in Phase III
 }
 \description{
-Runs (or continues running) MCMCs for simulating phase III total fertility rate, using a Bayesian hierarchical version of an AR(1) model.
+Runs (or continues running) MCMCs for simulating Phase III total fertility rate, using a Bayesian hierarchical version of an AR(1) model.
 }
 \usage{
 run.tfr3.mcmc(sim.dir, nr.chains = 3, iter = 50000, thin = 10, 
@@ -62,7 +62,7 @@ The MCMCs are stored in \code{sim.dir} in a subdirectory called \dQuote{phaseIII
 	\item{mcmc.list}{A list of objects of class \code{\link{bayesTFR.mcmc}}, one for each MCMC.}
 }
 \references{
-Raftery, A.E., Alkema, L. and Gerland, P. (2014). \href{http://www.ncbi.nlm.nih.gov/pubmed/25324591}{Bayesian Population Projections for the United Nations.}
+Raftery, A.E., Alkema, L. and Gerland, P. (2014). \href{https://pubmed.ncbi.nlm.nih.gov/25324591/}{Bayesian Population Projections for the United Nations.}
 Statistical Science, Vol. 29, 58-68. 
 }
 \author{
@@ -82,8 +82,7 @@ m <- run.tfr.mcmc(nr.chains=1, iter=5, output.dir=sim.dir, verbose=TRUE)
 m3 <- run.tfr3.mcmc(sim.dir=sim.dir, nr.chains=2, iter=50, thin=1, verbose=TRUE)
 m3 <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=10, verbose=TRUE)
 summary(m3, burnin=10)
-unlink(sim.dir, recursive=TRUE)
-}
+unlink(sim.dir, recursive=TRUE)}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -14,10 +14,10 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
     sim.dir = file.path(getwd(), "bayesTFR.output"), 
     replace.output = FALSE, start.year = NULL, 
     nr.traj = NULL, thin = NULL, burnin = 2000,
-    use.diagnostics = FALSE, use.tfr3 = TRUE, burnin3 = 10000,
+    use.diagnostics = FALSE, use.tfr3 = TRUE, burnin3 = 2000,
     mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016, min.tfr = 0.5,
-    use.correlation = FALSE, save.as.ascii = 1000, output.dir = NULL, 
-    low.memory = TRUE, seed = NULL, verbose = TRUE, \dots)
+    use.correlation = FALSE, save.as.ascii = 0, output.dir = NULL, 
+    low.memory = TRUE, seed = NULL, verbose = TRUE, uncertainty = FALSE, \dots)
 }
 
 \arguments{
@@ -42,6 +42,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
   \item{use.correlation}{Logical. If \code{TRUE} the model errors are sampled jointly for all countries (Fosdick and Raftery, 2014).}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible projections.}
   \item{verbose}{Logical switching log messages on and off.}
+  \item{uncertainty}{Logical. If the MCMC steps has considered uncertainty of past TFR and \code{uncertainty=TRUE}, starting point of prediction trajectories will be the last estimated trajectories of TFR. Otherwise, it will use last observed TFR as starting point of prediction.}
   \item{\dots}{Further arguments passed to the underlying functions.}
 }
 \details{
@@ -73,9 +74,9 @@ The resulting prediction object is saved into \file{\{output.dir\}/predictions}.
 	}
 	
 \references{
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999/}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
 
-Raftery, A.E., Alkema, L. and Gerland, P. (2014). \href{http://www.ncbi.nlm.nih.gov/pubmed/25324591}{Bayesian Population Projections for the United Nations.}
+Raftery, A.E., Alkema, L. and Gerland, P. (2014). \href{https://pubmed.ncbi.nlm.nih.gov/25324591/}{Bayesian Population Projections for the United Nations.}
 Statistical Science, Vol. 29, 58-68. 
 
 Fosdick, B., Raftery, A.E. (2014). \href{http://europepmc.org/articles/pmc4169201}{Regional Probabilistic Fertility Forecasting by Modeling Between-Country Correlations.} Demographic Research, Vol. 30, 1011-1034. 

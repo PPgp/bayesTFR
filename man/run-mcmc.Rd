@@ -13,9 +13,10 @@ Runs (or continues running) MCMCs for simulating the total fertility rate of all
 \usage{
 run.tfr.mcmc(nr.chains = 3, iter = 62000, 
     output.dir = file.path(getwd(), "bayesTFR.output"), 
-    thin = 1, replace.output = FALSE, 
+    thin = 1, replace.output = FALSE, annual = FALSE, uncertainty = FALSE, 
     start.year = 1950, present.year = 2020, wpp.year = 2019, 
-    my.tfr.file = NULL, my.locations.file = NULL, buffer.size = 100, 
+    my.tfr.file = NULL, my.locations.file = NULL, my.tfr.raw.file = NULL, 
+    ar.phase2 = FALSE, buffer.size = 100, 
     U.c.low = 5.5, U.up = 8.8, U.width = 3,
     mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2, 
     Triangle_c4.low = 1, Triangle_c4.up = 2.5, 
@@ -24,26 +25,27 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     S.low = 3.5, S.up = 6.5, S.width = 0.5, 
     a.low = 0, a.up = 0.2, a.width = 0.02, 
     b.low = a.low, b.up = a.up, b.width = 0.05, 
-    sigma0.low = 0.01, sigma0.up = 0.6, sigma0.width = 0.1, 
-    sigma0.min = 0.001, 
+    sigma0.low = if (annual) 0.0045 else 0.01, sigma0.up = 0.6,  
+    sigma0.width = 0.1, sigma0.min = 0.04, 
     const.low = 0.8, const.up = 2, const.width = 0.3, 
     d.low = 0.05, d.up = 0.5, d.trans.width = 1, 
     chi0 = -1.5, psi0 = 0.6, nu.psi0 = 2, 
     alpha0.p = c(-1, 0.5, 1.5), delta0 = 1, nu.delta0 = 2, 
-    dl.p1 = 9, dl.p2 = 9, 
+    dl.p1 = 9, dl.p2 = 9, phase3.parameter=NULL,
     S.ini = NULL, a.ini = NULL, b.ini = NULL, sigma0.ini = NULL, 
     Triangle_c4.ini = NULL, const.ini = NULL, gamma.ini = 1, 
-    proposal_cov_gammas = NULL,
+    phase3.starting.values = NULL, proposal_cov_gammas = NULL, 
+    iso.unbiased = NULL, covariates = c("source", "method"), cont_covariates = NULL, 
     seed = NULL, parallel = FALSE, nr.nodes = nr.chains, 
     save.all.parameters = FALSE, compression.type = 'None',
-    auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, 
-        nr.chains=3, thin=80, burnin=2000),
+    auto.conf = list(max.loops = 5, iter = 62000, iter.incr = 10000, 
+        nr.chains = 3, thin = 80, burnin = 2000),
     verbose = FALSE, verbose.iter = 10, \dots)
 		
-continue.tfr.mcmc(iter, chain.ids=NULL, 
-    output.dir=file.path(getwd(), "bayesTFR.output"), 
+continue.tfr.mcmc(iter, chain.ids = NULL, 
+    output.dir = file.path(getwd(), "bayesTFR.output"), 
     parallel = FALSE, nr.nodes = NULL, auto.conf = NULL,
-    verbose=FALSE, verbose.iter = 10, \dots)
+    verbose = FALSE, verbose.iter = 10, \dots)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -52,11 +54,15 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{output.dir}{Directory which the simulation output should be written into.}
   \item{thin}{Thinning interval between consecutive observations to be stored on disk.}
   \item{replace.output}{If \code{TRUE}, existing outputs in \code{output.dir} will be replaced by results of this simulation.}
+  \item{annual}{If \code{TRUE}, the model will be trained based on annual TFR data.}
+  \item{uncertainty}{Logical. If \code{TRUE}, the model described in Liu and Raftery(2020) which takes into account uncertainty about the past TFR observations is used. It will take the observations from \code{\link{rawTFR}} or from a file given by \code{my.tfr.raw.file}, estimate the distribution of these observations with respect to the true TFR. Then instead of treating the observed data as true data, it assumes the true TFR is unknown and include an extra step for estimating past TFR.}
+  \item{ar.phase2}{Logical where \code{TRUE} implies that the autoregressive component on the residual (for Phase II) is considered as a global parameter. Only used if \code{annual} is \code{TRUE}. See details below.}
   \item{start.year}{Start year for using historical data.}
   \item{present.year}{End year for using historical data.}
   \item{wpp.year}{Year for which WPP data is used. The functions loads a package called \pkg{wpp}\eqn{x} where \eqn{x} is the \code{wpp.year} and uses the \code{tfr*} datasets.}
   \item{my.tfr.file}{File name containing user-specified TFR time series for one or more countries. See Details below.}
   \item{my.locations.file}{File name containing user-specified locations. See Details below.}
+  \item{my.tfr.raw.file}{File name of the raw TFR, used when \code{uncertainty} is \code{TRUE}. See details below.}
   \item{buffer.size}{Buffer size (in number of iterations) for keeping data in the memory. The smaller the \code{buffer.size} the more often will the process access the hard disk and thus, the slower the run. On the other hand, the smaller the \code{buffer.size} the less data will be lost in case of failure.}
   \item{U.c.low, U.up}{Lower and upper bound of the parameter \eqn{U_c}, the start level of the fertility transition. The lower bound is set for each country as the maximum of \code{U.c.low} and the minimum of historical TFR for that country.}
   \item{U.width}{Width for slice sampling used when updating the \eqn{U_c} parameter.}
@@ -85,6 +91,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{delta0}{Prior standard deviation of the \eqn{\alpha_i}{alpha_i} parameters. It is a single value, i.e. the same standard deviation is used for all \eqn{i}.}
   \item{nu.delta0}{The shape parameter of the prior Gamma distribution of \eqn{1/\delta_i^2}{1/delta_i^2} is \code{nu.delta0}/2. \eqn{\delta_i}{1/delta_i} is the standard deviation of \eqn{\gamma_{ci}}{gamma_{ci}}.}
   \item{dl.p1, dl.p2}{Values of the parameters \eqn{p_1} and \eqn{p_2} of the double logistic function.}
+  \item{phase3.parameter}{When \code{uncertainty=TRUE}, we need to combine the MCMC process for Phase II and Phase III together. This parameter is used to provide a list for phase3 initial ranges, such as \code{mu.prior.range}. If the input is \code{NULL}, the default values will be used.}
   \item{S.ini}{Initial value for the \eqn{S} parameter. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the interval [\code{S.low, S.up}]. Otherwise, it is equally spaced distributed between \code{S.low} and \code{S.up}.}
   \item{a.ini}{Initial value for the \eqn{a} parameter. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the interval [\code{a.low, a.up}]. Otherwise, it is equally spaced distributed between \code{a.low} and \code{a.up}.}
   \item{b.ini}{Initial value for the \eqn{b} parameter. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the interval [\code{b.low, b.up}]. Otherwise, it is equally spaced distributed between \code{b.low} and \code{b.up}.}
@@ -92,7 +99,10 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
   \item{Triangle_c4.ini}{Initial value for the \eqn{\Delta_{c4}}{Triangle_c4} parameter. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the interval [\code{Triangle_c4.low, Triangle_c4.up}]. Otherwise, it is equally spaced distributed between \code{Triangle_c4.low} and \code{Triangle_c4.up}.}
   \item{const.ini}{Initial value for the \eqn{c} parameter. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the interval [\code{const.low, const.up}]. Otherwise, it is equally spaced distributed between \code{const.low} and \code{const.up}.}
   \item{gamma.ini}{Initial value for the \eqn{\gamma_c}{gamma_c} parameter. The same value is used for all countries.}
+  \item{phase3.starting.values}{This parameter is used to provide a list of Phase 3 initial values, such as \code{mu.ini} and \code{rho.ini} in \code{\link{run.tfr3.mcmc}}. If the input is \code{NULL}, the default values will be used.}
   \item{proposal_cov_gammas}{Proposal for the gamma covariance matrices for each country. It should be a list with two values: \code{values} and \code{country_codes}. The structure corresponds to the object returned by the function \code{\link{get.cov.gammas}}. By default the covariance matrices are obtained using \code{data(proposal_cov_gammas_cii)}. This argument overwrite the defaults for countries contained the argument.}
+  \item{iso.unbiased}{Codes of countries for which the vital registration TFR estimates are considered unbiased. Only used if \code{uncertainty = TRUE}. See details below.}
+  \item{covariates, cont_covariates}{Categorical and continuous features used in estimating bias and standard deviation if \code{uncertainty = TRUE}. See details below.}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible results.}
   \item{parallel}{Logical determining if the simulation should run multiple chains in parallel. If it is \code{TRUE}, the package \pkg{\link[snowFT]{snowFT}} is required. In such a case further arguments can be passed, see description of \dots.}
   \item{nr.nodes}{Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes for running the simulation in parallel. By default it equals to the number of chains.}
@@ -110,7 +120,7 @@ continue.tfr.mcmc(iter, chain.ids=NULL,
 Using the function \code{continue.tfr.mcmc} one can continue simulating an existing MCMCs by \code{iter} iterations for either all or selected chains.
 
 The function loads observed data (further denoted as WPP dataset) from the \code{\link[wpp2019]{tfr}} and \code{\link[wpp2019]{tfr_supplemental}} datasets in a \pkg{wpp}\eqn{x} package where \eqn{x} is the \code{wpp.year}. It is then merged with the  \code{\link{include}} dataset that corresponds to the same \code{wpp.year}. The argument \code{my.tfr.file} can be used to overwrite those default data. Such a file can include a subset of countries contained in the WPP dataset, as well as a set of new countries. In the former case,
-  	the function replaces the corresponding country data from the WPP dataset by values in this file. Only columns are replaced that match column names of the WPP dataset, and in addition, columns \sQuote{last.observed} and \sQuote{include_code} are used, if present. Countries are merged with WPP using the column \sQuote{country_code}. In addition, in order the countries to be included in the simulation, in both cases (whether they are included in the WPP dataset or not), they must be contained in the table of locations (\code{\link[wpp2019]{UNlocations}}). In addition, their corresponding \code{\link[=include]{include_code}} must be set to 2. If the column \sQuote{include_code} is present in \code{my.tfr.file}, its value overwrites the default include code, unless is -1.  
+  	the function replaces the corresponding country data from the WPP dataset by values in this file. Only columns are replaced that match column names of the WPP dataset, and in addition, columns \sQuote{last.observed} and \sQuote{include_code} are used, if present. Countries are merged with WPP using the column \sQuote{country_code}. In addition, in order the countries to be included in the simulation, in both cases (whether they are included in the WPP dataset or not), they must be contained in the table of locations (\code{\link[wpp2019]{UNlocations}}). In addition, their corresponding \code{\link[=include]{include_code}} must be set to 2. If the column \sQuote{include_code} is present in \code{my.tfr.file}, its value overwrites the default include code, unless it is -1.  
  
  The default UN table of locations mentioned above can be overwritten/extended by using a file passed as the \code{my.locations.file} argument. Such a file must have the same structure as the \code{\link[wpp2019]{UNlocations}} dataset. Entries in this file will overwrite corresponding entries in \code{\link[wpp2019]{UNlocations}} matched by the column \sQuote{country_code}. If there is no such entry in the default dataset, it will be appended. This option of appending new locations is especially useful in cases when \code{my.tfr.file} contains new countries/regions that are not included in \code{\link[wpp2019]{UNlocations}}. In such a case, one must provide a \code{my.locations.file} with a definition of those countries/regions.
 	
@@ -120,6 +130,11 @@ Optionally, \code{my.tfr.file} can contain a column called \code{last.observed} 
 
 The package contains a dataset called \file{my_tfr_template} (in \file{extdata} directory) which is a template for user-specified \code{my.tfr.file}.
 
+The parameter \code{uncertainty} is set to control whether past TFR is considered to be precise (\code{FALSE}), or need to be estimated from the raw data (\code{TRUE}). In the latter case, the raw TFR observations are taken either from the \code{\link{rawTFR}} dataset (default) or from a file given by the \code{my.tfr.raw.file} argument.  The Bayesian hierarchical model considers the past TFR as unknown, estimates it and stores in \code{output.dir}. Details can be found in Liu and Raftery (2020). The \code{covariates}, \code{cont_covariates} arguments are for listing categorical and continuous features for estimating bias and standard deviation of past TFR observations. If a country is known to have unbiased vital registration (VR) records, one can include it in the  \code{iso.unbiased} argument as those countries will estimate their past VR records to have 0 bias and 0.0161 standard deviation.
+
+If \code{annual=TRUE}, which implies using annual data for training the model, the parameter \code{ar.phase2} will be activated. If \code{ar.phase2} is set to \code{TRUE}, then the model of Phase II will change from \eqn{d_{c,t} = g_{c,t} + \epsilon_{c,t}} to \eqn{d_{c,t}-g_{c,t} = \phi(d_{c,t-1}-g_{c,t-1}) + \epsilon_{c,t}}. \eqn{\phi} is considered as country-independent and is called \code{rho_phase2}.
+
+
 }
 \value{
 	An object of class \code{bayesTFR.mcmc.set} which is a list with two components:
@@ -127,10 +142,12 @@ The package contains a dataset called \file{my_tfr_template} (in \file{extdata} 
 	\item{mcmc.list}{A list of objects of class \code{\link{bayesTFR.mcmc}}, one for each MCMC.}
 }
 \references{
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999/}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
+
+P. Liu, and A. E. Raftery (2020). \href{https://projecteuclid.org/euclid.aoas/1593449321}{Accounting for Uncertainty About Past Values In Probabilistic Projections of the Total Fertility Rate for All Countries.} Annals of Applied Statistics, Vol 14, no. 2, 685-705.
 }
 \author{
-	Hana Sevcikova, Leontine Alkema
+	Hana Sevcikova, Leontine Alkema, Peiran Liu
 }
 %\note{
 %%  ~~further notes~~
@@ -143,11 +160,12 @@ L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., H
 }
 \examples{
 \dontrun{
-m <- run.tfr.mcmc(nr.chains=1, iter=5, verbose=TRUE)
+sim.dir <- tempfile()
+m <- run.tfr.mcmc(nr.chains = 1, iter = 5, output.dir = sim.dir, verbose = TRUE)
 summary(m)
-m <- continue.tfr.mcmc(iter=5, verbose=TRUE)
+m <- continue.tfr.mcmc(iter = 5, verbose = TRUE)
 summary(m)
-}
+unlink(sim.dir, recursive = TRUE)}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

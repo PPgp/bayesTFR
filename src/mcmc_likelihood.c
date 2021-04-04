@@ -43,13 +43,13 @@ void log_cond_Triangle_c4_trans(double *Triangle_c4_trans, double *eps_T, double
 }
 
 void doDLcurve(double *DLpar, double *tfr, double *p1, double *p2, int *dim_tfr, 
-				double *dl_values){
+				double *dl_values, int *period_multiplier){
 	double t_mid1, t_mid3, dl55, tmp1, tmp2;
 	int i;
 	
     t_mid1 = DLpar[3] + DLpar[2] + DLpar[1] + 0.5 * DLpar[0];
     t_mid3 = DLpar[3] + 0.5 * DLpar[2];
-    dl55 = 5 * DLpar[4];    
+    dl55 = *period_multiplier * DLpar[4];    
     tmp1 = -log(pow(*p1, 2.0))/DLpar[0];
     tmp2 = -log(pow(*p2, 2.0))/DLpar[2];
     for (i=0; i< (*dim_tfr); i++){

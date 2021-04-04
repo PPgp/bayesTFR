@@ -1,3 +1,29 @@
+7.0-4 (03/31/2021)
+-----
+Minor fixes of publication links.
+
+7.0-3 (03/18/2021)
+-----
+Minor fixes needed for reverse dependencies.
+
+7.0-2 (01/14/2021)
+-----
+Major update:
+- added feature of assessing uncertainty abound the past (Liu & Raftery 2020)
+- added feature of estimating and projecting for annual data
+
+These changes affect the following functions:
+- new arguments in run.tfr.mcmc: annual, ar.phase2, uncertainty, my.tfr.raw.file, 
+                                    covariates, cont_covariates, iso.unbiased
+- new argument in tfr.predict: uncertainty
+- run.tfr.mcmc.extra:
+    - now reestimates any country
+    - new arguments: uncertainty, my.tfr.raw.file, covariates and cont_covariates, iso.unbiased
+- tfr.trajectories.table, tfr.trajectories.plot give uncertainty information about the past
+
+New functions:
+get.tfr.estimation, tfr.estimation.plot, tfr.bias.sd
+
 6.4-0 (7/26/2019)
 -----
 Default for wpp.year set to 2019

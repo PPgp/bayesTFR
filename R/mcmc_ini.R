@@ -1,10 +1,11 @@
 
-DLcurve <- function(DLpar, tfr, p1, p2){ 
+DLcurve <- function(DLpar, tfr, p1, p2, annual = FALSE){ 
  # gives the DL-decrement
  # DLpar is c(Delta1, Delta2, Delta3, Delta4, d_c)
- # tfr is a vector for which the decrements for this curve need to  	be calculated
+ # tfr is a vector for which the decrements for this curve need to be calculated
  	dlvalue <- rep(0.0, length(tfr))
-	res <- .C("doDLcurve", as.numeric(DLpar), as.numeric(tfr), p1, p2, length(tfr), dl_values=dlvalue)
+ 	perfct <- if(annual) 1 else 5
+	res <- .C("doDLcurve", as.numeric(DLpar), as.numeric(tfr), p1, p2, length(tfr), dl_values=dlvalue, period_multiplier=as.integer(perfct))
 	return(res$dl_values)
 #    t_mid1 <- DLpar[4] + DLpar[3] + DLpar[2] + 0.5 * DLpar[1]
 #    t_mid3 <- DLpar[4] + 0.5 * DLpar[3]
@@ -19,49 +20,46 @@ DLcurve <- function(DLpar, tfr, p1, p2){
 # function to get the distortion for country for a given set of DLparameters
 # note: this function gives only the eps's in (tau, lambda-1)
 # (because rest is NA!!)
-get_eps_T = function (DLpar, country, tfr_matrix, start, lambda, p1, p2) 
+
+get.eps.T <- function (DLpar, country, meta, ...) 
 {
-#    eps_T <- NULL
-    tfr <- tfr_matrix[start:lambda, country]
+    tfr <- get.observed.tfr(country, meta, ...)[meta$start_c[country]:meta$lambda_c[country]]
     ldl <- length(tfr)-1
-    dl <- DLcurve(DLpar, tfr[1:ldl], p1, p2)
-#    for (t in start:(lambda - 1)) {
-#        eps_T <- c(eps_T, tfr_matrix[t + 1, country] - tfr_matrix[t, 
-#            country] + DLcurve(DLpar, tfr_matrix[t, country], 
-#            p1, p2))
-#    }
-    eps_T <- tfr[2:(ldl+1)] - tfr[1:ldl] + dl
-    return(eps_T)
+    dl <- DLcurve(DLpar, tfr[1:ldl], meta$dl.p1, meta$dl.p2, annual = meta$annual.simulation)
+    eps <- tfr[2:(ldl+1)] - tfr[1:ldl] + dl
+    if (!is.null(meta$ar.phase2) && meta$ar.phase2) 
+    {
+      args <- list(...)
+      if ('rho.phase2' %in% names(args)) eps <- c(eps[1], eps[2:ldl]-args[['rho.phase2']] * eps[1:(ldl-1)])
+    }
+    return (eps)
 }
 
-#get.dl.index <- function(country, meta) {
-#	index <- meta$start_c[country] : meta$lambda_c[country]
-#	if(is.null(meta$suppl.data) || meta$has.suppl.data[country]) return(index)
-#	return(index + mcmc$meta$suppl.data$T_end)
-#}
-
-get.eps.T <- function (DLpar, country, meta) 
-{
-    tfr <- get.observed.tfr(country, meta)[meta$start_c[country]:meta$lambda_c[country]]
-    ldl <- length(tfr)-1
-    dl <- DLcurve(DLpar, tfr[1:ldl], meta$dl.p1, meta$dl.p2)
-    return(tfr[2:(ldl+1)] - tfr[1:ldl] + dl)
-}
-
-get_eps_T_all <- function (mcmc) {
-	suppl.T <- if(!is.null(mcmc$meta$suppl.data$regions)) mcmc$meta$suppl.data$T_end else 0
+get_eps_T_all <- function (mcmc, ...) {
+  suppl.T <- if(!is.null(mcmc$meta$suppl.data$regions)) mcmc$meta$suppl.data$T_end else 0
 	eps_Tc <- matrix(NA, mcmc$meta$T_end-1 + suppl.T, mcmc$meta$nr_countries)
     for (country in mcmc$meta$id_DL){
     	theta <- c((mcmc$U_c[country]-mcmc$Triangle_c4[country])*exp(mcmc$gamma_ci[country,])/                                     
                                 sum(exp(mcmc$gamma_ci[country,])), mcmc$Triangle_c4[country], mcmc$d_c[country])
-        eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country] <- get.eps.T(theta, country, mcmc$meta)
+        eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country] <- get.eps.T(theta, country, mcmc$meta, ...)
         }
     return(eps_Tc)
 }
 
-find.lambda.for.one.country <- function(tfr, T_end) {
+find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
     # find the end of Phase II
-	lambda <- T_end
+	if(annual) { # compute 5-year average
+	    tfrorig <- tfr
+	    Tendorig <- T_end
+	    years <- as.integer(names(tfr))
+	    ranges <- range(years[years %% 5 == 0])
+	    mid.points <- c(0, seq(ranges[1]-2, ranges[2]+3, by = 5))
+	    brks <- seq(ranges[1]-5, ranges[2] + 5, by = 5)
+	    year.bin <- findInterval(years, brks, left.open = TRUE)
+	    tfr <- aggregate(tfr, by = list(year.bin), FUN = mean, na.rm = TRUE)[,"x"]
+	    T_end <- year.bin[T_end]
+	}
+    lambda <- T_end
 	if ( sum(tfr<2, na.rm=TRUE)>2 ){
 		period <- .get.T.start.end(tfr)[1]+2
 		while (period<=T_end){
@@ -74,8 +72,17 @@ find.lambda.for.one.country <- function(tfr, T_end) {
 			} else { 
 				period = period +1
             }
-         }
+		}
 	}
+	if(annual)  # convert lambda from 5-year scale to annual scale
+	{
+	  lambda <- min(which(year.bin == lambda) + 2, Tendorig)
+	  if (length(year.bin) - lambda < 5) { # if in the last time period, set it to the end of the period
+	      lambda <- length(year.bin) 
+	      while(is.na(tfrorig[lambda])) lambda <- lambda - 1 # move it before the last NA if any
+	  }
+	}
+
 	return(lambda)
 }
 
@@ -87,7 +94,7 @@ find.lambda.for.one.country <- function(tfr, T_end) {
 	return(c(start, sum(!isna.tfr) + start - 1))
 } 
 
-get.observed.tfr <- function(country.index, meta, matrix.name='tfr_matrix', matrix.name.suppl=matrix.name)
+get.observed.tfr <- function(country.index, meta, matrix.name='tfr_matrix', matrix.name.suppl=matrix.name, ...)
 	return(get.observed.with.supplemental(country.index, meta[[matrix.name]], meta$suppl.data, matrix.name.suppl))
 
 get.observed.with.supplemental <- function(country.index, matrix, suppl.data, matrix.name='tfr_matrix') {
@@ -103,7 +110,7 @@ get.observed.with.supplemental <- function(country.index, matrix, suppl.data, ma
 
 find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.after.1950 = 5, #5.5, 
 												max.diff.local.and.global.max.for.start.at.loc = 0.53, #0.5,
-												delta.for.local.max = 0.001,
+												delta.for.local.max = 0.001, annual = FALSE,
 												suppl.data=NULL) {
     # gets tau_c and puts NAs before tau_c (start of Phase II)
     # gets ids of DL (where decline has been observed)
@@ -167,7 +174,8 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
             tfr_matrix[1:(tau_c[country] - 1 - T.suppl), country] <- NA
 
         # end index of Phase II
-        lambda_c[country] <- do.call(getOption("TFRphase3findfct", "find.lambda.for.one.country"), list(data, T_end_c[country]))
+        lambda_c[country] <- do.call(getOption("TFRphase3findfct", "find.lambda.for.one.country"), 
+                                     list(data, T_end_c[country], annual = annual))
         
         if (lambda_c[country] < T_end_c[country]) { # set NA all values between lambda_c and T_c_end
          	if(lambda_c[country] < T.suppl) {
@@ -196,8 +204,9 @@ mcmc.meta.ini <- function(...,
 						start.year=1950, present.year=2020, 
 						wpp.year=2019, my.tfr.file = NULL, my.locations.file = NULL,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
-						verbose=FALSE
-					 ) {
+						verbose=FALSE, uncertainty=FALSE,
+						my.tfr.raw.file=NULL, 
+						ar.phase2=FALSE) {
 	# Initialize meta parameters - those that are common to all chains.
 	args <- list(...)
 	mcmc.input <- list()
@@ -208,17 +217,21 @@ mcmc.meta.ini <- function(...,
 	mcmc.input$wpp.year <- wpp.year
 	if(present.year-3 > wpp.year) warning("present.year is much larger then wpp.year. Make sure WPP data for present.year are available.")
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
-										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose)
-
+										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, 
+										annual = mcmc.input$annual.simulation, verbose=verbose)
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
-						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose)
+						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, 
+						uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2)
 	return(structure(c(mcmc.input, meta), class='bayesTFR.mcmc.meta'))
 }
 	
 	
 do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
-						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE) {
-	results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, suppl.data=tfr.with.regions$suppl.data)
+						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE, uncertainty=FALSE, 
+						my.tfr.raw.file=NULL, 
+						ar.phase2=FALSE) {
+  results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, annual = meta$annual.simulation,
+	                                               suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
 	tfr_matrix_observed <- tfr.with.regions$tfr_matrix
 	updated.tfr.matrix <- results_tau$tfr_matrix
@@ -279,26 +292,101 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 		for(is.na.country in 1:sum(isNA)) 
 			prop_cov_gammas[(1:nr_countries)[isNA][is.na.country],,] <- avg
 	}
-
-	return(list(
-			tfr_matrix=updated.tfr.matrix, 
-			tfr_matrix_all=tfr.with.regions$tfr_matrix_all,
-			tfr_matrix_observed=tfr_matrix_observed,
-            tau_c = results_tau$tau_c, lambda_c = lambda_c,
-            proposal_cov_gammas_cii = prop_cov_gammas,
-            start_c = results_tau$start_c, 
-            id_Tistau = results_tau$id_Tistau, 
-            id_DL = results_tau$id_DL, 
-            id_early = results_tau$id_early,
-            id_notearly = results_tau$id_notearly,
-            id_notearly_estimation = results_tau$id_notearly[results_tau$id_notearly <= nr_countries_estimation],
-			U.c.low=lower_U_c,
-            nr_countries=nr_countries,
-            nr_countries_estimation=nr_countries_estimation,
-            T_end=dim(tfr.with.regions$tfr_matrix)[1], T_end_c=results_tau$T_end_c, 
-            regions=tfr.with.regions$regions,
-            suppl.data=suppl.data
-            ))
+  
+	output <- list(
+	  tfr_matrix=updated.tfr.matrix, 
+	  tfr_matrix_all=tfr.with.regions$tfr_matrix_all,
+	  tfr_matrix_observed=tfr_matrix_observed,
+	  tau_c = results_tau$tau_c, lambda_c = lambda_c,
+	  proposal_cov_gammas_cii = prop_cov_gammas,
+	  start_c = results_tau$start_c, 
+	  id_Tistau = results_tau$id_Tistau, 
+	  id_DL = results_tau$id_DL, 
+	  id_early = results_tau$id_early,
+	  id_notearly = results_tau$id_notearly,
+	  id_notearly_estimation = results_tau$id_notearly[results_tau$id_notearly <= nr_countries_estimation],
+	  U.c.low=lower_U_c,
+	  nr_countries=nr_countries,
+	  nr_countries_estimation=nr_countries_estimation,
+	  T_end=dim(tfr.with.regions$tfr_matrix)[1], T_end_c=results_tau$T_end_c, 
+	  regions=tfr.with.regions$regions,
+	  suppl.data=suppl.data
+	)
+	if(uncertainty)
+	{
+	  if (is.null(my.tfr.raw.file)) 
+	  {
+	    ertfr <- new.env()
+	    data("rawTFR", envir = ertfr)
+	    rawTFR <- ertfr$rawTFR
+	  }
+	  else
+	  {
+	    file.type <- substr(my.tfr.raw.file, nchar(my.tfr.raw.file)-2, nchar(my.tfr.raw.file))
+	    if (file.type == 'txt')
+	      rawTFR <- read.delim(my.tfr.raw.file, sep='\t')
+	    else if (file.type == 'csv')
+	      rawTFR <- read.delim(my.tfr.raw.file, sep=',')
+	    else 
+	    {
+	      stop("File type not detectible. Please use txt or csv files.")
+	    }
+	  }
+	  rawTFR <- rawTFR[rawTFR$country_code %in% as.numeric(colnames(output$tfr_matrix_all)),]
+	  rawTFR <- rawTFR[rawTFR$year < meta$present.year,]
+	  rawTFR <- rawTFR[rawTFR$year > meta$start.year,]
+	  output$raw_data.original <- rawTFR
+	  output$raw_data.original <- merge(output$raw_data.original, 
+	                                    data.frame(country_code=tfr.with.regions$regions$country_code, country_index = 1:nr_countries), 
+	                                    by = "country_code")
+	  index <- 1:nrow(output$raw_data.original)
+	  country.ind.by.year <- list()
+	  ind.by.year <- list()
+	  if (meta$annual.simulation)
+	  {
+	    for (year in meta$start.year:meta$present.year)
+	    {
+	      country.ind.by.year[[year-meta$start.year+1]] <- output$raw_data.original$country_index[which(round(output$raw_data.original$year-0.01) == year)]
+	      ind.by.year[[year-meta$start.year+1]] <- index[which(round(output$raw_data.original$year-0.01) == year)]
+	    }
+	    output$raw_data.original$year <- round(output$raw_data.original$year - 0.01)
+	    output$country.ind.by.year <- country.ind.by.year
+	    output$ind.by.year <- ind.by.year
+	  }
+	  else
+	  {
+	    left.distance <- list()
+	    years <- as.numeric(rownames(output$tfr_matrix))
+	    count <- 1
+	    for (year in c(years, rev(years)[1]+5))
+	    {
+	      inds <- which((output$raw_data.original$year <= year) & (output$raw_data.original$year > year - 5))
+	      country.ind.by.year[[count]] <- output$raw_data.original$country_index[inds]
+	      ind.by.year[[count]] <- index[inds]
+	      left.distance[[count]] <- output$raw_data.original$year[inds] - year + 5
+	      count <- count + 1
+	    }
+	    output$country.ind.by.year <- country.ind.by.year
+	    output$ind.by.year <- ind.by.year
+	    output$left.distance <- left.distance
+	  }
+	  output$tfr_all <- output$tfr_matrix_all
+	  output$tfr_mu_all <- output$tfr_all
+	  output$tfr_sd_all <- matrix(0, nrow = nrow(output$tfr_all), ncol=ncol(output$tfr_all))
+	  output$id_phase1_by_year <- list()
+	  output$id_phase2_by_year <- list()
+	  output$id_phase3_by_year <- list()
+	  for (year in 1:output$T_end)
+	  {
+	    output$id_phase1_by_year[[year]] <- which(output$start_c > year)
+	    output$id_phase3_by_year[[year]] <- which(output$lambda_c <= year)
+	    output$id_phase2_by_year[[year]] <- setdiff(1:nr_countries, c(output$id_phase1_by_year[[year]], output$id_phase3_by_year[[year]]))
+	  }
+	}
+	
+	if (meta$annual.simulation) output$ar.phase2 <- ar.phase2
+	
+	return(output)
 
 }
 
@@ -313,8 +401,8 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 					 gamma.ini=1, Triangle_c4.ini = 1.85,
 					 d.ini=0.17,
 					 save.all.parameters=FALSE,
-					 verbose=FALSE
-					 ) {
+					 verbose=FALSE, uncertainty=FALSE, iso.unbiased=NULL,
+					 covariates=c('source', 'method'), cont_covariates=NULL) {
 				 		 	
 	nr_countries <- mcmc.meta$nr_countries
 
@@ -373,6 +461,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
           }
     }
    	dontsave.pars <- c('add_to_sd_Tc', 'const_sd_dummie_Tc', 'meta')
+   	if(uncertainty) dontsave.pars <- c(dontsave.pars, 'meta3')
     if (!save.all.parameters) dontsave.pars <- c(dontsave.pars, 'eps_Tc')
     if (!exists(".Random.seed")) runif(1)	    	
 	mcmc <- structure(list(
@@ -387,11 +476,11 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
                         d.ini=d.ini, gamma.ini=gamma.ini,Triangle_c4.ini=Triangle_c4.ini,
                         iter=iter, finished.iter=1, length = 1,
                         id=chain.id,
-                        output.dir=paste('mc', chain.id, sep=''),
+                        output.dir=paste0('mc', chain.id),
                         traces=0, traces.burnin=0, 
                         rng.state = .Random.seed,
                         compression.type=mcmc.meta$compression.type,
-                        dontsave=dontsave.pars
+                        dontsave=dontsave.pars, uncertainty=uncertainty
                         ),
                    class='bayesTFR.mcmc')
                    
@@ -400,12 +489,23 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	##################################################################
 	# note: the eps will always be NA outside (tau_c, lambda-1)!!
 	# ini the epsilons
-	mcmc$eps_Tc <- get_eps_T_all(mcmc)
+	if (!is.null(mcmc.meta$ar.phase2) && mcmc.meta$ar.phase2) mcmc$rho.phase2 <- 0.7
+	mcmc$eps_Tc <- get_eps_T_all(mcmc, rho.phase2=mcmc$rho.phase2)
+	if (uncertainty)
+	{
+	  # mcmc <- get.obs.estimate.diff(mcmc)
+	  # mcmc <- estimate.bias.sd.raw(mcmc)
+	  mcmc <- get.obs.estimate.diff.original(mcmc)
+	  mcmc <- estimate.bias.sd.original(mcmc, iso.unbiased, covariates, cont_covariates)
+	}
+	
+	# mcmc <- as.list(mcmc)
 	return(mcmc)
 }
 
 mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL, 
-									my.locations.file=NULL, burnin = 200, verbose=FALSE) {
+									my.locations.file=NULL, burnin = 200, verbose=FALSE, uncertainty=FALSE, 
+									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL)) {
 	update.regions <- function(reg, ereg, id.replace, is.new, is.old) {
 		nreg <- list()
 		for (name in c('code', 'area_code', 'country_code')) {
@@ -421,8 +521,8 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	}
 	meta <- mcmc.set$meta
 	#create tfr matrix only for the extra countries
-	tfr.with.regions <- set.wpp.extra(meta, countries=countries, 
-									  my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose)
+	tfr.with.regions <- set.wpp.extra(meta, countries=countries, annual = meta$annual.simulation,
+									  my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose, uncertainty=uncertainty)
 	if(is.null(tfr.with.regions)) return(list(meta=meta, index=c()))
 	has.mock.suppl <- FALSE
 	if(is.null(tfr.with.regions$suppl.data$regions) && !is.null(meta$suppl.data$regions)) {
@@ -438,7 +538,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	}
 	Emeta <- do.meta.ini(meta, tfr.with.regions=tfr.with.regions, 
 								use.average.gammas.cov=TRUE, burnin=burnin,
-						 		verbose=verbose)
+						 		verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file = my.tfr.raw.file)
 			 		
 	# join the new meta with the existing one
 	is.old <- tfr.with.regions$is_processed
@@ -483,7 +583,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 		remove.from.old <- !is.element(idx.old, Emeta[[name]])
 		if(any(remove.from.old)) {
 			idx <- which(is.element(meta[[name]], id.replace[remove.from.old]))
-			meta[[name]] <- meta[[name]][-idx]
+			if (length(idx) > 0) meta[[name]] <- meta[[name]][-idx]
 		}
 		new.meta[[name]] <- meta[[name]]
 		idx2 <- !is.inold
@@ -525,7 +625,21 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	for (item in names(new.meta)) {
 		meta[[item]] <- new.meta[[item]]
 	}
-
+	if (uncertainty)
+	{
+	  meta$tfr_all <- meta[['tfr_matrix_all']]
+	  meta$tfr_mu_all <- meta[['tfr_matrix_all']]
+	  meta$tfr_sd_all <- matrix(0, nrow = nrow(meta$tfr_all), ncol=ncol(meta$tfr_all))
+	  meta$raw_data.original <- Emeta$raw_data.original
+	  meta$country.ind.by.year <- Emeta$country.ind.by.year
+	  meta$ind.by.year <- Emeta$ind.by.year
+	  if (!meta$annual.simulation) meta$left.distance <- Emeta$left.distance
+	  for (i in 1:length(meta$country.ind.by.year))
+	  {
+	    meta$country.ind.by.year[[i]] <- index[meta$country.ind.by.year[[i]]]
+	  }
+	}
+	
 	return(list(meta=meta, index=index, index.replace=id.replace, 
 				index_DL=index[is.element(index, new.meta$id_DL)]))
 }

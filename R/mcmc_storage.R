@@ -19,12 +19,13 @@ store.mcmc <- local({
 	special.case <- c('gamma', 'eps_T')
 	
 	buffers.insert <- function(mcmc, countries=NULL) {
-		counter <<- counter + 1
+	  counter <<- counter + 1
 		if (is.null(countries)) {
 			for (par in par.names) {
 				if (is.element(par, mcmc$dontsave)) next
 				buffer[[par]][counter,] <<- mcmc[[par]]
 			}
+		  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) buffer[['rho.phase2']][counter,] <<- mcmc[["rho.phase2"]]
 			country.index <- mcmc$meta$id_DL
 		} else {
 			country.index <- countries
@@ -41,6 +42,14 @@ store.mcmc <- local({
 				buffer.cs[[par]][[country]][counter,] <<- result
 			}
 		}
+	  
+		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
+		{
+		  for (country in country.index){
+		    result <- mcmc$meta[['tfr_all']][, country]
+		    buffer.cs[['tfr']][[country]][counter,] <<- result
+		  }
+		}
 	}
 		
 	buffers.ini <- function(mcmc, size, countries=NULL) {
@@ -50,6 +59,7 @@ store.mcmc <- local({
 				if (is.element(par, mcmc$dontsave)) next
 				buffer[[par]] <<- matrix(NA, ncol=length(mcmc[[par]]), nrow=size)
 			}
+		  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) buffer[['rho.phase2']] <<- matrix(NA, ncol=1, nrow=size)
 			country.index <- mcmc$meta$id_DL
 		} else {
 			country.index <- countries
@@ -67,6 +77,14 @@ store.mcmc <- local({
 				buffer.cs[[par]][[country]] <<- matrix(NA, ncol=length(v), nrow=size)
 			}
 		}
+		
+		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
+		{
+		  for (country in country.index){
+		    v <- mcmc$meta[['tfr_all']][, country]
+		    buffer.cs[['tfr']][[country]] <<- matrix(NA, ncol=length(v), nrow=size)
+		  }
+		}
 		counter <<- 0
 	}
 	
@@ -79,7 +97,7 @@ store.mcmc <- local({
 			dir.create(output.dir)
 		open <- if(append) 'a' else 'w'
 		if (is.null(countries)) {
-			for(par in par.names) { # write country-independent parameters
+		  for(par in par.names) { # write country-independent parameters
 				if (is.null(buffer[[par]])) next
 				if (counter == 1) {
 					values <- t(buffer[[par]][1:counter,])
@@ -88,7 +106,17 @@ store.mcmc <- local({
 				}
 				write.values.into.file.cindep(par, values, output.dir, mode=open, 
 												compression.type=mcmc$compression.type)
-			}
+		  }
+		  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
+		  {
+		    if (counter == 1) {
+		      values <- t(buffer[['rho.phase2']][1:counter,])
+		    } else {
+		      values <- buffer[['rho.phase2']][1:counter,]
+		    }
+		    write.values.into.file.cindep('rho_phase2', values, output.dir, mode=open, 
+		                                  compression.type=mcmc$compression.type)
+		  }
 			country.index <- mcmc$meta$id_DL	
 		} else {
 			country.index <- countries
@@ -106,6 +134,20 @@ store.mcmc <- local({
 											compression.type=mcmc$compression.type)
 			}
 		}
+		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
+		{
+		  for (country in country.index){
+		    if (counter == 1) {
+		      values <- t(buffer.cs[['tfr']][[country]][1:counter,])
+		    } else {
+		      values <- buffer.cs[['tfr']][[country]][1:counter,]
+		    }
+		    write.values.into.file.cdep('tfr', values, output.dir, 
+		                                get.country.object(country, meta=mcmc$meta, index=TRUE)$code, mode=open, 
+		                                compression.type=mcmc$compression.type)
+		  }
+		}
+		
 		resmc <- as.list(mcmc)
 		class(resmc) <- 'bayesTFR.mcmc'
 		store.bayesTFR.object(resmc, output.dir)
@@ -139,16 +181,18 @@ store.mcmc3 <- local({
 	buffer3 <- buffer3.cs <- NULL
 		
 	buffers.insert <- function(mcmc, countries=NULL) {
-		counter3 <<- counter3 + 1
+	  counter3 <<- counter3 + 1
 		if (is.null(countries)) {
 			for (par in par.names) buffer3[[par]][counter3,] <<- mcmc[[par]]
 			country.index <- 1: mcmc$meta$nr.countries
 		} else country.index <- countries
-		for (par in par.cs.names) {			
+		for (par in par.cs.names) {		
+		  
 			for (country in country.index)
 				buffer3.cs[[par]][[country]][counter3,] <<- if(is.null(dim(mcmc[[par]]))) mcmc[[par]][country] 
                 								          else mcmc[[par]][,country]
 		}
+		
 	}
 		
 	buffers.ini <- function(mcmc, size, countries=NULL) {
@@ -170,12 +214,20 @@ store.mcmc3 <- local({
 	}
 	
 	do.flush.buffers <- function(mcmc, append=FALSE, countries=NULL, verbose=FALSE) {
-		if (verbose)
+	  if (verbose)
 			cat("Flushing results into disk.\n")
-		output.dir <- file.path(mcmc$meta$output.dir, mcmc$output.dir)
-		if(!file.exists(output.dir)) 
+	  if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty) )
+	  {
+	    output.dir <- file.path(mcmc$meta$output.dir, "phaseIII", mcmc$output.dir)
+	  }
+	  else
+	  {
+	    output.dir <- file.path(mcmc$meta$output.dir, mcmc$output.dir)
+	  }
+	  if(!file.exists(output.dir)) 
 			dir.create(output.dir)
 		open <- if(append) 'a' else 'w'
+		
 		if (is.null(countries)) {
 			for(par in par.names) { # write country-independent parameters
 				if (is.null(buffer3[[par]])) next
@@ -203,9 +255,9 @@ store.mcmc3 <- local({
 	}
 	
 	store <- function(mcmc, append=FALSE, flush.buffer=FALSE, countries=NULL, verbose=FALSE) {
-		# If countries is not NULL, only country-specific parameters 
+	  # If countries is not NULL, only country-specific parameters 
 		# for those countries (given as index) are stored
-		buffer.size <- mcmc$meta$buffer.size
+	  buffer.size <- mcmc$meta$buffer.size
 		if (is.null(buffer.size)) buffer.size <- default.buffer.size
 		if (is.null(buffer3)) buffers.ini(mcmc, buffer.size, countries=countries)
 		buffers.insert(mcmc, countries=countries)
@@ -220,23 +272,40 @@ store.mcmc3 <- local({
 
 })
 
+.get.compression.settings.obsolete <- function(compression.type='None') {
+    if(is.null(compression.type)) compression.type <- 'None'
+    return(switch(compression.type,
+                  None=c('file', '', ''),
+                  xz = c('xzfile', '.xz', 'b'),
+                  bz = c('bzfile', '.bz2','b'),
+                  gz = c('gzfile', '.gz', 'b')))
+}
 
 .get.compression.settings <- function(compression.type='None') {
 	if(is.null(compression.type)) compression.type <- 'None'
 	return(switch(compression.type,
-							None=c('file', '', ''),
+							None=c('none', '', ''),
 							xz = c('xzfile', '.xz', 'b'),
 							bz = c('bzfile', '.bz2','b'),
-							gz = c('gzfile', '.gz', 'b')))
+							gz = c('gzip', '.gz', '')))
 }
 
 do.write.values.into.file <- function(filename, data, mode, compression.type='None') {
 	cmd.suffix.mode <- .get.compression.settings(compression.type)
-	#con <- bzfile(filename, open=mode)
-	con <- do.call(cmd.suffix.mode[1], list(paste(filename, cmd.suffix.mode[2], sep=''), 
-				open=paste(mode, cmd.suffix.mode[3], sep='')))
-	write.table(data, file=con, row.names=FALSE, col.names = FALSE, sep=" ")
-	close(con)
+	# con <- do.call(cmd.suffix.mode[1], list(paste(filename, cmd.suffix.mode[2], sep=''), 
+	#                                         open=paste(mode, cmd.suffix.mode[3], sep='')))
+	# write.table(data, file=con, row.names=FALSE, col.names = FALSE, sep=" ")
+	# close(con)
+	# # return()
+	if(cmd.suffix.mode[1] %in% c("xzfile", "bzfile")) {
+	    #con <- bzfile(filename, open=mode)
+	    con <- do.call(cmd.suffix.mode[1], list(paste(filename, cmd.suffix.mode[2], sep=''), 
+	    			open=paste(mode, cmd.suffix.mode[3], sep='')))
+	    write.table(data, file=con, row.names=FALSE, col.names = FALSE, sep=" ")
+	    close(con)
+	} else
+    data.table::fwrite(data.table::data.table(data), file = paste0(filename, cmd.suffix.mode[2]), sep = "\t",
+                       showProgress = FALSE, compress = cmd.suffix.mode[1], append = mode == "a", col.names = FALSE)
 }
 
 write.values.into.file.cindep <- function(par, data, output.dir, mode='w', compression.type='None') {
