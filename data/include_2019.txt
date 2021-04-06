@@ -1,6 +1,5 @@
 name	country_code	include_code
 World	900	0
-Sustainable Development Goal (SDG) regions	1828	0
 Sub-Saharan Africa	947	0
 Northern Africa and Western Asia	1833	0
 Central and Southern Asia	921	0
@@ -16,7 +15,6 @@ Europe	908	0
 Latin America and the Caribbean	904	0
 Northern America	905	0
 Oceania	909	0
-UN development groups	1803	0
 More developed regions	901	0
 Less developed regions	902	0
 Least developed countries	941	0
@@ -24,7 +22,6 @@ Less developed regions, excluding least developed countries	934	0
 Less developed regions, excluding China	948	0
 Land-locked Developing Countries (LLDC)	1636	0
 Small Island Developing States (SIDS)	1637	0
-World Bank Income Groups	1802	0
 High-income countries	1503	0
 Middle-income countries	1517	0
 Upper-middle-income countries	1502	0
@@ -241,7 +238,8 @@ Russian Federation	643	2
 Slovakia	703	2
 Ukraine	804	2
 Northern Europe	924	0
-Channel Islands	830	2
+Guernsey	831	2
+Jersey	832	2
 Denmark	208	2
 Estonia	233	2
 Faroe Islands	234	2
@@ -263,6 +261,7 @@ Gibraltar	292	2
 Greece	300	2
 Holy See	336	2
 Italy	380	2
+Kosovo (under UNSC res. 1244)	412	2
 Malta	470	2
 Montenegro	499	2
 North Macedonia	807	2
