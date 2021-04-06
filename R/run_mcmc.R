@@ -262,7 +262,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 	                 gamma.ini=gamma.ini[chain.id],
 	                 save.all.parameters=save.all.parameters,
 	                 verbose=verbose, uncertainty=uncertainty, iso.unbiased=iso.unbiased, 
-	                 covariates=covariates, cont_covariates=NULL)
+	                 covariates=covariates, cont_covariates=cont_covariates)
 	if (uncertainty)
 	{
 	  this.sv <- list()
