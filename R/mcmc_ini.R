@@ -483,8 +483,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
                         dontsave=dontsave.pars, uncertainty=uncertainty
                         ),
                    class='bayesTFR.mcmc')
-                   
-	##################################################################
+  ##################################################################
 	# distortions
 	##################################################################
 	# note: the eps will always be NA outside (tau_c, lambda-1)!!
