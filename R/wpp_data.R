@@ -208,12 +208,12 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
 	    ncol.tfr <- length(num.columns)
 	    cols.starty <- as.integer(substr(names.tfr.data[num.columns], 1,4))
 	    cols.endy <- as.integer(substr(names.tfr.data[num.columns], 6,9))
-	    years.to.interp.to <- (cols.starty[1]+3):cols.endy[length(cols.endy)]
+	    years.to.interp.to <- (cols.starty[1]):cols.endy[length(cols.endy)]
 	    years.to.interp.from <- seq(cols.starty[1]+3, cols.endy[length(cols.endy)]-2, by = 5)
 	    tfr_data_new <- matrix(NA, nrow = nrow(tfr_data), ncol = length(years.to.interp.to))
 	    for(row in 1:nrow(tfr_data_new)) 
 	        tfr_data_new[row, ] <- approx(years.to.interp.from, tfr_data[row, num.columns], 
-	                                      xout = years.to.interp.to)$y
+	                                      xout = years.to.interp.to, rule=2)$y
 	    tfr_data_new <- cbind(tfr_data[, -num.columns], tfr_data_new) 
 	    colnames(tfr_data_new) <- c(colnames(tfr_data)[-num.columns], years.to.interp.to)
 	  tfr_data <- tfr_data_new
