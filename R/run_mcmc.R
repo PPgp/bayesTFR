@@ -26,6 +26,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 						phase3.starting.values=NULL,
 					 	proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						iso.unbiased = NULL, covariates = c('source', 'method'), cont_covariates = NULL, 
+						source.col.name="source",
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
 					 	save.all.parameters = FALSE, compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
@@ -196,10 +197,10 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 		chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc.run.chain, 
 						initfun=init.nodes, seed = seed, meta=bayesTFR.mcmc.meta, 
 						thin=thin, starting.values=starting.values, iter=iter, S.ini=S.ini, a.ini=a.ini,
-                        b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
-                        gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, 
-                        verbose.iter=verbose.iter, uncertainty=uncertainty, iso.unbiased=iso.unbiased, 
-						            covariates=covariates, cont_covariates=cont_covariates, ...)
+						b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
+						gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, 
+						verbose.iter=verbose.iter, uncertainty=uncertainty, iso.unbiased=iso.unbiased, 
+						covariates=covariates, cont_covariates=cont_covariates, source.col.name=source.col.name, ...)
 	} else { # run chains sequentially
 		chain.set <- list()
 		for (chain in 1:nr.chains) {
@@ -208,7 +209,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini, 
 					 	gamma.ini=gamma.ini, save.all.parameters=save.all.parameters,
 					 	verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty, iso.unbiased=iso.unbiased, 
-					 	covariates=covariates, cont_covariates=cont_covariates)
+					 	covariates=covariates, cont_covariates=cont_covariates, source.col.name=source.col.name)
 		}
 	}
 	names(chain.set) <- 1:nr.chains
@@ -240,7 +241,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 							S.ini, a.ini, b.ini, sigma0.ini, Triangle_c4.ini, const.ini, gamma.ini=1,
 							save.all.parameters=FALSE,
 							verbose=FALSE, verbose.iter=10, uncertainty=FALSE, iso.unbiased=NULL, 
-							covariates=c('source', 'method'), cont_covariates=NULL) {
+							covariates=c('source', 'method'), cont_covariates=NULL, source.col.name="source") {
 								
 	cat('\n\nChain nr.', chain.id, '\n')
     if (verbose) {
@@ -262,7 +263,8 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 	                 gamma.ini=gamma.ini[chain.id],
 	                 save.all.parameters=save.all.parameters,
 	                 verbose=verbose, uncertainty=uncertainty, iso.unbiased=iso.unbiased, 
-	                 covariates=covariates, cont_covariates=cont_covariates)
+	                 covariates=covariates, cont_covariates=cont_covariates,
+                   source.col.name=source.col.name)
 	if (uncertainty)
 	{
 	  this.sv <- list()

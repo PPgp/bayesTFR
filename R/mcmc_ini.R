@@ -402,7 +402,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 					 d.ini=0.17,
 					 save.all.parameters=FALSE,
 					 verbose=FALSE, uncertainty=FALSE, iso.unbiased=NULL,
-					 covariates=c('source', 'method'), cont_covariates=NULL) {
+					 covariates=c('source', 'method'), cont_covariates=NULL, source.col.name = "source") {
 				 		 	
 	nr_countries <- mcmc.meta$nr_countries
 
@@ -495,7 +495,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	  # mcmc <- get.obs.estimate.diff(mcmc)
 	  # mcmc <- estimate.bias.sd.raw(mcmc)
 	  mcmc <- get.obs.estimate.diff.original(mcmc)
-	  mcmc <- estimate.bias.sd.original(mcmc, iso.unbiased, covariates, cont_covariates)
+	  mcmc <- estimate.bias.sd.original(mcmc, iso.unbiased, covariates, cont_covariates, source.col.name)
 	}
 	
 	# mcmc <- as.list(mcmc)
