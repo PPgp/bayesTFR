@@ -36,7 +36,7 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     Triangle_c4.ini = NULL, const.ini = NULL, gamma.ini = 1, 
     phase3.starting.values = NULL, proposal_cov_gammas = NULL, 
     iso.unbiased = NULL, covariates = c("source", "method"), cont_covariates = NULL, 
-    seed = NULL, parallel = FALSE, nr.nodes = nr.chains, 
+    source.col.name="source", seed = NULL, parallel = FALSE, nr.nodes = nr.chains, 
     save.all.parameters = FALSE, compression.type = 'None',
     auto.conf = list(max.loops = 5, iter = 62000, iter.incr = 10000, 
         nr.chains = 3, thin = 80, burnin = 2000),
@@ -103,6 +103,7 @@ continue.tfr.mcmc(iter, chain.ids = NULL,
   \item{proposal_cov_gammas}{Proposal for the gamma covariance matrices for each country. It should be a list with two values: \code{values} and \code{country_codes}. The structure corresponds to the object returned by the function \code{\link{get.cov.gammas}}. By default the covariance matrices are obtained using \code{data(proposal_cov_gammas_cii)}. This argument overwrite the defaults for countries contained the argument.}
   \item{iso.unbiased}{Codes of countries for which the vital registration TFR estimates are considered unbiased. Only used if \code{uncertainty = TRUE}. See details below.}
   \item{covariates, cont_covariates}{Categorical and continuous features used in estimating bias and standard deviation if \code{uncertainty = TRUE}. See details below.}
+  \item{source.col.name}{Specify the name for source column used for iso.unbiased variable. }
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible results.}
   \item{parallel}{Logical determining if the simulation should run multiple chains in parallel. If it is \code{TRUE}, the package \pkg{\link[snowFT]{snowFT}} is required. In such a case further arguments can be passed, see description of \dots.}
   \item{nr.nodes}{Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes for running the simulation in parallel. By default it equals to the number of chains.}
