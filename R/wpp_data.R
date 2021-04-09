@@ -1,7 +1,7 @@
 # Read in the UN estimates
 
 set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, my.tfr.file=NULL, 
-							my.locations.file=NULL, annual = FALSE, verbose=FALSE) {
+							my.locations.file=NULL, annual = FALSE, ignore.last.observed = FALSE, verbose=FALSE) {
 # outputs:
 # tfr_matrix_all, with each column one countries UN estimates
 # tfr_matrix with NAs after last observed data point
@@ -32,7 +32,8 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, m
 												start.year=start.year, 
 												present.year=present.year,
 												annual = annual, verbose=verbose, 
-												interpolate = annual && is.null(my.tfr.file))
+												interpolate = annual && is.null(my.tfr.file),
+												ignore.last.observed = ignore.last.observed)
 	if(!annual) {
 	    TFRmatrixsuppl.regions <- .get.suppl.matrix.and.regions(un.object, TFRmatrix.regions, loc_data, 
 									start.year, present.year)
@@ -198,7 +199,7 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
 get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950, present.year=2010, annual = FALSE,
 												 datacolnames=c(country.code='country_code', country.name='country', reg.name='reg_name',
 															reg.code='reg_code', area.name='area_name', area.code='area_code'), 
-												 interpolate = FALSE) {
+												 interpolate = FALSE, ignore.last.observed = FALSE) {
 	tfr_data <- data
 	nr_countries <- length(tfr_data[,1])
 	if (annual && interpolate) # interpolate 5-year data
@@ -266,7 +267,7 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
  		if(has.area.name) area_name <- c(area_name, paste(loc_data$area_name[loc_index]))
  		if(has.area.code) area_code <- c(area_code, loc_data$area_code[loc_index])
 		# set NAs for entries that are not observed data (after last.observed) 
-		tfr_matrix[(tfr_data[i,'last.observed'] < mid.years), i] <- NA
+		if(!ignore.last.observed) tfr_matrix[(tfr_data[i,'last.observed'] < mid.years), i] <- NA
 		all.na[i] <- all(is.na(tfr_matrix[,i]))
 	}
 	country.codes <- tfr_data[[datacolnames['country.code']]]
