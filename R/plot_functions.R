@@ -492,9 +492,13 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   
   wpp.data <- get.observed.tfr(country.obj$index, mcmc.list$meta, "tfr_matrix_all")
   wpp.data <- data.frame(year=quantile_tbl$year, tfr = as.numeric(wpp.data))
-  wpp.data <- wpp.data[wpp.data$year %% 5 == 3,]
+  #wpp.data <- wpp.data[wpp.data$year %% 5 == 3,]
   q <- q + ggplot2::geom_line(data = wpp.data, ggplot2::aes_string(x="year", y="tfr"), size = 0.8) + ggplot2::theme_bw() + 
-    ggplot2::geom_point(data = wpp.data, ggplot2::aes_string(x="year", y="tfr"))
+      ggplot2::geom_point(data = wpp.data, ggplot2::aes_string(x="year", y="tfr"), size = 0.7)
+
+  # re-draw the median
+  q <- q + ggplot2::geom_line(ggplot2::aes_string(x="year", y="Q50"), size = 0.8, color="red") +
+      ggplot2::geom_point(ggplot2::aes_string(x="year", y="Q50"), size = 1, color="red")
   
   if (save.image)
   {
@@ -610,12 +614,20 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   }
   # plot median
   tfr.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
-  lines(x2, tfr.median, type='l', col=col[3], lwd=lwd[3]) 
+  if(uncertainty) {
+      unc.last.time <- which(tfr.object$tfr_quantile$year == x2[1])
+      tfr.median[1] <- unlist(tfr.object$tfr_quantile[unc.last.time,])[length(pi)+1]
+  }
+  lines(x2, tfr.median, type='l', col=col[3], lwd=lwd[3])
   # plot given CIs
   lty <- 2:(length(pi)+1)
   for (i in 1:length(pi)) {
     cqp <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i])
     if (!is.null(cqp)) {
+        if(uncertainty) {
+            cqp[1,1] <- unlist(tfr.object$tfr_quantile[unc.last.time, ])[length(pi)+1-i]
+            cqp[2,1] <- unlist(tfr.object$tfr_quantile[unc.last.time, ])[length(pi)+1+i]
+        }
       lines(x2, cqp[1,], type='l', col=col[4], lty=lty[i], lwd=lwd[4])
       lines(x2, cqp[2,], type='l', col=col[4], lty=lty[i], lwd=lwd[4])
     }
@@ -650,8 +662,12 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
     lty <- c(lty, max(lty)+1)
     llty <- length(lty)
     up.low <- get.half.child.variant(median=tfr.median)
-    lines(x2, up.low[1,], type='l', col=col[5], lty=lty[llty], lwd=lwd[5])
-    lines(x2, up.low[2,], type='l', col=col[5], lty=lty[llty], lwd=lwd[5])
+    if(uncertainty) {
+        up.low <- up.low[,-1]
+        x2t <- x2[-1]
+    } else x2t <- x2
+    lines(x2t, up.low[1,], type='l', col=col[5], lty=lty[llty], lwd=lwd[5])
+    lines(x2t, up.low[2,], type='l', col=col[5], lty=lty[llty], lwd=lwd[5])
     legend <- c(legend, '+/- 0.5 child')
     cols <- c(cols, col[5])
     lwds <- c(lwds, lwd[5])
