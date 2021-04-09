@@ -131,7 +131,6 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
     T_end_c <- lambda_c <-rep(T_end, nr_countries)
     T.suppl <- if(is.null(suppl.data$regions)) 0 else dim(suppl.data$tfr_matrix)[1]
     tau_c <- start_c <- rep(NA, nr_countries)
-
     for (country in 1:nr_countries) {
         data <- get.observed.with.supplemental(country, tfr_matrix, suppl.data)
     	has.suppl <- length(data) > T_end && !is.na(suppl.data$index.from.all.countries[country])
@@ -218,7 +217,8 @@ mcmc.meta.ini <- function(...,
 	if(present.year-3 > wpp.year) warning("present.year is much larger then wpp.year. Make sure WPP data for present.year are available.")
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
 										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, 
-										annual = mcmc.input$annual.simulation, verbose=verbose)
+										annual = mcmc.input$annual.simulation, ignore.last.observed = uncertainty,
+										verbose=verbose)
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
 						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, 
 						uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2)
