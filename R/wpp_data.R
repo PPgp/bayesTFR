@@ -387,12 +387,12 @@ set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, my.locations.f
 	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, my.locations.file=my.locations.file, 
 	                                   verbose=verbose, annual=annual, uncertainty=uncertainty, 
 	                                   interpolate = is.null(my.tfr.file) && annual)
-	if(!is.null(extra.wpp)) {
+	if(!is.null(extra.wpp) && !annual) {
 		locations <- read.UNlocations(data$data, wpp.year=meta$wpp.year, my.locations.file=my.locations.file, verbose=verbose)
 		suppl.wpp <- .get.suppl.matrix.and.regions(un.object, extra.wpp, locations$loc_data, 
 									meta$start.year, meta$present.year)
 		extra.wpp$suppl.data <- .get.suppl.data.list(suppl.wpp)
-	}							
+	} 
 	return(extra.wpp)
 }
 
