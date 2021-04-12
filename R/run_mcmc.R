@@ -367,7 +367,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								thin=1, thin.extra=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
 								my.locations.file = NULL,
 								uncertainty=FALSE, my.tfr.raw.file=NULL, iso.unbiased=NULL, 
-								covariates=c('source', 'method'), cont_covariates=NULL, 
+								covariates=c('source', 'method'), cont_covariates=NULL, source.col.name="source",
 								verbose=FALSE, verbose.iter=100, ...) {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta.old <- mcmc.set$meta
@@ -430,7 +430,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		if(uncertainty)
 		{
 		  mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff.original(mcmc.set$mcmc.list[[chain]])
-		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]], iso.unbiased, covariates, cont_covariates)
+		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]], iso.unbiased, covariates, cont_covariates, source.col.name=source.col.name)
 		  mcmc.set$mcmc.list[[chain]]$eps_unc <- list()
 		  if (is.null(mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra)) mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra <- list()
 		  for (country in countries)
