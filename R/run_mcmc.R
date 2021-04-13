@@ -430,7 +430,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		if(uncertainty)
 		{
 		  mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff.original(mcmc.set$mcmc.list[[chain]])
-		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]], iso.unbiased, covariates, cont_covariates, source.col.name=source.col.name)
+		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]], iso.unbiased, covariates, cont_covariates, 
+		                                                           source.col.name=source.col.name, countries = Eini$index)
 		  mcmc.set$mcmc.list[[chain]]$eps_unc <- list()
 		  if (is.null(mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra)) mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra <- list()
 		  for (country in countries)
@@ -477,9 +478,9 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	}
 	if(uncertainty)
 	{
-	  if (!dir.exists(file.path(meta$output.dir, 'extra.meta'))) dir.create(file.path(meta$output.dir, 'extra.meta'))
-	  if (!dir.exists(file.path(meta$output.dir, 'extra.meta', countries[1]))) dir.create(file.path(meta$output.dir, 'extra.meta', countries[1]))
-	  store.bayesTFR.meta.object(meta, file.path(meta$output.dir, 'extra.meta', countries[1]))
+	  #if (!dir.exists(file.path(meta$output.dir, 'extra.meta'))) dir.create(file.path(meta$output.dir, 'extra.meta'))
+	  #if (!dir.exists(file.path(meta$output.dir, 'extra.meta', countries[1]))) dir.create(file.path(meta$output.dir, 'extra.meta', countries[1]))
+	  #store.bayesTFR.meta.object(meta, file.path(meta$output.dir, 'extra.meta', countries[1]))
 	  for (name in c("country.ind.by.year", "ind.by.year", "id_phase1_by_year", "id_phase2_by_year", "id_phase3_by_year", 
 	                 "id_phase3", "nr.countries"))
 	  {
@@ -503,8 +504,13 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	    }
 	  }
 	  meta[['extra']] <- sort(unique(meta[['extra']]))
-	}
-	store.bayesTFR.meta.object(meta, file.path(meta$output.dir))
+	  # unload parent for storing purposes
+	  parent <- meta$parent
+	  meta[["parent"]] <- NULL
+	} else parent <- NULL
+	
+	store.bayesTFR.meta.object(meta, meta$output.dir)
+	meta[["parent"]] <- parent
 	mcmc.set$meta <- meta
 	cat('\n')
 	invisible(mcmc.set)
