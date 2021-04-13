@@ -197,6 +197,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	                               floor((mcmc.set$meta$extra_iter[country] - burn) / mcmc.set$meta$extra_thin[country]) * length(mcmc.set$mcmc.list))
 	    }
 	  }
+	  stored.iter <- stored.iter.extra
 	}
 	mcthin <- max(sapply(mcmc.set$mcmc.list, function(x) x$thin))
 	if(!is.null(nr.traj) && !is.null(thin)) {

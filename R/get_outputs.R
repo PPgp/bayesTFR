@@ -143,7 +143,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
 		if (country.obj$index %in% mcmc.set$meta$extra)
 		{
-		  nr.points.cs <- floor(mcmc.set$meta$extra_iter[country.obj$index] / mcmc.set$meta$extra_thin[country.obj$index])
+		  nr.points.cs <- floor((mcmc.set$meta$extra_iter[country.obj$index]-burnin) / mcmc.set$meta$extra_thin[country.obj$index])
 		  nr.points.cs <- nr.points.cs * length(mcmc.set$mcmc.list)
 		  if (nr.points.cs >= nr.points) thin.index.cs <- round(seq(1, nr.points.cs, length.out = nr.points))
 		  else 
@@ -167,6 +167,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 										compression.type=thinned.mcmc$compression.type)
 		}
 	}
+	
 	if (mcmc.set$meta$nr_countries > mcmc.set$meta$nr_countries_estimation) {
 		.update.thinned.extras(mcmc.set, (mcmc.set$meta$nr_countries_estimation+1):mcmc.set$meta$nr_countries,
 								burnin=burnin, nr.points=nr.points, dir=outdir.thin.mcmc, verbose=verbose)
