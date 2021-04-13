@@ -128,7 +128,7 @@ estimate.bias.sd.raw <- function(mcmc)
 }
 
 estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('source', 'method'), 
-                                      cont_covariates=NULL, source.col.name="source")
+                                      cont_covariates=NULL, source.col.name="source", countries = NULL)
 {
   mcmc$meta$raw_data.original$bias <- NA
   mcmc$meta$raw_data.original$std <- NA
@@ -137,7 +137,8 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('sou
     mcmc$meta$bias_model <- list()
     mcmc$meta$std_model <- list()
   }
-  for(country in 1:mcmc$meta$nr_countries)
+  if(is.null(countries)) countries <- 1:mcmc$meta$nr_countries
+  for(country in countries)
   {
     ISO.code <- get.country.object(country, meta=mcmc$meta, index=TRUE)
     if (is.na(ISO.code$code)) next
@@ -168,10 +169,10 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('sou
       }
     }
     
-    m1 <- lm(as.formula(paste0('diff ~ ', regressor)))
+    m1 <- lm(as.formula(paste0('diff ~ ', regressor)), model = FALSE)
     bias <- predict(m1)
     abs.residual <- abs(residuals(m1))
-    m2 <- lm(as.formula(paste0('abs.residual ~ ', regressor)))
+    m2 <- lm(as.formula(paste0('abs.residual ~ ', regressor)), model = FALSE)
     std <- predict(m2) * sqrt(pi/2)
     std[std < 1e-6] <- 0.1
     std[std < (abs(bias) / 2)] <- abs(bias[std < (abs(bias) / 2)]) 
@@ -192,11 +193,15 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('sou
         warning("Covariate source not found. iso.unbiased is not used.\n")
       }
     }
+    # to save space
+    attr(m1$terms, ".Environment") <- NULL
+    attr(m2$terms, ".Environment") <- NULL
+    m1$fitted.values <- NULL
+    m2$fitted.values <- NULL
+    
     mcmc$meta$bias_model[[country]] <- m1
     mcmc$meta$std_model[[country]] <- m2
   }
-  
-  
   return(mcmc)
 }
 
