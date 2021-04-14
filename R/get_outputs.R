@@ -86,7 +86,8 @@ get.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0) {
 	return(NULL)
 }
 	
-create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL, verbose=TRUE, uncertainty=FALSE) {
+create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL, verbose=TRUE, uncertainty=FALSE,
+                                    update.with.countries = NULL) {
 	#Return a thinned mcmc.set object with burnin removed and all chanins collapsed into one
   mcthin <- max(sapply(mcmc.set$mcmc.list, function(x) x$thin))
 	thin <- max(c(thin, mcthin))
@@ -139,7 +140,8 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	if(verbose) cat('done.\nStoring country-specific parameters ...')
 	par.names.cs <- tfr.parameter.names.cs(trans=FALSE)
 	if (uncertainty) par.names.cs <- c(par.names.cs, 'tfr')
-	for (country in mcmc.set$meta$id_DL){
+	DLcntries <- if(!is.null(update.with.countries)) update.with.countries[update.with.countries %in% mcmc.set$meta$id_DL] else mcmc.set$meta$id_DL
+	for (country in DLcntries){
 		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
 		if (country.obj$index %in% mcmc.set$meta$extra)
 		{
@@ -167,10 +169,11 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 										compression.type=thinned.mcmc$compression.type)
 		}
 	}
-	
 	if (mcmc.set$meta$nr_countries > mcmc.set$meta$nr_countries_estimation) {
-		.update.thinned.extras(mcmc.set, (mcmc.set$meta$nr_countries_estimation+1):mcmc.set$meta$nr_countries,
-								burnin=burnin, nr.points=nr.points, dir=outdir.thin.mcmc, verbose=verbose)
+	    cindex <- if(!is.null(update.with.countries)) update.with.countries[update.with.countries > mcmc.set$meta$nr_countries_estimation] else 
+	        (mcmc.set$meta$nr_countries_estimation+1):mcmc.set$meta$nr_countries
+	    if(length(cindex) > 0)
+		    .update.thinned.extras(mcmc.set, cindex, burnin=burnin, nr.points=nr.points, dir=outdir.thin.mcmc, verbose=verbose)
 	}
 	invisible(structure(list(meta=meta, mcmc.list=list(thinned.mcmc)), class='bayesTFR.mcmc.set'))
 }
