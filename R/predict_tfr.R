@@ -88,7 +88,8 @@ get.burnin.nrtraj.from.diagnostics <- function(sim.dir, ...) {
 }
 
 tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-					prediction.dir=sim.dir, countries = NULL, save.as.ascii=0, verbose=TRUE, uncertainty=FALSE) {
+					prediction.dir=sim.dir, countries = NULL, save.as.ascii=0, verbose=TRUE, uncertainty=FALSE,
+					all.countries.required = TRUE) {
 	# Run prediction for given countries/regions (as codes). If they are not given it will be set to countries 
 	# for which there are MCMC results but no prediction.
 	# It is to be used after running run.tfr.mcmc.extra
@@ -121,7 +122,8 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 									use.correlation=pred$use.correlation, mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, 
 									min.tfr=pred$min.tfr, countries=countries.idx, save.as.ascii=0, output.dir=prediction.dir,
 									force.creating.thinned.mcmc=TRUE,
-									write.summary.files=FALSE, write.trajectories=TRUE, verbose=verbose, uncertainty=uncertainty)
+									write.summary.files=FALSE, write.trajectories=TRUE, verbose=verbose, 
+									uncertainty=uncertainty, all.countries.required = all.countries.required)
 									
 	# merge the two predictions
 	code.other.countries <- setdiff(pred$mcmc.set$meta$regions$country_code, 
@@ -152,7 +154,8 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	if (uncertainty) countries.save <- countries
 	do.convert.trajectories(pred=bayesTFR.prediction, n=save.as.ascii, output.dir=pred$output.dir, countries = countries.save,
 							verbose=verbose)
-	tfr.write.projection.summary.and.parameters(pred=bayesTFR.prediction, output.dir=pred$output.dir)
+	if(all.countries.required)
+	    tfr.write.projection.summary.and.parameters(pred=bayesTFR.prediction, output.dir=pred$output.dir)
 	
 	cat('\nPrediction stored into', pred$output.dir, '\n')
 	invisible(bayesTFR.prediction)
@@ -168,7 +171,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 							    save.as.ascii=0, output.dir = NULL, write.summary.files=TRUE, 
 							    is.mcmc.set.thinned=FALSE, force.creating.thinned.mcmc=FALSE,
 							    write.trajectories=TRUE, 
-							    verbose=verbose, uncertainty=FALSE){
+							    verbose=verbose, uncertainty=FALSE, all.countries.required = TRUE){
 	# if 'countries' is given, it is an index
 	# sigmaAR1 can be a vector. The last element will be repeated up to nr.projections
   meta <- mcmc.set$meta
@@ -238,7 +241,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	unblock.gtk('bDem.TFRpred')
 	load.mcmc.set <- if(has.thinned.mcmc && !force.creating.thinned.mcmc) thinned.mcmc
 					 else create.thinned.tfr.mcmc(mcmc.set, thin=thin, burnin=burnin, 
-					 							output.dir=output.dir, verbose=verbose, uncertainty=uncertainty)
+					 							output.dir=output.dir, verbose=verbose, uncertainty=uncertainty,
+					 							update.with.countries = if(all.countries.required) NULL else countries)
 	nr_simu <- load.mcmc.set$mcmc.list[[1]]$finished.iter
 
 	if (verbose) cat('Load variance parameters.\n')
