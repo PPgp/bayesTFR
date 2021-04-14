@@ -516,7 +516,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
                                   xlim=NULL, ylim=NULL, type='b', 
                                   xlab='Year', ylab='TFR', main=NULL, lwd=c(2,2,2,2,2,1), 
                                   col=c('black', 'green', 'red', 'red', 'blue', '#00000020'),
-                                  show.legend=TRUE, add=FALSE, uncertainty=FALSE, thin=NULL, burnin=NULL, col_unc="purple", ...
+                                  show.legend=TRUE, add=FALSE, uncertainty=FALSE, col_unc="purple", ...
 ) {
   # lwd/col is a vector of 6 line widths/colors for: 
   #	1. observed data, 2. imputed missing data, 3. median, 4. quantiles, 5. +- 0.5 child, 6. trajectories
@@ -529,12 +529,8 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   }
   if (uncertainty)
   {
-    sim.dir <- file.path(tfr.pred$output.directory, "..")
-    if (missing(thin) || is.null(thin)) thin <- tfr.pred$thin
-    if (missing(burnin) || is.null(burnin)) burnin <- tfr.pred$burnin
-    tfr.object <- get.tfr.estimation(mcmc.list=NULL, country.code=country, ISO.code=NULL, sim.dir=sim.dir, 
-                                     burnin=burnin, thin=thin, probs=sort(c((1-pi/100)/2, 0.5, pi/100 + (1-pi/100)/2)))
-    
+    tfr.object <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country.code=country, ISO.code=NULL, 
+                                     probs=sort(c((1-pi/100)/2, 0.5, pi/100 + (1-pi/100)/2)))
   }
   col <- .match.colors.with.default(col, c('black', 'green', 'red', 'red', 'blue', '#00000020'))
   country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
