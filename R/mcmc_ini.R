@@ -504,7 +504,8 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 
 mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL, 
 									my.locations.file=NULL, burnin = 200, verbose=FALSE, uncertainty=FALSE, 
-									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL)) {
+									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL),
+									average.gammas.cov = TRUE) {
 	update.regions <- function(reg, ereg, id.replace, is.new, is.old) {
 		nreg <- list()
 		for (name in c('code', 'area_code', 'country_code')) {
@@ -536,7 +537,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 		has.mock.suppl <- TRUE
 	}
 	Emeta <- do.meta.ini(meta, tfr.with.regions=tfr.with.regions, 
-								use.average.gammas.cov=TRUE, burnin=burnin,
+								use.average.gammas.cov=average.gammas.cov, burnin=burnin,
 						 		verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file = my.tfr.raw.file)
 			 		
 	# join the new meta with the existing one
