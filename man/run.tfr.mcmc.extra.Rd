@@ -14,6 +14,7 @@ run.tfr.mcmc.extra(sim.dir = file.path(getwd(), "bayesTFR.output"),
     parallel = FALSE, nr.nodes = NULL,  my.locations.file = NULL,
     uncertainty = FALSE, my.tfr.raw.file = NULL, iso.unbiased = NULL, 
     covariates = c('source', 'method'), cont_covariates = NULL, 
+    source.col.name = "source", average.gammas.cov = TRUE, 
     verbose = FALSE, verbose.iter = 100, \dots)
 }
 \arguments{
@@ -45,6 +46,8 @@ Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes fo
 \item{my.tfr.raw.file}{File name of the raw TFR used when uncertainty is \code{TRUE}. See details in \code{\link{run.tfr.mcmc}}.}
 \item{iso.unbiased}{Codes of countries for which the vital registration TFR estimates are considered unbiased. See details in \code{\link{run.tfr.mcmc}}.}
 \item{covariates, cont_covariates}{Categorical and continuous features used in estimating bias and standard deviation if \code{uncertainty} is \code{TRUE}. See details in \code{\link{run.tfr.mcmc}}.}
+\item{source.col.name}{If \code{uncertainty} is \code{TRUE} this is a column name within the given covariates that determines the data source. It is used if \code{iso.unbiased} is given to identify the vital registration records.}
+\item{average.gammas.cov}{Set this to \code{FALSE} if the processed country has been included in the main simulation. In such a case the proposal gamma covariance matrix is taken from the \code{proposal_cov_gammas_cii} dataset. By default, the matrix is taken as an average from all countries.}
 \item{verbose}{Logical switching log messages on and off.}
 \item{verbose.iter}{Integer determining how often (in number of iterations) log messages are outputted during the estimation.}
 \item{\dots}{Additional parameters to be passed to the function \code{\link[snowFT]{performParallel}}, if \code{parallel} is \code{TRUE}.}

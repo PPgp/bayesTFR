@@ -18,7 +18,7 @@ tfr.trajectories.plot(tfr.pred, country, pi = c(80, 95),
     main = NULL, lwd = c(2, 2, 2, 2, 2, 1), 
     col=c('black', 'green', 'red', 'red', 'blue', '#00000020'),
     show.legend = TRUE, add = FALSE, uncertainty = FALSE, 
-    thin = NULL, burnin = NULL, col_unc = "purple", \dots)
+    col_unc = "purple", \dots)
 	
 tfr.trajectories.plot.all(tfr.pred, 
     output.dir = file.path(getwd(), 'TFRtrajectories'),
@@ -47,8 +47,6 @@ tfr.trajectories.table(tfr.pred, country, pi = c(80, 95),
   \item{main}{Main title for the plot(s). In \code{tfr.trajectories.plot.all} any occurence of the string \dQuote{XXX} is replaced by the country name.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{uncertainty}{Logical: \code{TRUE} means uncertainty of past TFR should be plotted with the same level of uncertainty interval.}
-  \item{thin}{Thinning for past TFR estimation.}
-  \item{burnin}{Burn-in for past TFR estimation.}
   \item{col_unc}{Color of past TFR estimation uncertainty plot.}
 }
 \details{
