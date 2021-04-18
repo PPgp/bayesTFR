@@ -184,7 +184,7 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('sou
       if (source.col.name %in% covariates)
       {
         index.by.country.vr.estimate <- which((mcmc$meta$raw_data.original$country_code == ISO.code$code) & 
-                                                (mcmc$meta$raw_data.original[, source.col.name] %in% c("VR", 'Estimate')))
+                                                (mcmc$meta$raw_data.original[, source.col.name] %in% c("VR")))
         mcmc$meta$raw_data.original$bias[index.by.country.vr.estimate] <- 0
         mcmc$meta$raw_data.original$std[index.by.country.vr.estimate] <- 0.016
       }
