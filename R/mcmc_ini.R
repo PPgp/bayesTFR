@@ -283,15 +283,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 		}		
 		cov.to.average <- prop_cov_gammas
 	}
-	# where NAs, put averages
-	isNA <- apply(is.na(prop_cov_gammas), 1, any)
-	if (any(isNA)) {
-		avg <- matrix(NA, 3, 3)
-		for(i in 1:3)
-			avg[,i] <- apply(cov.to.average[,,i], 2, mean, na.rm=TRUE)
-		for(is.na.country in 1:sum(isNA)) 
-			prop_cov_gammas[(1:nr_countries)[isNA][is.na.country],,] <- avg
-	}
+	prop_cov_gammas <- .impute.prop.cov.gamma(prop_cov_gammas, cov.to.average, nr_countries)
   
 	output <- list(
 	  tfr_matrix=updated.tfr.matrix, 
@@ -502,6 +494,16 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	return(mcmc)
 }
 
+.impute.prop.cov.gamma <- function(prop_cov_gammas, cov.to.average, nr_countries) {
+    # where NAs, put averages
+    isNA <- apply(is.na(prop_cov_gammas), 1, any)
+    if (!any(isNA)) return(prop_cov_gammas)
+    avg <- apply(cov.to.average, c(2,3), mean, na.rm=TRUE)
+    for(is.na.country in 1:sum(isNA)) 
+        prop_cov_gammas[(1:nr_countries)[isNA][is.na.country],,] <- avg
+    return(prop_cov_gammas)
+}
+
 mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL, 
 									my.locations.file=NULL, burnin = 200, verbose=FALSE, uncertainty=FALSE, 
 									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL),
@@ -556,6 +558,8 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 		proposal_cov_gammas_cii[,i,] <- rbind(meta$proposal_cov_gammas_cii[,i,], 
 							matrix(Emeta$proposal_cov_gammas_cii[is.new,i,], ncol=3))
 	}
+	proposal_cov_gammas_cii <- .impute.prop.cov.gamma(proposal_cov_gammas_cii, proposal_cov_gammas_cii, nr_countries.all)
+
 	new.meta <- list(proposal_cov_gammas_cii = proposal_cov_gammas_cii,
 					 nr_countries=nr_countries.all
 					)
