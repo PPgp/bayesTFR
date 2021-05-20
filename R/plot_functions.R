@@ -443,7 +443,7 @@ get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 
 tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1,
                                 pis = c(80, 95), plot.raw = TRUE,
-                                grouping = 'source', save.image=TRUE, plot.dir = 'Estimation.plot')
+                                grouping = 'source', save.image=TRUE, plot.dir = 'Estimation.plot', adjust = TRUE)
 {
   if (is.null(mcmc.list)) 
     mcmc.list <- get.tfr.mcmc(sim.dir)
@@ -456,7 +456,8 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
     stop("MCMC does not consider uncertainty of past TFR.")
   }
   tfr.object <- get.tfr.estimation(mcmc.list=mcmc.list, country.code=country.code, ISO.code=ISO.code, sim.dir=sim.dir, 
-                                   burnin=burnin, thin=thin, probs=sort(c((1-pis/100)/2, 0.5, pis/100 + (1-pis/100)/2)))
+                                   burnin=burnin, thin=thin, probs=sort(c((1-pis/100)/2, 0.5, pis/100 + (1-pis/100)/2)),
+                                   adjust = adjust)
   if (is.null(country.code))
   {
     e <- new.env()
@@ -476,7 +477,7 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
     ggplot2::geom_line(ggplot2::aes_string(x="year", y="Q50"), size = 0.8, color="red") +
     ggplot2::geom_point(ggplot2::aes_string(x="year", y="Q50"), size = 1, color="red") + 
     ggplot2::ggtitle(country.obj$name)
-  
+
   if (length(pis) > 1)
     q <- q + ggplot2::geom_ribbon(ggplot2::aes_string(x="year", ymin=names.col[2], ymax=names.col[length(names.col)-1]), alpha=0.3, fill='red')
   
