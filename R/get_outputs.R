@@ -85,14 +85,16 @@ get.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0) {
 	if(file.exists(dir.name)) return(get.tfr.mcmc(dir.name))
 	return(NULL)
 }
-	
+
 create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL, verbose=TRUE, uncertainty=FALSE,
                                     update.with.countries = NULL) {
 	#Return a thinned mcmc.set object with burnin removed and all chanins collapsed into one
-  mcthin <- max(sapply(mcmc.set$mcmc.list, function(x) x$thin))
+    mcthin <- max(sapply(mcmc.set$mcmc.list, function(x) x$thin))
 	thin <- max(c(thin, mcthin))
 	meta <- mcmc.set$meta
 	total.iter <- get.stored.mcmc.length(mcmc.set$mcmc.list, burnin=burnin)
+	total.iter <- min(total.iter, get.stored.mcmc.length.extra(mcmc.set$meta, update.with.countries, 
+	                                                            nr.chains = length(mcmc.set$mcmc.list), burnin = burnin), na.rm = TRUE)
 	meta$is.thinned <- TRUE
 	meta$parent.iter <- get.total.iterations(mcmc.set$mcmc.list, burnin)
 	meta$parent.meta <- mcmc.set$meta
@@ -105,6 +107,9 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 			paste('thinned_mcmc', thin, burnin, sep='_'))
 	if(!file.exists(meta$output.dir)) 
 		dir.create(meta$output.dir, recursive=TRUE)
+	
+	if(!is.null(update.with.countries)) meta$one.use.only <- TRUE # thinned traces might get out of sync with other countries; thus recompute next time
+	
 	store.bayesTFR.meta.object(meta, meta$output.dir)
 	
 	thin.index <- if(thin > mcthin) unique(round(seq(1, total.iter, by=thin/mcthin))) else 1:total.iter
@@ -730,6 +735,18 @@ get.stored.mcmc.length <- function(mcmc.list, burnin=0) {
 	get.iter <- function(x) return(x$length - get.thinned.burnin(x, burnin))
 	return(sum(sapply(mcmc.list, get.iter)))
 }
+
+get.stored.mcmc.length.extra <- function(meta, countries.index = NULL, nr.chains = 1, burnin=0) {
+    if (is.null(meta$extra) || is.null(countries.index) || !any(countries.index %in% meta$extra)) return(NA)
+    stored.iter <- NA
+    for (country in countries.index){
+        if(! country %in% meta$extra) next
+        stored.iter <- min(stored.iter, 
+                           floor((meta$extra_iter[country] - burnin) / meta$extra_thin[country]) * nr.chains, na.rm = TRUE)
+    }
+    return(stored.iter)
+}
+
 
 do.get.tfr.parameter.traces <- function(is.cs, mcmc.list, par.names, country.obj=NULL, 
 										burnin=0, thinning.index=NULL, thin=NULL) {

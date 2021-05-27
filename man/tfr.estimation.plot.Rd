@@ -9,7 +9,7 @@ Plot past TFR estimation results from a simulation that accounted for past TFR u
 \usage{
 tfr.estimation.plot(mcmc.list = NULL, country.code = NULL, ISO.code = NULL, 
     sim.dir = NULL, burnin = 0, thin = 1, pis = c(80, 95), plot.raw = TRUE, 
-    grouping = "source", save.image = TRUE, plot.dir = "Estimation.plot")
+    grouping = "source", save.image = TRUE, plot.dir = "Estimation.plot", adjust = TRUE)
 }
 \arguments{
   \item{mcmc.list}{Object of class \code{\link{bayesTFR.mcmc.set}} corresponding Phase II MCMCs. If it is \code{NULL}, the object is loaded from the directory given by \code{sim.dir}.}
@@ -23,6 +23,7 @@ tfr.estimation.plot(mcmc.list = NULL, country.code = NULL, ISO.code = NULL,
   \item{grouping}{If raw data is plotted, then grouping should be one of the categorical feature in the data, so that the color and shape of the raw data will differ for different groups.}
   \item{save.image}{Logical. Whether the resulting plot will be saved.}
   \item{plot.dir}{If \code{save.image=TRUE}, specify the directory for saving the plot.}
+  \item{adjust}{Logical. By default, if the estimation median is adjusted using e.g. \code{\link{tfr.median.set.all}}, the function plots the adjusted median. If \code{adjust=FALSE} the original (non-adjusted) median is plotted.}
 }
 
 \details{
