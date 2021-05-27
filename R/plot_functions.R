@@ -485,7 +485,7 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   if (plot.raw)
   {
     if (country.obj$index %in% mcmc.list$meta$extra) raw.data <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
-    else raw.data <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_index == country.obj$index, ]
+    else raw.data <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code, ]
     ngroups <- t(unique(subset(raw.data, select=grouping)))
     q <- q + ggplot2::geom_point(mapping = ggplot2::aes_string(x="year", y="tfr", color=grouping, shape=grouping), 
                                  data=raw.data, size=2.5) + ggplot2::scale_shape_manual(values=rep(15:18, len=length(ngroups)))
