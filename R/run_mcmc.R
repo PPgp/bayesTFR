@@ -385,10 +385,13 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		cat('\nNothing to be done.\n')
 		return(invisible(mcmc.set))
 	}
+  #TODO: we should consider in the future that in the original run, no MCMC3 steps are conducted, 
+  #but when running for specific countries we have that. This could possibly break the simulation.
 	if (uncertainty && has.tfr3.mcmc(sim.dir))
 	{
 	  mcmc3.set <- get.tfr3.mcmc(sim.dir)
-	  Eini$meta[['id_phase3']] <- intersect(mcmc3.set$meta$id_phase3, which(mcmc.set$meta$regions$country_code %in% countries))
+	  Eini$meta[['id_phase3']] <- intersect(which(Eini$meta$lambda_c < Eini$meta$T_end_c), 
+	                                        which(Eini$meta$regions$country_code %in% countries))
 	  for (par.name in tfr3.parameter.names())
 	  {
 	    for (suffix in c('prior.range', 'ini', 'ini.range'))
@@ -403,7 +406,6 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	chain.ids <- names(mcmc.set$mcmc.list)
 	mcthin <- 1
 	countries <- Eini$meta$regions$country_code[Eini$index]
-	
 	if(verbose) cat('\n')
 	for (chain in chain.ids) { # update meta in each chain
 		if(verbose) cat('Updating meta in chain', chain, '\n')
