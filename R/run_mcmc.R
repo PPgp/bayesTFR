@@ -499,7 +499,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	    if (!is.null(country.idx)) 
 	    {
 	      meta[['extra']] <- c(meta[['extra']], country.idx)
-	      meta[['extra_iter']][country.idx] <- mcmc.set$mcmc.list[[1]]$iter
+	      meta[['extra_iter']][country.idx] <- if(is.null(iter)) mcmc.set$mcmc.list[[1]]$length else iter
 	      meta[['extra_thin']][country.idx] <- thin.extra
 	      meta[['extra_covariates']][[country.idx]] <- covariates
 	      meta[['extra_cont_covariates']][[country.idx]] <- cont_covariates
