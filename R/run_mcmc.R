@@ -405,11 +405,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	meta <- Eini$meta
 	chain.ids <- names(mcmc.set$mcmc.list)
 	mcthin <- 1
-<<<<<<< HEAD
 	countries <- Eini$meta$regions$country_code[Eini$index]
-	
-=======
->>>>>>> dev
 	if(verbose) cat('\n')
 	for (chain in chain.ids) { # update meta in each chain
 		if(verbose) cat('Updating meta in chain', chain, '\n')
