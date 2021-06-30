@@ -295,7 +295,9 @@ mcmc.update.d <- function(country, mcmc, ...) {
       if (d_prop < mcmc$d_c[country]){
         interval[1] <- d_trans_prop
       } else {
-        interval[2] <- d_trans_prop
+          if(d_prop > mcmc$d_c[country])
+            interval[2] <- d_trans_prop
+          else return()
       }
     } # end else
     count <- count + 1
