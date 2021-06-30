@@ -390,8 +390,6 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	if (uncertainty && has.tfr3.mcmc(sim.dir))
 	{
 	  mcmc3.set <- get.tfr3.mcmc(sim.dir)
-	  Eini$meta[['id_phase3']] <- intersect(which(Eini$meta$lambda_c < Eini$meta$T_end_c), 
-	                                        which(Eini$meta$regions$country_code %in% countries))
 	  for (par.name in tfr3.parameter.names())
 	  {
 	    for (suffix in c('prior.range', 'ini', 'ini.range'))
@@ -484,8 +482,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	  #if (!dir.exists(file.path(meta$output.dir, 'extra.meta'))) dir.create(file.path(meta$output.dir, 'extra.meta'))
 	  #if (!dir.exists(file.path(meta$output.dir, 'extra.meta', countries[1]))) dir.create(file.path(meta$output.dir, 'extra.meta', countries[1]))
 	  #store.bayesTFR.meta.object(meta, file.path(meta$output.dir, 'extra.meta', countries[1]))
-	  for (name in c("country.ind.by.year", "ind.by.year", "id_phase1_by_year", "id_phase2_by_year", "id_phase3_by_year", 
-	                 "id_phase3", "nr.countries", "raw_data.original", "covariates", "cont_covariates"))
+	  for (name in c("country.ind.by.year", "ind.by.year", "raw_data.original", "covariates", "cont_covariates"))
 	  {
 	    meta[[name]] <- meta.old[[name]]
 	  }

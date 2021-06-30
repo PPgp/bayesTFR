@@ -642,6 +642,13 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	  {
 	    meta$country.ind.by.year[[i]] <- index[meta$country.ind.by.year[[i]]]
 	  }
+	  for (year in 1:meta$T_end)
+	  {
+	      meta$id_phase1_by_year[[year]] <- which(meta$start_c > year)
+	      meta$id_phase3_by_year[[year]] <- which(meta$lambda_c <= year)
+	      meta$id_phase2_by_year[[year]] <- setdiff(1:meta$nr_countries, c(meta$id_phase1_by_year[[year]], meta$id_phase3_by_year[[year]]))
+	  }
+	  meta[['id_phase3']] <- which(meta$lambda_c < meta$T_end_c)
 	}
 	
 	return(list(meta=meta, index=index, index.replace=id.replace, 
