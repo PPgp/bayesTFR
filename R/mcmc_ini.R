@@ -5,7 +5,8 @@ DLcurve <- function(DLpar, tfr, p1, p2, annual = FALSE){
  # tfr is a vector for which the decrements for this curve need to be calculated
  	dlvalue <- rep(0.0, length(tfr))
  	perfct <- if(annual) 1 else 5
-	res <- .C("doDLcurve", as.numeric(DLpar), as.numeric(tfr), p1, p2, length(tfr), dl_values=dlvalue, period_multiplier=as.integer(perfct))
+	res <- .C("doDLcurve", as.numeric(DLpar), as.numeric(tfr), p1, p2, length(tfr), dl_values=dlvalue, period_multiplier=as.integer(perfct),
+	          PACKAGE = "bayesTFR")
 	return(res$dl_values)
 #    t_mid1 <- DLpar[4] + DLpar[3] + DLpar[2] + 0.5 * DLpar[1]
 #    t_mid3 <- DLpar[4] + 0.5 * DLpar[3]
