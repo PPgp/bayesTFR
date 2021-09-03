@@ -129,13 +129,14 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin=0
 				sigma_eps <- cbind(sigma_eps, .get.sig.distr(j, wp.traces))
 			if(predictive.distr) {
 				errors <- t(apply(sigma_eps, 1, function(sig) rnorm(dim(dl)[2],0,sig)))
+				if(length(x) == 1 && all(dim(errors) == rev(dim(dl)))) errors <- t(errors)
 				dlc <- rbind(dlc, dl+errors)
 			} else {
 				dlc <- rbind(dlc, dl)
 				sigma.all <- rbind(sigma.all, sigma_eps)
 			}
         } else dlc <- rbind(dlc, dl)
-    }    
+    }
     return (if(!return.sigma) dlc else list(dl=dlc, sigma=sigma.all))
 }
 
