@@ -1,3 +1,9 @@
+7.0-4.9001
+-----
+Fixed bug in tfr.get.dlcurves (thanks to Lucia Andreozzi).
+
+Fixed bug in tfr.raftery.diag that prevented bayesLife diagnostics to work properly (thanks to Asmida Binti Mustafa).
+
 7.0-4 (03/31/2021)
 -----
 Minor fixes of publication links.
