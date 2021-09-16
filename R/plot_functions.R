@@ -1229,10 +1229,11 @@ bdem.map.gvis.bayesTFR.prediction <- function(pred, year=NULL, quantile=0.5, pi=
 		data[[lower.name]] <- data[[upper.name]] <- rep(NA, length(unidx))
 		hovervar <- ''
 	}
-	col <- c('0x0000CC', '0x00CCFF', '0x33FF66', '0xFFFF66', '0xFF9900', '0xFF3300')
-	geo <- googleVis::gvisGeoMap(data, locationvar="iso", numvar=what, hovervar=hovervar, 
-				options=list(height=500, width=900, dataMode='regions',
-				colors=paste('[', paste(col, collapse=', '), ']')))
+	col <- c('#0000CC', '#00CCFF', '#33FF66', '#FFFF66', '#FF9900', '#FF3300')
+
+	geo <- googleVis::gvisGeoChart(data, locationvar="iso", colorvar=what, hovervar=hovervar, 
+	                             options=list(height=500, width=900, dataMode='regions',
+	                                          colors=paste('[', paste(shQuote(col), collapse=', '), ']')))
 
     #geo$html$caption <- paste(title, 'in', period,'<br>\n')
     geo$html$caption <- paste(title, period, .map.main.default(pred, data.period), quantile)

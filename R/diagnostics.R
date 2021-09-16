@@ -41,6 +41,7 @@ tfr.raftery.diag <- function(mcmc=NULL,
 		unblock.gtk(gui.option.name, gui.options)
 		if(verbose) cat('\t\tProcessing raftery.diag(..., r=0.0125, q=0.025) for country-independent parameters\n')
 		rd.025 <- raftery.diag(coda.mc, r=0.0125, q=0.025)
+		if(is.error(rd.025)) return()
 		for (idx.chain in 1:length(rd.025)) 
 		{
 		  for (par in c('M', 'N', 'I')) 
@@ -48,13 +49,13 @@ tfr.raftery.diag <- function(mcmc=NULL,
 		    rd.025[[idx.chain]]$resmatrix[is.na(rd.025[[idx.chain]]$resmatrix[, par]), par] <- max(rd.025[[idx.chain]]$resmatrix[, par], na.rm = T)
 		  }
 		}
-		if(is.error(rd.025)) return()
 		thin.ind.025 <- diag.thin.indep(coda.mc, q=0.025)
 		colnames(thin.ind.025) <- rownames(rd.025[[1]]$resmatrix)
 		gui.options[[gui.option.name.status]] <- 'processing country-independent pars (q=0.975)'
 		unblock.gtk(gui.option.name, gui.options)
 		if(verbose) cat('\t\tProcessing raftery.diag(..., r=0.0125, q=0.975) for country-independent parameters\n')
 		rd.975 <- raftery.diag(coda.mc, r=0.0125, q=0.975)
+		if(is.error(rd.975)) return()
 		for (idx.chain in 1:length(rd.975)) 
 		{
 		  for (par in c('M', 'N', 'I')) 
@@ -62,7 +63,6 @@ tfr.raftery.diag <- function(mcmc=NULL,
 		    rd.975[[idx.chain]]$resmatrix[is.na(rd.975[[idx.chain]]$resmatrix[, par]), par] <- max(rd.975[[idx.chain]]$resmatrix[, par], na.rm = T)
 		  }
 		}
-		if(is.error(rd.975)) return()
 		thin.ind.975 <- diag.thin.indep(coda.mc, q=0.975)
 		colnames(thin.ind.975) <- rownames(rd.025[[1]]$resmatrix)
 		result.025 <- result.975 <- burnin.025 <- burnin.975 <- matrix(NA, 
@@ -107,6 +107,7 @@ tfr.raftery.diag <- function(mcmc=NULL,
 			if(verbose) 
 				cat(country.idx, ', ')
 			rd.025 <- raftery.diag(coda.mc.cs, r=0.0125, q=0.025)
+			if(is.error(rd.025)) return()
 			for (idx.chain in 1:length(rd.025)) 
 			{
 			  for (par in c('M', 'N', 'I')) 
@@ -114,12 +115,12 @@ tfr.raftery.diag <- function(mcmc=NULL,
 			    rd.025[[idx.chain]]$resmatrix[is.na(rd.025[[idx.chain]]$resmatrix[, par]), par] <- max(rd.025[[idx.chain]]$resmatrix[, par], na.rm = T)
 			  }
 			}
-			if(is.error(rd.025)) return()
 			thin.ind.025 <- cbind(thin.ind.025, diag.thin.indep(coda.mc.cs, q=0.025))
 			npar <- dim(rd.025[[1]]$resmatrix)[1]
 			ncols <- ncol(thin.ind.025)
 			colnames(thin.ind.025)[(ncols-npar+1):ncols] <- rownames(rd.025[[1]]$resmatrix)
 			rd.975 <- raftery.diag(coda.mc.cs, r=0.0125, q=0.975)
+			if(is.error(rd.975)) return()
 			for (idx.chain in 1:length(rd.975)) 
 			{
 			  for (par in c('M', 'N', 'I')) 
@@ -127,8 +128,6 @@ tfr.raftery.diag <- function(mcmc=NULL,
 			    rd.975[[idx.chain]]$resmatrix[is.na(rd.975[[idx.chain]]$resmatrix[, par]), par] <- max(rd.975[[idx.chain]]$resmatrix[, par], na.rm = T)
 			  }
 			}
-			
-			if(is.error(rd.975)) return()
 			thin.ind.975 <- cbind(thin.ind.975, diag.thin.indep(coda.mc.cs, q=0.975))
 			colnames(thin.ind.975)[(ncols-npar+1):ncols] <- rownames(rd.025[[1]]$resmatrix)
 			
