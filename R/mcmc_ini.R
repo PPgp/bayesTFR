@@ -326,7 +326,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	    }
 	  }
 	  rawTFR <- rawTFR[rawTFR$country_code %in% as.numeric(colnames(output$tfr_matrix_all)),]
-	  rawTFR <- rawTFR[rawTFR$year < meta$present.year,]
+	  rawTFR <- rawTFR[rawTFR$year < meta$present.year + 1,]
 	  rawTFR <- rawTFR[rawTFR$year > meta$start.year,]
 	  output$raw_data.original <- rawTFR
 	  output$raw_data.original <- merge(output$raw_data.original, 
