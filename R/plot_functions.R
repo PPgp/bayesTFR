@@ -136,7 +136,7 @@ tfr.get.dlcurves <- function(x, mcmc.list, country.code, country.index, burnin=0
 				sigma.all <- rbind(sigma.all, sigma_eps)
 			}
         } else dlc <- rbind(dlc, dl)
-    }    
+    }
     return (if(!return.sigma) dlc else list(dl=dlc, sigma=sigma.all))
 }
 
