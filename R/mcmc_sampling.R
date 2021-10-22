@@ -160,7 +160,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
         delta4.squared <- mcenv$delta4^2
         delta4.0.squared <- delta4_0^2
         Triangle_c4_transformed <- 
-                        log((mcenv$Triangle_c4[id_DL] - Triangle_c4.low)/
+                        log(pmax(mcenv$Triangle_c4[id_DL] - Triangle_c4.low, 1e-10)/
                                         (Triangle_c4.up-mcenv$Triangle_c4[id_DL])) 
         mcenv$Triangle4 <- rnorm(1, mean = (sum(Triangle_c4_transformed)/(delta4.squared) + 
         										Triangle4_0/delta4.0.squared)/
