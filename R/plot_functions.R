@@ -442,32 +442,43 @@ get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 	return(rbind(lower, upper))	
 }
 
-tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, burnin=0, thin = 1,
-                                pis = c(80, 95), plot.raw = TRUE,
-                                grouping = 'source', save.image=TRUE, plot.dir = 'Estimation.plot', adjust = TRUE)
+tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, ISO.code = NULL, sim.dir = NULL, 
+                                burnin = 0, thin = 1, pis = c(80, 95), plot.raw = TRUE,
+                                grouping = 'source', save.image=TRUE, plot.dir = 'Estimation.plot', 
+                                adjust = TRUE, country.code = deprecated())
 {
+    if (lifecycle::is_present(country.code)) {
+        lifecycle::deprecate_warn("7.1-0", "tfr.estimation.plot(country.code)", "tfr.estimation.plot(country)")
+        country <- country.code
+    }
+    
   if (is.null(mcmc.list)) 
     mcmc.list <- get.tfr.mcmc(sim.dir)
   if (is.null(mcmc.list)) {
     warning('MCMC does not exist.')
     return(NULL)
   }
-  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
+  if(class(mcmc.list) == 'bayesTFR.prediction') {
+      if(burnin != mcmc.list$burnin && burnin != 0)
+          warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin)
+      burnin <- 0 # because burnin was already cut of the traces
+      mcmc.list <- mcmc.list$mcmc.set
+  }
+  
+  meta <- mcmc.list$meta
+
+  if (is.null(mcmc.list$mcmc.list[[1]]$uncertainty) || !mcmc.list$mcmc.list[[1]]$uncertainty) 
   {
     stop("MCMC does not consider uncertainty of past TFR.")
   }
-  tfr.object <- get.tfr.estimation(mcmc.list=mcmc.list, country.code=country.code, ISO.code=ISO.code, sim.dir=sim.dir, 
+  
+  
+  tfr.object <- get.tfr.estimation(mcmc.list=mcmc.list, country=country, ISO.code=ISO.code, sim.dir=sim.dir, 
                                    burnin=burnin, thin=thin, probs=sort(c((1-pis/100)/2, 0.5, pis/100 + (1-pis/100)/2)),
                                    adjust = adjust)
-  if (is.null(country.code))
-  {
-    e <- new.env()
-    data('iso3166', envir=e)
-    iso3166 <- e$iso3166
-    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
-  }
-    
-  country.obj <- get.country.object(country.code, mcmc.list$meta)
+  if (is.null(country))
+      country <- ISO.code
+  country.obj <- get.country.object(country, meta, is.iso = !is.null(ISO.code))
   
   quantile_tbl <- tfr.object$tfr_quantile
   names(quantile_tbl)[1:(1 + 2 * length(pis))] <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
@@ -484,16 +495,22 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   
   if (plot.raw)
   {
-    if (country.obj$index %in% mcmc.list$meta$extra) raw.data <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
-    else raw.data <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code, ]
+    if (country.obj$index %in% meta$extra) raw.data <- meta$raw_data_extra[[country.obj$index]]
+    else raw.data <- meta$raw_data.original[meta$raw_data.original$country_code == country.obj$code, ]
+    if(! grouping %in% colnames(raw.data) && !is.null(meta$covariates) && meta$covariates[1] %in% colnames(raw.data))
+        grouping <- meta$covariates[1]
+    
     if(grouping %in% colnames(raw.data)) {
         ngroups <- t(unique(subset(raw.data, select=grouping)))
         q <- q + ggplot2::geom_point(mapping = ggplot2::aes_string(x="year", y="tfr", color=grouping, shape=grouping), 
                                  data=raw.data, size=2.5) + ggplot2::scale_shape_manual(values=rep(15:18, len=length(ngroups)))
-    } else warning("Column ", grouping, " not available. Use argument 'grouping' to group raw data.")
+    } else {
+        q <- q + ggplot2::geom_point(mapping = ggplot2::aes_string(x="year", y="tfr"), data=raw.data, size=2.5)
+        warning("No grouping of raw data used because column ", grouping, " not available. Use argument 'grouping' to group raw data.")
+    }
   }
   
-  wpp.data <- get.observed.tfr(country.obj$index, mcmc.list$meta, "tfr_matrix_all")
+  wpp.data <- get.observed.tfr(country.obj$index, meta, "tfr_matrix_all")
   wpp.data <- data.frame(year=quantile_tbl$year, tfr = as.numeric(wpp.data))
   #wpp.data <- wpp.data[wpp.data$year %% 5 == 3,]
   q <- q + ggplot2::geom_line(data = wpp.data, ggplot2::aes_string(x="year", y="tfr"), size = 0.8) + ggplot2::theme_bw() + 
@@ -506,7 +523,7 @@ tfr.estimation.plot <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL
   if (save.image)
   {
     if(!dir.exists(plot.dir)) dir.create(plot.dir)
-    pdf(file = paste0(plot.dir, '/tfr_country_', country.code, ".pdf"), width=10, height=5)
+    pdf(file = file.path(plot.dir, paste0('tfr_country_', country.obj$code, ".pdf")), width=10, height=5)
     print (q)
     dev.off()
   }

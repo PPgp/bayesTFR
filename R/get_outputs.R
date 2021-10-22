@@ -314,25 +314,35 @@ tfr.bias.sd <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.di
                 table = model_est_df))
 }
 
-get.tfr.estimation <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL, 
-                               burnin=0, thin = 1, probs=NULL, adjust=TRUE) {
-  e <- new.env()
-  data('iso3166', envir=e)
-  iso3166 <- e$iso3166
+get.tfr.estimation <- function(mcmc.list=NULL, country=NULL, ISO.code=NULL, sim.dir=NULL, 
+                               burnin=0, thin = 1, probs=NULL, adjust=TRUE, country.code = deprecated()) {
+
+    if (lifecycle::is_present(country.code)) {
+        lifecycle::deprecate_warn("7.1-0", "get.tfr.estimation(country.code)", "get.tfr.estimation(country)")
+        country <- country.code
+    }
+    
+    if(is.character(mcmc.list)) {
+        sim.dir <- mcmc.list
+        mcmc.list <- NULL
+    }
   if (is.null(mcmc.list)) 
     mcmc.list <- get.tfr.mcmc(sim.dir)
   if (is.null(mcmc.list)) {
     warning('MCMC does not exist.')
     return(NULL)
   }
-  if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
-  {
-    stop("MCMC does not consider uncertainty of past TFR.")
-  }
-  if (is.null(country.code))
-    country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
+    if (is.null(mcmc.list$mcmc.list[[1]]$uncertainty) || !mcmc.list$mcmc.list[[1]]$uncertainty)
+    {
+        stop("MCMC does not consider uncertainty of past TFR.")
+    }
+    if (is.null(country) && is.null(ISO.code))
+        stop("Country  must be given (argument country or ISO.code).")
   
-  country.obj <- get.country.object(country.code, mcmc.list$meta)
+    if (is.null(country))
+        country <- ISO.code
+
+  country.obj <- get.country.object(country, mcmc.list$meta, is.iso = !is.null(ISO.code))
   tfr_table <- get.tfr.parameter.traces.cs(mcmc.list$mcmc.list, country.obj, 'tfr', burnin = burnin, thin=thin)
   if (adjust)
   {
@@ -1037,7 +1047,7 @@ get.mcmc.meta.bayesTFR.mcmc <- function(meta, ...) return(meta$meta)
 get.mcmc.meta.bayesTFR.prediction <- function(meta, ...) return(meta$mcmc.set$meta)
 
 
-get.country.object <- function(country, meta=NULL, country.table=NULL, index=FALSE) {
+get.country.object <- function(country, meta=NULL, country.table=NULL, index=FALSE, is.iso = FALSE) {
 	# If meta object is not given, country.table containing columns 'code' and 'name' must be given. 
 	# If 'country' is numeric, 'index' determines if 'country' is an index (TRUE) or code (FALSE)
 	if (!is.null(meta)) {
@@ -1050,25 +1060,40 @@ get.country.object <- function(country, meta=NULL, country.table=NULL, index=FAL
 	l <- length(codes)
 	found <- TRUE
 	if (is.numeric(country)) {
-		if (index) {
+		if (index) { # index
 			country.idx <- country
 			country.code <- codes[country.idx]
-		} else { 
+		} else { # country code
 			country.code <- country
 			country.idx <- (1:l)[codes==country.code]
 		}
 		country.name <- as.character(names[country.idx])
 		if (length(country.name) == 0) found <- FALSE
-	} else {
-		country.name <- country
-		country.idx <- (1:l)[names==country.name]
-		country.code <- codes[country.idx]
+	} else { # country is character string
+	    if(is.iso) { # ISO char code
+	        country.code <- match.iso(country)
+	        country.idx <- (1:l)[codes==country.code]
+	        country.name <- as.character(names[country.idx])
+	    } else { # country name
+		    country.name <- country
+		    country.idx <- (1:l)[names==country.name]
+		    country.code <- codes[country.idx]
+	    }
 		if (length(country.idx) == 0) found <- FALSE
 	}
 	if (!found) 
 		country.name <- country.idx <- country.code <- NULL
 	return(list(name=country.name, index=country.idx, code=country.code))
 }
+
+match.iso <- local({
+    e <- new.env()
+    data('iso3166', envir=e)
+    get.code <- function(iso) {
+        col <- if(nchar(iso) > 2) "charcode3" else "charcode"
+        return(e$iso3166$uncode[e$iso3166[[col]] == iso])
+    }
+})
 
 country.names <- function(meta, countries=NULL, index=FALSE) {
 	meta <- get.mcmc.meta(meta)
