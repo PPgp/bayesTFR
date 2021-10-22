@@ -261,48 +261,53 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
 	return(pred)
 }
 
-.get.model.est <- function(excl.what = c(), mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL,
-                           remove.duplicates = TRUE) {
-    e <- new.env()
-    data('iso3166', envir=e)
-    iso3166 <- e$iso3166
+.get.model.est <- function(excl.what = c(), mcmc.list=NULL, country=NULL, sim.dir=NULL,
+                           remove.duplicates = TRUE, country.code = deprecated(), ISO.code = deprecated()) {
+
+    if (lifecycle::is_present(country.code)) {
+        lifecycle::deprecate_warn("7.1-0", "tfr.bias.sd(country.code)", "tfr.bias.sd(country)",
+                                  details = "The same applies to get.bias.model() and get.sd.model()")
+        country <- country.code
+    }
+    if (lifecycle::is_present(ISO.code)) {
+        lifecycle::deprecate_warn("7.1-0", "tfr.bias.sd(ISO.code)", "tfr.bias.sd(country)",
+                                  details = "The same applies to get.bias.model() and get.sd.model()")
+        country <- ISO.code
+    }
     if (is.null(mcmc.list)) 
         mcmc.list <- get.tfr.mcmc(sim.dir)
     if (is.null(mcmc.list)) {
         warning('MCMC does not exist.')
         return(NULL)
     }
-    if (!mcmc.list$mcmc.list[[1]]$uncertainty) 
+    if (is.null(mcmc.list$mcmc.list[[1]]$uncertainty) || !mcmc.list$mcmc.list[[1]]$uncertainty) 
     {
         stop("MCMC does not consider uncertainty of past TFR.")
     }
-    if (is.null(country.code))
-        country.code <- iso3166$uncode[iso3166$charcode3 == ISO.code]
-    
-    country.obj <- get.country.object(country.code, mcmc.list$meta)
-    if (country.obj$index %in% mcmc.list$meta$extra) model_est <- mcmc.list$meta$raw_data_extra[[country.obj$index]]
-    else model_est <- mcmc.list$meta$raw_data.original[mcmc.list$meta$raw_data.original$country_code == country.obj$code,]
+    if(is.null(country)) stop("Country must be given.")
+    meta <- mcmc.list$meta
+    country.obj <- get.country.object(country, meta)
+    if (country.obj$index %in% meta$extra) model_est <- meta$raw_data_extra[[country.obj$index]]
+    else model_est <- meta$raw_data.original[meta$raw_data.original$country_code == country.obj$code,]
     model_est <- model_est[, !(names(model_est) %in% c('country_code', 'Country.or.area', 'year', 'tfr', 'country_index', 'eps', excl.what))]
     if(remove.duplicates)
         model_est <- model_est[!duplicated(model_est),]
-    return(list(table = model_est, cntry.index = country.obj$index, meta = mcmc.list$meta))
+    return(list(table = model_est, cntry.index = country.obj$index, meta = meta))
 }
 
-get.bias.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL) {
-    model_est <- .get.model.est(excl.what = "std", mcmc.list = mcmc.list, country.code = country.code, 
-                                ISO.code = ISO.code, sim.dir = sim.dir)
+get.bias.model <- function(mcmc.list=NULL, country=NULL, sim.dir=NULL, ...) {
+    model_est <- .get.model.est(excl.what = "std", mcmc.list = mcmc.list, country = country, sim.dir = sim.dir, ...)
     return(list(model = model_est$meta$bias_model[[model_est$cntry.index]], table=model_est$table))
 }
 
-get.std.model <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL) {
-    model_est <- .get.model.est(excl.what = "bias", mcmc.list = mcmc.list, country.code = country.code, 
-                                ISO.code = ISO.code, sim.dir = sim.dir)
+get.std.model <- function(mcmc.list=NULL, country=NULL, sim.dir=NULL, ...) {
+    model_est <- .get.model.est(excl.what = "bias", mcmc.list = mcmc.list, country = country, sim.dir = sim.dir, ...)
     return(list(model=model_est$meta$std_model[[model_est$cntry.index]], table=model_est$table))
 }
 
-tfr.bias.sd <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL) {
-    model_est <- .get.model.est(mcmc.list = mcmc.list, country.code = country.code, 
-                                ISO.code = ISO.code, sim.dir = sim.dir, remove.duplicates = FALSE)
+tfr.bias.sd <- function(mcmc.list=NULL, country=NULL, sim.dir=NULL, ...) {
+    model_est <- .get.model.est(mcmc.list = mcmc.list, country = country, 
+                                sim.dir = sim.dir, remove.duplicates = FALSE, ...)
     covariates <- if (model_est$cntry.index %in% model_est$meta$extra) model_est$meta$extra_covariates[[model_est$cntry.index]] else model_est$meta$covariates
 
     model_est_dt <- data.table::as.data.table(model_est$table)
@@ -314,12 +319,17 @@ tfr.bias.sd <- function(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.di
                 table = model_est_df))
 }
 
-get.tfr.estimation <- function(mcmc.list=NULL, country=NULL, ISO.code=NULL, sim.dir=NULL, 
-                               burnin=0, thin = 1, probs=NULL, adjust=TRUE, country.code = deprecated()) {
+get.tfr.estimation <- function(mcmc.list=NULL, country=NULL, sim.dir=NULL, 
+                               burnin=0, thin = 1, probs=NULL, adjust=TRUE, 
+                               country.code = deprecated(), ISO.code = deprecated()) {
 
     if (lifecycle::is_present(country.code)) {
         lifecycle::deprecate_warn("7.1-0", "get.tfr.estimation(country.code)", "get.tfr.estimation(country)")
         country <- country.code
+    }
+    if (lifecycle::is_present(ISO.code)) {
+        lifecycle::deprecate_warn("7.1-0", "get.tfr.estimation(ISO.code)", "get.tfr.estimation(country)")
+        country <- ISO.code
     }
     
     if(is.character(mcmc.list)) {
@@ -336,13 +346,10 @@ get.tfr.estimation <- function(mcmc.list=NULL, country=NULL, ISO.code=NULL, sim.
     {
         stop("MCMC does not consider uncertainty of past TFR.")
     }
-    if (is.null(country) && is.null(ISO.code))
-        stop("Country  must be given (argument country or ISO.code).")
-  
     if (is.null(country))
-        country <- ISO.code
+        stop("Country  must be given.")
 
-  country.obj <- get.country.object(country, mcmc.list$meta, is.iso = !is.null(ISO.code))
+  country.obj <- get.country.object(country, mcmc.list$meta)
   tfr_table <- get.tfr.parameter.traces.cs(mcmc.list$mcmc.list, country.obj, 'tfr', burnin = burnin, thin=thin)
   if (adjust)
   {
@@ -1047,7 +1054,7 @@ get.mcmc.meta.bayesTFR.mcmc <- function(meta, ...) return(meta$meta)
 get.mcmc.meta.bayesTFR.prediction <- function(meta, ...) return(meta$mcmc.set$meta)
 
 
-get.country.object <- function(country, meta=NULL, country.table=NULL, index=FALSE, is.iso = FALSE) {
+get.country.object <- function(country, meta=NULL, country.table=NULL, index=FALSE) {
 	# If meta object is not given, country.table containing columns 'code' and 'name' must be given. 
 	# If 'country' is numeric, 'index' determines if 'country' is an index (TRUE) or code (FALSE)
 	if (!is.null(meta)) {
@@ -1070,7 +1077,7 @@ get.country.object <- function(country, meta=NULL, country.table=NULL, index=FAL
 		country.name <- as.character(names[country.idx])
 		if (length(country.name) == 0) found <- FALSE
 	} else { # country is character string
-	    if(is.iso) { # ISO char code
+	    if(! country %in% names && nchar(country) <= 3) { # ISO charcode
 	        country.code <- match.iso(country)
 	        country.idx <- (1:l)[codes==country.code]
 	        country.name <- as.character(names[country.idx])

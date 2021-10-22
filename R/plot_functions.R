@@ -262,7 +262,7 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
 	  tfr <- as.matrix(obs.data, ncol=1)
 	else
 	{
-	  tmp <- get.tfr.estimation(mcmc.list = tfr.pred$mcmc.set, country.code = country$code, 
+	  tmp <- get.tfr.estimation(mcmc.list = tfr.pred$mcmc.set, country = country$code, 
 	                            probs = c(0.5, sort(c((100-pi)/200, 1-(100-pi)/200))))
 	  tfr <- as.matrix(tmp$tfr_quantile)[,1:(1+2*length(pi))]
 	}
@@ -442,14 +442,18 @@ get.half.child.variant <- function(median, increment=c(0, 0.25, 0.4, 0.5)) {
 	return(rbind(lower, upper))	
 }
 
-tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, ISO.code = NULL, sim.dir = NULL, 
+tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL, 
                                 burnin = 0, thin = 1, pis = c(80, 95), plot.raw = TRUE,
                                 grouping = 'source', save.image=TRUE, plot.dir = 'Estimation.plot', 
-                                adjust = TRUE, country.code = deprecated())
+                                adjust = TRUE, country.code = deprecated(), ISO.code = deprecated())
 {
     if (lifecycle::is_present(country.code)) {
         lifecycle::deprecate_warn("7.1-0", "tfr.estimation.plot(country.code)", "tfr.estimation.plot(country)")
         country <- country.code
+    }
+    if (lifecycle::is_present(ISO.code)) {
+        lifecycle::deprecate_warn("7.1-0", "tfr.estimation.plot(ISO.code)", "tfr.estimation.plot(country)")
+        country <- ISO.code
     }
     
   if (is.null(mcmc.list)) 
@@ -473,12 +477,11 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, ISO.code = NUL
   }
   
   
-  tfr.object <- get.tfr.estimation(mcmc.list=mcmc.list, country=country, ISO.code=ISO.code, sim.dir=sim.dir, 
+  tfr.object <- get.tfr.estimation(mcmc.list=mcmc.list, country=country, sim.dir=sim.dir, 
                                    burnin=burnin, thin=thin, probs=sort(c((1-pis/100)/2, 0.5, pis/100 + (1-pis/100)/2)),
                                    adjust = adjust)
-  if (is.null(country))
-      country <- ISO.code
-  country.obj <- get.country.object(country, meta, is.iso = !is.null(ISO.code))
+
+  country.obj <- get.country.object(country, meta)
   
   quantile_tbl <- tfr.object$tfr_quantile
   names(quantile_tbl)[1:(1 + 2 * length(pis))] <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
@@ -550,7 +553,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   }
   if (uncertainty)
   {
-    tfr.object <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country.code=country, ISO.code=NULL, 
+    tfr.object <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country, 
                                      probs=sort(c((1-pi/100)/2, 0.5, pi/100 + (1-pi/100)/2)))
   }
   col <- .match.colors.with.default(col, c('black', 'green', 'red', 'red', 'blue', '#00000020'))
