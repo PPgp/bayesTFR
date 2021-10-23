@@ -141,11 +141,11 @@ If it is an annual simulation (i.e. `annual=TRUE`), the function will estimate t
 To obtain results with the estimated uncertainty for example for the USA, users could call:
 
 ```R
-estUS <- get.tfr.estimation(mcmc.list = NULL, country.code = 840, ISO.code = NULL, 
+estUS <- get.tfr.estimation(mcmc.list = NULL, country = 840, 
 	sim.dir = output.dir, burnin = 0, thin = 1, probs = c(0.05, 0.5, 0.95))
 ```
 
-Here, if `mcmc.list` is `NULL`, the user should provide the simulation directory in `sim.dir`. `country.code` is the UN code (USA is 840). Alternatively, one can specify `ISO.code` (say "USA"), in which case `country.code` should be `NULL`. 
+Here, if `mcmc.list` is `NULL`, the user should provide the simulation directory in `sim.dir`. `country` is the UN numerical code (USA is 840). It could also be specified as ISO-2 or ISO-3 code ("USA" or "US").
 
 The function returns two elements, `tfr_table` and `tfr_quantile`. The former is a set of estimated TFR trajectories, while the latter is a table of quantiles defined by the argument `probs`.  If `probs` is `NULL`, only trajectories are returned.
 
@@ -154,7 +154,7 @@ In addition, function `tfr.estimation.table` now contains uncertainty for both, 
 Estimation results can be graphically viewed using e.g.
 
 ```R
-pl <- tfr.estimation.plot(country.code = 566, sim.dir = output.dir,
+pl <- tfr.estimation.plot(country = 566, sim.dir = output.dir,
 	burnin = 0, thin = thin, pis = c(80, 95), plot.raw = TRUE)
 print(pl)
 ```
@@ -164,7 +164,7 @@ The `plot.raw = TRUE` option causes the raw data used in the estimation to be pl
 Here is different variant of the plotting function which saves the plot into a file:
 
 ```R
-tfr.estimation.plot(mcmc.list = NULL, country.code = 840, ISO.code = NULL, 
+tfr.estimation.plot(mcmc.list = NULL, country = 840, 
 	sim.dir = output.dir, burnin = 0, thin = 1, 
 	pis = c(80,95), plot.raw = TRUE, grouping = "DataProcess", 
 	save.image = TRUE, plot.dir = 'Estimation.plot')
@@ -228,17 +228,17 @@ mc <- run.tfr.mcmc(output.dir = output.dir, nr.chains = nr.chains,
 Note that if users specifies their own covariates, then when using `tfr.estimation.plot` with `plot.raw = TRUE`, a grouping of the covariates needs to be specified. For example:
 
 ```R
-tfr.estimation.plot(mcmc.list = mc, country.code = 566, grouping = 'source')
+tfr.estimation.plot(mcmc.list = mc, country = 566, grouping = 'source')
 ```
 
-Note again that if the `iso.unbiased` option is used, the raw dataset must contain the column "source" containing values "VR" for the unbiased records. 
+Note again that if the `iso.unbiased` option is used, the raw dataset should contain the column "source" containing values "VR" for the unbiased records. Alternatively, pass the column name which contains the "VR" entries into the argument `source.col.name` in the `run.tfr.mcmc()` call.
 
 #### Exploring bias and measurement error variance
 
 After running MCMC steps with uncertainty, users could obtain the bias and measurement error standard deviation used in the estimation process using the function `tfr.bias.sd` as follows:
 
 ```R
-bias_sd <- tfr.bias.sd(sim.dir = output.dir, country.code = 566)
+bias_sd <- tfr.bias.sd(sim.dir = output.dir, country = 566)
 summary(bias_sd$model_bias)
 head(bias_sd$table)
 ```
