@@ -189,24 +189,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	burn <- if(is.mcmc.set.thinned) 0 else burnin
 	total.iter <- get.total.iterations(mcmc.set$mcmc.list, burn)
 	stored.iter <- get.stored.mcmc.length(mcmc.set$mcmc.list, burn)
-<<<<<<< HEAD
-	if (!is.null(mcmc.set$meta$extra) && !is.null(countries)) 
-	{
-	  stored.iter.extra <- stored.iter
-	  for (country in mcmc.set$meta$extra)
-	  {
-	    if (country %in% countries)
-	    {
-	      stored.iter.extra <- min(stored.iter.extra, 
-	                               floor((mcmc.set$meta$extra_iter[country] - burn) / mcmc.set$meta$extra_thin[country]) * length(mcmc.set$mcmc.list))
-	    }
-	  }
-	  stored.iter <- stored.iter.extra
-	}
-=======
 	stored.iter <- min(stored.iter, get.stored.mcmc.length.extra(mcmc.set$meta, countries, 
 	                                                             nr.chains =length(mcmc.set$mcmc.list), burnin = burn), na.rm = TRUE)
->>>>>>> master
 	mcthin <- max(sapply(mcmc.set$mcmc.list, function(x) x$thin))
 	if(!is.null(nr.traj) && !is.null(thin)) {
 		warning('Both nr.traj and thin are given. Argument thin will be ignored.')
