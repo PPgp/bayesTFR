@@ -62,8 +62,8 @@ The MCMCs are stored in \code{sim.dir} in a subdirectory called \dQuote{phaseIII
 	\item{mcmc.list}{A list of objects of class \code{\link{bayesTFR.mcmc}}, one for each MCMC.}
 }
 \references{
-Raftery, A.E., Alkema, L. and Gerland, P. (2014). \href{https://pubmed.ncbi.nlm.nih.gov/25324591/}{Bayesian Population Projections for the United Nations.}
-Statistical Science, Vol. 29, 58-68. 
+Raftery, A.E., Alkema, L. and Gerland, P. (2014). Bayesian Population Projections for the United Nations.
+Statistical Science, Vol. 29, 58-68. \doi{10.1214/13-STS419}. 
 }
 \author{
 Hana Sevcikova
