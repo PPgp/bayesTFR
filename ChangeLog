@@ -1,3 +1,27 @@
+7.1-0
+-----
+Deprecated country.code and ISO.code arguments in various functions. Argument "country" is to be used instead.
+This now requires import of some of the lifecycle functions. 
+
+The "country" argument in many functions can now be also ISO-2 or ISO-3 characters.
+
+Various bug fixes in the functionality for extra countries.
+
+The "source" column is not required for the uncertainty feature. The column name can be passed 
+in the "source.col.name" argument.
+
+Argument "grouping" in tfr.estimation.plot is guessed automatically if there is no "source" column.
+
+7.0-5 (09/16/2021)
+-----
+Fixed bug in tfr.get.dlcurves (thanks to Lucia Andreozzi).
+
+Fixed bug in tfr.raftery.diag that prevented bayesLife diagnostics from working properly (thanks to Asmida Binti Mustafa).
+
+In tfr.map.gvis, gvisGeoMap replaced with gvisGeoChart which is not based on Flash.
+
+Added reference to the description file. 
+
 7.0-4 (03/31/2021)
 -----
 Minor fixes of publication links.

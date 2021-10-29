@@ -21,7 +21,7 @@ Summary of an object \code{\link{bayesTFR.mcmc.set}} or \code{\link{bayesTFR.mcm
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{Object of class \code{\link{bayesTFR.mcmc.set}} or \code{\link{bayesTFR.mcmc}}.}
-  \item{country}{Country name or code if a country-specific summary is desired. By default, summary for all countries is generated.}
+  \item{country}{Country name or code if a country-specific summary is desired. The code can be either numeric or ISO-2 or ISO-3 characters. By default, summary for all countries is generated.}
   \item{chain.id}{Identifiers of MCMC chains. By default, all chains are considered.}
   \item{par.names}{Country independent parameters to be included in the summary. If the underlying object is an MCMC of phase II, the default names are given by \code{\link{tfr.parameter.names}()}, if it is phase III the names are \code{\link{tfr3.parameter.names}()}.}
   \item{par.names.cs}{Country-specific parameters to be included in the summary. If the underlying object is an MCMC of phase II, the default names are given by \code{\link{tfr.parameter.names.cs}()}, if it is phase III the names are \code{\link{tfr3.parameter.names.cs}()}.}
@@ -56,7 +56,7 @@ Hana Sevcikova
 \examples{
 sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
-summary(m, country="Czechia", burnin=15)
+summary(m, country="CZE", burnin=15)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -68,8 +68,7 @@ Maintainer: Hana Sevcikova <hanas@uw.edu>
 \references{
 Hana Sevcikova, Leontine Alkema, Adrian E. Raftery (2011). bayesTFR: An
   R Package for Probabilistic Projections of the Total Fertility Rate.
-  Journal of Statistical Software, 43(1), 1-29.
-  \url{https://www.jstatsoft.org/v43/i01/}.
+  Journal of Statistical Software, 43(1), 1-29. \doi{10.18637/jss.v043.i01 }.
 
 L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999/}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
 

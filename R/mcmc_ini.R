@@ -5,7 +5,8 @@ DLcurve <- function(DLpar, tfr, p1, p2, annual = FALSE){
  # tfr is a vector for which the decrements for this curve need to be calculated
  	dlvalue <- rep(0.0, length(tfr))
  	perfct <- if(annual) 1 else 5
-	res <- .C("doDLcurve", as.numeric(DLpar), as.numeric(tfr), p1, p2, length(tfr), dl_values=dlvalue, period_multiplier=as.integer(perfct))
+	res <- .C("doDLcurve", as.numeric(DLpar), as.numeric(tfr), p1, p2, length(tfr), dl_values=dlvalue, period_multiplier=as.integer(perfct),
+	          PACKAGE = "bayesTFR")
 	return(res$dl_values)
 #    t_mid1 <- DLpar[4] + DLpar[3] + DLpar[2] + 0.5 * DLpar[1]
 #    t_mid3 <- DLpar[4] + 0.5 * DLpar[3]
@@ -283,15 +284,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 		}		
 		cov.to.average <- prop_cov_gammas
 	}
-	# where NAs, put averages
-	isNA <- apply(is.na(prop_cov_gammas), 1, any)
-	if (any(isNA)) {
-		avg <- matrix(NA, 3, 3)
-		for(i in 1:3)
-			avg[,i] <- apply(cov.to.average[,,i], 2, mean, na.rm=TRUE)
-		for(is.na.country in 1:sum(isNA)) 
-			prop_cov_gammas[(1:nr_countries)[isNA][is.na.country],,] <- avg
-	}
+	prop_cov_gammas <- .impute.prop.cov.gamma(prop_cov_gammas, cov.to.average, nr_countries)
   
 	output <- list(
 	  tfr_matrix=updated.tfr.matrix, 
@@ -333,7 +326,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	    }
 	  }
 	  rawTFR <- rawTFR[rawTFR$country_code %in% as.numeric(colnames(output$tfr_matrix_all)),]
-	  rawTFR <- rawTFR[rawTFR$year < meta$present.year,]
+	  rawTFR <- rawTFR[rawTFR$year < meta$present.year + 1,]
 	  rawTFR <- rawTFR[rawTFR$year > meta$start.year,]
 	  output$raw_data.original <- rawTFR
 	  output$raw_data.original <- merge(output$raw_data.original, 
@@ -502,6 +495,16 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	return(mcmc)
 }
 
+.impute.prop.cov.gamma <- function(prop_cov_gammas, cov.to.average, nr_countries) {
+    # where NAs, put averages
+    isNA <- apply(is.na(prop_cov_gammas), 1, any)
+    if (!any(isNA)) return(prop_cov_gammas)
+    avg <- apply(cov.to.average, c(2,3), mean, na.rm=TRUE)
+    for(is.na.country in 1:sum(isNA)) 
+        prop_cov_gammas[(1:nr_countries)[isNA][is.na.country],,] <- avg
+    return(prop_cov_gammas)
+}
+
 mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL, 
 									my.locations.file=NULL, burnin = 200, verbose=FALSE, uncertainty=FALSE, 
 									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL),
@@ -556,6 +559,8 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 		proposal_cov_gammas_cii[,i,] <- rbind(meta$proposal_cov_gammas_cii[,i,], 
 							matrix(Emeta$proposal_cov_gammas_cii[is.new,i,], ncol=3))
 	}
+	proposal_cov_gammas_cii <- .impute.prop.cov.gamma(proposal_cov_gammas_cii, proposal_cov_gammas_cii, nr_countries.all)
+
 	new.meta <- list(proposal_cov_gammas_cii = proposal_cov_gammas_cii,
 					 nr_countries=nr_countries.all
 					)
@@ -638,6 +643,13 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	  {
 	    meta$country.ind.by.year[[i]] <- index[meta$country.ind.by.year[[i]]]
 	  }
+	  for (year in 1:meta$T_end)
+	  {
+	      meta$id_phase1_by_year[[year]] <- which(meta$start_c > year)
+	      meta$id_phase3_by_year[[year]] <- which(meta$lambda_c <= year)
+	      meta$id_phase2_by_year[[year]] <- setdiff(1:meta$nr_countries, c(meta$id_phase1_by_year[[year]], meta$id_phase3_by_year[[year]]))
+	  }
+	  meta[['id_phase3']] <- which(meta$lambda_c < meta$T_end_c)
 	}
 	
 	return(list(meta=meta, index=index, index.replace=id.replace, 

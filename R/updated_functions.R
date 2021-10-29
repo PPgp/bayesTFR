@@ -196,8 +196,8 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('sou
     # to save space
     attr(m1$terms, ".Environment") <- NULL
     attr(m2$terms, ".Environment") <- NULL
-    m1$fitted.values <- NULL
-    m2$fitted.values <- NULL
+    #m1$fitted.values <- NULL # cannot be deleted as the summary function would not work
+    #m2$fitted.values <- NULL
     
     mcmc$meta$bias_model[[country]] <- m1
     mcmc$meta$std_model[[country]] <- m2
@@ -220,11 +220,11 @@ get.eps.all.phases <- function(Dlpar, mcmc, country)
     eps_return[1:(mcmc$meta$start_c[country] - 1)] <- mcmc$meta$tfr_all[2:mcmc$meta$start_c[country], country] - 
       mcmc$meta$tfr_all[1:(mcmc$meta$start_c[country]-1), country]
   }
-  if (mcmc$meta$lambda_c[country] < mcmc$meta$T_end)
+  if (mcmc$meta$lambda_c[country] < mcmc$meta$T_end_c[country])
   {
     id3 <- which(mcmc$meta$id_phase3 == country)
-    eps_return[mcmc$meta$lambda_c[country]:(mcmc$meta$T_end - 1)] <- mcmc$meta$tfr_all[(mcmc$meta$lambda_c[country]+1):mcmc$meta$T_end, country] - 
-      mcmc$meta$tfr_all[mcmc$meta$lambda_c[country]:(mcmc$meta$T_end-1), country] * mcmc$rho.c[id3] - (1-mcmc$rho.c[id3]) * mcmc$mu.c[id3]
+    eps_return[mcmc$meta$lambda_c[country]:(mcmc$meta$T_end_c[country] - 1)] <- mcmc$meta$tfr_all[(mcmc$meta$lambda_c[country]+1):mcmc$meta$T_end_c[country], country] - 
+      mcmc$meta$tfr_all[mcmc$meta$lambda_c[country]:(mcmc$meta$T_end_c[country]-1), country] * mcmc$rho.c[id3] - (1-mcmc$rho.c[id3]) * mcmc$mu.c[id3]
   }
   return (eps_return)
 }
@@ -236,9 +236,9 @@ get.sd.all.phases <- function(mcmc, country)
   {
     sd_return[1:(mcmc$meta$start_c[country] - 1)] <- mcmc$sd_eps_tau
   }
-  if (mcmc$meta$lambda_c[country] < mcmc$meta$T_end)
+  if (mcmc$meta$lambda_c[country] < mcmc$meta$T_end_c[country])
   {
-    sd_return[mcmc$meta$lambda_c[country]:(mcmc$meta$T_end - 1)] <- mcmc$sigma.eps
+    sd_return[mcmc$meta$lambda_c[country]:(mcmc$meta$T_end_c[country] - 1)] <- mcmc$sigma.eps
   }
   return (sd_return)
 }
@@ -256,12 +256,12 @@ mcmc.update.tfr <- function(country, mcmc)
   eps_tfr_prop <- eps_tfr_prev
   sd_tfr_prop <- sd_tfr_prev
   if (country %in% mcmc$meta$id_phase3) {id3 <- which(mcmc$meta$id_phase3 == country)}
-  for (year in 1:mcmc$meta$T_end)
+  for (year in 1:mcmc$meta$T_end_c[country])
   {
-    tmp.years <- max(1, year-1):min(year, mcmc$meta$T_end -1)
+    tmp.years <- max(1, year-1):min(year, mcmc$meta$T_end_c[country] -1)
     if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
     {
-      tmp.extra.year <- max(2, year-1):min(year+1, mcmc$meta$T_end -1)
+      tmp.extra.year <- max(2, year-1):min(year+1, mcmc$meta$T_end_c[country] -1)
       tmp.extra.year <- tmp.extra.year[tmp.extra.year > mcmc$meta$start_c[country] & tmp.extra.year < mcmc$meta$lambda_c[country]]
       tmp.more.years <- tmp.years[!(tmp.years %in% tmp.extra.year)]
     }

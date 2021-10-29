@@ -1,8 +1,9 @@
+is.missing <- function(x) return(!is.null(x) && is.na(x))
+
 tfr.raftery.diag <- function(mcmc=NULL, 
 							 sim.dir=file.path(getwd(), 'bayesTFR.output'),
 							 burnin=0, country=NULL,
-							 par.names = tfr.parameter.names(trans=TRUE),
-							 par.names.cs =tfr.parameter.names.cs(trans=TRUE, back.trans=FALSE),
+							 par.names = NA, par.names.cs = NA,
 							 country.sampling.prop=1,
 							 verbose=TRUE, ...
 							 ) {
@@ -19,6 +20,15 @@ tfr.raftery.diag <- function(mcmc=NULL,
 	} else {
 		mcmc.set <- mcmc
 	}
+  
+    if(is.missing(par.names))
+        par.names <- tfr.parameter.names(trans=TRUE, meta=mcmc.set$meta)
+    if(is.missing(par.names.cs)) {
+        par.names.cs <- tfr.parameter.names.cs(trans=TRUE, back.trans=FALSE)
+        if (!is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty) 
+            par.names.cs <- c(par.names.cs, 'tfr')
+    }
+            
 	gui.option.name <- paste('bDem', strsplit(class(mcmc.set), '.', fixed=TRUE)[[1]][1], 'diagnose', sep='.')
 	gui.option.name.status <- paste(gui.option.name, 'status', sep='.')
 	gui.options <- list()
@@ -31,6 +41,7 @@ tfr.raftery.diag <- function(mcmc=NULL,
 		unblock.gtk(gui.option.name, gui.options)
 		if(verbose) cat('\t\tProcessing raftery.diag(..., r=0.0125, q=0.025) for country-independent parameters\n')
 		rd.025 <- raftery.diag(coda.mc, r=0.0125, q=0.025)
+		if(is.error(rd.025)) return()
 		for (idx.chain in 1:length(rd.025)) 
 		{
 		  for (par in c('M', 'N', 'I')) 
@@ -38,13 +49,13 @@ tfr.raftery.diag <- function(mcmc=NULL,
 		    rd.025[[idx.chain]]$resmatrix[is.na(rd.025[[idx.chain]]$resmatrix[, par]), par] <- max(rd.025[[idx.chain]]$resmatrix[, par], na.rm = T)
 		  }
 		}
-		if(is.error(rd.025)) return()
 		thin.ind.025 <- diag.thin.indep(coda.mc, q=0.025)
 		colnames(thin.ind.025) <- rownames(rd.025[[1]]$resmatrix)
 		gui.options[[gui.option.name.status]] <- 'processing country-independent pars (q=0.975)'
 		unblock.gtk(gui.option.name, gui.options)
 		if(verbose) cat('\t\tProcessing raftery.diag(..., r=0.0125, q=0.975) for country-independent parameters\n')
 		rd.975 <- raftery.diag(coda.mc, r=0.0125, q=0.975)
+		if(is.error(rd.975)) return()
 		for (idx.chain in 1:length(rd.975)) 
 		{
 		  for (par in c('M', 'N', 'I')) 
@@ -52,7 +63,6 @@ tfr.raftery.diag <- function(mcmc=NULL,
 		    rd.975[[idx.chain]]$resmatrix[is.na(rd.975[[idx.chain]]$resmatrix[, par]), par] <- max(rd.975[[idx.chain]]$resmatrix[, par], na.rm = T)
 		  }
 		}
-		if(is.error(rd.975)) return()
 		thin.ind.975 <- diag.thin.indep(coda.mc, q=0.975)
 		colnames(thin.ind.975) <- rownames(rd.025[[1]]$resmatrix)
 		result.025 <- result.975 <- burnin.025 <- burnin.975 <- matrix(NA, 
@@ -97,6 +107,7 @@ tfr.raftery.diag <- function(mcmc=NULL,
 			if(verbose) 
 				cat(country.idx, ', ')
 			rd.025 <- raftery.diag(coda.mc.cs, r=0.0125, q=0.025)
+			if(is.error(rd.025)) return()
 			for (idx.chain in 1:length(rd.025)) 
 			{
 			  for (par in c('M', 'N', 'I')) 
@@ -104,12 +115,12 @@ tfr.raftery.diag <- function(mcmc=NULL,
 			    rd.025[[idx.chain]]$resmatrix[is.na(rd.025[[idx.chain]]$resmatrix[, par]), par] <- max(rd.025[[idx.chain]]$resmatrix[, par], na.rm = T)
 			  }
 			}
-			if(is.error(rd.025)) return()
 			thin.ind.025 <- cbind(thin.ind.025, diag.thin.indep(coda.mc.cs, q=0.025))
 			npar <- dim(rd.025[[1]]$resmatrix)[1]
 			ncols <- ncol(thin.ind.025)
 			colnames(thin.ind.025)[(ncols-npar+1):ncols] <- rownames(rd.025[[1]]$resmatrix)
 			rd.975 <- raftery.diag(coda.mc.cs, r=0.0125, q=0.975)
+			if(is.error(rd.975)) return()
 			for (idx.chain in 1:length(rd.975)) 
 			{
 			  for (par in c('M', 'N', 'I')) 
@@ -117,8 +128,6 @@ tfr.raftery.diag <- function(mcmc=NULL,
 			    rd.975[[idx.chain]]$resmatrix[is.na(rd.975[[idx.chain]]$resmatrix[, par]), par] <- max(rd.975[[idx.chain]]$resmatrix[, par], na.rm = T)
 			  }
 			}
-			
-			if(is.error(rd.975)) return()
 			thin.ind.975 <- cbind(thin.ind.975, diag.thin.indep(coda.mc.cs, q=0.975))
 			colnames(thin.ind.975)[(ncols-npar+1):ncols] <- rownames(rd.025[[1]]$resmatrix)
 			
@@ -293,7 +302,8 @@ process.not.converged.parameters <- function(diag, iter) {
 }
 	
 .do.diagnose <- function(type, class.name, sim.dir, thin=80, burnin=2000, express=FALSE, 
-							country.sampling.prop=NULL, keep.thin.mcmc=FALSE, verbose=TRUE) {
+							country.sampling.prop=NULL, keep.thin.mcmc=FALSE, verbose=TRUE,
+							show.result = verbose) {
 	get.country.name <- function(par) {
 		cindex <- strsplit(par, '_c')[[1]]
 		cindex <- as.numeric(cindex[length(cindex)])
@@ -309,9 +319,8 @@ process.not.converged.parameters <- function(diag, iter) {
 							') given the total number of iterations (', iter, ').', sep=''))
 	#run raftery.diag on country-independent parameters
 	diag.procedure <- paste(type, '.raftery.diag', sep='')
-	par.names <- if(mcmc.set$meta$phase == 2) tfr.parameter.names(trans=TRUE, meta=mcmc.set$meta) else tfr3.parameter.names()
 	raftery.diag.res <- do.call(diag.procedure, 
-								list(mcmc=mcmc.set, par.names=par.names, par.names.cs=NULL, thin=thin,
+								list(mcmc=mcmc.set, par.names=NA, par.names.cs=NULL, thin=thin,
 								burnin=burnin, verbose=verbose))
 	if (is.null(raftery.diag.res)) stop(paste('Problem in', diag.procedure))
 	raftery.diag.res.cs <- NULL
@@ -319,14 +328,8 @@ process.not.converged.parameters <- function(diag, iter) {
 	if(!express &&((!is.null(country.sampling.prop) && (country.sampling.prop>0)) 
 						|| is.null(country.sampling.prop))) {
 		#run raftery.diag on country-specific parameters
-	  if (mcmc.set$meta$phase == 3) 
-	    par.names.cs <- tfr3.parameter.names.cs()
-	  else if (!is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty) 
-	    par.names.cs <- c(tfr.parameter.names.cs(trans=TRUE, back.trans=FALSE), 'tfr')
-	  else 
-	    par.names.cs <- tfr.parameter.names.cs(trans=TRUE, back.trans=FALSE)
 		raftery.diag.res.cs <- do.call(diag.procedure, list(mcmc.set, 
-								par.names = NULL, par.names.cs = par.names.cs,
+								par.names = NULL, par.names.cs = NA,
 								thin=thin,  burnin=burnin,
 								country.sampling.prop=if(is.null(country.sampling.prop)) 1 else country.sampling.prop,
 								verbose=verbose
@@ -375,7 +378,7 @@ process.not.converged.parameters <- function(diag, iter) {
 					express=express, 
 					nr.countries=nr.countries),
 				 class=class.name)
-	# if(verbose) summary(diag)
+	if(show.result) print(summary(diag))
 	save.dir <- file.path(mcmc.set$meta$output.dir, 'diagnostics')
 	if(!file.exists(save.dir)) 
 		dir.create(save.dir, recursive=TRUE)
@@ -390,15 +393,17 @@ tfr.diagnose <- function(sim.dir, thin=80, burnin=2000, express=FALSE,
   mcmc.set <- get.tfr.mcmc(sim.dir, low.memory = T)
 	diag2 <- .do.diagnose(type='tfr', class.name='bayesTFR.convergence', 
 							sim.dir=sim.dir, thin=thin, burnin=burnin, express=express,
-							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,	verbose=verbose)
+							country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,	verbose=verbose,
+							show.result = FALSE)
 	if (!is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty)
 	{
 	  diag3 <- .do.diagnose(type='tfr3', class.name='bayesTFR.convergence', 
 	                        sim.dir=sim.dir, thin=thin, burnin=burnin, express=express,
-	                        country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,	verbose=verbose)
+	                        country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,	verbose=verbose,
+	                        show.result = FALSE)
 	  diag2 <- .combine.diagnosis(diag2, diag3, keep.thin.mcmc = keep.thin.mcmc)
 	}
-	if (verbose) summary(diag2)
+	if (verbose) print(summary(diag2))
 	invisible(diag2)
 }
 
@@ -486,11 +491,14 @@ tfr.diagnose <- function(sim.dir, thin=80, burnin=2000, express=FALSE,
 tfr3.raftery.diag <- function(mcmc=NULL, 
 							 sim.dir=file.path(getwd(), 'bayesTFR.output'),
 							 burnin=0, country=NULL,
-							 par.names = tfr3.parameter.names(),
-							 par.names.cs = tfr3.parameter.names.cs(),
+							 par.names = NA, par.names.cs = NA,
 							 country.sampling.prop=1,
 							 verbose=TRUE, ...) {
 	mcmc.set <- if (is.null(mcmc)) get.tfr3.mcmc(sim.dir=sim.dir, low.memory=TRUE) else mcmc
+	if(is.missing(par.names))
+	    par.names <- tfr3.parameter.names()
+	if(is.missing(par.names.cs)) 
+	    par.names.cs <- tfr3.parameter.names.cs()
 	return(tfr.raftery.diag(mcmc=mcmc.set, burnin=burnin,
 						country=country, par.names=par.names, par.names.cs=par.names.cs,
 						country.sampling.prop=country.sampling.prop, verbose=verbose, ...))

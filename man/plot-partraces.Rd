@@ -33,7 +33,7 @@ tfr3.partraces.cs.plot(country, mcmc.list = NULL,
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{country}{Name or numerical code of a country.}
+  \item{country}{Name or numerical code of a country. The code can be either numeric or ISO-2 or ISO-3 characters.}
   \item{mcmc.list}{List of \code{bayesTFR.mcmc} objects, or an object of class \code{bayesTFR.mcmc.set} or of class \code{bayesTFR.prediction} (allowed only for Phase II MCMCs). If it is \code{NULL}, the traces are loaded from \code{sim.dir}.}
   \item{sim.dir}{Directory with the MCMC simulation results. It is only used if \code{mcmc.list} is \code{NULL}.}
   \item{chain.ids}{List of MCMC identifiers to be plotted. If it is \code{NULL}, all chains found in \code{mcmc.list} or \code{sim.dir} are plotted.}

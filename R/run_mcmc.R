@@ -390,8 +390,6 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	if (uncertainty && has.tfr3.mcmc(sim.dir))
 	{
 	  mcmc3.set <- get.tfr3.mcmc(sim.dir)
-	  Eini$meta[['id_phase3']] <- intersect(which(Eini$meta$lambda_c < Eini$meta$T_end_c), 
-	                                        which(Eini$meta$regions$country_code %in% countries))
 	  for (par.name in tfr3.parameter.names())
 	  {
 	    for (suffix in c('prior.range', 'ini', 'ini.range'))
@@ -405,6 +403,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	meta <- Eini$meta
 	chain.ids <- names(mcmc.set$mcmc.list)
 	mcthin <- 1
+	countries <- Eini$meta$regions$country_code[Eini$index]
 	if(verbose) cat('\n')
 	for (chain in chain.ids) { # update meta in each chain
 		if(verbose) cat('Updating meta in chain', chain, '\n')
@@ -439,7 +438,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		  for (country in countries)
 		  {
 		    df_country <- mcmc.set$mcmc.list[[chain]]$meta$raw_data.original
-		    country.obj <- get.country.object(country, Eini$meta)
+		    country.obj <- get.country.object(country, meta)
 		    if (!is.null(country.obj$index))
 		    {
 		      df_country <- df_country[df_country$country_code == country,]
@@ -483,19 +482,19 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	  #if (!dir.exists(file.path(meta$output.dir, 'extra.meta'))) dir.create(file.path(meta$output.dir, 'extra.meta'))
 	  #if (!dir.exists(file.path(meta$output.dir, 'extra.meta', countries[1]))) dir.create(file.path(meta$output.dir, 'extra.meta', countries[1]))
 	  #store.bayesTFR.meta.object(meta, file.path(meta$output.dir, 'extra.meta', countries[1]))
-	  for (name in c("country.ind.by.year", "ind.by.year", "id_phase1_by_year", "id_phase2_by_year", "id_phase3_by_year", 
-	                 "id_phase3", "nr.countries"))
+	  for (name in c("country.ind.by.year", "ind.by.year", "raw_data.original", "covariates", "cont_covariates"))
 	  {
 	    meta[[name]] <- meta.old[[name]]
 	  }
 	  if (is.null(meta[['extra']])) meta[['extra']] <- c()
-	  if (is.null(meta[['extra_iter']])) meta[['extra_iter']] <- numeric(get.nrest.countries(meta.old))
-	  if (is.null(meta[['extra_thin']])) meta[['extra_thin']] <- numeric(get.nrest.countries(meta.old))
+	  if (is.null(meta[['extra_iter']])) meta[['extra_iter']] <- numeric(get.nr.countries(meta))
+	  if (is.null(meta[['extra_thin']])) meta[['extra_thin']] <- numeric(get.nr.countries(meta))
 	  if (is.null(meta[['extra_covariates']])) meta[['extra_covariates']] <- list()
 	  if (is.null(meta[['extra_cont_covariates']])) meta[['extra_cont_covariates']] <- list()
+
 	  for (country in countries)
 	  {
-	    country.idx <- get.country.object(country, meta.old)$index
+	    country.idx <- get.country.object(country, meta)$index
 	    if (!is.null(country.idx)) 
 	    {
 	      meta[['extra']] <- c(meta[['extra']], country.idx)
