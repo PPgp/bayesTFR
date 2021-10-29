@@ -1,4 +1,4 @@
-7.1-0
+7.1-1 (10/29/2021)
 -----
 Deprecated country.code and ISO.code arguments in various functions. Argument "country" is to be used instead.
 This now requires import of some of the lifecycle functions. 
