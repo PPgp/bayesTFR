@@ -370,7 +370,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 		TFRmatrix.regions <- get.TFRmatrix.and.regions(tfrs$data[include,], locations$loc_data, 
 												start.year=meta$start.year, 
 												present.year=meta$present.year,
-												verbose=verbose, ...)
+												ignore.last.observed = uncertainty, verbose=verbose, ...)
 		processed.include.codes <- intersect(include.codes, country.codes.processed)
 		return(list(tfr_matrix=TFRmatrix.regions$tfr_matrix,
 				tfr_matrix_all=TFRmatrix.regions$tfr_matrix_all, 

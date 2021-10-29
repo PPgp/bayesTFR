@@ -30,7 +30,7 @@ tfr.trajectories.table(tfr.pred, country, pi = c(80, 95),
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{tfr.pred}{Object of class \code{\link{bayesTFR.prediction}}.}
-  \item{country}{Name or numerical code of a country.}
+  \item{country}{Name or numerical code of a country. It can also be given as ISO-2 or ISO-3 characters.}
   \item{pi}{Probability interval. It can be a single number or an array.}
   \item{half.child.variant}{If \code{TRUE} the United Nations variant of \dQuote{\code{+/-0.5} child} (relative to the median) is shown.}
   \item{nr.traj}{Number of trajectories to be plotted. If \code{NULL}, all trajectories are plotted, otherwise they are thinned evenly.}
@@ -56,7 +56,7 @@ The median and given probability intervals are computed using all available traj
 }
 
 \author{
-Hana Sevcikova, Leontine Alkema
+Hana Sevcikova, Leontine Alkema, Peiran Liu
 }
 
 \seealso{

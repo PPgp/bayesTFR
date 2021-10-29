@@ -848,6 +848,24 @@ test.run.mcmc.simulation.with.uncertainty <- function() {
     stopifnot(pred$use.tfr3) 
     test.ok(test.name)
 
+    test.name <- 'getting bias and sd models'
+    start.test(test.name)
+    bias_sd <- tfr.bias.sd(m, "Nigeria")
+    stopifnot(!is.null(bias_sd))
+    test.ok(test.name)
+    
+    test.name <- 'plotting uncertainty'
+    start.test(test.name)
+    filename <- tempfile()
+    png(filename=filename)
+    g <- tfr.estimation.plot(pred, "US", save.image = FALSE)
+    print(g)
+    dev.off()
+    size <- file.info(filename)['size']
+    unlink(filename)
+    stopifnot(size > 0)
+    test.ok(test.name)
+    
     unlink(sim.dir, recursive=TRUE)
 }
 

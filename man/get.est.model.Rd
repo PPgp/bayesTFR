@@ -10,16 +10,16 @@ Accessing estimated bias and standard deviations
 Functions for obtaining bias and standard deviation of the estimated models as well as the model fits.
 }
 \usage{
-tfr.bias.sd(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL)
-get.bias.model(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL)
-get.std.model(mcmc.list=NULL, country.code=NULL, ISO.code=NULL, sim.dir=NULL)
+tfr.bias.sd(mcmc.list = NULL, country = NULL, sim.dir = NULL, \dots)
+get.bias.model(mcmc.list = NULL, country = NULL, sim.dir = NULL, \dots)
+get.std.model(mcmc.list = NULL, country = NULL, sim.dir = NULL, \dots)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{mcmc.list}{Object of class \code{\link{bayesTFR.mcmc.set}} corresponding to Phase II MCMCs. If it is \code{NULL}, the object is loaded from the directory given by \code{sim.dir}.}
-  \item{country.code}{Name or numerical code of a country. If it is \code{NULL}, \code{ISO.code} need to be provided as ISO-3 characters.}
-  \item{ISO.code}{Country code in the ISO-3 character form. Only used if \code{country.code} is not given.}
+  \item{country}{Name or numerical code of a country. It can also be given as ISO-2 or ISO-3 characters.}
   \item{sim.dir}{Directory with the MCMC simulation results. Only used if \code{mcmc.list} is not given.}
+  \item{\dots}{Not used.}
 }
 \details{
 Functions \code{get.bias.model} and \code{get.std.model} are used to obtain the model fit for estimated bias and standard deviation, respectively, when uncertainty about input data is taken into account. These are used in the MCMC steps stored in \code{mcmc.list}. Function \code{tfr.bias.sd} combines both infos into one object.

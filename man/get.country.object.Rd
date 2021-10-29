@@ -16,7 +16,7 @@ get.country.object(country, meta = NULL, country.table = NULL, index = FALSE)
 \method{get.countries.table}{bayesTFR.prediction}(object, \dots)
 }
 \arguments{
-  \item{country}{Country name, code or index. If it is an index, the argument \code{index} must be set to \code{TRUE}.}
+  \item{country}{Country name, code or index. If it is an index, the argument \code{index} must be set to \code{TRUE}. The code can be either numeric or ISO-2 or ISO-3 characters.}
   \item{meta}{Object of class \code{\link{bayesTFR.mcmc.meta}}. If it is not given, the argument \code{country.table} must be given.}
   \item{country.table}{A table containing columns \dQuote{name} and \dQuote{code} from which the country info can be extracted. Only relevant, if \code{meta} is \code{NULL}. }
   \item{index}{Logical determining if the argument \code{country} is an index.}
@@ -29,7 +29,7 @@ Given partial information about a country (i.e. having either name or code or in
 \value{
 Function \code{get.country.object} returns a list with components:
 \item{name}{Country name}
-\item{code}{Country code}
+\item{code}{Country numeric code}
 \item{index}{Country index}
 
 Function \code{get.countries.table} return a data frame with columns \code{code} and \code{name}.
@@ -50,8 +50,9 @@ Hana Sevcikova
 \examples{
 sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 m <- get.tfr.mcmc(sim.dir)
-# all four calls should give the same answer
+# all five calls should give the same answer
 get.country.object('China', m$meta)
+get.country.object('CN', m$meta)
 get.country.object(156, m$meta)
 get.country.object(56, m$meta, index=TRUE)
 get.country.object(156, NULL, country.table=get.countries.table(m))

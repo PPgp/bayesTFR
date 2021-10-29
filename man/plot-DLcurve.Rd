@@ -27,7 +27,7 @@ tfr.country.dlcurves(x, mcmc.list, country, burnin=NULL, \dots)
 }
 \arguments{
   \item{mcmc.list}{List of \code{\link{bayesTFR.mcmc}} objects, an object of class \code{\link{bayesTFR.mcmc.set}} or of class \code{\link{bayesTFR.prediction}}. In case of \code{DLcurve.plot.all} if it si \code{NULL}, it is loaded from \code{sim.dir}.}
-  \item{country}{Name or numerical code of a country.}
+  \item{country}{Name or code of a country. The code can be either numeric or ISO-2 or ISO-3 characters.}
   \item{burnin}{Number of iterations to be discarded from the beginning of parameter traces.}
   \item{pi}{Probability interval. It can be a single number or an array.}
   \item{tfr.max}{Maximum TFR to be shown in the plot.}
