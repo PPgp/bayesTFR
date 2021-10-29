@@ -68,14 +68,14 @@ Maintainer: Hana Sevcikova <hanas@uw.edu>
 \references{
 Hana Sevcikova, Leontine Alkema, Adrian E. Raftery (2011). bayesTFR: An
   R Package for Probabilistic Projections of the Total Fertility Rate.
-  Journal of Statistical Software, 43(1), 1-29. \doi{10.18637/jss.v043.i01 }.
+  Journal of Statistical Software, 43(1), 1-29. \doi{10.18637/jss.v043.i01}.
 
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999/}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. \doi{10.1007/s13524-011-0040-5}.
 
-P. Liu, and A. E. Raftery (2020). \href{https://projecteuclid.org/euclid.aoas/1593449321}{Accounting for Uncertainty About Past Values In Probabilistic Projections of the Total Fertility Rate for All Countries.} Annals of Applied Statistics, Vol 14, no. 2, 685-705.
+P. Liu, and A. E. Raftery (2020). Accounting for Uncertainty About Past Values In Probabilistic Projections of the Total Fertility Rate for All Countries. Annals of Applied Statistics, Vol 14, no. 2, 685-705. \doi{10.1214/19-AOAS1294}.
 
-Raftery, A.E., Alkema, L. and Gerland, P. (2014). \href{https://pubmed.ncbi.nlm.nih.gov/25324591/}{Bayesian Population Projections for the United Nations.}
-Statistical Science, Vol. 29, 58-68. 
+Raftery, A.E., Alkema, L. and Gerland, P. (2014). Bayesian Population Projections for the United Nations.
+Statistical Science, Vol. 29, 58-68. \doi{10.1214/13-STS419}.
 }
 
 \keyword{ package }
