@@ -10,11 +10,11 @@ Summary of a Prediction of the Total Fertility Rate
 Country-specific summary of an object of class \code{\link{bayesTFR.prediction}}, created using the function \code{\link{tfr.predict}}. The summary contains the mean, standard deviation and several commonly used quantiles of the simulated trajectories.
 }
 \usage{
-\method{summary}{bayesTFR.prediction}(object, country=NULL, compact = TRUE, \dots)
+\method{summary}{bayesTFR.prediction}(object, country = NULL, compact = TRUE, \dots)
 }
 \arguments{
   \item{object}{Object of class \code{\link{bayesTFR.prediction}}.}
-  \item{country}{Country name or code. If it is \code{NULL}, only prediction parameters are included.}
+  \item{country}{Country name or code. The code can be either numeric or ISO-2 or ISO-3 characters. If it is \code{NULL}, only prediction parameters are included.}
   \item{compact}{Logical switching between a smaller and larger number of displayed quantiles.}
   \item{\dots}{A list of further arguments.}
 }
@@ -50,7 +50,7 @@ pred <- tfr.predict(sim.dir=sim.dir,
 # If the above function was run previously, do
 # pred <- get.tfr.prediction(sim.dir=file.path(getwd(), "exampleTFRpred"))
                                                         
-summary(pred, country="Ireland")
+summary(pred, country = "Ireland")
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -13,7 +13,7 @@ get.tfr.trajectories(tfr.pred, country)
 
 \arguments{
   \item{tfr.pred}{Object of class \code{\link{bayesTFR.prediction}}.}
-  \item{country}{Name or numerical code of a country.}
+  \item{country}{Name or code of a country. The code can be either numeric or ISO-2 or ISO-3 characters.}
 }
 \details{
 The function loads TFR trajectories for the given country from disk, offsets it if needed (see \code{\link{tfr.median.shift}}) and returns it as a matrix.

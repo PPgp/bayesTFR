@@ -181,7 +181,8 @@ mcmc.update.Triangle_c4 <- function(country, mcmc, ...) {
                  mcmc$eps_Tc[epsT.idx,country],
                  mcmc$sd_Tc[epsT.idx,country],
                  mcmc$mean_eps_Tc[epsT.idx,country],
-                 lepsT.idx, mcmc$Triangle4, mcmc$delta4, log_cond=log_cond)
+                 lepsT.idx, mcmc$Triangle4, mcmc$delta4, log_cond=log_cond,
+                 PACKAGE = "bayesTFR")
   z <-  logcondt$log_cond - rexp(1)
   #		stop('')
   v <- runif(1)
@@ -203,7 +204,7 @@ mcmc.update.Triangle_c4 <- function(country, mcmc, ...) {
     like <- .C("log_cond_Triangle_c4_trans", Triangle_c4_trans_prop, eps_T_prop,
                mcmc$sd_Tc[epsT.idx,country],
                mcmc$mean_eps_Tc[epsT.idx,country], lepsT.idx, mcmc$Triangle4, mcmc$delta4,
-               log_cond=log_cond)$log_cond
+               log_cond=log_cond, PACKAGE = "bayesTFR")$log_cond
     if (like >= z) {
       mcmc$eps_Tc[epsT.idx, country] <- eps_T_prop
       mcmc$Triangle_c4[country] <- Triangle_c4_prop
@@ -295,7 +296,9 @@ mcmc.update.d <- function(country, mcmc, ...) {
       if (d_prop < mcmc$d_c[country]){
         interval[1] <- d_trans_prop
       } else {
-        interval[2] <- d_trans_prop
+          if(d_prop > mcmc$d_c[country])
+            interval[2] <- d_trans_prop
+          else return()
       }
     } # end else
     count <- count + 1

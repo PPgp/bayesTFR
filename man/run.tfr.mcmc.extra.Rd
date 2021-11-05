@@ -14,6 +14,7 @@ run.tfr.mcmc.extra(sim.dir = file.path(getwd(), "bayesTFR.output"),
     parallel = FALSE, nr.nodes = NULL,  my.locations.file = NULL,
     uncertainty = FALSE, my.tfr.raw.file = NULL, iso.unbiased = NULL, 
     covariates = c('source', 'method'), cont_covariates = NULL, 
+    source.col.name = "source", average.gammas.cov = TRUE, 
     verbose = FALSE, verbose.iter = 100, \dots)
 }
 \arguments{
@@ -45,6 +46,8 @@ Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes fo
 \item{my.tfr.raw.file}{File name of the raw TFR used when uncertainty is \code{TRUE}. See details in \code{\link{run.tfr.mcmc}}.}
 \item{iso.unbiased}{Codes of countries for which the vital registration TFR estimates are considered unbiased. See details in \code{\link{run.tfr.mcmc}}.}
 \item{covariates, cont_covariates}{Categorical and continuous features used in estimating bias and standard deviation if \code{uncertainty} is \code{TRUE}. See details in \code{\link{run.tfr.mcmc}}.}
+\item{source.col.name}{If \code{uncertainty} is \code{TRUE} this is a column name within the given covariates that determines the data source. It is used if \code{iso.unbiased} is given to identify the vital registration records.}
+\item{average.gammas.cov}{Set this to \code{FALSE} if the processed country has been included in the main simulation. In such a case the proposal gamma covariance matrix is taken from the \code{proposal_cov_gammas_cii} dataset. By default, the matrix is taken as an average from all countries.}
 \item{verbose}{Logical switching log messages on and off.}
 \item{verbose.iter}{Integer determining how often (in number of iterations) log messages are outputted during the estimation.}
 \item{\dots}{Additional parameters to be passed to the function \code{\link[snowFT]{performParallel}}, if \code{parallel} is \code{TRUE}.}
@@ -52,7 +55,7 @@ Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes fo
 \details{
 The function can be used to make predictions for countries, areas or regions (further denoted as \sQuote{countries}) that were not included in the MCMC estimation (invoked by \code{\link{run.tfr.mcmc}}). It creates MCMC traces for country-specific parameters. The purpose of this function is to have country-specific parameters available in order to be able to generate projections for additional countries or their aggregations, without having to re-run the often time-expensive MCMC simulation.
 
-The set of countries to be considered by this function can be given either by their codes, using the argument \code{countries}, in which case the countries must be included in the UN WPP \code{\link[wpp2019]{tfr}} dataset. Or, it can be given by a user-specific TFR file, using the argument \code{my.tfr.file}. The function considers a union of both arguments. 
+The set of countries to be considered by this function can be given either by their codes, using the argument \code{countries}, in which case the countries must be included in the UN WPP \code{\link[wpp2019]{tfr}} dataset. Or, it can be given by a user-specific TFR file, using the argument \code{my.tfr.file}. The \code{countries} argument haas a priority over \code{my.tfr.file}.
 
 In the default case of \code{uncertainty = FALSE}, the function will ignore all countries that were used in the existing MCMC simulation for estimating the hyperparameters. However, countries that already own country-specific parameters (e.g. because they were included in \code{my.tfr.file} passed to \code{\link{run.tfr.mcmc}} with \code{include_code = 1}, or from a previous pass of the \code{run.tfr.mcmc.extra} function) get their parameters recomputed. In case of \code{uncertainty = TRUE}, all specified  countries, regardless if they were included in the existing world simulation or not, get their parameters recomputed. It is therefore advisable to make a backup copy of the exisiting MCMC simulation, as there is a no easy way to revert the parameters to their original values. 
 

@@ -26,6 +26,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 						phase3.starting.values=NULL,
 					 	proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						iso.unbiased = NULL, covariates = c('source', 'method'), cont_covariates = NULL, 
+						source.col.name="source",
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
 					 	save.all.parameters = FALSE, compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=62000, iter.incr=10000, nr.chains=3, thin=80, burnin=2000),
@@ -196,10 +197,10 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 		chain.set <- bDem.performParallel(nr.nodes, 1:nr.chains, mcmc.run.chain, 
 						initfun=init.nodes, seed = seed, meta=bayesTFR.mcmc.meta, 
 						thin=thin, starting.values=starting.values, iter=iter, S.ini=S.ini, a.ini=a.ini,
-                        b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
-                        gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, 
-                        verbose.iter=verbose.iter, uncertainty=uncertainty, iso.unbiased=iso.unbiased, 
-						            covariates=covariates, cont_covariates=cont_covariates, ...)
+						b.ini=b.ini, sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini,
+						gamma.ini=gamma.ini, save.all.parameters=save.all.parameters, verbose=verbose, 
+						verbose.iter=verbose.iter, uncertainty=uncertainty, iso.unbiased=iso.unbiased, 
+						covariates=covariates, cont_covariates=cont_covariates, source.col.name=source.col.name, ...)
 	} else { # run chains sequentially
 		chain.set <- list()
 		for (chain in 1:nr.chains) {
@@ -208,7 +209,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	sigma0.ini=sigma0.ini, Triangle_c4.ini=Triangle_c4.ini, const.ini=const.ini, 
 					 	gamma.ini=gamma.ini, save.all.parameters=save.all.parameters,
 					 	verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty, iso.unbiased=iso.unbiased, 
-					 	covariates=covariates, cont_covariates=cont_covariates)
+					 	covariates=covariates, cont_covariates=cont_covariates, source.col.name=source.col.name)
 		}
 	}
 	names(chain.set) <- 1:nr.chains
@@ -240,7 +241,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 							S.ini, a.ini, b.ini, sigma0.ini, Triangle_c4.ini, const.ini, gamma.ini=1,
 							save.all.parameters=FALSE,
 							verbose=FALSE, verbose.iter=10, uncertainty=FALSE, iso.unbiased=NULL, 
-							covariates=c('source', 'method'), cont_covariates=NULL) {
+							covariates=c('source', 'method'), cont_covariates=NULL, source.col.name="source") {
 								
 	cat('\n\nChain nr.', chain.id, '\n')
     if (verbose) {
@@ -262,7 +263,8 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 	                 gamma.ini=gamma.ini[chain.id],
 	                 save.all.parameters=save.all.parameters,
 	                 verbose=verbose, uncertainty=uncertainty, iso.unbiased=iso.unbiased, 
-	                 covariates=covariates, cont_covariates=NULL)
+	                 covariates=covariates, cont_covariates=cont_covariates,
+                   source.col.name=source.col.name)
 	if (uncertainty)
 	{
 	  this.sv <- list()
@@ -365,8 +367,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								thin=1, thin.extra=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
 								my.locations.file = NULL,
 								uncertainty=FALSE, my.tfr.raw.file=NULL, iso.unbiased=NULL, 
-								covariates=c('source', 'method'), cont_covariates=NULL, 
-								verbose=FALSE, verbose.iter=100, ...) {
+								covariates=c('source', 'method'), cont_covariates=NULL, source.col.name="source",
+								average.gammas.cov = TRUE, verbose=FALSE, verbose.iter=100, ...) {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta.old <- mcmc.set$meta
   
@@ -378,15 +380,16 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
   
   Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, my.locations.file=my.locations.file, 
 												burnin=burnin, verbose=verbose, uncertainty=uncertainty, 
-												my.tfr.raw.file=my.tfr.raw.file)
+												my.tfr.raw.file=my.tfr.raw.file, average.gammas.cov = average.gammas.cov)
 	if(length(Eini$index) <= 0) {
 		cat('\nNothing to be done.\n')
 		return(invisible(mcmc.set))
 	}
+  #TODO: we should consider in the future that in the original run, no MCMC3 steps are conducted, 
+  #but when running for specific countries we have that. This could possibly break the simulation.
 	if (uncertainty && has.tfr3.mcmc(sim.dir))
 	{
 	  mcmc3.set <- get.tfr3.mcmc(sim.dir)
-	  Eini$meta[['id_phase3']] <- intersect(mcmc3.set$meta$id_phase3, which(mcmc.set$meta$regions$country_code %in% countries))
 	  for (par.name in tfr3.parameter.names())
 	  {
 	    for (suffix in c('prior.range', 'ini', 'ini.range'))
@@ -400,7 +403,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	meta <- Eini$meta
 	chain.ids <- names(mcmc.set$mcmc.list)
 	mcthin <- 1
-	
+	countries <- Eini$meta$regions$country_code[Eini$index]
 	if(verbose) cat('\n')
 	for (chain in chain.ids) { # update meta in each chain
 		if(verbose) cat('Updating meta in chain', chain, '\n')
@@ -428,13 +431,14 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		if(uncertainty)
 		{
 		  mcmc.set$mcmc.list[[chain]] <- get.obs.estimate.diff.original(mcmc.set$mcmc.list[[chain]])
-		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]], iso.unbiased, covariates, cont_covariates)
+		  mcmc.set$mcmc.list[[chain]] <- estimate.bias.sd.original(mcmc.set$mcmc.list[[chain]], iso.unbiased, covariates, cont_covariates, 
+		                                                           source.col.name=source.col.name, countries = Eini$index)
 		  mcmc.set$mcmc.list[[chain]]$eps_unc <- list()
 		  if (is.null(mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra)) mcmc.set$mcmc.list[[chain]]$meta$raw_data_extra <- list()
 		  for (country in countries)
 		  {
 		    df_country <- mcmc.set$mcmc.list[[chain]]$meta$raw_data.original
-		    country.obj <- get.country.object(country, meta.old)
+		    country.obj <- get.country.object(country, meta)
 		    if (!is.null(country.obj$index))
 		    {
 		      df_country <- df_country[df_country$country_code == country,]
@@ -475,34 +479,39 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	}
 	if(uncertainty)
 	{
-	  if (!dir.exists(file.path(meta$output.dir, 'extra.meta'))) dir.create(file.path(meta$output.dir, 'extra.meta'))
-	  if (!dir.exists(file.path(meta$output.dir, 'extra.meta', countries[1]))) dir.create(file.path(meta$output.dir, 'extra.meta', countries[1]))
-	  store.bayesTFR.meta.object(meta, file.path(meta$output.dir, 'extra.meta', countries[1]))
-	  for (name in c("country.ind.by.year", "ind.by.year", "id_phase1_by_year", "id_phase2_by_year", "id_phase3_by_year", 
-	                 "id_phase3", "nr.countries"))
+	  #if (!dir.exists(file.path(meta$output.dir, 'extra.meta'))) dir.create(file.path(meta$output.dir, 'extra.meta'))
+	  #if (!dir.exists(file.path(meta$output.dir, 'extra.meta', countries[1]))) dir.create(file.path(meta$output.dir, 'extra.meta', countries[1]))
+	  #store.bayesTFR.meta.object(meta, file.path(meta$output.dir, 'extra.meta', countries[1]))
+	  for (name in c("country.ind.by.year", "ind.by.year", "raw_data.original", "covariates", "cont_covariates"))
 	  {
 	    meta[[name]] <- meta.old[[name]]
 	  }
 	  if (is.null(meta[['extra']])) meta[['extra']] <- c()
-	  if (is.null(meta[['extra_iter']])) meta[['extra_iter']] <- numeric(get.nrest.countries(meta.old))
-	  if (is.null(meta[['extra_thin']])) meta[['extra_thin']] <- numeric(get.nrest.countries(meta.old))
+	  if (is.null(meta[['extra_iter']])) meta[['extra_iter']] <- numeric(get.nr.countries(meta))
+	  if (is.null(meta[['extra_thin']])) meta[['extra_thin']] <- numeric(get.nr.countries(meta))
 	  if (is.null(meta[['extra_covariates']])) meta[['extra_covariates']] <- list()
 	  if (is.null(meta[['extra_cont_covariates']])) meta[['extra_cont_covariates']] <- list()
+
 	  for (country in countries)
 	  {
-	    country.idx <- get.country.object(country, meta.old)$index
+	    country.idx <- get.country.object(country, meta)$index
 	    if (!is.null(country.idx)) 
 	    {
 	      meta[['extra']] <- c(meta[['extra']], country.idx)
-	      meta[['extra_iter']][country.idx] <- mcmc.set$mcmc.list[[1]]$iter
+	      meta[['extra_iter']][country.idx] <- if(is.null(iter)) mcmc.set$mcmc.list[[1]]$length else iter
 	      meta[['extra_thin']][country.idx] <- thin.extra
 	      meta[['extra_covariates']][[country.idx]] <- covariates
 	      meta[['extra_cont_covariates']][[country.idx]] <- cont_covariates
 	    }
 	  }
 	  meta[['extra']] <- sort(unique(meta[['extra']]))
-	}
-	store.bayesTFR.meta.object(meta, file.path(meta$output.dir))
+	  # unload parent for storing purposes
+	  parent <- meta$parent
+	  meta[["parent"]] <- NULL
+	} else parent <- NULL
+	
+	store.bayesTFR.meta.object(meta, meta$output.dir)
+	meta[["parent"]] <- parent
 	mcmc.set$meta <- meta
 	cat('\n')
 	invisible(mcmc.set)

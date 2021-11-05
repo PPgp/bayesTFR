@@ -5,7 +5,8 @@ DLcurve <- function(DLpar, tfr, p1, p2, annual = FALSE){
  # tfr is a vector for which the decrements for this curve need to be calculated
  	dlvalue <- rep(0.0, length(tfr))
  	perfct <- if(annual) 1 else 5
-	res <- .C("doDLcurve", as.numeric(DLpar), as.numeric(tfr), p1, p2, length(tfr), dl_values=dlvalue, period_multiplier=as.integer(perfct))
+	res <- .C("doDLcurve", as.numeric(DLpar), as.numeric(tfr), p1, p2, length(tfr), dl_values=dlvalue, period_multiplier=as.integer(perfct),
+	          PACKAGE = "bayesTFR")
 	return(res$dl_values)
 #    t_mid1 <- DLpar[4] + DLpar[3] + DLpar[2] + 0.5 * DLpar[1]
 #    t_mid3 <- DLpar[4] + 0.5 * DLpar[3]
@@ -131,7 +132,6 @@ find.tau.lambda.and.DLcountries <- function(tfr_matrix, min.TFRlevel.for.start.a
     T_end_c <- lambda_c <-rep(T_end, nr_countries)
     T.suppl <- if(is.null(suppl.data$regions)) 0 else dim(suppl.data$tfr_matrix)[1]
     tau_c <- start_c <- rep(NA, nr_countries)
-
     for (country in 1:nr_countries) {
         data <- get.observed.with.supplemental(country, tfr_matrix, suppl.data)
     	has.suppl <- length(data) > T_end && !is.na(suppl.data$index.from.all.countries[country])
@@ -218,7 +218,8 @@ mcmc.meta.ini <- function(...,
 	if(present.year-3 > wpp.year) warning("present.year is much larger then wpp.year. Make sure WPP data for present.year are available.")
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
 										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, 
-										annual = mcmc.input$annual.simulation, verbose=verbose)
+										annual = mcmc.input$annual.simulation, ignore.last.observed = uncertainty,
+										verbose=verbose)
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
 						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, 
 						uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2)
@@ -283,15 +284,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 		}		
 		cov.to.average <- prop_cov_gammas
 	}
-	# where NAs, put averages
-	isNA <- apply(is.na(prop_cov_gammas), 1, any)
-	if (any(isNA)) {
-		avg <- matrix(NA, 3, 3)
-		for(i in 1:3)
-			avg[,i] <- apply(cov.to.average[,,i], 2, mean, na.rm=TRUE)
-		for(is.na.country in 1:sum(isNA)) 
-			prop_cov_gammas[(1:nr_countries)[isNA][is.na.country],,] <- avg
-	}
+	prop_cov_gammas <- .impute.prop.cov.gamma(prop_cov_gammas, cov.to.average, nr_countries)
   
 	output <- list(
 	  tfr_matrix=updated.tfr.matrix, 
@@ -402,7 +395,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 					 d.ini=0.17,
 					 save.all.parameters=FALSE,
 					 verbose=FALSE, uncertainty=FALSE, iso.unbiased=NULL,
-					 covariates=c('source', 'method'), cont_covariates=NULL) {
+					 covariates=c('source', 'method'), cont_covariates=NULL, source.col.name = "source") {
 				 		 	
 	nr_countries <- mcmc.meta$nr_countries
 
@@ -483,8 +476,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
                         dontsave=dontsave.pars, uncertainty=uncertainty
                         ),
                    class='bayesTFR.mcmc')
-                   
-	##################################################################
+  ##################################################################
 	# distortions
 	##################################################################
 	# note: the eps will always be NA outside (tau_c, lambda-1)!!
@@ -496,16 +488,27 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	  # mcmc <- get.obs.estimate.diff(mcmc)
 	  # mcmc <- estimate.bias.sd.raw(mcmc)
 	  mcmc <- get.obs.estimate.diff.original(mcmc)
-	  mcmc <- estimate.bias.sd.original(mcmc, iso.unbiased, covariates, cont_covariates)
+	  mcmc <- estimate.bias.sd.original(mcmc, iso.unbiased, covariates, cont_covariates, source.col.name)
 	}
 	
 	# mcmc <- as.list(mcmc)
 	return(mcmc)
 }
 
+.impute.prop.cov.gamma <- function(prop_cov_gammas, cov.to.average, nr_countries) {
+    # where NAs, put averages
+    isNA <- apply(is.na(prop_cov_gammas), 1, any)
+    if (!any(isNA)) return(prop_cov_gammas)
+    avg <- apply(cov.to.average, c(2,3), mean, na.rm=TRUE)
+    for(is.na.country in 1:sum(isNA)) 
+        prop_cov_gammas[(1:nr_countries)[isNA][is.na.country],,] <- avg
+    return(prop_cov_gammas)
+}
+
 mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL, 
 									my.locations.file=NULL, burnin = 200, verbose=FALSE, uncertainty=FALSE, 
-									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL)) {
+									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL),
+									average.gammas.cov = TRUE) {
 	update.regions <- function(reg, ereg, id.replace, is.new, is.old) {
 		nreg <- list()
 		for (name in c('code', 'area_code', 'country_code')) {
@@ -537,7 +540,7 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 		has.mock.suppl <- TRUE
 	}
 	Emeta <- do.meta.ini(meta, tfr.with.regions=tfr.with.regions, 
-								use.average.gammas.cov=TRUE, burnin=burnin,
+								use.average.gammas.cov=average.gammas.cov, burnin=burnin,
 						 		verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file = my.tfr.raw.file)
 			 		
 	# join the new meta with the existing one
@@ -556,6 +559,8 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 		proposal_cov_gammas_cii[,i,] <- rbind(meta$proposal_cov_gammas_cii[,i,], 
 							matrix(Emeta$proposal_cov_gammas_cii[is.new,i,], ncol=3))
 	}
+	proposal_cov_gammas_cii <- .impute.prop.cov.gamma(proposal_cov_gammas_cii, proposal_cov_gammas_cii, nr_countries.all)
+
 	new.meta <- list(proposal_cov_gammas_cii = proposal_cov_gammas_cii,
 					 nr_countries=nr_countries.all
 					)
@@ -638,6 +643,13 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	  {
 	    meta$country.ind.by.year[[i]] <- index[meta$country.ind.by.year[[i]]]
 	  }
+	  for (year in 1:meta$T_end)
+	  {
+	      meta$id_phase1_by_year[[year]] <- which(meta$start_c > year)
+	      meta$id_phase3_by_year[[year]] <- which(meta$lambda_c <= year)
+	      meta$id_phase2_by_year[[year]] <- setdiff(1:meta$nr_countries, c(meta$id_phase1_by_year[[year]], meta$id_phase3_by_year[[year]]))
+	  }
+	  meta[['id_phase3']] <- which(meta$lambda_c < meta$T_end_c)
 	}
 	
 	return(list(meta=meta, index=index, index.replace=id.replace, 

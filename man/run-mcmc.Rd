@@ -36,7 +36,7 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     Triangle_c4.ini = NULL, const.ini = NULL, gamma.ini = 1, 
     phase3.starting.values = NULL, proposal_cov_gammas = NULL, 
     iso.unbiased = NULL, covariates = c("source", "method"), cont_covariates = NULL, 
-    seed = NULL, parallel = FALSE, nr.nodes = nr.chains, 
+    source.col.name="source", seed = NULL, parallel = FALSE, nr.nodes = nr.chains, 
     save.all.parameters = FALSE, compression.type = 'None',
     auto.conf = list(max.loops = 5, iter = 62000, iter.incr = 10000, 
         nr.chains = 3, thin = 80, burnin = 2000),
@@ -103,6 +103,7 @@ continue.tfr.mcmc(iter, chain.ids = NULL,
   \item{proposal_cov_gammas}{Proposal for the gamma covariance matrices for each country. It should be a list with two values: \code{values} and \code{country_codes}. The structure corresponds to the object returned by the function \code{\link{get.cov.gammas}}. By default the covariance matrices are obtained using \code{data(proposal_cov_gammas_cii)}. This argument overwrite the defaults for countries contained the argument.}
   \item{iso.unbiased}{Codes of countries for which the vital registration TFR estimates are considered unbiased. Only used if \code{uncertainty = TRUE}. See details below.}
   \item{covariates, cont_covariates}{Categorical and continuous features used in estimating bias and standard deviation if \code{uncertainty = TRUE}. See details below.}
+  \item{source.col.name}{If \code{uncertainty} is \code{TRUE} this is a column name within the given covariates that determines the data source. It is used if \code{iso.unbiased} is given to identify the vital registration records.}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible results.}
   \item{parallel}{Logical determining if the simulation should run multiple chains in parallel. If it is \code{TRUE}, the package \pkg{\link[snowFT]{snowFT}} is required. In such a case further arguments can be passed, see description of \dots.}
   \item{nr.nodes}{Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes for running the simulation in parallel. By default it equals to the number of chains.}
@@ -130,9 +131,11 @@ Optionally, \code{my.tfr.file} can contain a column called \code{last.observed} 
 
 The package contains a dataset called \file{my_tfr_template} (in \file{extdata} directory) which is a template for user-specified \code{my.tfr.file}.
 
-The parameter \code{uncertainty} is set to control whether past TFR is considered to be precise (\code{FALSE}), or need to be estimated from the raw data (\code{TRUE}). In the latter case, the raw TFR observations are taken either from the \code{\link{rawTFR}} dataset (default) or from a file given by the \code{my.tfr.raw.file} argument.  The Bayesian hierarchical model considers the past TFR as unknown, estimates it and stores in \code{output.dir}. Details can be found in Liu and Raftery (2020). The \code{covariates}, \code{cont_covariates} arguments are for listing categorical and continuous features for estimating bias and standard deviation of past TFR observations. If a country is known to have unbiased vital registration (VR) records, one can include it in the  \code{iso.unbiased} argument as those countries will estimate their past VR records to have 0 bias and 0.0161 standard deviation.
+The parameter \code{uncertainty} is set to control whether past TFR is considered to be precise (\code{FALSE}), or need to be estimated from the raw data (\code{TRUE}). In the latter case, the raw TFR observations are taken either from the \code{\link{rawTFR}} dataset (default) or from a file given by the \code{my.tfr.raw.file} argument.  The Bayesian hierarchical model considers the past TFR as unknown, estimates it and stores in \code{output.dir}. Details can be found in Liu and Raftery (2020). The \code{covariates}, \code{cont_covariates} arguments are for listing categorical and continuous features for estimating bias and standard deviation of past TFR observations. If a country is known to have unbiased vital registration (VR) records, one can include it in the  \code{iso.unbiased} argument as those countries will estimate their past VR records to have 0 bias and 0.0161 standard deviation. The VR records are identified as having \dQuote{VR} in the column given by \code{source.col.name} (\dQuote{source} by default).
 
 If \code{annual=TRUE}, which implies using annual data for training the model, the parameter \code{ar.phase2} will be activated. If \code{ar.phase2} is set to \code{TRUE}, then the model of Phase II will change from \eqn{d_{c,t} = g_{c,t} + \epsilon_{c,t}} to \eqn{d_{c,t}-g_{c,t} = \phi(d_{c,t-1}-g_{c,t-1}) + \epsilon_{c,t}}. \eqn{\phi} is considered as country-independent and is called \code{rho_phase2}.
+
+Furthermore, if \code{annual} is \code{TRUE} and \code{my.tfr.file} is given, the data in the file must be on annual basis and no matching with the WPP dataset takes place. 
 
 
 }
@@ -142,9 +145,9 @@ If \code{annual=TRUE}, which implies using annual data for training the model, t
 	\item{mcmc.list}{A list of objects of class \code{\link{bayesTFR.mcmc}}, one for each MCMC.}
 }
 \references{
-L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3367999/}{Probabilistic Projections of the Total Fertility Rate for All Countries.} Demography, Vol. 48, 815-839.
+L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. \doi{10.1007/s13524-011-0040-5}.
 
-P. Liu, and A. E. Raftery (2020). \href{https://projecteuclid.org/euclid.aoas/1593449321}{Accounting for Uncertainty About Past Values In Probabilistic Projections of the Total Fertility Rate for All Countries.} Annals of Applied Statistics, Vol 14, no. 2, 685-705.
+P. Liu, and A. E. Raftery (2020). Accounting for Uncertainty About Past Values In Probabilistic Projections of the Total Fertility Rate for All Countries. Annals of Applied Statistics, Vol 14, no. 2, 685-705. \doi{10.1214/19-AOAS1294}.
 }
 \author{
 	Hana Sevcikova, Leontine Alkema, Peiran Liu

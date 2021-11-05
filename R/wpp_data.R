@@ -1,7 +1,7 @@
 # Read in the UN estimates
 
 set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, my.tfr.file=NULL, 
-							my.locations.file=NULL, annual = FALSE, verbose=FALSE) {
+							my.locations.file=NULL, annual = FALSE, ignore.last.observed = FALSE, verbose=FALSE) {
 # outputs:
 # tfr_matrix_all, with each column one countries UN estimates
 # tfr_matrix with NAs after last observed data point
@@ -32,7 +32,8 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, m
 												start.year=start.year, 
 												present.year=present.year,
 												annual = annual, verbose=verbose, 
-												interpolate = annual && is.null(my.tfr.file))
+												interpolate = annual && is.null(my.tfr.file),
+												ignore.last.observed = ignore.last.observed)
 	if(!annual) {
 	    TFRmatrixsuppl.regions <- .get.suppl.matrix.and.regions(un.object, TFRmatrix.regions, loc_data, 
 									start.year, present.year)
@@ -71,7 +72,7 @@ load.bdem.dataset <- function(dataset, wpp.year, envir=NULL, verbose=FALSE) {
 read.tfr.file <- function(file) return(read.delim(file=file, comment.char='#', check.names=FALSE))
 
 do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2012, 
-                            annual = FALSE, verbose=FALSE) {
+                            annual = FALSE, countries = NULL, verbose=FALSE) {
 	tfr_data <- load.bdem.dataset(un.file.name, wpp.year, verbose=verbose)
 	my.tfr.file <- my.file
 	if(!is.null(tfr_data) || !is.null(my.tfr.file)) {
@@ -85,7 +86,7 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 	added <- c()
 	# read user-defined TFRs and replace the UN data with it
 	if(!is.null(my.tfr.file)) {
-		cat('Reading file ', my.tfr.file, '.\n')
+		if(verbose) cat('Reading file ', my.tfr.file, '.\n')
 		my.tfr_data <- read.tfr.file(file=my.tfr.file)
 		colnames(my.tfr_data)[colnames(my.tfr_data)=='name'] <- 'country'
 		if(!annual)
@@ -107,6 +108,7 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 		codes <- my.tfr_data$country_code
 		if (length(codes) > 0) {
 			for (icode in 1:length(codes)) {
+			    if(!is.null(countries) && !codes[icode] %in% countries) next
 				idx <- tfr_data$country_code == codes[icode]
 				if(!any(idx)){ # country not found, add a row
 					row <- tfr_data[1,]
@@ -125,20 +127,23 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 			}
 		}
 		if(length(replaced) > 0) 
-			cat('\tValues in', paste(cols.to.use, collapse=', '), '(possibly partially) replaced for countries', 
+			if(verbose) cat('\tValues in', paste(cols.to.use, collapse=', '), '(possibly partially) replaced for countries', 
 						paste(replaced, collapse=', '), '.\n') 
 		if(length(added) > 0) 
-			cat('\tCountries', paste(added, collapse=', '), 'added to the UN data.\n')
+		    if(verbose) cat('\tCountries', paste(added, collapse=', '), 'added to the UN data.\n')
 		if(length(replaced) == 0 && length(added) == 0)
-			cat('\tNo country matched the UN file.\n')
+		    cat('No country in', my.tfr.file, 'matched the UN file.\n')
 	}
 	return(list(data=tfr_data, replaced=replaced, added=added))
 }
 
-read.UNtfr <- function(wpp.year, my.tfr.file=NULL, ...) {
-	data <- do.read.un.file('tfr', wpp.year, my.file=my.tfr.file, ...)
-	suppl.data <- do.read.un.file('tfr_supplemental', wpp.year, my.file=my.tfr.file, ...)
-	if(is.null(suppl.data$data)) suppl.data <- NULL
+read.UNtfr <- function(wpp.year, my.tfr.file=NULL, annual = FALSE, ...) {
+	data <- do.read.un.file('tfr', wpp.year, my.file=my.tfr.file, annual = annual, ...)
+	suppl.data <- NULL
+	if(!annual) {
+	    suppl.data <- do.read.un.file('tfr_supplemental', wpp.year, my.file = my.tfr.file, ...)
+	    if(is.null(suppl.data$data)) suppl.data <- NULL
+	}
 	return(list(data.object=data, suppl.data.object=suppl.data))
 }
 
@@ -198,7 +203,7 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
 get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950, present.year=2010, annual = FALSE,
 												 datacolnames=c(country.code='country_code', country.name='country', reg.name='reg_name',
 															reg.code='reg_code', area.name='area_name', area.code='area_code'), 
-												 interpolate = FALSE) {
+												 interpolate = FALSE, ignore.last.observed = FALSE) {
 	tfr_data <- data
 	nr_countries <- length(tfr_data[,1])
 	if (annual && interpolate) # interpolate 5-year data
@@ -208,12 +213,12 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
 	    ncol.tfr <- length(num.columns)
 	    cols.starty <- as.integer(substr(names.tfr.data[num.columns], 1,4))
 	    cols.endy <- as.integer(substr(names.tfr.data[num.columns], 6,9))
-	    years.to.interp.to <- (cols.starty[1]+3):cols.endy[length(cols.endy)]
+	    years.to.interp.to <- (cols.starty[1]):cols.endy[length(cols.endy)]
 	    years.to.interp.from <- seq(cols.starty[1]+3, cols.endy[length(cols.endy)]-2, by = 5)
 	    tfr_data_new <- matrix(NA, nrow = nrow(tfr_data), ncol = length(years.to.interp.to))
 	    for(row in 1:nrow(tfr_data_new)) 
 	        tfr_data_new[row, ] <- approx(years.to.interp.from, tfr_data[row, num.columns], 
-	                                      xout = years.to.interp.to)$y
+	                                      xout = years.to.interp.to, rule=2)$y
 	    tfr_data_new <- cbind(tfr_data[, -num.columns], tfr_data_new) 
 	    colnames(tfr_data_new) <- c(colnames(tfr_data)[-num.columns], years.to.interp.to)
 	  tfr_data <- tfr_data_new
@@ -266,7 +271,7 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
  		if(has.area.name) area_name <- c(area_name, paste(loc_data$area_name[loc_index]))
  		if(has.area.code) area_code <- c(area_code, loc_data$area_code[loc_index])
 		# set NAs for entries that are not observed data (after last.observed) 
-		tfr_matrix[(tfr_data[i,'last.observed'] < mid.years), i] <- NA
+		if(!ignore.last.observed) tfr_matrix[(tfr_data[i,'last.observed'] < mid.years), i] <- NA
 		all.na[i] <- all(is.na(tfr_matrix[,i]))
 	}
 	country.codes <- tfr_data[[datacolnames['country.code']]]
@@ -326,7 +331,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 
 .extra.matrix.regions <- function(data, countries, meta, package="bayesTFR", my.locations.file=NULL, 
                                   verbose=FALSE, uncertainty=FALSE, ...) {
-  tfrs <- data
+    tfrs <- data
 	country.codes.processed <- meta$regions$country_code
 	ncountries <- get.nr.countries(meta)
 	ncountries.est <- get.nrest.countries(meta)
@@ -365,7 +370,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 		TFRmatrix.regions <- get.TFRmatrix.and.regions(tfrs$data[include,], locations$loc_data, 
 												start.year=meta$start.year, 
 												present.year=meta$present.year,
-												verbose=verbose, ...)
+												ignore.last.observed = uncertainty, verbose=verbose, ...)
 		processed.include.codes <- intersect(include.codes, country.codes.processed)
 		return(list(tfr_matrix=TFRmatrix.regions$tfr_matrix,
 				tfr_matrix_all=TFRmatrix.regions$tfr_matrix_all, 
@@ -380,18 +385,18 @@ set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, my.locations.f
                           annual = FALSE, verbose=FALSE, uncertainty=FALSE) {
 	#'countries' is a vector of country or region codes 
 	un.object <- read.UNtfr(wpp.year=meta$wpp.year, my.tfr.file=my.tfr.file, 
-							present.year=meta$present.year, annual = annual, 
+							present.year=meta$present.year, annual = annual, countries = countries,
 							verbose=verbose)
 	data <- un.object$data.object
 	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, my.locations.file=my.locations.file, 
 	                                   verbose=verbose, annual=annual, uncertainty=uncertainty, 
 	                                   interpolate = is.null(my.tfr.file) && annual)
-	if(!is.null(extra.wpp)) {
+	if(!is.null(extra.wpp) && !annual) {
 		locations <- read.UNlocations(data$data, wpp.year=meta$wpp.year, my.locations.file=my.locations.file, verbose=verbose)
 		suppl.wpp <- .get.suppl.matrix.and.regions(un.object, extra.wpp, locations$loc_data, 
 									meta$start.year, meta$present.year)
 		extra.wpp$suppl.data <- .get.suppl.data.list(suppl.wpp)
-	}							
+	} 
 	return(extra.wpp)
 }
 
