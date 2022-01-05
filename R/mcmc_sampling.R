@@ -184,8 +184,8 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
                 mcmc.update.gamma(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
                 mcmc.update.Triangle_c4(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
                 #print(c(country, mcmc$Triangle_c4[country]))
-        } 
- 
+        }
+        
          # U_c updated only for countries with early decline
          for (country in id_early_all){
                 mcmc.update.U(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)

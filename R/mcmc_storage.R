@@ -27,8 +27,9 @@ store.mcmc <- local({
 			}
 		  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) buffer[['rho.phase2']][counter,] <<- mcmc[["rho.phase2"]]
 			country.index <- mcmc$meta$id_DL
+			country.index.tfr <- 1:mcmc$meta$nr_countries
 		} else {
-			country.index <- countries
+			country.index <- country.index.tfr <- countries
 		}
 		for (par in par.cs.names) {
 			if (is.element(var.names[[par]], mcmc$dontsave)) next
@@ -45,7 +46,7 @@ store.mcmc <- local({
 	  
 		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
 		{
-		  for (country in country.index){
+		  for (country in country.index.tfr){
 		    result <- mcmc$meta[['tfr_all']][, country]
 		    buffer.cs[['tfr']][[country]][counter,] <<- result
 		  }
@@ -59,10 +60,12 @@ store.mcmc <- local({
 				if (is.element(par, mcmc$dontsave)) next
 				buffer[[par]] <<- matrix(NA, ncol=length(mcmc[[par]]), nrow=size)
 			}
-		  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) buffer[['rho.phase2']] <<- matrix(NA, ncol=1, nrow=size)
+		    if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
+		        buffer[['rho.phase2']] <<- matrix(NA, ncol=1, nrow=size)
 			country.index <- mcmc$meta$id_DL
+			country.index.tfr <- 1:mcmc$meta$nr_countries
 		} else {
-			country.index <- countries
+			country.index <- country.index.tfr <- countries
 		}
 		buffer.cs <<-list()
 		for (par in par.cs.names) {
@@ -80,7 +83,7 @@ store.mcmc <- local({
 		
 		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
 		{
-		  for (country in country.index){
+		  for (country in country.index.tfr){
 		    v <- mcmc$meta[['tfr_all']][, country]
 		    buffer.cs[['tfr']][[country]] <<- matrix(NA, ncol=length(v), nrow=size)
 		  }
@@ -117,9 +120,10 @@ store.mcmc <- local({
 		    write.values.into.file.cindep('rho_phase2', values, output.dir, mode=open, 
 		                                  compression.type=mcmc$compression.type)
 		  }
-			country.index <- mcmc$meta$id_DL	
+			country.index <- mcmc$meta$id_DL
+			country.index.tfr <- 1:mcmc$meta$nr_countries
 		} else {
-			country.index <- countries
+			country.index <- country.index.tfr <- countries
 		}
 		for (par in par.cs.names) { # write country-specific parameters
 			if (is.null(buffer.cs[[par]])) next
@@ -136,7 +140,7 @@ store.mcmc <- local({
 		}
 		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
 		{
-		  for (country in country.index){
+		  for (country in country.index.tfr){
 		    if (counter == 1) {
 		      values <- t(buffer.cs[['tfr']][[country]][1:counter,])
 		    } else {

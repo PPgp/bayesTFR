@@ -151,6 +151,10 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('sou
       for (i in 1:length(covariates))
       {
         covariate <- covariates[i]
+        if(!covariate %in% colnames(mcmc$meta$raw_data.original)){
+            warning("Covariate ", covariate, " not available in the data.")
+            next
+        }
         assign(paste0('covariate_', i), factor(as.character(mcmc$meta$raw_data.original[index.by.country, covariate])))
         if (length(levels(get(paste0('covariate_', i)))) > 1)
           regressor <- paste0(regressor, ' + covariate_', i)
@@ -161,6 +165,10 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('sou
       for (i in 1:length(cont_covariates))
       {
         covariate <- cont_covariates[i]
+        if(!covariate %in% colnames(mcmc$meta$raw_data.original)){
+            warning("Cont. covariate ", covariate, " not available in the data.")
+            next
+        }
         assign(paste0('cont_covariate_', i), mcmc$meta$raw_data.original[index.by.country, covariate])
         if (max(get(paste0('cont_covariate_', i))) - min(get(paste0('cont_covariate_', i))) > 1e-6)
         {
@@ -357,8 +365,9 @@ mcmc.update.tfr <- function(country, mcmc)
                                                   (mcmc$meta$tfr_all[year, country] - mu) ** 2)/mcmc$finished.iter)
     
   }
-  if (country %in% mcmc$meta3$id_phase3) mcmc$observations[[id3]] <- mcmc$meta$tfr_all[mcmc$meta$lambda_c[country]:mcmc$meta$T_end, country]
-  mcmc$data.list[[country]][epsT.idx] <- mcmc$meta$tfr_all[epsT.idx, country]
+  if (country %in% mcmc$meta3$id_phase3) mcmc$observations[[id3]] <- mcmc$meta$tfr_all[mcmc$meta$lambda_c[country]:mcmc$meta$T_end_c[country], country]
+  if (country %in% mcmc$meta$id_DL)
+    mcmc$data.list[[country]][epsT.idx] <- mcmc$meta$tfr_all[epsT.idx, country]
 }
 
 # get.log.lik.year <- function(year.ind, mcmc, Dlpar, phase3par, id_phase1, id_phase2, id_phase3, tfr=NULL, prev=TRUE)
@@ -669,14 +678,15 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
   for (country in 1:nr_countries)
   {
     if (!is.null(countries) && !(country %in% countries)) next
-    idx <- mcmc$meta$lambda_c[country]:(mcmc$meta$T_end-1)
     if (country %in% mcmc$meta3$id_phase3) 
     {
       id3 <- which(mcmc$meta$id_phase3 == country)  
-      mcmc$observations[[id3]] <- mcmc$meta$tfr_all[c(idx, mcmc$meta$T_end), country]
+      mcmc$observations[[id3]] <- mcmc$meta$tfr_all[mcmc$meta$lambda_c[country]:mcmc$meta$T_end_c, country]
     }
-    idx2 <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country] - 1)
-    mcmc$data.list[[country]][idx2] <- mcmc$meta$tfr_all[idx2, country]
+    if (country %in% mcmc$meta$id_DL){
+        idx2 <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country] - 1)
+        mcmc$data.list[[country]][idx2] <- mcmc$meta$tfr_all[idx2, country]
+    }
   }
 }
 
