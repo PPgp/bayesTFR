@@ -450,7 +450,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	}
 	
 	meta <- mcmc.set$mcmc.list[[1]]$meta
-	if(length(Eini$index_DL) <= 0) {
+	if(length(Eini$index_DL) <= 0 && !uncertainty) {
 		cat('\nNo DL countries or regions. Nothing to be done.\n')
 		store.bayesTFR.meta.object(meta, meta$output.dir)
 		mcmc.set$meta <- meta
