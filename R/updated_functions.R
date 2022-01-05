@@ -151,6 +151,10 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('sou
       for (i in 1:length(covariates))
       {
         covariate <- covariates[i]
+        if(!covariate %in% colnames(mcmc$meta$raw_data.original)){
+            warning("Covariate ", covariate, " not available in the data.")
+            next
+        }
         assign(paste0('covariate_', i), factor(as.character(mcmc$meta$raw_data.original[index.by.country, covariate])))
         if (length(levels(get(paste0('covariate_', i)))) > 1)
           regressor <- paste0(regressor, ' + covariate_', i)
@@ -161,6 +165,10 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('sou
       for (i in 1:length(cont_covariates))
       {
         covariate <- cont_covariates[i]
+        if(!covariate %in% colnames(mcmc$meta$raw_data.original)){
+            warning("Cont. covariate ", covariate, " not available in the data.")
+            next
+        }
         assign(paste0('cont_covariate_', i), mcmc$meta$raw_data.original[index.by.country, covariate])
         if (max(get(paste0('cont_covariate_', i))) - min(get(paste0('cont_covariate_', i))) > 1e-6)
         {
