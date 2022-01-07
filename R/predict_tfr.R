@@ -328,7 +328,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		dprep <- .prepare.country.spec.pars.for.predictions(country, country.obj, meta.pointer, mcmc.list.pointer, 
 														load.meta.pointer, load.mcmc.list.pointer, nr_simu, burnin,
 														alpha.vars, delta.vars, has.phase3, mc.meta3.pointer, mcmc3.list.pointer, burnin3, thinning.index,
-														cs.par.values_hier)
+														cs.par.values_hier, uncertainty)
 
 		cs.var.names[[country]] <- list(U=dprep$U.var, Triangle_c4=dprep$Triangle_c4.var)
 		cs.par.values.list[[country]] <- dprep$cs.par.values[,c(dprep$Triangle_c4.var, dprep$U.var)]
@@ -491,7 +491,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	                 	} else is.in.phase3[icountry] <- ((min(all.f_ps[icountry, 1:(year-1),s]) <= 
 	                 										cs.par.values.list[[country]][s, cs.var.names[[country]]$Triangle_c4]) && 
 	                 									(all.f_ps[icountry, year-1,s] > all.f_ps[icountry,year-2,s]))
-	                }
+		 			}
 					if(adjust.true) {
 						if(year == first.projection[icountry]) { # first projection period
 							D11 <- (all.tfr[this.T_end-1] - all.tfr[this.T_end])
@@ -651,7 +651,7 @@ getValue <- function(pointer)
 
 .prepare.country.spec.pars.for.predictions <- function(country, country.obj, meta, mcmc.list, load.meta, load.mcmc.list, nr_simu, burnin,
 														alpha.vars, delta.vars, has.phase3, meta3, mcmc3.list, burnin3, thinning.index,
-														cs.par.values_hier) {
+														cs.par.values_hier, uncertainty = FALSE) {
   if (is.element(country,getValue(meta)$id_DL)){
 		U.var <- paste0('U_c', country.obj$code)
 		d.var <- paste0('d_c', country.obj$code)
@@ -692,7 +692,21 @@ getValue <- function(pointer)
 		Triangle_c4_s <- (getValue(meta)$Triangle_c4.up*exp(Triangle4_tr_s) + getValue(meta)$Triangle_c4.low)/(1+exp(Triangle4_tr_s))
 	
 		# need U and Triangle_c4 in cs... later in loop for start of phase III and prior on f_t
-		cs.par.values = rep(get.observed.tfr(country, getValue(meta), 'tfr_matrix_all')[getValue(meta)$tau_c[country]], nr_simu)
+		# For U get the latest values of TFR 
+		if(uncertainty) {
+		    if (is.element(country.obj$code, getValue(load.meta)$regions$country_code)) {
+		        tfr.table <- get.tfr.parameter.traces.cs(getValue(load.mcmc.list), country.obj, 'tfr', burnin=0)
+		    } else { # there are no thinned traces for this country, use the full traces 
+		        tfr.table <- get.tfr.parameter.traces.cs(getValue(mcmc.list), country.obj, 'tfr', burnin=burnin)
+		        selected.simu <- get.thinning.index(nr_simu, dim(tfr.table)[1])
+		        if (length(selected.simu$index) < nr_simu)
+		            selected.simu$index <- sample(selected.simu$index, nr_simu, replace=TRUE)
+		        tfr.table <- tfr.table[selected.simu$index,]
+		    }
+		    shift <- get.tfr.shift.estimation(country.obj$code, getValue(meta))
+		    if (!is.null(shift)) tfr.table <- t(t(tfr.table) + shift)
+		    cs.par.values <- tfr.table[,getValue(meta)$tau_c[country]]
+		} else cs.par.values <- rep(get.observed.tfr(country, getValue(meta), 'tfr_matrix_all')[getValue(meta)$tau_c[country]], nr_simu)
 		Triangle_c4.var <- 'Triangle_c4'
 		U.var <- 'U'
 		cs.par.values <- cbind(cs.par.values, Triangle_c4_s)
