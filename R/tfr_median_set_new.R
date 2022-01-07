@@ -1,7 +1,7 @@
 get.tfr.shift.estimation <- function(country.code, meta)
 {
-  if(is.null(meta$median.shift)) return(NULL)
-  return(meta$median.shift[[as.character(country.code)]])
+  if(is.null(meta$median.shift.estimation)) return(NULL)
+  return(meta$median.shift.estimation[[as.character(country.code)]])
 }
 
 tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0, thin = 1)
@@ -17,6 +17,7 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
   bdem.shift <- NULL
   nr.proj <- 0
   has.uncertainty <- !is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty
+  years.missing <- is.null(years)
   if (has.predictions)
   {
     pred <- get.tfr.prediction(sim.dir = sim.dir)
@@ -33,7 +34,11 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
   }
   mid.years <- years
   lvalues <- length(values)
-  if (lvalues != length(years)) stop("Mismatch between values and years.")
+  if (lvalues != length(years)){
+      if(!years.missing || lvalues > length(years))
+            stop("Mismatch between values and years.")
+      years <- years[1:lvalues]       
+  }
   if(is.null(bdem.shift.estimation)) bdem.shift.estimation <- rep(0, nr.estimation)
   if(is.null(bdem.shift)) bdem.shift <- rep(0, nr.proj)
   which.estimation <- is.element(years, estimation.years)
@@ -41,13 +46,13 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
   {
     if (!has.uncertainty)
       stop("Provided years for estimation but uncertainty is not considered in the modeling step")
-    tfr.object <- get.tfr.estimation(mcmc.list = mcmc.set, country.code = country.obj$code, probs = 0.5, burnin = burnin, thin = thin)
+    tfr.object <- get.tfr.estimation(mcmc.list = mcmc.set, country = country.obj$code, probs = 0.5, burnin = burnin, thin = thin)
     estimation.medians <- as.numeric(unlist(tfr.object$tfr_quantile[,1]))
     bdem.shift.estimation[is.element(estimation.years, years)] <- values[which.estimation] - estimation.medians[is.element(estimation.years, years)]
   }
   if (has.predictions) 
   {
-    which.pred <- is.element(years, pred.years[2:nr.proj])
+    which.pred <- is.element(years, pred.years)
     pred.medians <- pred$quantiles[country.obj$index, '0.5',]
     if (any(which.pred))
     {
@@ -62,6 +67,10 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
     meta$median.shift.estimation[[as.character(country.obj$code)]] <- bdem.shift.estimation
     store.bayesTFR.meta.object(meta, meta$output.dir)
     output[['meta']] <- meta
+    if(has.predictions) { # need to save this also in the collapsed chain of the prediction
+        pred$mcmc.set$meta$median.shift.estimation <- meta$median.shift.estimation
+        store.bayesTFR.prediction(pred)
+    }
   }
   if (has.predictions)
   {
@@ -90,6 +99,10 @@ tfr.median.reset.estimation <- function(sim.dir, countries)
     }
     output[['meta']] <- meta
     store.bayesTFR.meta.object(meta, meta$output.dir)
+    if (has.prediction){
+        pred$mcmc.set$meta$median.shift.estimation <- meta$median.shift.estimation
+        store.bayesTFR.prediction(pred)
+    }
   }
   if (has.prediction && !is.null(pred$median.shift)) 
   {
