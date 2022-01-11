@@ -462,10 +462,11 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	post.idx <- if (thin > mcthin) unique(round(seq(thin, total.iter, by=thin/mcthin)))
 				else 1:total.iter
 	if (!is.null(mcmc.set$mcmc.list[[1]]$rng.state)) .Random.seed <- mcmc.set$mcmc.list[[1]]$rng.state
+	cntries.to.run <- if(uncertainty) Eini$index else Eini$index_DL
 	if (parallel) { # run chains in parallel
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
 		chain.list <- bDem.performParallel(nr.nodes, chain.ids, mcmc.run.chain.extra, 
-						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, countries=Eini$index_DL, 
+						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, countries=cntries.to.run, 
 						posterior.sample=post.idx, iter=iter, thin = thin.extra, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, 
 						uncertainty=uncertainty, ...)
 		for (i in 1:length(chain.ids))
@@ -473,7 +474,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	} else { # run chains sequentially
 		for (chain.id in chain.ids) {
 			mcmc.set$mcmc.list[[chain.id]] <- mcmc.run.chain.extra(chain.id, mcmc.set$mcmc.list, 
-												countries=Eini$index_DL, posterior.sample=post.idx, iter=iter, thin = thin.extra,
+												countries=cntries.to.run, posterior.sample=post.idx, iter=iter, thin = thin.extra,
 												burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 		}
 	}

@@ -145,8 +145,8 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	if(verbose) cat('done.\nStoring country-specific parameters ...')
 	par.names.cs <- tfr.parameter.names.cs(trans=FALSE)
 	if (uncertainty) par.names.cs <- c(par.names.cs, 'tfr')
-	DLcntries <- if(!is.null(update.with.countries)) update.with.countries[update.with.countries %in% mcmc.set$meta$id_DL] else mcmc.set$meta$id_DL
-	for (country in 1:mcmc.set$meta$nr_countries){
+	cntries <- if(!is.null(update.with.countries)) update.with.countries else 1:mcmc.set$meta$nr_countries
+	for (country in cntries){
 		country.obj <- get.country.object(country, mcmc.set$meta, index=TRUE)
 		if (country.obj$index %in% mcmc.set$meta$extra)
 		{
@@ -160,7 +160,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 		  }
 		}
 		for (par in par.names.cs) {
-		    if(par != "tfr" && ! country.obj$index %in% DLcntries) next
+		    if(par != "tfr" && ! country.obj$index %in% mcmc.set$meta$id_DL) next
 		  if (country.obj$index %in% mcmc.set$meta$extra)
 		  {
 		    values <- get.tfr.parameter.traces.cs(mcmc.set$mcmc.list, country.obj, par, 
