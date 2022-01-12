@@ -216,13 +216,15 @@ estimate.bias.sd.original <- function(mcmc, iso.unbiased=NULL, covariates=c('sou
 get.eps.all.phases <- function(Dlpar, mcmc, country)
 {
   eps_return <- numeric(length = mcmc$meta$T_end-1)
-  id2 <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country] - 1)
-  dl <- - Dlpar[5]/(1 + exp(- 2*log(9)/Dlpar[1] *(mcmc$meta$tfr_all[id2, country] - Dlpar[1] - Dlpar[2] -Dlpar[3] - Dlpar[4] + 0.5*Dlpar[1]))) + 
-          Dlpar[5]/(1 + exp(- 2*log(9)/Dlpar[3] *(mcmc$meta$tfr_all[id2, country] - Dlpar[4] - 0.5*Dlpar[3])))
-  dl <- dl * ifelse(mcmc$meta$annual.simulation, 1, 5)
-  dl[mcmc$meta$tfr_all[id2, country] < 1] <- 0
-  dl[dl<0] <- 0
-  eps_return[id2] <- mcmc$meta$tfr_all[id2 + 1, country] - mcmc$meta$tfr_all[id2, country] + dl
+  if (mcmc$meta$lambda_c[country] > mcmc$meta$start_c[country]){
+    id2 <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country] - 1)
+    dl <- - Dlpar[5]/(1 + exp(- 2*log(9)/Dlpar[1] *(mcmc$meta$tfr_all[id2, country] - Dlpar[1] - Dlpar[2] -Dlpar[3] - Dlpar[4] + 0.5*Dlpar[1]))) + 
+      Dlpar[5]/(1 + exp(- 2*log(9)/Dlpar[3] *(mcmc$meta$tfr_all[id2, country] - Dlpar[4] - 0.5*Dlpar[3])))
+    dl <- dl * ifelse(mcmc$meta$annual.simulation, 1, 5)
+    dl[mcmc$meta$tfr_all[id2, country] < 1] <- 0
+    dl[dl<0] <- 0
+    eps_return[id2] <- mcmc$meta$tfr_all[id2 + 1, country] - mcmc$meta$tfr_all[id2, country] + dl
+  }
   if (mcmc$meta$start_c[country] > 1)
   {
     eps_return[1:(mcmc$meta$start_c[country] - 1)] <- mcmc$meta$tfr_all[2:mcmc$meta$start_c[country], country] - 
@@ -258,7 +260,12 @@ mcmc.update.tfr <- function(country, mcmc)
                sum(exp(mcmc$gamma_ci[country,])), 
              mcmc$Triangle_c4[country], 
              mcmc$d_c[country])
-  epsT.idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  if (mcmc$meta$lambda_c[country] > mcmc$meta$start_c[country]){
+    epsT.idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  }
+  else{
+    epsT.idx <- c()
+  }
   eps_tfr_prev <- get.eps.all.phases(Dlpar, mcmc, country)
   sd_tfr_prev <- get.sd.all.phases(mcmc, country)
   eps_tfr_prop <- eps_tfr_prev
@@ -681,7 +688,7 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     if (country %in% mcmc$meta3$id_phase3) 
     {
       id3 <- which(mcmc$meta$id_phase3 == country)  
-      mcmc$observations[[id3]] <- mcmc$meta$tfr_all[mcmc$meta$lambda_c[country]:mcmc$meta$T_end_c, country]
+      mcmc$observations[[id3]] <- mcmc$meta$tfr_all[mcmc$meta$lambda_c[country]:mcmc$meta$T_end_c[country], country]
     }
     if (country %in% mcmc$meta$id_DL){
         idx2 <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country] - 1)
