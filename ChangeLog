@@ -1,6 +1,11 @@
-7.1-1.9001 (01/05/2022)
+7.1-1.90xx (01/13/2022)
 -----
-Bug fix for handling Phase I countries when using the uncertainty feature.
+Bug fix for handling Phase I countries when using the uncertainty feature, including in "extra" countries.
+
+Bug fix in missing the annual.simulation item in the meta object attached to prediction 
+(thanks to Lucia Andreozzi).
+
+
 
 7.1-1 (10/29/2021)
 -----

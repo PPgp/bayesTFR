@@ -247,6 +247,7 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
 	bayesTFR.prediction$output.directory <- normalizePath(output.dir)
 	
 	pred <- bayesTFR.prediction
+	if(!is.null(pred$mcmc.set) && is.null(pred$mcmc.set$meta$annual.simulation)) pred$mcmc.set$meta$annual.simulation <- FALSE
 	if(!is.null(mcmc.dir) && is.na(mcmc.dir)) return(pred)
 	# re-route mcmcs if necessary and load
 	if(!is.null(mcmc.dir) || !has.tfr.mcmc(pred$mcmc.set$meta$output.dir)) {
