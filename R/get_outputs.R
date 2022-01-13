@@ -449,12 +449,12 @@ get.tfr3.convergence <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 has.mcmc.converged <- function(diag) return(diag$status['green'])	
 get.burned.tfr.traces <- function(mcmc, par.names, burnin=0, thinning.index=NULL) {
 	# get traces that are already loaded in the mcmc object
-	traces <- mcmc$traces[, par.names]
+	traces <- mcmc$traces[, par.names, drop = FALSE]
 	discard <- burnin - mcmc$traces.burnin
 	if (discard > 0)
-		traces <- traces[-seq(1, discard),]
+		traces <- traces[-seq(1, discard),,drop=FALSE]
 	if(!is.null(thinning.index))
-		traces <- traces[thinning.index,]
+		traces <- traces[thinning.index,,drop=FALSE]
 	return(traces)
 }
 "bdem.parameter.traces" <- function(mcmc, ...) UseMethod("bdem.parameter.traces")
