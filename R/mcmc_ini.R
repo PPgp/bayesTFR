@@ -31,7 +31,7 @@ get.eps.T <- function (DLpar, country, meta, ...)
     if (!is.null(meta$ar.phase2) && meta$ar.phase2) 
     {
       args <- list(...)
-      if ('rho.phase2' %in% names(args)) eps <- c(eps[1], eps[2:ldl]-args[['rho.phase2']] * eps[1:(ldl-1)])
+      if ('rho.phase2' %in% names(args) && length(eps) > 1) eps <- c(eps[1], eps[2:ldl]-args[['rho.phase2']] * eps[1:(ldl-1)])
     }
     return (eps)
 }
