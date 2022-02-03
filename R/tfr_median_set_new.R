@@ -70,6 +70,7 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
     if(has.predictions) { # need to save this also in the collapsed chain of the prediction
         pred$mcmc.set$meta$median.shift.estimation <- meta$median.shift.estimation
         store.bayesTFR.prediction(pred)
+        store.bayesTFR.meta.object(pred$mcmc.set$meta, pred$mcmc.set$meta$output.dir)
     }
   }
   if (has.predictions)
