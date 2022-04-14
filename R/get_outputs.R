@@ -779,7 +779,7 @@ do.get.tfr.parameter.traces <- function(is.cs, mcmc.list, par.names, country.obj
 	at.iter <- 1
 	for(mcmc in mcmc.list) {
 		this.thinning.index <- NULL
-		if (!is.null(country.obj) && country.obj$index %in% mcmc$meta$extra)
+		if (!is.null(country.obj) && !is.null(mcmc$meta$extra) && country.obj$index %in% mcmc$meta$extra)
 		{
 		  th.burnin <- ceiling(burnin / mcmc$meta$extra_thin[country.obj$index])
 		}
@@ -789,7 +789,7 @@ do.get.tfr.parameter.traces <- function(is.cs, mcmc.list, par.names, country.obj
 		}
 		if(!is.null(thinning.index)) {
 		  step.size <- mcmc$length
-		  if (!is.null(country.obj) && country.obj$index %in% mcmc$meta$extra)
+		  if (!is.null(country.obj) && !is.null(mcmc$meta$extra) && country.obj$index %in% mcmc$meta$extra)
 		  {
 		    step.size <- floor(mcmc$meta$extra_iter[country.obj$index] /mcmc$meta$extra_thin[country.obj$index])
 		  }
