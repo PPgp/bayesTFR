@@ -1175,6 +1175,7 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 								   tfr=c(this.tfr, proj.result[ivar,])))
 		}
 	}
+	result2 <- result2[!is.na(result2$year),]
 	colnames(result1)[colnames(result1)==names(header1)] <- header1
 	colnames(result2)[colnames(result2)==names(header2)] <- header2
 	file.suffix <- if(adjusted) '_adjusted' else ''
