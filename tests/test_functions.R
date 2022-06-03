@@ -634,7 +634,6 @@ test.median.adjust <- function() {
 	write.projection.summary(sim.dir, adjusted=FALSE, output.dir=pred.dir)
 	write.projection.summary(sim.dir, adjusted=TRUE, output.dir=pred.dir)
 	test.ok(test.name)
-
 	unlink(pred.dir)
 }
 

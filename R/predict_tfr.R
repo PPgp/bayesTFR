@@ -1132,8 +1132,10 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 	un.time.idx <- c()
 	un.time.label <- as.character(e$UN_time$TLabel)
 	l.un.time.label <- length(un.time.label)
-	filter <- e$UN_time$Tinterval == 0
-	if(get.item(pred$mcmc.set$meta, "annual.simulation", FALSE)) filter <- filter & e$UN_time$TimeID > 1000
+	#filter <- e$UN_time$Tinterval == 0
+	if(get.item(pred$mcmc.set$meta, "annual.simulation", FALSE)) 
+	    filter <- e$UN_time$Tinterval == 0 & e$UN_time$TimeID > 1000
+	else filter <- e$UN_time$Tinterval == 5
 	for (i in 1:ltfr) 
 		un.time.idx <- c(un.time.idx, which(un.time.label==tfr.years[i] & filter)[1])
 	for (i in 1:nr.proj) {
@@ -1175,7 +1177,7 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 								   tfr=c(this.tfr, proj.result[ivar,])))
 		}
 	}
-	result2 <- result2[!is.na(result2$year),]
+	result2 <- result2[!is.na(result2[, "year"]),]
 	colnames(result1)[colnames(result1)==names(header1)] <- header1
 	colnames(result2)[colnames(result2)==names(header2)] <- header2
 	file.suffix <- if(adjusted) '_adjusted' else ''
