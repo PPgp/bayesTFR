@@ -1,5 +1,7 @@
 7.1-1.90xx (02/02/2022)
 -----
+Added argument est.uncertainty to write.projection.summary.
+
 Bug fix in adjustments.
 
 Bug fix for handling Phase I countries when using the uncertainty feature, including in "extra" countries.

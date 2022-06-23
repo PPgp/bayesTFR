@@ -1017,18 +1017,20 @@ convert.tfr.trajectories <- function(dir=file.path(getwd(), 'bayesTFR.output'),
 }
 
 write.projection.summary <- function(dir=file.path(getwd(), 'bayesTFR.output'), 
-									 output.dir=NULL, revision=NULL, adjusted=FALSE) {
+									 output.dir=NULL, revision=NULL, adjusted=FALSE, est.uncertainty = FALSE) {
 # Writes three prediction summary files, one in a user-friendly format, one in a UN-format,
 # and one parameter file.
 	pred <- get.tfr.prediction(sim.dir=dir)
 	if (is.null(output.dir)) output.dir <- pred$output.directory
 	if(!file.exists(output.dir)) dir.create(output.dir, recursive=TRUE)
-	tfr.write.projection.summary.and.parameters(pred, output.dir, revision=revision, adjusted=adjusted)
+	tfr.write.projection.summary.and.parameters(pred, output.dir, revision=revision, adjusted=adjusted, 
+	                                            est.uncertainty = est.uncertainty)
 }
 
-tfr.write.projection.summary.and.parameters <- function(pred, output.dir, revision=NULL, adjusted=FALSE) {
+tfr.write.projection.summary.and.parameters <- function(pred, output.dir, revision=NULL, adjusted=FALSE, 
+                                                        est.uncertainty = FALSE) {
 	# two summary files
-	do.write.projection.summary(pred, output.dir, revision=revision, adjusted=adjusted)
+	do.write.projection.summary(pred, output.dir, revision=revision, adjusted=adjusted, est.uncertainty = est.uncertainty)
 	# third file about MCMC parameters
 	do.write.parameters.summary(pred, output.dir, adjusted=adjusted)
 }
@@ -1110,7 +1112,8 @@ get.wpp.revision.number <- function(pred) {
 	return(seq(13, length=lwpps)[lwpps])
 }
 
-do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicator.id=19, sex.id=3, adjusted=FALSE) {
+do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicator.id=19, sex.id=3, adjusted=FALSE,
+                                        est.uncertainty = FALSE) {
 	cat('Creating summary files ...\n')
 	e <- new.env()
 	# R check does not like the two lines below; not sure why
@@ -1125,6 +1128,7 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 		tfr.years <- tfr.years[1:pred$present.year.index]
 		tfr <- tfr[1:pred$present.year.index,, drop = FALSE]
 	}
+	est.uncertainty <- est.uncertainty && has.est.uncertainty(pred$mcmc.set)
 	ltfr <- dim(tfr)[1] - 1
 	nr.proj.all <- nr.proj + ltfr
 	pred.period <- get.prediction.periods(pred$mcmc.set$meta, nr.proj, present.year.index=pred$present.year.index)
@@ -1136,8 +1140,10 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 	if(get.item(pred$mcmc.set$meta, "annual.simulation", FALSE)) 
 	    filter <- e$UN_time$Tinterval == 1 & e$UN_time$TimeID > 2000
 	else filter <- e$UN_time$Tinterval == 5
-	for (i in 1:ltfr) 
+	for (i in 1:ltfr) {
+	    if(est.uncertainty) header1[[paste0('obsyear', i)]] <- tfr.years[i]
 		un.time.idx <- c(un.time.idx, which(un.time.label==tfr.years[i] & filter)[1])
+	}
 	for (i in 1:nr.proj) {
 		header1[[paste0('year', i)]] <- pred.period[i]
 		un.time.idx <- c(un.time.idx, which(un.time.label==pred.period[i] & filter)[1])
@@ -1146,35 +1152,60 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 	header2 <- get.projection.summary.header(pred)
 	UN.variant.names <- get.UN.variant.names(pred)
 	friendly.variant.names <- get.friendly.variant.names(pred)
+	# the code is dependent on the following order of the variants (it's presumed):
+	# median, lower 80, upper 80, lower 95, upper 95, -1/2child, +1/2 child, constant
 	nr.var <- length(UN.variant.names)
 	result1 <- result2 <- NULL
+	
 	for (country in 1:get.nr.countries(pred$mcmc.set$meta)) {
 		country.obj <- get.country.object(country, pred$mcmc.set$meta, index=TRUE)
+		# observed values
 		this.tfr <- tfr[,country.obj$index][1:ltfr]
+		if(est.uncertainty){ # add uncertainty
+		    est.object <- get.tfr.estimation(mcmc.list = pred$mcmc.set, country = country.obj$code, 
+		                                     probs = c(0.5, 0.1, 0.9, 0.025, 0.975), adjust = adjusted)
+		    this.tfr.unc <- as.matrix(est.object$tfr_quantile)[1:ltfr, -ncol(est.object$tfr_quantile)]
+		    #this.tfr <- unlist(est.object$tfr_quantile[,1])[1:ltfr]
+		}
 		this.result1 <- cbind(
 				country.name=rep(country.obj$name, nr.var), 
 				country.code=rep(country.obj$code, nr.var),
 				variant=friendly.variant.names)
+		# prediction
 		median <- get.median.from.prediction(pred, country.obj$index, country.obj$code, adjusted=adjusted)
 		proj.result <- rbind(median, 
-							   get.traj.quantiles(pred, country.obj$index, country.obj$code, pi=80, adjusted=adjusted),
-							   get.traj.quantiles(pred, country.obj$index, country.obj$code, pi=95, adjusted=adjusted))
+							   get.traj.quantiles(pred, country.obj$index, country.obj$code, pi=80, adjusted=adjusted, 
+							                      est.uncertainty = est.uncertainty),
+							   get.traj.quantiles(pred, country.obj$index, country.obj$code, pi=95, adjusted=adjusted, 
+							                      est.uncertainty = est.uncertainty))
 		if(any(friendly.variant.names == '-0.5child'))
 			proj.result <- rbind(proj.result,
 					   get.half.child.variant(median))
+		#browser()
 		proj.result <- round(rbind(proj.result,
-							   		rep(median[1], nr.proj)), 4)
-		colnames(proj.result) <- grep('year', names(header1), value=TRUE)
+							   		rep(median[1], nr.proj)), 4) # constant variant
+		if(est.uncertainty){ # user-friendly output contains observed years as well
+		    obs.tfr <- t(this.tfr.unc)
+		    if(any(friendly.variant.names == '-0.5child'))
+		        obs.tfr <- rbind(obs.tfr, obs.tfr[1,], obs.tfr[1,])
+		    obs.tfr <- rbind(obs.tfr, obs.tfr[1,]) #row for constant variant (same as median)
+		    colnames(obs.tfr) <- grep('obsyear', names(header1), value=TRUE)
+		    #proj.result <- cbind(obs.tfr, proj.result)
+		    this.result1 <- cbind(this.result1, obs.tfr)
+		}
+		colnames(proj.result) <- grep('^year', names(header1), value=TRUE)
 		this.result1 <- cbind(this.result1, proj.result)
 		result1 <- rbind(result1, this.result1)
 		for(ivar in 1:nr.var) {
+		    this.obs.tfr <- if(est.uncertainty) obs.tfr[ivar,] else this.tfr
+		    #browser()
 			result2 <- rbind(result2, cbind(revision=rep(revision, nr.proj.all), 
 								   variant=rep(e$UN_variants[e$UN_variants$Vshort==UN.variant.names[ivar],'VarID'], nr.proj.all),
 								   country=rep(country.obj$code, nr.proj.all),
 								   year=e$UN_time[un.time.idx,'TimeID'],
 								   indicator=rep(indicator.id, nr.proj.all),
   									sex=rep(sex.id, nr.proj.all),
-								   tfr=c(this.tfr, proj.result[ivar,])))
+								    tfr=c(this.obs.tfr, proj.result[ivar,])))
 		}
 	}
 	result2 <- result2[!is.na(result2[, "year"]),]

@@ -350,19 +350,26 @@ get.trajectories <- function(tfr.pred, country, nr.traj=NULL, adjusted=TRUE, bas
 	return(list(trajectories=trajectories, index=traj.idx))
 }
 
-get.quantile.from.prediction <- function(tfr.pred, quantile, country.index, country.code=NULL, adjusted=TRUE) {
+get.quantile.from.prediction <- function(tfr.pred, quantile, country.index, country.code=NULL, adjusted=TRUE,
+                                         est.uncertainty = FALSE) {
 	quant.values <- tfr.pred$quantiles[country.index, as.character(quantile),]
+	if(est.uncertainty && has.est.uncertainty(tfr.pred$mcmc.set)){
+	    tfr.est <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.code, probs=0.5, adjust = adjusted)
+	    unc.last.time <- which(tfr.est$tfr_quantile$year == dimnames(tfr.pred$quantiles)[[3]][1])
+	    quant.values[1] <- unlist(tfr.est$tfr_quantile[unc.last.time, 1])
+	}
 	if (!adjusted) return(quant.values)
 	shift <- get.tfr.shift(country.code, tfr.pred)
 	if(!is.null(shift)) quant.values <- quant.values + shift
 	return(quant.values)
 }
-get.median.from.prediction <- function(tfr.pred, country.index, country.code=NULL, adjusted=TRUE) {
+get.median.from.prediction <- function(tfr.pred, country.index, country.code=NULL, adjusted=TRUE, ...) {
 	return(get.quantile.from.prediction(tfr.pred, quantile=0.5, country.index=country.index, 
-										country.code=country.code, adjusted=adjusted))
+										country.code=country.code, adjusted=adjusted, ...))
 }
 	
-get.traj.quantiles <- function(tfr.pred, country.index, country.code, trajectories=NULL, pi=80, adjusted=TRUE) {
+get.traj.quantiles <- function(tfr.pred, country.index, country.code, trajectories=NULL, pi=80, 
+                               adjusted=TRUE, est.uncertainty = FALSE) {
 	al <- (1-pi/100)/2
 	quantile.values <- as.numeric(dimnames(tfr.pred$quantiles)[[2]])
 	alidx<-round(quantile.values,6)==round(al,6)
@@ -380,13 +387,19 @@ get.traj.quantiles <- function(tfr.pred, country.index, country.code, trajectori
 		}
 		if(reload) {
 			#load 2000 trajectories maximum for computing quantiles
-			traj.reload <- get.trajectories(tfr.pred, tfr.pred$mcmc.set$meta$regions$country_code[country.index], 2000)
+			traj.reload <- get.trajectories(tfr.pred, country.code, 2000)
 			trajectories <- traj.reload$trajectories
 		}
 		if (!is.null(trajectories)) {
 			cqp <- apply(trajectories, 1, 
 						quantile, c(al, 1-al), na.rm = TRUE)
 		}
+	}
+	if (est.uncertainty && has.est.uncertainty(tfr.pred$mcmc.set))
+	{  # replace quantiles from the first value (present year) with estimated uncertainty
+	    tfr.est <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.code, probs=c(al, 1-al), adjust = adjusted)
+	    unc.last.time <- which(tfr.est$tfr_quantile$year == dimnames(tfr.pred$quantiles)[[3]][1])
+	    cqp[,1] <- unlist(tfr.est$tfr_quantile[unc.last.time, 1:2])
 	}
 	if(!adjusted) return(cqp)
 	shift <- get.tfr.shift(country.code, tfr.pred)
@@ -641,12 +654,9 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   # plot given CIs
   lty <- 2:(length(pi)+1)
   for (i in 1:length(pi)) {
-    cqp <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i])
+    cqp <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i], 
+                              est.uncertainty = uncertainty)
     if (!is.null(cqp)) {
-        if(uncertainty) {
-            cqp[1,1] <- unlist(tfr.object$tfr_quantile[unc.last.time, ])[length(pi)+1-i]
-            cqp[2,1] <- unlist(tfr.object$tfr_quantile[unc.last.time, ])[length(pi)+1+i]
-        }
       lines(x2, cqp[1,], type='l', col=col[4], lty=lty[i], lwd=lwd[4])
       lines(x2, cqp[2,], type='l', col=col[4], lty=lty[i], lwd=lwd[4])
     }
