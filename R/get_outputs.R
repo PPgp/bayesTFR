@@ -321,6 +321,9 @@ tfr.bias.sd <- function(mcmc.list=NULL, country=NULL, sim.dir=NULL, ...) {
                 table = model_est_df))
 }
 
+has.est.uncertainty <- function(mcmc.set)
+    return(length(mcmc.set$mcmc.list)>0 && !is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty)
+
 get.tfr.estimation <- function(mcmc.list=NULL, country=NULL, sim.dir=NULL, 
                                burnin=0, thin = 1, probs=NULL, adjust=TRUE, 
                                country.code = deprecated(), ISO.code = deprecated()) {
@@ -344,7 +347,7 @@ get.tfr.estimation <- function(mcmc.list=NULL, country=NULL, sim.dir=NULL,
     warning('MCMC does not exist.')
     return(NULL)
   }
-    if (is.null(mcmc.list$mcmc.list[[1]]$uncertainty) || !mcmc.list$mcmc.list[[1]]$uncertainty)
+    if (!has.est.uncertainty(mcmc.list))
     {
         stop("MCMC does not consider uncertainty of past TFR.")
     }
