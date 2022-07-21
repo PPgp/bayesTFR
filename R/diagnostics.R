@@ -1,4 +1,4 @@
-is.missing <- function(x) return(!is.null(x) && is.na(x))
+is.missing <- function(x) return(!is.null(x) && all(is.na(x)))
 
 tfr.raftery.diag <- function(mcmc=NULL, 
 							 sim.dir=file.path(getwd(), 'bayesTFR.output'),
