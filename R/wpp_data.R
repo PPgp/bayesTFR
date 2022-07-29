@@ -172,8 +172,8 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
 		}
 	}
 	
-	include_codes <- read.tfr.file(file.path(find.package(package), "data", 
-                                       paste('include_', wpp.year, '.txt', sep='')))
+	icd <- data(list = paste0('include_', wpp.year), envir = environment())
+	include_codes <- get(icd)
     loc_data <- merge(loc_data, include_codes, by='country_code', all.x=TRUE)
 	# this include some areas that are not in the tfr file
 	loc_data[is.na(loc_data$include_code),"include_code"] <- 0

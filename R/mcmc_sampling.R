@@ -83,7 +83,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
 	if(has_extra_countries) {
 		if (verbose)
 			cat('\nCountries', mcmc$meta$regions$country_code[(nr_countries+1):nr_countries_all], 
-							'not included in the estimation.\n')
+							'not included in the estimation of world parameters.\n')
 	}
 
     # sd_Tc with sigma0 and sd_tau_eps
@@ -94,7 +94,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     for (country in 1:nr_countries_all){
     	# could exclude 1:(tau_c-1) here
       this.data <- array(dim = mcenv$meta$T_end_c[country] - 1)
-      if (country %in% id_DL)
+      if (country %in% id_DL_all)
       	this.data[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)] <- 
       	  get.observed.tfr(country, mcenv$meta, matrix.name=matrix.name)[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)]
       	

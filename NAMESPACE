@@ -117,6 +117,7 @@ export(
 	par.names.for.worldmap,
 	get.data.for.worldmap,
 	get.countries.table,
+	get.countries.phase,
 	tfr.predict.subnat,
 	get.regtfr.prediction,
 	get.tfr.estimation,
@@ -176,3 +177,6 @@ S3method(par.names.for.worldmap, bayesTFR.prediction)
 S3method(get.data.for.worldmap, bayesTFR.prediction)
 S3method(get.countries.table, bayesTFR.prediction)
 S3method(get.countries.table, bayesTFR.mcmc.set)
+S3method(get.countries.phase, bayesTFR.mcmc.set)
+S3method(get.countries.phase, bayesTFR.prediction)
+

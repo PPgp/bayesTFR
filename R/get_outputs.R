@@ -1260,7 +1260,8 @@ summary.bayesTFR.mcmc.meta <- function(object, ...) {
     if(is.null(res$phase)) res$phase <- 2
     if(object$phase == 2) {
         res <- c(res, list(nr.countries = object$nr_countries,
-                            nr.countries.est = length(object$id_DL[object$id_DL <= object$nr_countries_estimation]),
+                           nr.countries.dl = length(object$id_DL),
+                           nr.countries.est = length(object$id_DL[object$id_DL <= object$nr_countries_estimation]),
                            wpp.year = object$wpp.year,
                            annual = if(!is.null(object$annual.simulation)) object$annual.simulation else FALSE
                         ))
@@ -1286,6 +1287,8 @@ print.summary.bayesTFR.mcmc.meta <- function(x, ...) {
         cat('\nMCMCs of phase II')
         cat('\n=================')
         cat('\nNumber of countries:', x$nr.countries)
+        if(x$nr.countries.dl < x$nr.countries.est) 
+            cat(" (", x$nr.countries.est - x$nr.countries.dl, " in phase I)")
         cat('\nHyperparameters estimated using', x$nr.countries.est, 'countries.')
         cat('\nWPP:', x$wpp.year)
         cat('\nInput data: TFR for period', x$est.period)
@@ -1623,14 +1626,32 @@ get.countries.index.bayesTFR.mcmc.meta  <- function(meta, ...)
 get.countries.table.bayesTFR.mcmc.set <- function(object, ...) {
 	ctable <- data.frame(code=object$meta$regions$country_code, name=object$meta$regions$country_name)
 	if(!is.null(object$meta$phase) && (object$meta$phase==3)) ctable <- ctable[object$meta$id_phase3,]
-	return(ctable)
+	return(add.iso(ctable))
 }
 
 get.countries.table.bayesTFR.prediction <- function(object, ...) {
 	n <- dim(get.data.imputed(object))[2]
-	return(data.frame(code=object$mcmc.set$meta$regions$country_code[1:n], 
-					name=object$mcmc.set$meta$regions$country_name[1:n]))
+	return(add.iso(data.frame(code=object$mcmc.set$meta$regions$country_code[1:n], 
+					name=object$mcmc.set$meta$regions$country_name[1:n])))
 }
+
+add.iso <- function(tbl){
+    iso <- get(data('iso3166', envir=environment()))[, c("uncode", "charcode", "charcode3")]
+    colnames(iso) <- c("code", "iso2", "iso3")
+    merge(tbl, iso, by = "code", sort = FALSE)
+}
+
+"get.countries.phase" <- function(object, ...) UseMethod("get.countries.phase")
+get.countries.phase.bayesTFR.mcmc.set <- function(object, ...) {
+    ctable <- data.frame(code=object$meta$regions$country_code, name=object$meta$regions$country_name,
+                         phase = 1)
+    ctable$phase[object$meta$id_DL] <- 2 # ever experienced Phase II
+    ctable$phase[which(object$meta$lambda_c < object$meta$T_end_c)] <- 3 # now in phase III
+    return(ctable)
+}
+
+get.countries.phase.bayesTFR.prediction <- function(object, ...) 
+    get.countries.phase(object$mcmc.set)
 
 get.item <- function(l, item, default)
     ifelse(item %in% names(l), l[[item]], default)

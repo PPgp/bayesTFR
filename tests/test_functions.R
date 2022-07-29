@@ -76,13 +76,14 @@ test.create.tfr.matrix <- function(wpp.year=2008) {
 	test.ok(test.name)
 }
 
-test.run.mcmc.simulation <- function(compression='None') {
+test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	sim.dir <- tempfile()
 
 	# run MCMC
 	test.name <- 'running Phase II MCMC'
 	start.test(test.name)
-	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, start.year=1950, compression.type=compression)
+	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, start.year=1950, 
+	                  compression.type=compression, wpp.year = wpp.year)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
 	stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))
@@ -196,12 +197,13 @@ test.run.mcmc.simulation <- function(compression='None') {
 	unlink(sim.dir, recursive=TRUE)
 }
 
-test.thinned.simulation <- function(compression='None') {
+test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 	sim.dir <- tempfile()
 	# run MCMC
 	test.name <- 'running thinned Phase II MCMC'
 	start.test(test.name)
-	m <- run.tfr.mcmc(iter=10, nr.chains=2, output.dir=sim.dir, thin=2, compression.type=compression)
+	m <- run.tfr.mcmc(iter=10, nr.chains=2, output.dir=sim.dir, thin=2, compression.type=compression,
+	                  wpp.year = wpp.year)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 10)
 	stopifnot(m$mcmc.list[[1]]$length == 6)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 20)
@@ -790,13 +792,13 @@ test.reproduce.simulation <- function() {
     unlink(sim.dir, recursive=TRUE)
 }
 
-test.run.mcmc.simulation.with.uncertainty <- function() {
+test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
     sim.dir <- tempfile()
 
     # run MCMC
     test.name <- 'running MCMC with uncertainty'
     start.test(test.name)
-    m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, uncertainty = TRUE)
+    m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, uncertainty = TRUE, wpp.year = wpp.year)
     stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
     stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
     stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))
@@ -868,13 +870,13 @@ test.run.mcmc.simulation.with.uncertainty <- function() {
     unlink(sim.dir, recursive=TRUE)
 }
 
-test.run.annual.simulation <- function() {
+test.run.annual.simulation <- function(wpp.year = 2019) {
     sim.dir <- tempfile()
     
     test.name <- 'running MCMC with annual data'
     start.test(test.name)
     m <- run.tfr.mcmc(iter = 5, nr.chains = 1, output.dir = sim.dir, annual = TRUE, ar.phase2 = TRUE,
-                      present.year = 2018)
+                      present.year = 2018, wpp.year = wpp.year)
     stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
     stopifnot(all(1953:2018 %in% rownames(m$meta$tfr_matrix)))
     stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))
