@@ -1,5 +1,11 @@
-7.1-1.90xx (02/02/2022)
+7.1-1.90xx (07/29/2022)
 -----
+Support for the wpp2022 package.
+
+New function get.countries.phase returns all countries and the phase they are in.
+
+Function get.countries.table now also returns the ISO character codes if the new argument iso is set to TRUE.
+
 Added argument est.uncertainty to write.projection.summary.
 
 Bug fix in adjustments.

@@ -85,7 +85,10 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
 			cat('\nCountries', mcmc$meta$regions$country_code[(nr_countries+1):nr_countries_all], 
 							'not included in the estimation of world parameters.\n')
 	}
-
+    if(length(id_DL_all) < nr_countries_all && verbose) 
+        cat('\nCountries', mcmc$meta$regions$country_code[!seq_len(nr_countries_all) %in% id_DL_all],
+            'not included in the estimation because in Phase I.\n')
+  
     # sd_Tc with sigma0 and sd_tau_eps
     # the non-constant variance is sum of sigma0 and add_to_sd_Tc
     # matrix with each column one country

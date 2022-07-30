@@ -1287,8 +1287,8 @@ print.summary.bayesTFR.mcmc.meta <- function(x, ...) {
         cat('\nMCMCs of phase II')
         cat('\n=================')
         cat('\nNumber of countries:', x$nr.countries)
-        if(x$nr.countries.dl < x$nr.countries.est) 
-            cat(" (", x$nr.countries.est - x$nr.countries.dl, " in phase I)")
+        if(x$nr.countries.dl < x$nr.countries) 
+            cat(" (from which", x$nr.countries - x$nr.countries.dl, "are in phase I)")
         cat('\nHyperparameters estimated using', x$nr.countries.est, 'countries.')
         cat('\nWPP:', x$wpp.year)
         cat('\nInput data: TFR for period', x$est.period)
@@ -1623,22 +1623,25 @@ get.countries.index.bayesTFR.mcmc.meta  <- function(meta, ...)
 	return (if(is.null(meta$phase) || (meta$phase==2)) meta$id_DL else meta$id_phase3)
 
 "get.countries.table" <- function(object, ...) UseMethod("get.countries.table")
-get.countries.table.bayesTFR.mcmc.set <- function(object, ...) {
+get.countries.table.bayesTFR.mcmc.set <- function(object, iso = FALSE, ...) {
 	ctable <- data.frame(code=object$meta$regions$country_code, name=object$meta$regions$country_name)
 	if(!is.null(object$meta$phase) && (object$meta$phase==3)) ctable <- ctable[object$meta$id_phase3,]
-	return(add.iso(ctable))
+	if(iso) ctable <- add.iso(ctable)
+	return(ctable)
 }
 
-get.countries.table.bayesTFR.prediction <- function(object, ...) {
+get.countries.table.bayesTFR.prediction <- function(object, iso = FALSE, ...) {
 	n <- dim(get.data.imputed(object))[2]
-	return(add.iso(data.frame(code=object$mcmc.set$meta$regions$country_code[1:n], 
-					name=object$mcmc.set$meta$regions$country_name[1:n])))
+	ctable <- data.frame(code=object$mcmc.set$meta$regions$country_code[1:n], 
+					name=object$mcmc.set$meta$regions$country_name[1:n])
+	if(iso) ctable <- add.iso(ctable)
+	return(ctable)
 }
 
 add.iso <- function(tbl){
     iso <- get(data('iso3166', envir=environment()))[, c("uncode", "charcode", "charcode3")]
     colnames(iso) <- c("code", "iso2", "iso3")
-    merge(tbl, iso, by = "code", sort = FALSE)
+    merge(tbl, iso, by = "code", sort = FALSE, all.x = TRUE)
 }
 
 "get.countries.phase" <- function(object, ...) UseMethod("get.countries.phase")
