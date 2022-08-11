@@ -353,7 +353,7 @@ get.trajectories <- function(tfr.pred, country, nr.traj=NULL, adjusted=TRUE, bas
 get.quantile.from.prediction <- function(tfr.pred, quantile, country.index, country.code=NULL, adjusted=TRUE,
                                          est.uncertainty = FALSE) {
 	quant.values <- tfr.pred$quantiles[country.index, as.character(quantile),]
-	if(est.uncertainty && has.est.uncertainty(tfr.pred$mcmc.set)){
+	if(est.uncertainty && has.est.uncertainty(tfr.pred$mcmc.set)){ # get the right value for present year
 	    tfr.est <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.code, probs=0.5, adjust = adjusted)
 	    unc.last.time <- which(tfr.est$tfr_quantile$year == dimnames(tfr.pred$quantiles)[[3]][1])
 	    quant.values[1] <- unlist(tfr.est$tfr_quantile[unc.last.time, 1])

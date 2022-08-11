@@ -155,7 +155,8 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	do.convert.trajectories(pred=bayesTFR.prediction, n=save.as.ascii, output.dir=pred$output.dir, countries = countries.save,
 							verbose=verbose)
 	if(all.countries.required)
-	    tfr.write.projection.summary.and.parameters(pred=bayesTFR.prediction, output.dir=pred$output.dir)
+	    tfr.write.projection.summary.and.parameters(pred=bayesTFR.prediction, output.dir=pred$output.dir, 
+	                                                est.uncertainty = uncertainty)
 	
 	cat('\nPrediction stored into', pred$output.dir, '\n')
 	invisible(bayesTFR.prediction)
@@ -632,7 +633,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		store.bayesTFR.prediction(bayesTFR.prediction, outdir)
 		do.convert.trajectories(pred=bayesTFR.prediction, n=save.as.ascii, output.dir=outdir, verbose=verbose)
 		if(write.summary.files)
-			tfr.write.projection.summary.and.parameters(pred=bayesTFR.prediction, output.dir=outdir)
+			tfr.write.projection.summary.and.parameters(pred=bayesTFR.prediction, output.dir=outdir,
+			                                            est.uncertainty = uncertainty)
 		cat('\nPrediction stored into', outdir, '\n')
 	}
 	invisible(bayesTFR.prediction)
@@ -1017,25 +1019,26 @@ convert.tfr.trajectories <- function(dir=file.path(getwd(), 'bayesTFR.output'),
 }
 
 write.projection.summary <- function(dir=file.path(getwd(), 'bayesTFR.output'), 
-									 output.dir=NULL, revision=NULL, adjusted=FALSE, est.uncertainty = FALSE) {
+									 output.dir=NULL, revision=NULL, adjusted=FALSE, 
+									 est.uncertainty = FALSE, ...) {
 # Writes three prediction summary files, one in a user-friendly format, one in a UN-format,
 # and one parameter file.
 	pred <- get.tfr.prediction(sim.dir=dir)
 	if (is.null(output.dir)) output.dir <- pred$output.directory
 	if(!file.exists(output.dir)) dir.create(output.dir, recursive=TRUE)
 	tfr.write.projection.summary.and.parameters(pred, output.dir, revision=revision, adjusted=adjusted, 
-	                                            est.uncertainty = est.uncertainty)
+	                                            est.uncertainty = est.uncertainty, ...)
 }
 
 tfr.write.projection.summary.and.parameters <- function(pred, output.dir, revision=NULL, adjusted=FALSE, 
-                                                        est.uncertainty = FALSE) {
+                                                        est.uncertainty = FALSE, ...) {
 	# two summary files
-	do.write.projection.summary(pred, output.dir, revision=revision, adjusted=adjusted, est.uncertainty = est.uncertainty)
+	do.write.projection.summary(pred, output.dir, revision=revision, adjusted=adjusted, est.uncertainty = est.uncertainty, ...)
 	# third file about MCMC parameters
-	do.write.parameters.summary(pred, output.dir, adjusted=adjusted)
+	do.write.parameters.summary(pred, output.dir, adjusted=adjusted, est.uncertainty = est.uncertainty, ...)
 }
 
-do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
+do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE, est.uncertainty = FALSE, precision = 4) {
 	meta <- pred$mcmc.set$meta
 	tfr.years <- get.tfr.periods(meta)
 	tfr <- get.data.imputed(pred)
@@ -1050,19 +1053,27 @@ do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
 	}
 	all.years <- c(tfr.years, get.prediction.periods(meta, pred$nr.projections+1, present.year.index=pred$present.year.index)[-1])
 
+	est.uncertainty <- est.uncertainty && has.est.uncertainty(pred$mcmc.set)
+	
 	# write parameters file
 	par.header <- list(country.name="country_name", country.code="country_code", 
 					tau.c="TF_time_start_decline", Uc="TF_max", dc="TF_max_decrement",  
 					Triangle.c4="TF_end_level", Triangle.c4.low="TF_end_level_low", 
 					Triangle.c4.high="TF_end_level_high", Tend="TF_time_end_decline")
 	result <- NULL
-	precision<-4
 	con <- textConnection("sout", "w", local=TRUE) # redirect output (to get rid of coda's messages)
 	for (country in get.countries.index(meta)) {
 		country.obj <- get.country.object(country, meta, index=TRUE)
-		tfr.and.pred.median <- c(tfr[,country], 
+		this.tfr <- tfr[,country]
+		if(est.uncertainty){
+		    est.tfr <- get.tfr.estimation(mcmc.list = pred$mcmc.set, country = country.obj$code, 
+		                                     probs = 0.5, adjust = adjusted)$tfr_quantile
+		    this.tfr[as.character(est.tfr$year)] <- est.tfr$V1
+		}
+		tfr.and.pred.median <- c(this.tfr, 
 								get.median.from.prediction(pred, country.obj$index, 
-												country.obj$code, adjusted=adjusted)[-1])
+												country.obj$code, adjusted=adjusted, 
+												est.uncertainty = est.uncertainty)[-1])
 		if(!is.null(pred$mcmc.set$meta$suppl.data)) {
 			# add supplemental data
 			tfr.with.suppl <- get.data.for.country.imputed(pred, country)		
@@ -1088,7 +1099,7 @@ do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE) {
 	colnames(result) <- par.header
 	file.suffix <- if(adjusted) '_adjusted' else ''
 	file.name <- file.path(output.dir, paste('projection_summary_parameters', file.suffix, '.csv', sep=''))
-	write.table(result, file=file.name, sep=',', row.names=FALSE, col.names=TRUE)
+	fwrite(data.table(result), file=file.name, sep=',')
 	cat('Parameter summary stored into: \n\t\t', file.name, '\n')
 }
 
@@ -1106,14 +1117,14 @@ get.friendly.variant.names.bayesTFR.prediction <- function(pred, ...)
 	return(c('median', 'lower 80', 'upper 80', 'lower 95', 'upper 95', '-0.5child', '+0.5child', 'constant'))
 
 get.wpp.revision.number <- function(pred) {
-	wpps <- c(2008, 2010, 2012, seq(2015, by = 2, length = 20))
+	wpps <- c(2008, 2010, 2012, seq(2015, by = 2, length = 3), seq(2022, by = 2, length = 10))
 	wpps <- wpps[wpps <= pred$mcmc.set$meta$wpp.year]
 	lwpps <- length(wpps)
 	return(seq(13, length=lwpps)[lwpps])
 }
 
 do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicator.id=19, sex.id=3, adjusted=FALSE,
-                                        est.uncertainty = FALSE) {
+                                        est.uncertainty = FALSE, precision = 4) {
 	cat('Creating summary files ...\n')
 	e <- new.env()
 	# R check does not like the two lines below; not sure why
@@ -1172,7 +1183,8 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 				country.code=rep(country.obj$code, nr.var),
 				variant=friendly.variant.names)
 		# prediction
-		median <- get.median.from.prediction(pred, country.obj$index, country.obj$code, adjusted=adjusted)
+		median <- get.median.from.prediction(pred, country.obj$index, country.obj$code, adjusted=adjusted, 
+		                                     est.uncertainty = est.uncertainty)
 		proj.result <- rbind(median, 
 							   get.traj.quantiles(pred, country.obj$index, country.obj$code, pi=80, adjusted=adjusted, 
 							                      est.uncertainty = est.uncertainty),
@@ -1183,12 +1195,12 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 					   get.half.child.variant(median))
 		#browser()
 		proj.result <- round(rbind(proj.result,
-							   		rep(median[1], nr.proj)), 4) # constant variant
+							   		rep(median[1], nr.proj)), precision) # constant variant
 		if(est.uncertainty){ # user-friendly output contains observed years as well
 		    obs.tfr <- t(this.tfr.unc)
 		    if(any(friendly.variant.names == '-0.5child'))
 		        obs.tfr <- rbind(obs.tfr, obs.tfr[1,], obs.tfr[1,])
-		    obs.tfr <- rbind(obs.tfr, obs.tfr[1,]) #row for constant variant (same as median)
+		    obs.tfr <- round(rbind(obs.tfr, obs.tfr[1,]), precision) #row for constant variant (same as median)
 		    colnames(obs.tfr) <- grep('obsyear', names(header1), value=TRUE)
 		    #proj.result <- cbind(obs.tfr, proj.result)
 		    this.result1 <- cbind(this.result1, obs.tfr)
@@ -1214,10 +1226,8 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 	file.suffix <- if(adjusted) '_adjusted' else ''
 	file1 <- paste('projection_summary_user_friendly', file.suffix, '.csv', sep='')
 	file2 <- paste('projection_summary', file.suffix, '.csv', sep='')
-	write.table(result1, file=file.path(output.dir, file1), sep=',', 
-				row.names=FALSE, col.names=TRUE)
-	write.table(result2, file=file.path(output.dir, file2), sep=',', 
-				quote=FALSE, row.names=FALSE, col.names=TRUE)
+	fwrite(data.table(result1), file=file.path(output.dir, file1), sep=',')
+	fwrite(data.table(result2), file=file.path(output.dir, file2), sep=',')
 	cat('Projection summaries stored into: \n\t\t', 
 			file.path(output.dir, file1), '\n\t\t',
 			file.path(output.dir, file2), '\n')

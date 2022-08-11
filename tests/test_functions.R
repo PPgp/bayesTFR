@@ -867,7 +867,11 @@ test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
     stopifnot(size > 0)
     test.ok(test.name)
     
-    unlink(sim.dir, recursive=TRUE)
+    test.name <- 'write projection summary'
+    write.projection.summary(sim.dir, est.uncertainty = FALSE)
+    write.projection.summary(sim.dir, est.uncertainty = TRUE)
+    
+    #unlink(sim.dir, recursive=TRUE)
 }
 
 test.run.annual.simulation <- function(wpp.year = 2019) {
