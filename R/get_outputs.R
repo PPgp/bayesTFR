@@ -124,6 +124,7 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	thinned.mcmc$length <- nr.points
 	thinned.mcmc$finished.iter <- nr.points
 	thinned.mcmc$compression.type <- meta$compression.type
+	thinned.mcmc$uncertainty <- uncertainty
 	thinned.mcmc$output.dir <- 'mc1'	
 	outdir.thin.mcmc <- file.path(meta$output.dir, 'mc1')
 	if(!file.exists(outdir.thin.mcmc)) dir.create(outdir.thin.mcmc)

@@ -1,3 +1,46 @@
+tfr.shift.estimation.to.wpp <- function(sim.dir, ..., verbose = TRUE){
+  mcmc.set <- get.tfr.mcmc(sim.dir)
+  country_code <- NULL # for CRAN check not to complain
+  if(!has.est.uncertainty(mcmc.set)) stop("Function can be only applied to estimation with uncertainty.")
+  meta <- mcmc.set$meta
+  wpp.year <- meta$wpp.year
+  countries <- get.countries.table(mcmc.set)$code
+  if(meta$annual.simulation && wpp.year < 2022) stop("No annual WPP data available.")
+
+  wppdata <- data.table::data.table(load.from.wpp("tfr", wpp.year = wpp.year, annual = meta$annual.simulation))
+  wppdatal <- melt(wppdata, id.vars = c("country_code", "name"), value.name = "wpp", variable.name = "period")
+  wppdatal$year <- if(meta$annual.simulation) as.integer(wppdatal$period) else as.integer(substr(wppdatal$period, 1, 4)) + 3
+  meta$median.shift.estimation <- NULL
+  if(verbose) cat("\n")
+  for(icntry in seq_along(countries)) {
+    if (verbose) {
+      if(interactive()) cat("\rAdjusting countries' estimation ... ", round(icntry/length(countries) * 100), ' %')
+      else {
+        if (icntry == 1)
+          cat("Adjusting countries' estimation ... ")
+        cat(icntry, ", ")
+      }
+    }
+    cntry <- countries[icntry]
+    est.obj <- get.tfr.estimation(mcmc.set, country = cntry, probs=0.5, adjust =  FALSE, ...) # extract median estimates
+    est.obj$tfr_quantile$period <- if(!meta$annual.simulation) paste(est.obj$tfr_quantile$year - 3, est.obj$tfr_quantile$year + 2, sep = "-") else as.character(est.obj$tfr_quantile$year)
+    merged <- merge(data.table::data.table(est.obj$tfr_quantile), wppdatal[country_code == cntry], by = "period")
+    merged$shift <- merged$wpp - merged$V1
+    if(sum(merged$shift) != 0)
+      meta$median.shift.estimation[[as.character(cntry)]] <- merged$shift
+  }
+  store.bayesTFR.meta.object(meta, meta$output.dir)
+  has.predictions <- has.tfr.prediction(sim.dir = sim.dir)
+  if(has.predictions) { # need to save this also in the collapsed chain of the prediction
+    pred <- get.tfr.prediction(sim.dir = sim.dir)
+    pred$mcmc.set$meta$median.shift.estimation <- meta$median.shift.estimation
+    store.bayesTFR.prediction(pred)
+    store.bayesTFR.meta.object(pred$mcmc.set$meta, pred$mcmc.set$meta$output.dir)
+  }
+  if(verbose) cat("\n")
+  invisible(get.tfr.mcmc(sim.dir))
+}
+
 get.tfr.shift.estimation <- function(country.code, meta)
 {
   if(is.null(meta$median.shift.estimation)) return(NULL)

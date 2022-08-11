@@ -34,6 +34,7 @@ export(
 	get.tfr.shift.estimation,
 	tfr.median.reset.estimation,
 	tfr.median.adjust,
+	tfr.shift.estimation.to.wpp,
 	get.ar1.parameters,
 	convert.tfr.trajectories,
 	write.projection.summary,

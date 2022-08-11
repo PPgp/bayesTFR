@@ -8,6 +8,8 @@ Function get.countries.table now also returns the ISO character codes if the new
 
 Added argument est.uncertainty to write.projection.summary.
 
+New function for an adjustment of the estimates to WPP values (tfr.shift.estimation.to.wpp).
+
 Bug fix in adjustments.
 
 Bug fix for handling Phase I countries when using the uncertainty feature, including in "extra" countries.

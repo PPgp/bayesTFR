@@ -228,6 +228,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		thinned.mcmc <- get.thinned.tfr.mcmc(mcmc.set, thin=thin, burnin=burnin)
 		has.thinned.mcmc <- !is.null(thinned.mcmc) && thinned.mcmc$meta$parent.iter == total.iter
 	}
+	if(!force.creating.thinned.mcmc && uncertainty && has.thinned.mcmc && !has.est.uncertainty(thinned.mcmc)) 
+	    force.creating.thinned.mcmc <- TRUE # re-create the thinned traces if they were previously created without uncertainty
 	unblock.gtk('bDem.TFRpred')
 	load.mcmc.set <- if(has.thinned.mcmc && !force.creating.thinned.mcmc && (
 	    is.null(thinned.mcmc$meta$one.use.only) || !thinned.mcmc$meta$one.use.only)) thinned.mcmc
