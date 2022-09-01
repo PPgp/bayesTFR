@@ -399,7 +399,7 @@ tfr.diagnose <- function(sim.dir, thin=80, burnin=2000, express=FALSE,
 	{
 	  diag3 <- .do.diagnose(type='tfr3', class.name='bayesTFR.convergence', 
 	                        sim.dir=sim.dir, thin=thin, burnin=burnin, express=express,
-	                        country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,	verbose=verbose,
+	                        country.sampling.prop=country.sampling.prop, keep.thin.mcmc=FALSE,	verbose=verbose,
 	                        show.result = FALSE)
 	  diag2 <- .combine.diagnosis(diag2, diag3, keep.thin.mcmc = keep.thin.mcmc)
 	}
