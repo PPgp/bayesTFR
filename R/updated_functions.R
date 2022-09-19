@@ -620,6 +620,8 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     }
     
     ## Compute Log likelihood
+    ## (TODO) Here we need to add a filter and keep those log likelihood to be frozen to 0 for both 
+    ## loglik_orig annd loglik_proposed
     if ((year < mcmc$meta$T_end - 1) && !is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
     {
       loglik_next <- get.log.lik.year(year + 1, mcmc, Dlpar, phase3par)$log.lik
@@ -640,6 +642,7 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
       loglik_prev_prop <- get.log.lik.year(year-1, mcmc, Dlpar, phase3par, tfr_proposed, prev = FALSE)
       loglik_proposed <- loglik_proposed + loglik_prev_prop$log.lik
     }
+    # Here should be fine.
     loglik_orig <- loglik_orig + get.log.lik.raw(year, mcmc, mcmc$meta$tfr_all[year, ])
     loglik_proposed <- loglik_proposed + get.log.lik.raw(year, mcmc, tfr_proposed)
     

@@ -208,6 +208,9 @@ mcmc.meta.ini <- function(...,
 						my.tfr.raw.file=NULL, 
 						ar.phase2=FALSE) {
 	# Initialize meta parameters - those that are common to all chains.
+  # (TODO) I believe we should conduct the analysis and determine which indices should be excluded when
+  # Computing likelihood, at the beginning when we initialize the meta. Then in later computation, we 
+  # could always refer to those.
 	args <- list(...)
 	mcmc.input <- list()
 	for (arg in names(args)) mcmc.input[[arg]] <- args[[arg]]
