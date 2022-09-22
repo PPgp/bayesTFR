@@ -33,6 +33,8 @@ get.eps.T <- function (DLpar, country, meta, ...)
       args <- list(...)
       if ('rho.phase2' %in% names(args) && length(eps) > 1) eps <- c(eps[1], eps[2:ldl]-args[['rho.phase2']] * eps[1:(ldl-1)])
     }
+    # TODO re outliers:
+    # Put NAs on eps indexed by meta$ind.outliers[[country]]
     return (eps)
 }
 
@@ -338,6 +340,14 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	  index <- 1:nrow(output$raw_data.original)
 	  country.ind.by.year <- list()
 	  ind.by.year <- list()
+	  
+	  # TODO re outliers:
+	  # Defining a list containing indices of outliers by countries 
+	  # (only countries with outliers will have an entry in the list)
+	  # outliers are those where the annual delta is outside of the interval (meta$raw.outliers[1], meta$raw.outliers[2])
+	  ind.outliers <- list()
+	  # set the ind.outliers somewhere in this block and put it into the "output" list 
+	  
 	  if (meta$annual.simulation)
 	  {
 	    for (year in meta$start.year:meta$present.year)
