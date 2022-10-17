@@ -119,6 +119,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     # Start MCMC
 	############
 	  for (simu in start.iter:nr_simu) {
+	    
 	    if(verbose.iter > 0 && (simu %% verbose.iter == 0))
         	cat('\nIteration:', simu, '--', date())
         unblock.gtk('bDem.TFRmcmc')
@@ -127,6 +128,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
         #################################################################
         # updates sd_Tc
         # start with this to get the right sd_Tc in the next steps!!
+        
         mcmc.update.abSsigma0const(mcenv, idx.tau_c.id.notearly)
 
        #################################################################### 

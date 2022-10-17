@@ -176,7 +176,11 @@ mcmc.update.Triangle_c4 <- function(country, mcmc, ...) {
   # (TODO) we should have a filter and exclude indices with extreme epsT.idx
   epsT.idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
   # HS: something like
-  # epsT.idx <- setdiff(epsT.idx, mcmc$meta$ind.outliers[[country]])
+  raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
+  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
+    raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
+  epsT.idx <- setdiff(epsT.idx, raw.outliers)
+  
   lepsT.idx <- length(epsT.idx)
   #        z <- (log_cond_Triangle_c4_trans(Triangle_c4_trans, 
   #                mcmc$eps_Tc[epsT.idx,country],
@@ -252,7 +256,12 @@ mcmc.update.gamma <- function(country, mcmc, ...) {
   # (TODO) we should have a filter and exclude indices with extreme epsT.idx
   idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
   # HS: something like
-  # idx <- setdiff(idx, mcmc$meta$ind.outliers[[country]])
+  raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
+  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
+    raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
+  
+  idx <- setdiff(idx, raw.outliers)
+  
   prob_accept <- exp(log_like_gammas(gamma_prop,eps_T_prop,
                                      mcmc$sd_Tc[idx, country], mcmc$mean_eps_Tc[idx, country], 
                                      mcmc$alpha, mcmc$delta) - 
@@ -276,7 +285,11 @@ mcmc.update.d <- function(country, mcmc, ...) {
   # (TODO) Similar here. We should exclude those extreme indices in computing loglik
   # HS: something like
   idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
-  # idx <- setdiff(idx, mcmc$meta$ind.outliers[[country]])
+  raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
+  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
+    raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
+  
+  idx <- setdiff(idx, raw.outliers)
   z <- (log_cond_d_trans(d_trans, 
                          mcmc$eps_Tc[idx, country],
                          mcmc$sd_Tc[idx, country],
@@ -298,10 +311,10 @@ mcmc.update.d <- function(country, mcmc, ...) {
     d_prop <- (mcmc$meta$d.up*exp(d_trans_prop) +mcmc$meta$d.low)/(1+exp(d_trans_prop))
     eps_T_prop <- get.eps.T(c(theta_prop[-5], d_prop),country, mcmc$meta, ...)
     if (log_cond_d_trans(d_trans_prop,eps_T_prop, 
-                         mcmc$sd_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country],
-                         mcmc$mean_eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country],
+                         mcmc$sd_Tc[idx, country],
+                         mcmc$mean_eps_Tc[idx, country],
                          mcmc$psi, mcmc$chi) >= z) {
-      mcmc$eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country] <- eps_T_prop
+      mcmc$eps_Tc[idx, country] <- eps_T_prop
       mcmc$d_c[country] <- d_prop
       return()
     } else {
@@ -324,7 +337,12 @@ mcmc.update.U <- function(country, mcmc, ...) {
   # (TODO) Similar here. We should exclude those extreme indices in computing loglik
   # HS: something like
   idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
-  # idx <- setdiff(idx, mcmc$meta$ind.outliers[[country]])
+  raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
+  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
+    raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
+  
+  idx <- setdiff(idx, raw.outliers)
+  
   z  <- (log_cond_U(mcmc$eps_Tc[idx, country],
                     mcmc$sd_Tc[idx,country],
                     mcmc$mean_eps_Tc[idx,country])
@@ -345,10 +363,10 @@ mcmc.update.U <- function(country, mcmc, ...) {
     theta_prop[1:3] <- theta_current[1:3]/(mcmc$U_c[country] - 
                                              mcmc$Triangle_c4[country])*(U_prop - mcmc$Triangle_c4[country])
     eps_T_prop <- get.eps.T(theta_prop, country, mcmc$meta, ...)
-    if (log_cond_U(eps_T_prop, mcmc$sd_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1),country],
-                   mcmc$mean_eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1),country])
+    if (log_cond_U(eps_T_prop, mcmc$sd_Tc[idx,country],
+                   mcmc$mean_eps_Tc[idx,country])
         >= z) {
-      mcmc$eps_Tc[mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1), country] <- eps_T_prop
+      mcmc$eps_Tc[idx, country] <- eps_T_prop
       mcmc$U_c[country] <- U_prop
       return()
     } else {

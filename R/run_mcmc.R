@@ -106,7 +106,8 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	proposal_cov_gammas = proposal_cov_gammas,
 					 	buffer.size=buffer.size, compression.type=compression.type, 
 					 	auto.conf=auto.conf, package.version = packageVersion("bayesTFR"),
-						verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2)
+						verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, 
+						ar.phase2=ar.phase2, iso.unbiased=iso.unbiased)
 	if (uncertainty)
 	{
 	  bayesTFR.mcmc.meta[["covariates"]] <- covariates
@@ -244,7 +245,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 							verbose=FALSE, verbose.iter=10, uncertainty=FALSE, iso.unbiased=NULL, 
 							covariates=c('source', 'method'), cont_covariates=NULL, source.col.name="source") {
 								
-	cat('\n\nChain nr.', chain.id, '\n')
+  cat('\n\nChain nr.', chain.id, '\n')
     if (verbose) {
     	cat('************\n')
     	cat('Starting values:\n')

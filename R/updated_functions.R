@@ -586,6 +586,20 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     id_phase3_r <- intersect(id_phase3_r, countries)
     id_phase2_r <- intersect(id_phase2_r, countries)
   }
+  indices_outliers_m1 <- mcmc$meta$yearly.outliers[[as.character(1)]]
+  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
+  {
+    indices_outliers_0 <- sort(unique(c(mcmc$meta$yearly.outliers[[as.character(1)]], 
+                                        mcmc$meta$yearly.outliers[[as.character(2)]])))
+    
+    indices_outliers_p1 <- sort(unique(c(mcmc$meta$yearly.outliers[[as.character(1)]], 
+                                         mcmc$meta$yearly.outliers[[as.character(2)]])))
+  }
+  else
+  {
+    indices_outliers_0 <- mcmc$meta$yearly.outliers[[as.character(1)]]
+    indices_outliers_p1 <- mcmc$meta$yearly.outliers[[as.character(2)]]
+  }
   for (year in 1:mcmc$meta$T_end)
   {
     if (year > 1)
@@ -625,21 +639,31 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     if ((year < mcmc$meta$T_end - 1) && !is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
     {
       loglik_next <- get.log.lik.year(year + 1, mcmc, Dlpar, phase3par)$log.lik
-      loglik_orig <- loglik_orig + loglik_next
       loglik_next_prop <- get.log.lik.year(year + 1, mcmc, Dlpar, phase3par, tfr_proposed, prev_two = TRUE)
+      
+      loglik_next[indices_outliers_p1] <- 0.0
+      loglik_next_prop$log.lik[indices_outliers_p1] <- 0.0
+      loglik_orig <- loglik_orig + loglik_next
       loglik_proposed <- loglik_proposed + loglik_next_prop$log.lik
     }
     if (year < mcmc$meta$T_end)
     {
       loglik_mid <- get.log.lik.year(year, mcmc, Dlpar, phase3par)$log.lik
-      loglik_orig <- loglik_orig + loglik_mid
       loglik_mid_prop <- get.log.lik.year(year, mcmc, Dlpar, phase3par, tfr_proposed)
+      loglik_mid[indices_outliers_0] <- 0.0
+      loglik_mid_prop$log.lik[indices_outliers_0] <- 0.0
+      
+      loglik_orig <- loglik_orig + loglik_mid
+      
       loglik_proposed <- loglik_proposed + loglik_mid_prop$log.lik
     }
     if (year > 1)
     {
-      loglik_orig <- loglik_orig + loglik_prev
       loglik_prev_prop <- get.log.lik.year(year-1, mcmc, Dlpar, phase3par, tfr_proposed, prev = FALSE)
+      loglik_prev[indices_outliers_m1] <- 0.0
+      loglik_prev_prop$log.lik[indices_outliers_m1] <- 0.0
+      
+      loglik_orig <- loglik_orig + loglik_prev
       loglik_proposed <- loglik_proposed + loglik_prev_prop$log.lik
     }
     # Here should be fine.
@@ -684,6 +708,17 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
                                             mcmc$finished.iter * (mu0 - mu) ** 2 + 
                                             (mcmc$meta$tfr_all[year, ] - mu) ** 2)/mcmc$finished.iter)
     
+    indices_outliers_m1 <- indices_outliers_0
+    indices_outliers_0 <- indices_outliers_p1
+    if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
+    {
+      indices_outliers_p1 <- sort(unique(c(mcmc$meta$yearly.outliers[[as.character(year + 1)]], 
+                                           mcmc$meta$yearly.outliers[[as.character(year + 2)]])))
+    }
+    else
+    {
+      indices_outliers_p1 <- mcmc$meta$yearly.outliers[[as.character(year + 2)]]
+    }
   }
   for (country in 1:nr_countries)
   {
