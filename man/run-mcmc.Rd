@@ -16,7 +16,7 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     thin = 1, replace.output = FALSE, annual = FALSE, uncertainty = FALSE, 
     start.year = 1950, present.year = 2020, wpp.year = 2019, 
     my.tfr.file = NULL, my.locations.file = NULL, my.tfr.raw.file = NULL, 
-    ar.phase2 = FALSE, buffer.size = 100, 
+    ar.phase2 = FALSE, buffer.size = 100, raw.outliers = c(-2, 1),
     U.c.low = 5.5, U.up = 8.8, U.width = 3,
     mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2, 
     Triangle_c4.low = 1, Triangle_c4.up = 2.5, 
@@ -64,6 +64,7 @@ continue.tfr.mcmc(iter, chain.ids = NULL,
   \item{my.locations.file}{File name containing user-specified locations. See Details below.}
   \item{my.tfr.raw.file}{File name of the raw TFR, used when \code{uncertainty} is \code{TRUE}. See details below.}
   \item{buffer.size}{Buffer size (in number of iterations) for keeping data in the memory. The smaller the \code{buffer.size} the more often will the process access the hard disk and thus, the slower the run. On the other hand, the smaller the \code{buffer.size} the less data will be lost in case of failure.}
+  \item{raw.outliers}{Vector of size two giving the maximum annual decrease and increase of raw TFR change, respectively. The default values mean that any raw TFR data that decrease more than 2 or increase more than 1 in one year are considered as outliers.}
   \item{U.c.low, U.up}{Lower and upper bound of the parameter \eqn{U_c}, the start level of the fertility transition. The lower bound is set for each country as the maximum of \code{U.c.low} and the minimum of historical TFR for that country.}
   \item{U.width}{Width for slice sampling used when updating the \eqn{U_c} parameter.}
   \item{mean.eps.tau0, sd.eps.tau0}{Mean and standard deviation of the prior distribution of \eqn{m_{\tau}}{m_tau} which is the mean of the distortion terms \eqn{\epsilon_{c,\tau}}{eps_{c,tau}} in start periods \eqn{\tau_c}{tau_c}.}

@@ -10,6 +10,8 @@ Added argument est.uncertainty to write.projection.summary.
 
 New function for an adjustment of the estimates to WPP values (tfr.shift.estimation.to.wpp).
 
+New argument raw.outlier in run.tfr.mcmc triggers removing outliers in the raw TFR data.
+
 Bug fix in adjustments.
 
 Bug fix for handling Phase I countries when using the uncertainty feature, including in "extra" countries.
