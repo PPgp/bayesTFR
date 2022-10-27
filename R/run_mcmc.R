@@ -107,7 +107,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	buffer.size=buffer.size, compression.type=compression.type, 
 					 	auto.conf=auto.conf, package.version = packageVersion("bayesTFR"),
 						verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, 
-						ar.phase2=ar.phase2, iso.unbiased=iso.unbiased)
+						ar.phase2=ar.phase2, iso.unbiased=iso.unbiased, source.col.name = source.col.name)
 	if (uncertainty)
 	{
 	  bayesTFR.mcmc.meta[["covariates"]] <- covariates

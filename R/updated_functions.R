@@ -634,7 +634,7 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     }
     
     ## Compute Log likelihood
-    ## (TODO) Here we need to add a filter and keep those log likelihood to be frozen to 0 for both 
+    ## For outliers keep log likelihood to be frozen to 0 for both 
     ## loglik_orig annd loglik_proposed
     if ((year < mcmc$meta$T_end - 1) && !is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
     {

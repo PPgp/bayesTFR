@@ -33,8 +33,8 @@ get.eps.T <- function (DLpar, country, meta, ...)
       args <- list(...)
       if ('rho.phase2' %in% names(args) && length(eps) > 1) eps <- c(eps[1], eps[2:ldl]-args[['rho.phase2']] * eps[1:(ldl-1)])
     }
-    # TODO re outliers:
-    # Put NAs on eps indexed by meta$ind.outliers[[country]]
+
+    # Put NAs on eps indexed by meta$indices.outliers[[country]]
     if (as.character(country) %in% names(meta$indices.outliers))
     {
       outlier_indices <- meta$indices.outliers[[as.character(country)]]
@@ -245,11 +245,9 @@ mcmc.meta.ini <- function(...,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						verbose=FALSE, uncertainty=FALSE,
 						my.tfr.raw.file=NULL, 
-						ar.phase2=FALSE, iso.unbiased=NULL) {
+						ar.phase2=FALSE, iso.unbiased=NULL, source.col.name = "source") {
 	# Initialize meta parameters - those that are common to all chains.
-  # (TODO) I believe we should conduct the analysis and determine which indices should be excluded when
-  # Computing likelihood, at the beginning when we initialize the meta. Then in later computation, we 
-  # could always refer to those.
+    
   args <- list(...)
 	mcmc.input <- list()
 	for (arg in names(args)) mcmc.input[[arg]] <- args[[arg]]
@@ -265,7 +263,7 @@ mcmc.meta.ini <- function(...,
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
 						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, 
 						uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2, 
-						iso.unbiased=iso.unbiased)
+						iso.unbiased=iso.unbiased, source.col.name = source.col.name)
 	return(structure(c(mcmc.input, meta), class='bayesTFR.mcmc.meta'))
 }
 	
@@ -273,7 +271,7 @@ mcmc.meta.ini <- function(...,
 do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL, 
 						use.average.gammas.cov=FALSE, burnin=200, verbose=FALSE, uncertainty=FALSE, 
 						my.tfr.raw.file=NULL, 
-						ar.phase2=FALSE, iso.unbiased=NULL) {
+						ar.phase2=FALSE, iso.unbiased=NULL, source.col.name = "source") {
   results_tau <- find.tau.lambda.and.DLcountries(tfr.with.regions$tfr_matrix, annual = meta$annual.simulation,
 	                                               suppl.data=tfr.with.regions$suppl.data)
 	tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
@@ -379,20 +377,18 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	  country.ind.by.year <- list()
 	  ind.by.year <- list()
 	  
-	  # TODO re outliers:
 	  # Defining a list containing indices of outliers by countries 
 	  # (only countries with outliers will have an entry in the list)
 	  # outliers are those where the annual delta is outside of the interval (meta$raw.outliers[1], meta$raw.outliers[2])
-	  ind.outliers <- list()
-	  # set the ind.outliers somewhere in this block and put it into the "output" list
 	  
-	  year.outliers <- find.raw.data.outliers(rawTFR, iso.unbiased, source.col.name = source.col.name)
+	  year.outliers <- find.raw.data.outliers(rawTFR, iso.unbiased, source.col.name = source.col.name,
+	                                          max.drop = -meta$raw.outliers[1], max.increase = meta$raw.outliers[2])
 	  indices.outliers <- list()
 	  yearly.outliers <- list()
 	  for (iso.code in names(year.outliers))
 	  {
 	    country.index <-  get.country.object(country = as.numeric(iso.code), meta = output)$index
-	    indices <- year.outliers[[iso.code]] - start.year + 1
+	    indices <- year.outliers[[iso.code]] - meta$start.year + 1
 	    # We may remove outliers in Phase I?
 	    indices <- indices[indices > results_tau$start_c[country.index]]
 	    indices <- indices[indices <= results_tau$lambda_c[country.index]]

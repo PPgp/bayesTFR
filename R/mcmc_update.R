@@ -109,10 +109,6 @@ mcmc.update.rho.phase2 <- function(mcmc, matrix.name) {
   v <- runif(1)
   interval <- c(max(var.value - v*var.width, var.low), min(var.value + (1-v)*var.width,var.up))
   
-  # (TODO) Here we need to add a filter to drop extreme eps indices. Then in 
-  # the for loop, when computing the like, we should not add those indices.
-  # HS: if get_eps_T_all() already puts NAs in the right spots (via the get.eps.T function), 
-  # we might not need to change anything here, is that right?
   #while (TRUE){
   for(i in 1:50) {
     var_prop <- runif(1,interval[1], interval[2])
@@ -173,9 +169,9 @@ mcmc.update.Triangle_c4 <- function(country, mcmc, ...) {
   # (thus also lambda_c and the NAs in the eps!)
   Triangle_c4_trans <- log(max(mcmc$Triangle_c4[country] - mcmc$meta$Triangle_c4.low, 1e-20)/
                              max(mcmc$meta$Triangle_c4.up - mcmc$Triangle_c4[country], 1e-20))
-  # (TODO) we should have a filter and exclude indices with extreme epsT.idx
+
   epsT.idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
-  # HS: something like
+  # exclude indices with extreme epsT.idx
   raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
   if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
     raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
@@ -253,9 +249,9 @@ mcmc.update.gamma <- function(country, mcmc, ...) {
   theta_prop <- c(pci_prob*(mcmc$U_c[country] - mcmc$Triangle_c4[country]), 
                   mcmc$Triangle_c4[country], mcmc$d_c[country]) 
   eps_T_prop <- get.eps.T(theta_prop, country, mcmc$meta, ...)
-  # (TODO) we should have a filter and exclude indices with extreme epsT.idx
+
   idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
-  # HS: something like
+  # exclude indices with extreme eps in idx
   raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
   if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
     raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
@@ -282,9 +278,8 @@ mcmc.update.gamma <- function(country, mcmc, ...) {
 mcmc.update.d <- function(country, mcmc, ...) {
   # if accepted, update d_c and the distortions
   d_trans <- log((mcmc$d_c[country] - mcmc$meta$d.low)/(mcmc$meta$d.up - mcmc$d_c[country]))
-  # (TODO) Similar here. We should exclude those extreme indices in computing loglik
-  # HS: something like
   idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  # Exclude extreme indices in computing loglik
   raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
   if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
     raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
@@ -334,9 +329,8 @@ mcmc.update.d <- function(country, mcmc, ...) {
 
 
 mcmc.update.U <- function(country, mcmc, ...) {
-  # (TODO) Similar here. We should exclude those extreme indices in computing loglik
-  # HS: something like
   idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  # exclude those extreme indices in computing loglik
   raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
   if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
     raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
