@@ -482,9 +482,9 @@ tfr.diagnose <- function(sim.dir, thin=80, burnin=2000, express=FALSE,
 
 .combine.na.table <- function(table1, table2)
 {
-  if (class(table1) != "data.frame" && class(table2) != "data.frame") return (NA)
-  else if (class(table1) != "data.frame") return (table2)
-  else if (class(table2) != "data.frame") return (table1)
+  if (!inherits(table1, "data.frame") && !inherits(table2, "data.frame")) return (NA)
+  else if (!inherits(table1, "data.frame")) return (table2)
+  else if (!inherits(table2, "data.frame")) return (table1)
   else return (rbind(table1, table2))
 }
 

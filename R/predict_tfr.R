@@ -10,7 +10,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						low.memory=TRUE,
 						seed=NULL, verbose=TRUE, uncertainty=FALSE, ...) {
 	if(!is.null(mcmc.set)) {
-		if (class(mcmc.set) != 'bayesTFR.mcmc.set') {
+		if (!inherits(mcmc.set, 'bayesTFR.mcmc.set')) {
 			stop('Wrong type of mcmc.set. Must be of type bayesTFR.mcmc.set.')
 			}
 	} else {		

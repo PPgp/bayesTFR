@@ -32,7 +32,7 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, m
 												start.year=start.year, 
 												present.year=present.year,
 												annual = annual, verbose=verbose, 
-												#interpolate = annual && is.null(my.tfr.file),
+												interpolate = wpp.year < 2022 && annual && is.null(my.tfr.file),
 												ignore.last.observed = ignore.last.observed)
 	if(!annual) {
 	    TFRmatrixsuppl.regions <- .get.suppl.matrix.and.regions(un.object, TFRmatrix.regions, loc_data, 
@@ -401,7 +401,7 @@ set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, my.locations.f
 	data <- un.object$data.object
 	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, my.locations.file=my.locations.file, 
 	                                   verbose=verbose, annual=annual, uncertainty=uncertainty, 
-	                                   #interpolate = is.null(my.tfr.file) && annual
+	                                   interpolate = meta$wpp.year < 2022 && annual && is.null(my.tfr.file)
 	                                   )
 	if(!is.null(extra.wpp) && !annual) {
 		locations <- read.UNlocations(data$data, wpp.year=meta$wpp.year, my.locations.file=my.locations.file, verbose=verbose)

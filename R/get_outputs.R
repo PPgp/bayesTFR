@@ -1016,7 +1016,7 @@ coda.list.mcmc3 <- function(mcmc=NULL, country=NULL, chain.ids=NULL,
 		mcmc <- get.tfr3.mcmc(sim.dir, chain.ids=chain.ids, low.memory=low.memory, 
 									burnin=burnin)$mcmc.list
 	else
-		if(class(mcmc)=='bayesTFR.prediction')
+		if(inherits(mcmc, 'bayesTFR.prediction'))
 			stop('Function not available for bayesTFR.prediction objects.')
 	return(coda.list.mcmc(mcmc=mcmc, country=country, chain.ids=chain.ids, sim.dir=NULL, 
 			par.names=par.names, par.names.cs=par.names.cs, rm.const.pars=FALSE, burnin=burnin, ...))										

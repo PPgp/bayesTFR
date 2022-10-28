@@ -18,7 +18,7 @@ stop.if.country.not.DL <- function(country.obj, meta) {
 tfr.world.dlcurves <- function(x, mcmc.list, burnin=NULL, countryUc=NULL, ...) {
 	# Get the hierarchical DL curves with U_c for a given country (countryUc)
 	# If countryUc is not given, take the middle point of the U_c prior. 
-	if(class(mcmc.list) == 'bayesTFR.prediction') {
+	if(inherits(mcmc.list, 'bayesTFR.prediction')) {
 		if(!is.null(burnin) && burnin != mcmc.list$burnin)
 			warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin)
 		burnin <- 0 # because burnin was already cut of the traces
@@ -32,7 +32,7 @@ tfr.world.dlcurves <- function(x, mcmc.list, burnin=NULL, countryUc=NULL, ...) {
 tfr.country.dlcurves <- function(x, mcmc.list, country, burnin=NULL, ...) {
 	# Get country-specific DL curves.
 	# It's a wrapper around tfr.get.dlcurves for easier usage.
-	if(class(mcmc.list) == 'bayesTFR.prediction') {
+	if(inherits(mcmc.list, 'bayesTFR.prediction')) {
 		if(!is.null(burnin) && burnin != mcmc.list$burnin)
 			warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin)
 		burnin <- 0 # because burnin was already cut of the traces
@@ -154,7 +154,7 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
     main = NULL, show.legend=TRUE, col=c('black', 'red', "#00000020"), ...
     ) 
 {	
-  if(class(mcmc.list) == 'bayesTFR.prediction') {
+  if(inherits(mcmc.list, 'bayesTFR.prediction')) {
 		if(!is.null(burnin) && burnin != mcmc.list$burnin)
 			warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin)
 		burnin <- 0 # because burnin was already cut of the traces
@@ -477,7 +477,7 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL
     warning('MCMC does not exist.')
     return(NULL)
   }
-  if(class(mcmc.list) == 'bayesTFR.prediction') {
+  if(inherits(mcmc.list, 'bayesTFR.prediction')) {
       if(burnin != mcmc.list$burnin && burnin != 0)
           warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin)
       burnin <- 0 # because burnin was already cut of the traces
@@ -889,7 +889,7 @@ tfr3.partraces.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'baye
 									nr.points=NULL, dev.ncol=3, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
-	else if(class(mcmc.list)=='bayesTFR.prediction')
+	else if(inherits(mcmc.list, 'bayesTFR.prediction'))
 			stop('Function not available for bayesTFR.prediction objects.')
 	tfr.partraces.plot(mcmc.list, sim.dir=NULL, chain.ids=chain.ids, par.names=par.names, 
 						nr.points=nr.points, dev.ncol=dev.ncol, ...)
@@ -900,7 +900,7 @@ tfr3.partraces.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(ge
 									nr.points=NULL, dev.ncol=2, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
-	else if(class(mcmc.list)=='bayesTFR.prediction')
+	else if(inherits(mcmc.list, 'bayesTFR.prediction'))
 			stop('Function not available for bayesTFR.prediction objects.')
 	mcmc.list <- get.mcmc.list(mcmc.list)
 	country.obj <- get.country.object(country, mcmc.list[[1]]$meta)
@@ -913,7 +913,7 @@ tfr3.partraces.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(ge
 		
 do.plot.tfr.pardensity <- function(mcmc.list, func, par.names, par.names.ext, main.postfix='', 
 								func.args=NULL, chain.ids=NULL, burnin=NULL, dev.ncol=5, ...) {
-	if(class(mcmc.list) == 'bayesTFR.prediction') {
+	if(inherits(mcmc.list, 'bayesTFR.prediction')) {
 		if(!is.null(burnin) && burnin != mcmc.list$burnin)
 			warning('Prediction was generated with different burnin. Burnin set to ', mcmc.list$burnin,
 					'.\n Use a bayesTFR.mcmc.set object as the first argument, if the original traces should be used.')
@@ -995,7 +995,7 @@ tfr3.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bay
 									burnin=NULL, dev.ncol=3, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
-	else if(class(mcmc.list)=='bayesTFR.prediction')
+	else if(inherits(mcmc.list, 'bayesTFR.prediction'))
 			stop('Function not available for bayesTFR.prediction objects.')
 	do.plot.tfr.pardensity(mcmc.list, 'get.tfr.parameter.traces', chain.ids=chain.ids, par.names=par.names,
 							par.names.ext=par.names,
@@ -1007,7 +1007,7 @@ tfr3.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(g
 									burnin=NULL, dev.ncol=2, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
-	else if(class(mcmc.list)=='bayesTFR.prediction')
+	else if(inherits(mcmc.list, 'bayesTFR.prediction'))
 			stop('Function not available for bayesTFR.prediction objects.')
 	mcmc.l <- get.mcmc.list(mcmc.list)
 	country.obj <- get.country.object(country, mcmc.l[[1]]$meta)
