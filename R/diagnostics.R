@@ -1,4 +1,4 @@
-is.missing <- function(x) return(!is.null(x) && is.na(x))
+is.missing <- function(x) return(!is.null(x) && all(is.na(x)))
 
 tfr.raftery.diag <- function(mcmc=NULL, 
 							 sim.dir=file.path(getwd(), 'bayesTFR.output'),
@@ -399,7 +399,7 @@ tfr.diagnose <- function(sim.dir, thin=80, burnin=2000, express=FALSE,
 	{
 	  diag3 <- .do.diagnose(type='tfr3', class.name='bayesTFR.convergence', 
 	                        sim.dir=sim.dir, thin=thin, burnin=burnin, express=express,
-	                        country.sampling.prop=country.sampling.prop, keep.thin.mcmc=keep.thin.mcmc,	verbose=verbose,
+	                        country.sampling.prop=country.sampling.prop, keep.thin.mcmc=FALSE,	verbose=verbose,
 	                        show.result = FALSE)
 	  diag2 <- .combine.diagnosis(diag2, diag3, keep.thin.mcmc = keep.thin.mcmc)
 	}
@@ -482,9 +482,9 @@ tfr.diagnose <- function(sim.dir, thin=80, burnin=2000, express=FALSE,
 
 .combine.na.table <- function(table1, table2)
 {
-  if (class(table1) != "data.frame" && class(table2) != "data.frame") return (NA)
-  else if (class(table1) != "data.frame") return (table2)
-  else if (class(table2) != "data.frame") return (table1)
+  if (!inherits(table1, "data.frame") && !inherits(table2, "data.frame")) return (NA)
+  else if (!inherits(table1, "data.frame")) return (table2)
+  else if (!inherits(table2, "data.frame")) return (table1)
   else return (rbind(table1, table2))
 }
 

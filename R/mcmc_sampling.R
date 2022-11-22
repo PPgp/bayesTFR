@@ -83,9 +83,12 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
 	if(has_extra_countries) {
 		if (verbose)
 			cat('\nCountries', mcmc$meta$regions$country_code[(nr_countries+1):nr_countries_all], 
-							'not included in the estimation.\n')
+							'not included in the estimation of world parameters.\n')
 	}
-
+    if(length(id_DL_all) < nr_countries_all && verbose) 
+        cat('\nCountries', mcmc$meta$regions$country_code[!seq_len(nr_countries_all) %in% id_DL_all],
+            'not included in the estimation because in Phase I.\n')
+  
     # sd_Tc with sigma0 and sd_tau_eps
     # the non-constant variance is sum of sigma0 and add_to_sd_Tc
     # matrix with each column one country
@@ -94,7 +97,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     for (country in 1:nr_countries_all){
     	# could exclude 1:(tau_c-1) here
       this.data <- array(dim = mcenv$meta$T_end_c[country] - 1)
-      if (country %in% id_DL)
+      if (country %in% id_DL_all)
       	this.data[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)] <- 
       	  get.observed.tfr(country, mcenv$meta, matrix.name=matrix.name)[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)]
       	
@@ -116,6 +119,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     # Start MCMC
 	############
 	  for (simu in start.iter:nr_simu) {
+	    
 	    if(verbose.iter > 0 && (simu %% verbose.iter == 0))
         	cat('\nIteration:', simu, '--', date())
         unblock.gtk('bDem.TFRmcmc')
@@ -124,6 +128,7 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
         #################################################################
         # updates sd_Tc
         # start with this to get the right sd_Tc in the next steps!!
+        
         mcmc.update.abSsigma0const(mcenv, idx.tau_c.id.notearly)
 
        #################################################################### 
@@ -184,8 +189,8 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
                 mcmc.update.gamma(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
                 mcmc.update.Triangle_c4(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)
                 #print(c(country, mcmc$Triangle_c4[country]))
-        } 
- 
+        }
+        
          # U_c updated only for countries with early decline
          for (country in id_early_all){
                 mcmc.update.U(country, mcenv, matrix.name=matrix.name, rho.phase2=mcenv$rho.phase2)

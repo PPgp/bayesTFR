@@ -1,0 +1,287 @@
+country_code	name	include_code
+900	World	0
+1834	Sub-Saharan Africa	0
+1833	Northern Africa and Western Asia	0
+1831	Central and Southern Asia	0
+1832	Eastern and South-Eastern Asia	0
+1830	Latin America and the Caribbean	0
+1835	Oceania (excluding Australia and New Zealand)	0
+1836	Australia/New Zealand	0
+1829	Europe and Northern America	0
+901	More developed regions	0
+902	Less developed regions	0
+941	Least developed countries	0
+934	Less developed regions, excluding least developed countries	0
+948	Less developed regions, excluding China	0
+1636	Land-locked Developing Countries (LLDC)	0
+1637	Small Island Developing States (SIDS)	0
+1503	High-income countries	0
+1517	Middle-income countries	0
+1502	Upper-middle-income countries	0
+1501	Lower-middle-income countries	0
+1500	Low-income countries	0
+1518	No income group available	0
+903	Africa	0
+910	Eastern Africa	0
+108	Burundi	2
+174	Comoros	2
+262	Djibouti	2
+232	Eritrea	2
+231	Ethiopia	2
+404	Kenya	2
+450	Madagascar	2
+454	Malawi	2
+480	Mauritius	2
+175	Mayotte	2
+508	Mozambique	2
+638	Reunion	2
+646	Rwanda	2
+690	Seychelles	2
+706	Somalia	2
+728	South Sudan	2
+800	Uganda	2
+834	United Republic of Tanzania	2
+894	Zambia	2
+716	Zimbabwe	2
+911	Middle Africa	0
+24	Angola	2
+120	Cameroon	2
+140	Central African Republic	2
+148	Chad	2
+178	Congo	2
+180	Democratic Republic of the Congo	2
+226	Equatorial Guinea	2
+266	Gabon	2
+678	Sao Tome and Principe	2
+912	Northern Africa	0
+12	Algeria	2
+818	Egypt	2
+434	Libya	2
+504	Morocco	2
+729	Sudan	2
+788	Tunisia	2
+732	Western Sahara	2
+913	Southern Africa	0
+72	Botswana	2
+748	Eswatini	2
+426	Lesotho	2
+516	Namibia	2
+710	South Africa	2
+914	Western Africa	0
+204	Benin	2
+854	Burkina Faso	2
+132	Cabo Verde	2
+384	Cote d'Ivoire	2
+270	Gambia	2
+288	Ghana	2
+324	Guinea	2
+624	Guinea-Bissau	2
+430	Liberia	2
+466	Mali	2
+478	Mauritania	2
+562	Niger	2
+566	Nigeria	2
+654	Saint Helena	1
+686	Senegal	2
+694	Sierra Leone	2
+768	Togo	2
+935	Asia	0
+5500	Central Asia	0
+398	Kazakhstan	2
+417	Kyrgyzstan	2
+762	Tajikistan	2
+795	Turkmenistan	2
+860	Uzbekistan	2
+906	Eastern Asia	0
+156	China	2
+344	China, Hong Kong SAR	2
+446	China, Macao SAR	2
+158	China, Taiwan Province of China	2
+408	Dem. People's Republic of Korea	2
+392	Japan	2
+496	Mongolia	2
+410	Republic of Korea	2
+5501	Southern Asia	0
+4	Afghanistan	2
+50	Bangladesh	2
+64	Bhutan	2
+356	India	2
+364	Iran (Islamic Republic of)	2
+462	Maldives	2
+524	Nepal	2
+586	Pakistan	2
+144	Sri Lanka	2
+920	South-Eastern Asia	0
+96	Brunei Darussalam	2
+116	Cambodia	2
+360	Indonesia	2
+418	Lao People's Democratic Republic	2
+458	Malaysia	2
+104	Myanmar	2
+608	Philippines	2
+702	Singapore	2
+764	Thailand	2
+626	Timor-Leste	2
+704	Viet Nam	2
+922	Western Asia	0
+51	Armenia	2
+31	Azerbaijan	2
+48	Bahrain	2
+196	Cyprus	2
+268	Georgia	2
+368	Iraq	2
+376	Israel	2
+400	Jordan	2
+414	Kuwait	2
+422	Lebanon	2
+512	Oman	2
+634	Qatar	2
+682	Saudi Arabia	2
+275	State of Palestine	2
+760	Syrian Arab Republic	2
+792	Turkiye	2
+784	United Arab Emirates	2
+887	Yemen	2
+908	Europe	0
+923	Eastern Europe	0
+112	Belarus	2
+100	Bulgaria	2
+203	Czechia	2
+348	Hungary	2
+616	Poland	2
+498	Republic of Moldova	2
+642	Romania	2
+643	Russian Federation	2
+703	Slovakia	2
+804	Ukraine	2
+924	Northern Europe	0
+208	Denmark	2
+233	Estonia	2
+234	Faroe Islands	1
+246	Finland	2
+831	Guernsey	2
+352	Iceland	2
+372	Ireland	2
+833	Isle of Man	1
+832	Jersey	2
+428	Latvia	2
+440	Lithuania	2
+578	Norway	2
+752	Sweden	2
+826	United Kingdom	2
+925	Southern Europe	0
+8	Albania	2
+20	Andorra	1
+70	Bosnia and Herzegovina	2
+191	Croatia	2
+292	Gibraltar	1
+300	Greece	2
+336	Holy See	1
+380	Italy	2
+412	Kosovo (under UNSC res. 1244)	2
+470	Malta	2
+499	Montenegro	2
+807	North Macedonia	2
+620	Portugal	2
+674	San Marino	1
+688	Serbia	2
+705	Slovenia	2
+724	Spain	2
+926	Western Europe	0
+40	Austria	2
+56	Belgium	2
+250	France	2
+276	Germany	2
+438	Liechtenstein	1
+442	Luxembourg	2
+492	Monaco	1
+528	Netherlands	2
+756	Switzerland	2
+904	Latin America and the Caribbean	0
+915	Caribbean	0
+660	Anguilla	1
+28	Antigua and Barbuda	2
+533	Aruba	2
+44	Bahamas	2
+52	Barbados	2
+535	Bonaire, Sint Eustatius and Saba	1
+92	British Virgin Islands	1
+136	Cayman Islands	1
+192	Cuba	2
+531	Curacao	2
+212	Dominica	1
+214	Dominican Republic	2
+308	Grenada	2
+312	Guadeloupe	2
+332	Haiti	2
+388	Jamaica	2
+474	Martinique	2
+500	Montserrat	1
+630	Puerto Rico	2
+652	Saint-Barthelemy	1
+659	Saint Kitts and Nevis	1
+662	Saint Lucia	2
+663	Saint Martin (French part)	1
+670	Saint Vincent and the Grenadines	2
+534	Sint Maarten (Dutch part)	1
+780	Trinidad and Tobago	2
+796	Turks and Caicos Islands	1
+850	United States Virgin Islands	2
+916	Central America	0
+84	Belize	2
+188	Costa Rica	2
+222	El Salvador	2
+320	Guatemala	2
+340	Honduras	2
+484	Mexico	2
+558	Nicaragua	2
+591	Panama	2
+931	South America	0
+32	Argentina	2
+68	Bolivia (Plurinational State of)	2
+76	Brazil	2
+152	Chile	2
+170	Colombia	2
+218	Ecuador	2
+238	Falkland Islands (Malvinas)	1
+254	French Guiana	2
+328	Guyana	2
+600	Paraguay	2
+604	Peru	2
+740	Suriname	2
+858	Uruguay	2
+862	Venezuela (Bolivarian Republic of)	2
+905	Northern America	0
+60	Bermuda	1
+124	Canada	2
+304	Greenland	1
+666	Saint Pierre and Miquelon	1
+840	United States of America	2
+909	Oceania	0
+927	Australia/New Zealand	0
+36	Australia	2
+554	New Zealand	2
+928	Melanesia	0
+242	Fiji	2
+540	New Caledonia	2
+598	Papua New Guinea	2
+90	Solomon Islands	2
+548	Vanuatu	2
+954	Micronesia	0
+316	Guam	2
+296	Kiribati	2
+584	Marshall Islands	1
+583	Micronesia (Fed. States of)	2
+520	Nauru	1
+580	Northern Mariana Islands	1
+585	Palau	1
+957	Polynesia	0
+16	American Samoa	1
+184	Cook Islands	1
+258	French Polynesia	2
+570	Niue	1
+882	Samoa	2
+772	Tokelau	1
+776	Tonga	2
+798	Tuvalu	1
+876	Wallis and Futuna Islands	1

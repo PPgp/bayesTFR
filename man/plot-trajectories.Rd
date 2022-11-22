@@ -25,7 +25,7 @@ tfr.trajectories.plot.all(tfr.pred,
     output.type = "png", main = NULL, verbose = FALSE, \dots)
 	
 tfr.trajectories.table(tfr.pred, country, pi = c(80, 95), 
-    half.child.variant = TRUE)
+    half.child.variant = TRUE, adjusted = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -34,7 +34,7 @@ tfr.trajectories.table(tfr.pred, country, pi = c(80, 95),
   \item{pi}{Probability interval. It can be a single number or an array.}
   \item{half.child.variant}{If \code{TRUE} the United Nations variant of \dQuote{\code{+/-0.5} child} (relative to the median) is shown.}
   \item{nr.traj}{Number of trajectories to be plotted. If \code{NULL}, all trajectories are plotted, otherwise they are thinned evenly.}
-  \item{adjusted.only}{Logical. By default, if the projection median is adjusted using e.g. \code{\link{tfr.median.set}}, the function plots the adjusted median. If \code{adjusted.only=FALSE} the original (non-adjusted) median is plotted as well.}
+  \item{adjusted.only}{Logical. By default, if the projection or estimation median is adjusted using e.g. \code{\link{tfr.median.set}} or \code{\link{tfr.median.set.all}}, the function plots the adjusted median. If \code{adjusted.only=FALSE} the original (non-adjusted) median is plotted as well.}
   \item{typical.trajectory}{Logical. If \code{TRUE} one trajectory is shown that has the smallest distance to the median.}
   \item{mark.estimation.points}{Logical. If \code{TRUE}, points that were not used in the estimation (phase I) are shown in lighter color than points in phase II and III.}
   \item{xlim, ylim, type, xlab, ylab}{Graphical parameters passed to the \code{plot} function.}
@@ -48,6 +48,7 @@ tfr.trajectories.table(tfr.pred, country, pi = c(80, 95),
   \item{verbose}{Logical switching log messages on and off.}
   \item{uncertainty}{Logical: \code{TRUE} means uncertainty of past TFR should be plotted with the same level of uncertainty interval.}
   \item{col_unc}{Color of past TFR estimation uncertainty plot.}
+  \item{adjusted}{Logical. If \code{FALSE} the unadjusted values are returned.}
 }
 \details{
 \code{tfr.trajectories.plot} plots posterior distribution of TFR trajectories for a given country. \code{tfr.trajectories.table} gives the same output as a table. \code{tfr.trajectories.plot.all} creates a set of graphs (one per country) that are stored in \code{output.dir}. 

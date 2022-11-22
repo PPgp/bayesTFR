@@ -32,7 +32,7 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, m
 												start.year=start.year, 
 												present.year=present.year,
 												annual = annual, verbose=verbose, 
-												interpolate = annual && is.null(my.tfr.file),
+												interpolate = wpp.year < 2022 && annual && is.null(my.tfr.file),
 												ignore.last.observed = ignore.last.observed)
 	if(!annual) {
 	    TFRmatrixsuppl.regions <- .get.suppl.matrix.and.regions(un.object, TFRmatrix.regions, loc_data, 
@@ -60,9 +60,20 @@ set_wpp_regions <- function(start.year=1950, present.year=2010, wpp.year=2012, m
 	return(suppl.data)
 }
 
-load.bdem.dataset <- function(dataset, wpp.year, envir=NULL, verbose=FALSE) {
-	pkg <- paste('wpp', wpp.year, sep='')
+load.from.wpp <- function(dataset, wpp.year, annual = FALSE, ...){
+    if(wpp.year >= 2022) {
+        dsname <- paste0(dataset, if(annual) 1 else 5)
+        ds <- load.bdem.dataset(dsname, wpp.year, ..., check.if.exists = TRUE)
+        if(!is.null(ds)) return(ds)
+        # otherwise check the original name
+    }
+    load.bdem.dataset(dataset, wpp.year, ...)
+}
+
+load.bdem.dataset <- function(dataset, wpp.year, envir=NULL, verbose=FALSE, check.if.exists = FALSE) {
+	pkg <- paste0('wpp', wpp.year)
 	do.call('require', list(pkg))
+	if(check.if.exists && !dataset %in% data(package = pkg)$results[, "Item"]) return(NULL)
 	if(verbose) cat('Loading ', dataset, ' from ', pkg, '.\n')
 	if(is.null(envir)) envir <- new.env()
 	do.call('data', list(dataset, package=pkg, envir=envir))
@@ -73,7 +84,7 @@ read.tfr.file <- function(file) return(read.delim(file=file, comment.char='#', c
 
 do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2012, 
                             annual = FALSE, countries = NULL, verbose=FALSE) {
-	tfr_data <- load.bdem.dataset(un.file.name, wpp.year, verbose=verbose)
+	tfr_data <- load.from.wpp(un.file.name, wpp.year, annual = annual, verbose=verbose)
 	my.tfr.file <- my.file
 	if(!is.null(tfr_data) || !is.null(my.tfr.file)) {
 		if(!is.element('last.observed', colnames(tfr_data)))
@@ -89,18 +100,18 @@ do.read.un.file <- function(un.file.name, wpp.year, my.file=NULL, present.year=2
 		if(verbose) cat('Reading file ', my.tfr.file, '.\n')
 		my.tfr_data <- read.tfr.file(file=my.tfr.file)
 		colnames(my.tfr_data)[colnames(my.tfr_data)=='name'] <- 'country'
-		if(!annual)
+		#if(!annual)
 		    cols.to.use <- colnames(my.tfr_data)[is.element(colnames(my.tfr_data), colnames(tfr_data))]
-		else {
-		    # for now if annual, trust the user that the columns are legitimate
-		    # and completely overwrite the default dataset
-		    cols.to.use <- colnames(my.tfr_data) 
-		    tfr_data <- my.tfr_data
-		    if(!is.element('last.observed', colnames(tfr_data)))
-		        tfr_data <- cbind(tfr_data, last.observed=present.year)
-		    if(!is.element('include_code', colnames(tfr_data)))
-		        tfr_data <- cbind(tfr_data, include_code=rep(-1, nrow(tfr_data)))
-		}
+		# else {
+		#     # for now if annual, trust the user that the columns are legitimate
+		#     # and completely overwrite the default dataset
+		#     cols.to.use <- colnames(my.tfr_data) 
+		#     tfr_data <- my.tfr_data
+		#     if(!is.element('last.observed', colnames(tfr_data)))
+		#         tfr_data <- cbind(tfr_data, last.observed=present.year)
+		#     if(!is.element('include_code', colnames(tfr_data)))
+		#         tfr_data <- cbind(tfr_data, include_code=rep(-1, nrow(tfr_data)))
+		# }
 		# don't overwrite country_name
 		cols.wo.name <- setdiff(cols.to.use, 'country')
 		if (!is.element('country_code', cols.to.use))
@@ -172,8 +183,8 @@ read.UNlocations <- function(data, wpp.year, package="bayesTFR", my.locations.fi
 		}
 	}
 	
-	include_codes <- read.tfr.file(file.path(find.package(package), "data", 
-                                       paste('include_', wpp.year, '.txt', sep='')))
+	icd <- data(list = paste0('include_', wpp.year), envir = environment())
+	include_codes <- get(icd)
     loc_data <- merge(loc_data, include_codes, by='country_code', all.x=TRUE)
 	# this include some areas that are not in the tfr file
 	loc_data[is.na(loc_data$include_code),"include_code"] <- 0
@@ -390,7 +401,8 @@ set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, my.locations.f
 	data <- un.object$data.object
 	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, my.locations.file=my.locations.file, 
 	                                   verbose=verbose, annual=annual, uncertainty=uncertainty, 
-	                                   interpolate = is.null(my.tfr.file) && annual)
+	                                   interpolate = meta$wpp.year < 2022 && annual && is.null(my.tfr.file)
+	                                   )
 	if(!is.null(extra.wpp) && !annual) {
 		locations <- read.UNlocations(data$data, wpp.year=meta$wpp.year, my.locations.file=my.locations.file, verbose=verbose)
 		suppl.wpp <- .get.suppl.matrix.and.regions(un.object, extra.wpp, locations$loc_data, 

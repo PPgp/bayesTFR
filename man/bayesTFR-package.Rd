@@ -12,7 +12,7 @@ using a Bayesian hierarchical model (BHM) and the United Nations demographic tim
 }
 
 \details{
-The projection follows a method developed by Alkema et al. (2011) and Raftery et al (2013). It uses historical data provided by the United Nations to simulate a posterior distribution of total fertility rates for all countries in the world simultaneously. 
+The projection follows a method developed by Alkema et al. (2011) and Raftery et al (2014). It uses historical data provided by the United Nations to simulate a posterior distribution of total fertility rates for all countries in the world simultaneously. 
 
 The estimation is split into two parts: 
 \enumerate{
