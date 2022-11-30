@@ -56,7 +56,7 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
   mcmc[[var.name]] <- var_prop
   mcmc$add_to_sd_Tc <- add_to_sd_Tc_prop
   warning("Cannot find likelihood increase for ", what, ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
-          "New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
+          "New likelihood: ", like, ", original likelihood: ", z, immediate. = TRUE)
 }
 
 mcmc.update.sigma0const <- function(what, log.like.func, eps_Tc_temp, mcmc) {
@@ -96,7 +96,7 @@ mcmc.update.sigma0const <- function(what, log.like.func, eps_Tc_temp, mcmc) {
   }
   mcmc[[var.name]] <- var_prop
   warning("Cannot find likelihood increase for ", what, ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
-          "New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
+          "New likelihood: ", like, ", original likelihood: ", z, immediate.=TRUE)
 }
 
 mcmc.update.rho.phase2 <- function(mcmc, matrix.name) {
@@ -131,7 +131,7 @@ mcmc.update.rho.phase2 <- function(mcmc, matrix.name) {
   mcmc$rho.phase2 <- var_prop
   mcmc$eps_Tc <- eps_prop
   warning("Cannot find likelihood increase for ", "rho phase2", ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
-          "New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
+          "New likelihood: ", like, ", original likelihood: ", z, immediate. = TRUE)
 }
 
 mcmc.update.abSsigma0const <- function(mcmc, id.not.early.index) {
@@ -227,8 +227,8 @@ mcmc.update.Triangle_c4 <- function(country, mcmc, ...) {
   }
   mcmc$eps_Tc[epsT.idx, country] <- eps_T_prop
   mcmc$Triangle_c4[country] <- Triangle_c4_prop
-  warning("Cannot find likelihood increase for Triangle_c4.\n Final interval: [", interval[1], ',', interval[2], ']\n',
-          "New likelihood: ", like, ", original likelihood: ", z, .immediate=TRUE)
+  warning("Cannot find likelihood increase for Triangle_c4_", mcmc$meta$regions$country_code[country], ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
+          "New likelihood: ", like, ", original likelihood: ", z, immediate. = TRUE)
 }
 
 
@@ -300,31 +300,32 @@ mcmc.update.d <- function(country, mcmc, ...) {
                      exp(mcmc$gamma_ci[country,])/
                      sum(exp(mcmc$gamma_ci[country,])), mcmc$Triangle_c4[country], 
                    mcmc$d_c[country])
-  count <- 1
-  while (TRUE){
+  
+  #while (TRUE){
+  for(i in 1:50) {
     d_trans_prop <- runif(1,interval[1], interval[2])
     d_prop <- (mcmc$meta$d.up*exp(d_trans_prop) +mcmc$meta$d.low)/(1+exp(d_trans_prop))
     eps_T_prop <- get.eps.T(c(theta_prop[-5], d_prop),country, mcmc$meta, ...)
-    if (log_cond_d_trans(d_trans_prop,eps_T_prop, 
+    if ((like <- log_cond_d_trans(d_trans_prop,eps_T_prop, 
                          mcmc$sd_Tc[idx, country],
                          mcmc$mean_eps_Tc[idx, country],
-                         mcmc$psi, mcmc$chi) >= z) {
+                         mcmc$psi, mcmc$chi)) >= z) {
       mcmc$eps_Tc[idx, country] <- eps_T_prop
       mcmc$d_c[country] <- d_prop
       return()
     } else {
       # shrink interval
-      if (d_prop < mcmc$d_c[country]){
+      if (d_prop < mcmc$d_c[country])
         interval[1] <- d_trans_prop
-      } else {
-          if(d_prop > mcmc$d_c[country])
-            interval[2] <- d_trans_prop
-          else return()
-      }
+      else 
+        interval[2] <- d_trans_prop
+      if(abs(interval[1]-interval[2]) < 1e-10) break
     } # end else
-    count <- count + 1
-    
   }
+  mcmc$eps_Tc[idx, country] <- eps_T_prop
+  mcmc$d_c[country] <- d_prop
+  warning("Cannot find likelihood increase for d_c", mcmc$meta$regions$country_code[country], ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
+          "New likelihood: ", like, ", original likelihood: ", z, immediate. = TRUE)
 }
 
 
@@ -351,15 +352,15 @@ mcmc.update.U <- function(country, mcmc, ...) {
   theta_current <-  c((mcmc$U_c[country]-mcmc$Triangle_c4[country])*exp(mcmc$gamma_ci[country,])/
                         sum(exp(mcmc$gamma_ci[country,])), mcmc$Triangle_c4[country], mcmc$d_c[country])
   theta_prop <- theta_current
-  while(TRUE) {
+  #while(TRUE) {
+  for(i in 1:50) {
     U_prop <- runif(1,interval[1], interval[2])
     # keep proportions the same, just update the deltas
     theta_prop[1:3] <- theta_current[1:3]/(mcmc$U_c[country] - 
                                              mcmc$Triangle_c4[country])*(U_prop - mcmc$Triangle_c4[country])
     eps_T_prop <- get.eps.T(theta_prop, country, mcmc$meta, ...)
-    if (log_cond_U(eps_T_prop, mcmc$sd_Tc[idx,country],
-                   mcmc$mean_eps_Tc[idx,country])
-        >= z) {
+    if ((like <- log_cond_U(eps_T_prop, mcmc$sd_Tc[idx,country],
+                   mcmc$mean_eps_Tc[idx,country])) >= z) {
       mcmc$eps_Tc[idx, country] <- eps_T_prop
       mcmc$U_c[country] <- U_prop
       return()
@@ -370,6 +371,11 @@ mcmc.update.U <- function(country, mcmc, ...) {
       } else {
         interval[2] <- U_prop
       }
+      if(abs(interval[1]-interval[2]) < 1e-10) break
     } # end else, interval was still ok
   }
+  mcmc$eps_Tc[idx, country] <- eps_T_prop
+  mcmc$U_c[country] <- U_prop
+  warning("Cannot find likelihood increase for U_c", mcmc$meta$regions$country_code[country], ".\n Final interval: [", interval[1], ',', interval[2], ']\n',
+          "New likelihood: ", like, ", original likelihood: ", z, immediate. = TRUE)
 }
