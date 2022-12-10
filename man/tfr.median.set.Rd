@@ -3,6 +3,7 @@
 \alias{tfr.median.shift}
 \alias{tfr.median.adjust}
 \alias{tfr.median.reset}
+\alias{tfr.shift.prediction.to.wpp}
 
 \title{
 Editing Medians of the Projection
@@ -35,6 +36,7 @@ tfr.shift.prediction.to.wpp(sim.dir, \dots, verbose = TRUE)
   \item{to}{Year until which the offset/reset should be done. By default, it is set to the last prediction period.}
   \item{factor1, factor2}{Adjusting factors for the first and second projection period, respectively (see below).}
   \item{forceAR1}{Logical. If \code{TRUE}, the given countries are forced to enter Phase III (i.e. the AR(1) process) in the first projection period.}
+  \item{verbose}{Logical. If \code{TRUE} a progress of the adjustment is shown.}
 }
 \details{
 The function \code{tfr.median.set} can be used to set the medians of the given country to specific values. Function \code{tfr.median.shift} can be used to offset the medians by a specific constant, or to reset the medians to their original BHM values.
