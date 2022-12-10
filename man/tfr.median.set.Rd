@@ -21,7 +21,7 @@ tfr.median.adjust(sim.dir, countries, factor1 = 2/3, factor2 = 1/3, forceAR1 = F
 
 tfr.median.reset(sim.dir, countries)
 
-tfr.shift.prediction.to.wpp(sim.dir, \dots, verbose = TRUE)
+tfr.shift.prediction.to.wpp(sim.dir, verbose = TRUE)
 }
 \arguments{
   \item{sim.dir}{Directory containing the prediction object.}
