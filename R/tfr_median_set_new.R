@@ -161,7 +161,7 @@ tfr.median.reset.estimation <- function(sim.dir, countries)
   invisible(output)
 }
 
-tfr.shift.prediction.to.wpp <- function(sim.dir, ..., verbose = TRUE){
+tfr.shift.prediction.to.wpp <- function(sim.dir, verbose = TRUE){
   pred <- get.tfr.prediction(sim.dir)
   country_code <- NULL # for CRAN check not to complain
   meta <- pred$mcmc.set$meta
