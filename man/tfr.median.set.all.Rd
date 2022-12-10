@@ -45,3 +45,5 @@ Function \code{tfr.shift.estimation.to.wpp} returns the updated \code{mcmc.set} 
 \author{
 Peiran Liu
 }
+
+\seealso{\code{\link{tfr.shift.prediction.to.wpp}} for shifting prediction medians to WPP values.}

@@ -8,16 +8,16 @@ tfr.shift.estimation.to.wpp <- function(sim.dir, ..., verbose = TRUE){
   if(meta$annual.simulation && wpp.year < 2022) stop("No annual WPP data available.")
 
   wppdata <- data.table::data.table(load.from.wpp("tfr", wpp.year = wpp.year, annual = meta$annual.simulation))
-  wppdatal <- melt(wppdata, id.vars = c("country_code", "name"), value.name = "wpp", variable.name = "period")
+  wppdatal <- melt(wppdata, id.vars = c("country_code", "name"), value.name = "wpp", variable.name = "period", variable.factor = FALSE)
   wppdatal$year <- if(meta$annual.simulation) as.integer(wppdatal$period) else as.integer(substr(wppdatal$period, 1, 4)) + 3
   meta$median.shift.estimation <- NULL
   if(verbose) cat("\n")
   for(icntry in seq_along(countries)) {
     if (verbose) {
-      if(interactive()) cat("\rAdjusting countries' estimation ... ", round(icntry/length(countries) * 100), ' %')
+      if(interactive()) cat("\rAdjusting countries' estimation to wpp", wpp.year, " ... ", round(icntry/length(countries) * 100), ' %')
       else {
         if (icntry == 1)
-          cat("Adjusting countries' estimation ... ")
+          cat("Adjusting countries' estimation to wpp", wpp.year, " ... ")
         cat(icntry, ", ")
       }
     }
@@ -159,4 +159,42 @@ tfr.median.reset.estimation <- function(sim.dir, countries)
     store.bayesTFR.prediction(pred)
   }
   invisible(output)
+}
+
+tfr.shift.prediction.to.wpp <- function(sim.dir, ..., verbose = TRUE){
+  pred <- get.tfr.prediction(sim.dir)
+  country_code <- NULL # for CRAN check not to complain
+  meta <- pred$mcmc.set$meta
+  wpp.year <- meta$wpp.year
+  countries <- get.countries.table(pred$mcmc.set)$code
+  if(meta$annual.simulation && wpp.year < 2022) stop("No annual WPP data available.")
+  
+  wppdata <- data.table::data.table(load.from.wpp("tfrprojMed", wpp.year = wpp.year, annual = meta$annual.simulation))
+  wppdatal <- melt(wppdata, id.vars = c("country_code", "name"), value.name = "wpp", variable.name = "period", variable.factor = FALSE)
+  wppdatal$year <- if(meta$annual.simulation) as.integer(wppdatal$period) else as.integer(substr(wppdatal$period, 1, 4)) + 3
+
+  pred.years <- as.numeric(dimnames(pred$quantiles)[[3]])
+  pred$median.shift <- NULL
+  
+  if(verbose) cat("\n")
+  for(icntry in seq_along(countries)) {
+    if (verbose) {
+      if(interactive()) cat("\rAdjusting countries' prediction to wpp", wpp.year, " ... ", round(icntry/length(countries) * 100), ' %')
+      else {
+        if (icntry == 1)
+          cat("Adjusting countries' prediction to wpp", wpp.year, " ... ")
+        cat(icntry, ", ")
+      }
+    }
+    cntry <- countries[icntry]
+    tfr.to.match <- merge(data.table::data.table(year = pred.years, median = pred$quantiles[icntry, "0.5", ]), 
+                          wppdatal[country_code == cntry], by = "year", all.x = TRUE)
+    tfr.to.match$wpp[is.na(tfr.to.match$wpp)] <- tfr.to.match$median[is.na(tfr.to.match$wpp)] # no shift for years that don't match
+    tfr.to.match$shift <- tfr.to.match$wpp - tfr.to.match$median
+    if(sum(tfr.to.match$shift) != 0)
+      pred$median.shift[[as.character(cntry)]] <- tfr.to.match$shift
+  }
+  store.bayesTFR.prediction(pred)
+  if(verbose) cat("\n")
+  invisible(pred)
 }

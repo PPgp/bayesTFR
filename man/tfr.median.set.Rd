@@ -8,7 +8,7 @@
 Editing Medians of the Projection
 }
 \description{
-These functions are to be used by expert analysts. They allow to change the projection medians either to specific values or shift the medians by a given constant, or by a specific adjusting procedure.
+These functions are to be used by expert analysts. They allow to change the projection medians either to specific values, including the WPP values, or shift the medians by a given constant, or by a specific adjusting procedure.
 }
 \usage{
 tfr.median.set(sim.dir, country, values, years = NULL)
@@ -19,6 +19,8 @@ tfr.median.shift(sim.dir, country, reset = FALSE, shift = 0,
 tfr.median.adjust(sim.dir, countries, factor1 = 2/3, factor2 = 1/3, forceAR1 = FALSE)
 
 tfr.median.reset(sim.dir, countries)
+
+tfr.shift.prediction.to.wpp(sim.dir, \dots, verbose = TRUE)
 }
 \arguments{
   \item{sim.dir}{Directory containing the prediction object.}
@@ -46,6 +48,8 @@ All three functions return an updated object of class \code{\link{bayesTFR.predi
 }
 
 \author{Hana Sevcikova, Leontine Alkema}
+
+\seealso{\code{\link{tfr.median.set.all}} for shifting estimation medians.}
 
 %\examples{
 %}
