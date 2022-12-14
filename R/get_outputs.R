@@ -1178,7 +1178,7 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	    {
 	      object3 <- get.tfr3.mcmc(object$meta$output.dir)
 	      res$phase3 <- .summary.mcmc.set.phaseIII(object3, country, chain.id, par.names3, par.names3.cs, meta.only, thin, burnin, ...)
-	      if (!is.null(res$phase2) && !meta.only)
+	      if (!is.null(res$phase2) && !meta.only && res$phase3$estimation)
 	      {
 	        stat <- res$phase3$results$statistics
 	        quant <- res$phase3$results$quantiles
@@ -1246,8 +1246,10 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 		country.obj <- get.country.object(country, object$meta)
 		if(is.null(country.obj$name)) stop("Country ", country, " not found.")
 		res$country.name <- country.obj$name
+		res$estimation <- FALSE
 		if (!is.element(country.obj$index, object$meta$id_phase3)) return(res)
 		country <- country.obj$code
+		res$estimation <- TRUE
 	}
     res$results <- summary(coda.list.mcmc(object, country=country, par.names=par.names,
 							par.names.cs=par.names.cs, thin=thin, burnin=burnin), ...)
@@ -1327,7 +1329,7 @@ print.summary.bayesTFR.mcmc.set <- function(x, ...) {
         if(!is.null(p$mcmc)) print(p$mcmc)
         if(!is.null(p$country.name)){
             cat('\nCountry:', p$country.name, '\n')
-            if (is.null(p$results))
+            if (is.null(p$results) && (!is.null(p$estimation) && !p$estimation || is.null(p$estimation)))
                 cat('\tnot used for estimation because it has not reached phase III yet.\n')
         }
         if(!is.null(p$results))
