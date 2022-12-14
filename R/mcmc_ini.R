@@ -245,7 +245,8 @@ mcmc.meta.ini <- function(...,
 						proposal_cov_gammas = NULL, # should be a list with elements 'values' and 'country_codes'
 						verbose=FALSE, uncertainty=FALSE,
 						my.tfr.raw.file=NULL, 
-						ar.phase2=FALSE, iso.unbiased=NULL, source.col.name = "source") {
+						ar.phase2=FALSE, iso.unbiased=NULL, source.col.name = "source",
+						use.wpp.data = TRUE) {
 	# Initialize meta parameters - those that are common to all chains.
     
   args <- list(...)
@@ -256,10 +257,14 @@ mcmc.meta.ini <- function(...,
 	mcmc.input$present.year <- present.year
 	mcmc.input$wpp.year <- wpp.year
 	if(present.year-3 > wpp.year) warning("present.year is much larger then wpp.year. Make sure WPP data for present.year are available.")
+	if(!use.wpp.data && is.null(my.tfr.file)) {
+	    warning("If use.wpp.data is set to FALSE, my.tfr.file should be given. The simulation will use default WPP data.")
+	    use.wpp.data <- TRUE
+	}
 	tfr.with.regions <- set_wpp_regions(start.year=start.year, present.year=present.year, wpp.year=wpp.year, 
 										my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, 
 										annual = mcmc.input$annual.simulation, ignore.last.observed = uncertainty,
-										verbose=verbose)
+										use.wpp.data = use.wpp.data, verbose=verbose)
 	meta <- do.meta.ini(mcmc.input, tfr.with.regions,  
 						proposal_cov_gammas=proposal_cov_gammas, verbose=verbose, 
 						uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2, 
@@ -317,13 +322,16 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
     	matched.index <- match(e$proposal_cov_gammas_cii$country_codes, current.country.codes)
     	is.notNA <- !is.na(matched.index)
     	prop_cov_gammas[matched.index[is.notNA],,] <- e$proposal_cov_gammas_cii$values[is.notNA,,]
-    
 		if (!is.null(proposal_cov_gammas)) { #user-specified, overwrites defaults for given countries
 			matched.index <- match(proposal_cov_gammas$country_codes, current.country.codes)
 			is.notNA <- !is.na(matched.index)
 			prop_cov_gammas[matched.index[is.notNA],,] <- proposal_cov_gammas$values[is.notNA,,]
 		}		
 		cov.to.average <- prop_cov_gammas
+		if(all(is.na(prop_cov_gammas))) {
+		    # if no country match, average everything
+		    cov.to.average <- e$proposal_cov_gammas_cii$values
+		}
 	}
 	prop_cov_gammas <- .impute.prop.cov.gamma(prop_cov_gammas, cov.to.average, nr_countries)
   
@@ -367,7 +375,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	    }
 	  }
 	  rawTFR <- rawTFR[rawTFR$country_code %in% as.numeric(colnames(output$tfr_matrix_all)),]
-	  rawTFR <- rawTFR[rawTFR$year < meta$present.year + 1,]
+	  rawTFR <- rawTFR[rawTFR$year < meta$present.year + 0.48,] # to guarantee that 0.5 is included and rounded downward even when 0.01 is added
 	  rawTFR <- rawTFR[rawTFR$year > meta$start.year,]
 	  output$raw_data.original <- rawTFR
 	  output$raw_data.original <- merge(output$raw_data.original, 

@@ -3,12 +3,13 @@
 \alias{tfr.median.shift}
 \alias{tfr.median.adjust}
 \alias{tfr.median.reset}
+\alias{tfr.shift.prediction.to.wpp}
 
 \title{
 Editing Medians of the Projection
 }
 \description{
-These functions are to be used by expert analysts. They allow to change the projection medians either to specific values or shift the medians by a given constant, or by a specific adjusting procedure.
+These functions are to be used by expert analysts. They allow to change the projection medians either to specific values, including the WPP values, or shift the medians by a given constant, or by a specific adjusting procedure.
 }
 \usage{
 tfr.median.set(sim.dir, country, values, years = NULL)
@@ -19,6 +20,8 @@ tfr.median.shift(sim.dir, country, reset = FALSE, shift = 0,
 tfr.median.adjust(sim.dir, countries, factor1 = 2/3, factor2 = 1/3, forceAR1 = FALSE)
 
 tfr.median.reset(sim.dir, countries)
+
+tfr.shift.prediction.to.wpp(sim.dir, verbose = TRUE)
 }
 \arguments{
   \item{sim.dir}{Directory containing the prediction object.}
@@ -33,6 +36,7 @@ tfr.median.reset(sim.dir, countries)
   \item{to}{Year until which the offset/reset should be done. By default, it is set to the last prediction period.}
   \item{factor1, factor2}{Adjusting factors for the first and second projection period, respectively (see below).}
   \item{forceAR1}{Logical. If \code{TRUE}, the given countries are forced to enter Phase III (i.e. the AR(1) process) in the first projection period.}
+  \item{verbose}{Logical. If \code{TRUE} a progress of the adjustment is shown.}
 }
 \details{
 The function \code{tfr.median.set} can be used to set the medians of the given country to specific values. Function \code{tfr.median.shift} can be used to offset the medians by a specific constant, or to reset the medians to their original BHM values.
@@ -46,6 +50,8 @@ All three functions return an updated object of class \code{\link{bayesTFR.predi
 }
 
 \author{Hana Sevcikova, Leontine Alkema}
+
+\seealso{\code{\link{tfr.median.set.all}} for shifting estimation medians.}
 
 %\examples{
 %}

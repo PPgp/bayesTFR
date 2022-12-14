@@ -3,7 +3,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 						# meta parameters
 						start.year=1950, present.year=2020, wpp.year=2019,
 						my.tfr.file = NULL, my.locations.file = NULL, my.tfr.raw.file = NULL, 
-						ar.phase2 = FALSE, buffer.size = 100,
+						use.wpp.data = TRUE, ar.phase2 = FALSE, buffer.size = 100,
 						raw.outliers = c(-2, 1),
 					 	U.c.low=5.5, U.up=8.8, U.width=3,
 					 	mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2,                                                
@@ -107,7 +107,8 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	buffer.size=buffer.size, compression.type=compression.type, 
 					 	auto.conf=auto.conf, package.version = packageVersion("bayesTFR"),
 						verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, 
-						ar.phase2=ar.phase2, iso.unbiased=iso.unbiased, source.col.name = source.col.name)
+						ar.phase2=ar.phase2, iso.unbiased=iso.unbiased, source.col.name = source.col.name,
+						use.wpp.data = use.wpp.data)
 	if (uncertainty)
 	{
 	  bayesTFR.mcmc.meta[["covariates"]] <- covariates
