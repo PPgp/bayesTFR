@@ -46,12 +46,13 @@ Hana Sevcikova
 \code{\link{run.tfr.mcmc}}, \code{\link{get.tfr.mcmc}}, \code{\link{run.tfr3.mcmc}}, \code{\link{get.tfr3.mcmc}}, \code{\link{bayesTFR.mcmc.set}}, \code{\link{bayesTFR.mcmc.meta}}
 }
 \examples{
+\dontrun{
 sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 # loads traces from one chain
 m <- get.tfr.mcmc(sim.dir, low.memory=FALSE, burnin=35, chain.ids=1)
 # should have 25 rows, since 60 iterations in total minus 35 burnin
 dim(tfr.mcmc(m, 1)$traces)
-summary(m, chain.id=1)
+summary(m, chain.id=1)}
 }
 
 % Add one or more standard keywords, see file 'KEYWORDS' in the
