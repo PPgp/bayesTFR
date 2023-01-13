@@ -2,11 +2,11 @@ library(bayesTFR)
 source('test_functions.R')
 
 cran <- TRUE
-for(wpp in rev(c(2010, 2012, 2015, 2017, 2019))) {
-	test.load.UNtfr(wpp)
-	test.load.UNlocations(wpp)
-	test.create.tfr.matrix(wpp)
-}
+
+wpp <- 2019
+test.load.UNtfr(wpp)
+test.load.UNlocations(wpp)
+test.create.tfr.matrix(wpp)
 test.load.UNtfr.and.my.tfr.file()
 test.existing.simulation()
 
@@ -34,7 +34,9 @@ if(!cran) {
 	    test.thinned.simulation(wpp.year = wpp)
 	    test.run.annual.simulation(wpp.year = wpp)
 	}
-	test.load.UNtfr(2022)
-	test.load.UNlocations(2022)
-	test.create.tfr.matrix(2022)
+	for(wpp in rev(c(2010, 2012, 2015, 2017, 2022))) { # these are either suggested packages or not on CRAN
+	    test.load.UNtfr(wpp)
+	    test.load.UNlocations(wpp)
+	    test.create.tfr.matrix(wpp)
+	}
 }
