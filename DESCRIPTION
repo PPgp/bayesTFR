@@ -6,7 +6,7 @@ Author: Hana Sevcikova (hanas@uw.edu), Leontine Alkema (alkema@nus.edu.sg), Peir
 Maintainer: Hana Sevcikova <hanas@uw.edu>
 Depends: R (>= 3.5.0)
 Imports: mvtnorm, MASS, coda, graphics, grDevices, stats, utils, wpp2019, data.table, lifecycle
-Suggests: rworldmap, snowFT, googleVis, rgdal, sp, wpp2017, wpp2015, wpp2012, wpp2010, ggplot2
+Suggests: rworldmap, snowFT, googleVis, rgdal, sp, wpp2017, wpp2015, wpp2012, wpp2010, ggplot2, sf, spData
 Description: Making probabilistic projections of total fertility rate for all countries of the world, using a Bayesian hierarchical model <doi:10.1007/s13524-011-0040-5>. Subnational probabilistic projections are also supported.
 License: GPL-3 | file LICENSE
 URL: https://bayespop.csss.washington.edu

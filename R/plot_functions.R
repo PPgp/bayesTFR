@@ -1194,54 +1194,149 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=N
 }
 
 tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE, 
-					projection.index=1,  device='dev.new', main=NULL, 
-					resolution=c("coarse","low","less islands","li","high"),
-					device.args=NULL, data.args=NULL, ...
-				) {
-	resolution <- match.arg(resolution)
-	#if(resolution=='high') require(rworldxtra)
-	data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=year, 
-									par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
-	#data.period.base <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=2013, 
-	#								par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
-	#data <- (data.period$data - data.period.base$data)/1000
-	data <- data.period$data
-	period <- data.period$period
-	tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
-	map <- rworldmap::getMap(resolution=resolution)
-	#first get countries excluding Antarctica which crashes spTransform (says the help page for joinCountryData2Map)
-	sPDF <- map[-which(map$ADMIN=='Antarctica'), ]	
-	if(requireNamespace("rgdal", quietly=TRUE)) {
-		#transform map to the Robinson projection
-		sPDF <- sp::spTransform(sPDF, CRSobj=sp::CRS("+proj=robin +ellps=WGS84"))
-	}
-	## recode missing UN codes and UN member states
-	sPDF$UN <- sPDF$ISO_N3
-	## N. Cyprus -> assign to Cyprus
-	sPDF$UN[sPDF$ISO3=="CYN"] <- 196
-	## Kosovo -> assign to Serbia
-	sPDF$UN[sPDF$ISO3=="KOS"] <- 688
-	## W. Sahara -> no UN numerical code assigned in Natural Earth map (its ISO3 changed in rworlmap 1.3.6)
-	sPDF$UN[sPDF$ISO3=="ESH"] <- 732
-	## Somaliland -> assign to Somalia -> fixed in rworlmap version 1.3.6
-	#sPDF$UN[sPDF$ISO3=="SOL"] <- 706
+                    projection.index=1,  device='dev.new', main=NULL, 
+                    resolution=c("coarse","low","less islands","li","high"),
+                    device.args=NULL, data.args=NULL, ...
+                    ) {
+    resolution <- match.arg(resolution)
+    #if(resolution=='high') require(rworldxtra)
+    data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=year, 
+                                                         par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
+    #data.period.base <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=2013, 
+    #								par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
+    #data <- (data.period$data - data.period.base$data)/1000
+    data <- data.period$data
+    period <- data.period$period
+    tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
+    map <- rworldmap::getMap(resolution=resolution)
+    #first get countries excluding Antarctica which crashes spTransform (says the help page for joinCountryData2Map)
+    sPDF <- map[-which(map$ADMIN=='Antarctica'), ]	
+    if(requireNamespace("rgdal", quietly=TRUE)) {
+        #transform map to the Robinson projection
+        sPDF <- sp::spTransform(sPDF, CRSobj=sp::CRS("+proj=robin +ellps=WGS84"))
+    }
+    ## recode missing UN codes and UN member states
+    sPDF$UN <- sPDF$ISO_N3
+    ## N. Cyprus -> assign to Cyprus
+    sPDF$UN[sPDF$ISO3=="CYN"] <- 196
+    ## Kosovo -> assign to Serbia
+    sPDF$UN[sPDF$ISO3=="KOS"] <- 688
+    ## W. Sahara -> no UN numerical code assigned in Natural Earth map (its ISO3 changed in rworlmap 1.3.6)
+    sPDF$UN[sPDF$ISO3=="ESH"] <- 732
+    ## Somaliland -> assign to Somalia -> fixed in rworlmap version 1.3.6
+    #sPDF$UN[sPDF$ISO3=="SOL"] <- 706
+    
+    #mtfr <- joinCountryData2Map(tfr, joinCode='UN', nameJoinColumn='un')
+    # join sPDF with tfr
+    mtfr <- rep(NA, length(sPDF$UN))
+    valididx <- which(is.element(sPDF$UN, tfr$un))
+    mtfr[valididx] <- tfr$tfr[sapply(sPDF$UN[valididx], function(x,y) which(y==x),  tfr$un)]
+    sPDF$tfr <- mtfr
+    if(is.null(main)) {
+        main <- paste(period, .map.main.default(pred, data.period), quantile)
+    }
+    if (device != 'dev.cur')
+        do.call(rworldmap::mapDevice, c(list(device=device), device.args))
+    mapParams<-rworldmap::mapCountryData(sPDF, nameColumnToPlot='tfr', addLegend=FALSE, mapTitle=main, ...
+    )
+    # Default for legendIntervals changed in rworlmap 1.3.6 from "page" to "data". Therefore need to pass it explicitly here.
+    do.call(rworldmap::addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all', legendIntervals = "page"))
+    #do.call(addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all', sigFigs=2, legendShrink=0.8, tcl=-0.3, digits=1))
+}
 
-	#mtfr <- joinCountryData2Map(tfr, joinCode='UN', nameJoinColumn='un')
-	# join sPDF with tfr
-	mtfr <- rep(NA, length(sPDF$UN))
-	valididx <- which(is.element(sPDF$UN, tfr$un))
-	mtfr[valididx] <- tfr$tfr[sapply(sPDF$UN[valididx], function(x,y) which(y==x),  tfr$un)]
-	sPDF$tfr <- mtfr
-	if(is.null(main)) {
-		main <- paste(period, .map.main.default(pred, data.period), quantile)
-	}
-	if (device != 'dev.cur')
-		do.call(rworldmap::mapDevice, c(list(device=device), device.args))
-	mapParams<-rworldmap::mapCountryData(sPDF, nameColumnToPlot='tfr', addLegend=FALSE, mapTitle=main, ...
-	)
-	# Default for legendIntervals changed in rworlmap 1.3.6 from "page" to "data". Therefore need to pass it explicitely here.
-	do.call(rworldmap::addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all', legendIntervals = "page"))
-	#do.call(addMapLegend, c(mapParams, legendWidth=0.5, legendMar=2, legendLabels='all', sigFigs=2, legendShrink=0.8, tcl=-0.3, digits=1))
+tfr.ggmap <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE, 
+                    projection.index=1, main=NULL, data.args=NULL, viridis.option = "B", 
+                    nr.cats = 10, same.scale = FALSE, plot = TRUE, file.name = NULL, plot.size = 4, ...
+                      ) {
+    
+    # function for quantile transformation
+    make_quantile_trans <- function(x, format = scales::label_number()) {
+        name <- paste0("quantiles_of_", deparse1(substitute(x)))
+        xs <- sort(x)
+        N <- length(xs)
+        transform <- function(x) findInterval(x, xs)/N # find the last element that is smaller
+        inverse <- function(q) xs[1+floor(q*(N-1))]
+        
+        scales::trans_new(
+            name = name,
+            transform = transform,
+            inverse = inverse,
+            breaks =  function(x, n = 5) inverse(scales::extended_breaks()(transform(x), n)),
+            minor_breaks = function(x, n = 5) inverse(scales::regular_minor_breaks()(transform(x), n)),
+            format = format,
+            domain = xs[c(1, N)]
+        )
+    }
+    
+    requireNamespace("ggplot2", quietly=TRUE)
+    requireNamespace("sf", quietly=TRUE)
+    requireNamespace("spData", quietly=TRUE)
+    
+    data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=year, 
+                                                         par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
+    data <- data.period$data
+    period <- data.period$period
+    tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
+    
+    
+    e <- new.env()
+    data("iso3166", envir=e)
+    data("world", package = "spData", envir=e)
+
+    tfr <- merge(tfr, e$iso3166[, c("uncode", "charcode")], by.x = "un", by.y = "uncode")
+    #e$world <- e$world[- which(!e$world$iso_a2 %in% tfr$charcode),]
+    # align with UN countries
+    e$world <- e$world[- which(e$world$name_long == "Antarctica"), c("iso_a2", "name_long", "geom")] # remove Antarctica 
+    e$world$iso_a2[e$world$name_long == "Somaliland"] <- "SO" # set Somaliland as Somalia
+    e$world$iso_a2[e$world$name_long == "Northern Cyprus"] <- "CY" # set Northern Cyprus as Cyprus
+    tfr <- tfr[tfr$charcode %in% e$world$iso_a2,]
+    e$world <- merge(e$world, tfr, by.x = "iso_a2", by.y = "charcode", all = TRUE)
+    
+    if(same.scale & is.null(par.name)) {
+        all.data <- pred$quantiles[,as.character(quantile),]
+        all.data <- all.data[data.period$country.codes %in% e$world$un]
+    } else all.data <- e$world$tfr
+    
+    if(is.null(main)) 
+        main <- paste(period, .map.main.default(pred, data.period), quantile)
+    
+    
+    # g <- ggplot(world) + geom_sf(aes(fill = tfr), colour = "grey", lwd = 0.1) + 
+    #     #scale_fill_viridis_c(option = "A", direction = -1, breaks = scales::breaks_pretty()) +
+    #     theme(legend.position="bottom") + # coord_sf(default_crs = "+proj=robin +ellps=WGS84", label_axes = "--EN")
+    #     scale_fill_distiller(palette = "YlOrRd", direction = 1, breaks = round(quantile(world$tfr, probs = seq(0, 1, length = 10)), 2),
+    #                          #breaks = scales::breaks_pretty(n = 10),
+    #                          trans = make_quantile_trans(world$tfr)) # trans = "reverse", 
+    # g <- g + theme(axis.text.x = element_blank(), axis.text.y = element_blank(), axis.ticks = element_blank())
+    # g2 <- g + guides(fill = guide_colourbar(title = "", barwidth = unit(0.5, "npc", data = g), barheight = 0.5, 
+    #                                         direction = "horizontal"))
+    #g5 <- g2 + ggtitle("(3) Palette: gradient from yellow to red") +
+    #    scale_fill_gradient(low = "yellow", high = "red", breaks = round(quantile(world$tfr, probs = seq(0, 1, length = 10)), 2), trans = make_quantile_trans(world$tfr))
+    
+    world.rob <- sf::st_transform(e$world, "+proj=robin +ellps=WGS84")
+    
+    grobin <- ggplot2::ggplot(world.rob) + ggplot2::geom_sf(ggplot2::aes_string(fill = "tfr"), colour = "grey", lwd = 0.1, ...) + 
+        ggplot2::coord_sf(datum = NA) +
+        ggplot2::scale_fill_viridis_c(option = viridis.option, direction = -1, na.value= "white",
+                             breaks = round(quantile(all.data, probs = seq(0, 1, length = nr.cats), na.rm = TRUE), 2), 
+                             trans = make_quantile_trans(all.data),
+                             limits = range(all.data)) +
+        ggplot2::theme(legend.position="bottom", axis.text.x = ggplot2::element_blank(), axis.text.y = ggplot2::element_blank(), 
+              axis.ticks = ggplot2::element_blank())
+    grobin <- grobin + ggplot2::guides(fill = ggplot2::guide_colourbar(title = "", barwidth = ggplot2::unit(0.5, "npc", data = grobin), 
+                                                        barheight = 0.5, direction = "horizontal")) +
+                ggplot2::ggtitle(main)
+
+    if(plot == TRUE){
+        plot_ratio <- 2.360463 # derived via library(tmaptools); get_asp_ratio(world.rob)
+        if(is.null(file.name)){
+            dev.new(width = plot_ratio*plot.size, height = plot.size)
+            print(grobin)
+        } else {
+            ggplot2::ggsave(file.name, grobin, width = plot_ratio*plot.size, height = plot.size)
+        }
+    }
+    invisible(grobin)
 }
 
 tfr.map.gvis <- function(pred, year=NULL, quantile=0.5, pi=80, par.name=NULL, 

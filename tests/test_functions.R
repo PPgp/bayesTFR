@@ -578,6 +578,22 @@ test.plot.map <- function() {
 	unlink(filename)
 	stopifnot(size > 0)
 	test.ok(test.name)
+	
+	test.name <- 'using ggplot2'
+	filename <- paste0(tempfile(), "png")
+	tfr.ggmap(pred, file.name = filename)
+	size <- file.info(filename)['size']
+	unlink(filename)
+	stopifnot(size > 0)
+	tfr.ggmap(pred, same.scale = TRUE, file.name = filename)
+	size <- file.info(filename)['size']
+	unlink(filename)
+	stopifnot(size > 0)
+	tfr.ggmap(pred, same.scale = TRUE, year = 2100, file.name = filename)
+	size <- file.info(filename)['size']
+	unlink(filename)
+	stopifnot(size > 0)
+	test.ok(test.name)
 }
 	
 test.get.parameter.traces <- function() {

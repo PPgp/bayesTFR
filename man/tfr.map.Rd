@@ -1,6 +1,7 @@
 \name{tfr.map}
 \Rdversion{1.1}
 \alias{tfr.map}
+\alias{tfr.ggmap}
 \alias{tfr.map.all}
 \alias{get.tfr.map.parameters}
 \alias{tfr.map.gvis}
@@ -8,7 +9,7 @@
 TFR World Map 
 }
 \description{
-Generates a world map of the total fertility rate for given projection period and quantile. In addition, country specific Phase II MCMC parameters can be projected into the world map. 
+Generate world maps of the total fertility rate for given projection period and quantile, using different techniques: \code{tfr.map} and \code{tfr.map.all} use \pkg{rworldmap}, \code{tfr.ggmap} uses \pkg{ggplot2}, and \code{tfr.map.gvis} creates an interactive map via \pkg{GoogleVis}. In addition to TFR, all these functions allow to project country specific Phase II MCMC parameters into the world maps. 
 }
 \usage{
 tfr.map(pred, quantile = 0.5, 
@@ -16,7 +17,16 @@ tfr.map(pred, quantile = 0.5,
     projection.index = 1, device = "dev.new", main = NULL, 
     resolution=c("coarse","low","less islands","li","high"),
     device.args = NULL, data.args = NULL, \dots)
-	
+
+tfr.ggmap(pred, quantile = 0.5, 
+    year = NULL, par.name = NULL, adjusted = FALSE,
+    projection.index = 1, main = NULL, data.args = NULL, 
+    viridis.option = "B", nr.cats = 10, same.scale = FALSE, 
+    plot = TRUE, file.name = NULL, plot.size = 4, \dots)
+    
+tfr.map.gvis(pred, year = NULL, quantile = 0.5, pi = 80, 
+    par.name = NULL, adjusted = FALSE, \dots)
+    
 tfr.map.all(pred, output.dir, output.type = "png", 
     tfr.range = NULL, nr.cats = 50, same.scale = TRUE, 
     quantile = 0.5, file.prefix='TFRwrldmap_', \dots)
@@ -24,8 +34,7 @@ tfr.map.all(pred, output.dir, output.type = "png",
 get.tfr.map.parameters(pred, tfr.range = NULL, 
     nr.cats = 50, same.scale = TRUE, quantile = 0.5, \dots)
     
-tfr.map.gvis(pred, year = NULL, quantile = 0.5, pi = 80, 
-    par.name = NULL, adjusted = FALSE, \dots)
+
 }
 
 \arguments{
@@ -46,15 +55,19 @@ Title for the map. If it is \code{NULL}, a default title is constructed from the
 additional arguments to be passed to the \code{\link[rworldmap]{mapDevice}} function of the \pkg{rworldmap} package.
 }
  \item{data.args}{List of additional arguments to be passed to the underlying data retrieving function.} 
+ \item{viridis.option}{Argument \code{option} passed to the \code{ggplot2::scale_fill_viridis_c} function indicating the colormap. Available are \sQuote{magma} (or \sQuote{A}), \sQuote{inferno} (or \sQuote{B}, default), \sQuote{plasma} (or \sQuote{C}), \sQuote{viridis} (or \sQuote{D}) and \sQuote{cividis} (or \sQuote{E}).}
+   \item{nr.cats}{Number of color categories.}
+  \item{same.scale}{Logical controlling if maps for all projection years of this prediction object should be on the same color scale.}
+  \item{plot}{Logical indicating if a plot should be shown. If \code{FALSE}, the function only returns the ggplot object.}
+  \item{file.name}{Name of a file to save the plot. If \code{NULL} nothing is saved. The type of the file is determined by its extension. Only used if \code{plot} is \code{TRUE}.}
+  \item{plot.size}{Height of the plotting device in inches. The width is automatically set using the aspect ratio of 2.36. Only used if \code{plot} is \code{TRUE}.}
  \item{output.dir}{Directory into which resulting maps are stored.}
  \item{output.type}{Type of the resulting files. It can be \dQuote{png}, \dQuote{pdf}, \dQuote{jpeg}, \dQuote{bmp}, \dQuote{tiff}, or \dQuote{postscript}.}
  \item{tfr.range}{Range of the total fertility rate to be displayed. It is of the form \code{c(}\var{tfr.min}, \var{tfr.max}\code{)}.
  By default, the whole range is considered. Note that countries with values outside of the given range will appear white.}
-  \item{nr.cats}{Number of color categories.}
-  \item{same.scale}{Logical controlling if maps for all projection years of this prediction object should be on the same color scale.}
     \item{file.prefix}{Prefix for file names.}
   \item{\dots}{
-Arguments passed to the \code{\link[rworldmap]{mapCountryData}} function of the \pkg{rworldmap} package. In case of \code{tfr.map.gvis} these are passed to the underlying data retrieving function (the same as \code{data.args}).
+Arguments passed to the \code{\link[rworldmap]{mapCountryData}} function of the \pkg{rworldmap} package. In case of \code{tfr.map.gvis} these are passed to the underlying data retrieving function (the same as \code{data.args}). In case of \pkg{ggplot} they are passed to the \code{geom_sf} function.
 }
 \item{pi}{Probability interval to be shown when a country is selected in an interactive map. The corresponding quantiles must be available (see argument \code{quantile} above).}
 }
@@ -63,9 +76,11 @@ Arguments passed to the \code{\link[rworldmap]{mapCountryData}} function of the 
 
 Function \code{get.tfr.map.parameters} can be used in combination with \code{tfr.map}. (Note that \code{get.tfr.map.parameters} is called from inside of \code{tfr.map.all}.) It sets breakpoints for the color scheme using quantiles of a fitted gamma distribution.
 
+Function \code{tfr.ggmap} is similar to \code{tfr.map}, but used the \pkg{ggplot2} package in combination with the \code{geom_sf} function.
+
 Function \code{tfr.map.gvis} creates an interactive map using the \pkg{googleVis} package and opens it in an internet browser. It also generates a table of TFRs that can be sorted by columns interactively in the browser. 
 
-By default, both \code{tfr.map} and \code{tfr.map.gvis} produce maps of TFRs. Alternatively, the functions can be used to plot country-specific Phase II MCMC parameters into a world map. They are given by the argument \code{par.name}. In addition to the MCMC parameters, if \code{par.name='lambda'}, the period of the end of TFR decline (i.e. start of Phase III) is computed for each country and projected into the map. In such a case, we recommend to adjust the color scale in \code{tfr.map} e.g. using the arguments \code{catMethod='pretty'} and \code{numCats=20} (see \code{\link[rworldmap]{mapCountryData}}). 
+By default, \code{tfr.map}, \code{tfr.ggmap} and \code{tfr.map.gvis} produce maps of TFRs. Alternatively, the functions can be used to plot country-specific Phase II MCMC parameters into a world map. They are given by the argument \code{par.name}. In addition to the MCMC parameters, if \code{par.name='lambda'}, the period of the end of TFR decline (i.e. start of Phase III) is computed for each country and projected into the map. In such a case, for \code{tfr.map} we recommend to adjust the color scale in \code{tfr.map} e.g. using the arguments \code{catMethod='pretty'} and \code{numCats=20} (see \code{\link[rworldmap]{mapCountryData}}). 
 }
 \value{
 \code{get.tfr.map.parameters} returns a list with elements:
@@ -95,6 +110,12 @@ Hana Sevcikova, Patrick Gerland, Adrian Raftery
 \dontrun{
 sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output")
 pred <- get.tfr.prediction(sim.dir=sim.dir)
+
+# Using ggplot2
+tfr.ggmap(pred)
+tfr.ggmap(pred, year = 2100)
+
+# Using rworldmap
 # Uses heat colors and seven categories by default
 tfr.map(pred)
 # Uses more colors with more suitable categorization
