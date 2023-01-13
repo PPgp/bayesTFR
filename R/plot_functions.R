@@ -1271,6 +1271,7 @@ tfr.ggmap <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FAL
     requireNamespace("ggplot2", quietly=TRUE)
     requireNamespace("sf", quietly=TRUE)
     requireNamespace("spData", quietly=TRUE)
+    requireNamespace("scales", quietly=TRUE)
     
     data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=year, 
                                                          par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
@@ -1330,7 +1331,7 @@ tfr.ggmap <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FAL
     if(plot == TRUE){
         plot_ratio <- 2.360463 # derived via library(tmaptools); get_asp_ratio(world.rob)
         if(is.null(file.name)){
-            dev.new(width = plot_ratio*plot.size, height = plot.size)
+            grDevices::dev.new(width = plot_ratio*plot.size, height = plot.size)
             print(grobin)
         } else {
             ggplot2::ggsave(file.name, grobin, width = plot_ratio*plot.size, height = plot.size)

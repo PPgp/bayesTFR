@@ -1178,7 +1178,7 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	    {
 	      object3 <- get.tfr3.mcmc(object$meta$output.dir)
 	      res$phase3 <- .summary.mcmc.set.phaseIII(object3, country, chain.id, par.names3, par.names3.cs, meta.only, thin, burnin, ...)
-	      if (!is.null(res$phase2) && !meta.only && res$phase3$estimation)
+	      if (!is.null(res$phase2) && !meta.only && (is.null(country) || (!is.null(country) && res$phase3$estimation)))
 	      {
 	        stat <- res$phase3$results$statistics
 	        quant <- res$phase3$results$quantiles

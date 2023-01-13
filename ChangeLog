@@ -1,3 +1,9 @@
+7.3-0 ()
+-----
+New function for plotting maps with ggplot, called tfr.ggmap.
+
+Fixed a bug in the summary function of mcmc (thanks to Angelica Rosario Santos).
+
 7.2-1/2 (12/09/2022)
 -----
 New function for adjusting the prediction medians to WPP (tfr.shift.prediction.to.wpp).
