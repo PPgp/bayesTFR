@@ -195,6 +195,28 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	stopifnot(all(mod.projs[c(1,5:17), c(1,3:dim(projs)[2])]==projs[c(1,5:17), c(1,3:dim(projs)[2])]))
 	test.ok(test.name)
 	
+	test.name <- 'shifting medians to WPP'
+	tfr.shift.prediction.to.wpp(sim.dir)
+	shifted.pred <- get.tfr.prediction(sim.dir)
+	shifted.projs <- summary(shifted.pred, country='Niger')$projections
+	shifted.projs <- data.table::data.table(shifted.projs)[, year := as.integer(rownames(shifted.projs))]
+	e <- new.env()
+	data("tfrprojMed", package = paste0("wpp", wpp.year), envir = e)
+	wpptfr <- data.table::data.table(e$tfrprojMed)
+	wpptfrl <- data.table::melt(wpptfr, id.vars = c("country_code", "name"), variable.name = "period")
+	wpptfrl <- wpptfrl[, year := as.integer(substr(period, 1,4)) + 3][name == "Niger"]
+	dat <- merge(wpptfrl, shifted.projs[, c("year", "50%"), with = FALSE], by = "year")
+	stopifnot(all.equal(dat$value, dat[, `50%`]))
+	stopifnot(!is.null(shifted.pred$median.shift))
+	stopifnot(length(shifted.pred$median.shift) == nrow(get.countries.table(shifted.pred)))
+	test.ok(test.name)
+	
+	test.name <- 'resetting all countries'
+	tfr.median.reset(sim.dir)
+	new.pred <- get.tfr.prediction(sim.dir)
+	stopifnot(is.null(new.pred$median.shift))
+	test.ok(test.name)
+	
 	unlink(sim.dir, recursive=TRUE)
 }
 
@@ -549,7 +571,7 @@ test.plot.density <- function() {
 }
 
 test.plot.map <- function() {
-	test.name <- 'creating TFR maps'
+	test.name <- 'creating TFR maps via rworldmap'
 	start.test(test.name)
 	sim.dir <- file.path(find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
 	pred <- get.tfr.prediction(sim.dir=sim.dir)
@@ -580,7 +602,7 @@ test.plot.map <- function() {
 	stopifnot(size > 0)
 	test.ok(test.name)
 	
-	test.name <- 'using ggplot2'
+	test.name <- 'creating TFR maps using ggplot2'
 	filename <- paste0(tempfile(), ".png")
 	tfr.ggmap(pred, file.name = filename)
 	size <- file.info(filename)['size']

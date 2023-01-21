@@ -33,8 +33,6 @@ tfr.map.all(pred, output.dir, output.type = "png",
 			
 get.tfr.map.parameters(pred, tfr.range = NULL, 
     nr.cats = 50, same.scale = TRUE, quantile = 0.5, \dots)
-    
-
 }
 
 \arguments{
@@ -67,7 +65,7 @@ additional arguments to be passed to the \code{\link[rworldmap]{mapDevice}} func
  By default, the whole range is considered. Note that countries with values outside of the given range will appear white.}
     \item{file.prefix}{Prefix for file names.}
   \item{\dots}{
-Arguments passed to the \code{\link[rworldmap]{mapCountryData}} function of the \pkg{rworldmap} package. In case of \code{tfr.map.gvis} these are passed to the underlying data retrieving function (the same as \code{data.args}). In case of \pkg{ggplot} they are passed to the \code{geom_sf} function.
+Arguments passed to the \code{\link[rworldmap]{mapCountryData}} function of the \pkg{rworldmap} package. In case of \code{tfr.map.gvis} these are passed to the underlying data retrieving function (the same as \code{data.args}). In case of \code{tfr.ggmap} which uses \pkg{ggplot2} they are passed to the \code{geom_sf} function.
 }
 \item{pi}{Probability interval to be shown when a country is selected in an interactive map. The corresponding quantiles must be available (see argument \code{quantile} above).}
 }

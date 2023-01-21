@@ -1260,7 +1260,8 @@ get.tfr.shift <- function(country.code, pred) {
 	return(pred$median.shift[[as.character(country.code)]])
 }
 
-.bdem.median.shift <- function(pred, type, country, reset=FALSE, shift=0, from=NULL, to=NULL) {
+.bdem.median.shift <- function(pred, type, country, reset=FALSE, shift=0, from=NULL, to=NULL, 
+                               verbose = TRUE) {
 	meta <- pred$mcmc.set$meta
 	country.obj <- get.country.object(country, meta=meta)
 	if(is.null(country.obj$name)) stop('Country not found.')
@@ -1284,13 +1285,19 @@ get.tfr.shift <- function(country.code, pred) {
 	}
 	if(sum(bdem.shift) == 0) bdem.shift <- NULL
 	pred$median.shift[[as.character(country.obj$code)]] <- bdem.shift
-	cat('\nMedian of', country.obj$name, action, 
+	if(verbose) cat('\nMedian of', country.obj$name, action, 
 		if(all.years) 'for all years' else c('for years', pred.years[which.years]), '.\n')
 	return(pred)
 }
 
-tfr.median.reset <- function(sim.dir, countries) {
-	for(country in countries) pred <- tfr.median.shift(sim.dir, country, reset=TRUE)
+tfr.median.reset <- function(sim.dir, countries = NULL) {
+    if(is.null(countries)) {
+        pred <- get.tfr.prediction(sim.dir)
+        pred$median.shift <- NULL
+        store.bayesTFR.prediction(pred)
+        cat('\nMedians for all countries reset.\n')
+    } else
+	    for(country in countries) pred <- tfr.median.shift(sim.dir, country, reset=TRUE)
 	invisible(pred)
 }
 
@@ -1302,7 +1309,7 @@ tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, 
 	invisible(pred)
 }
 
-.bdem.median.set <- function(pred, type, country, values, years=NULL) {
+.bdem.median.set <- function(pred, type, country, values, years=NULL, verbose = TRUE) {
 	meta <- pred$mcmc.set$meta
 	country.obj <- get.country.object(country, meta=meta)
 	if(is.null(country.obj$name)) stop('Country not found.')
@@ -1331,7 +1338,7 @@ tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, 
 	bdem.shift[which.years] <- values - medians[which.years]
 	if(sum(bdem.shift) == 0) bdem.shift <- NULL
 	pred$median.shift[[as.character(country.obj$code)]] <- bdem.shift
-	cat('\nMedian of', country.obj$name, 'modified for years', pred.years[which.years], '\n')
+	if(verbose) cat('\nMedian of', country.obj$name, 'modified for years', pred.years[which.years], '\n')
 	return(pred)
 }
 
