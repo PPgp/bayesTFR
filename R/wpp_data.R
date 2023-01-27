@@ -153,7 +153,7 @@ read.UNtfr <- function(wpp.year, my.tfr.file=NULL, annual = FALSE, ...) {
 	data <- do.read.un.file('tfr', wpp.year, my.file=my.tfr.file, annual = annual, ...)
 	suppl.data <- NULL
 	if(!annual) {
-	    suppl.data <- do.read.un.file('tfr_supplemental', wpp.year, my.file = my.tfr.file, ...)
+	    suppl.data <- do.read.un.file('tfr_supplemental', wpp.year, my.file = my.tfr.file, annual = annual, ...)
 	    if(is.null(suppl.data$data)) suppl.data <- NULL
 	}
 	return(list(data.object=data, suppl.data.object=suppl.data))
@@ -305,7 +305,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 }
 
 
-.get.suppl.matrix.and.regions <- function(un.object, matrix.regions, loc_data, start.year, present.year) {
+.get.suppl.matrix.and.regions <- function(un.object, matrix.regions, loc_data, start.year, present.year, ...) {
 	matrixsuppl.regions <- NULL
 	if(is.null(un.object$suppl.data.object)) return(NULL)
 	suppl.data <- un.object$suppl.data.object$data
@@ -314,7 +314,7 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 		matrixsuppl.regions <- get.observed.time.matrix.and.regions(
 							suppl.data[include,], loc_data, 
 							start.year=start.year, 
-							present.year=present.year)
+							present.year=present.year, ...)
 	if(!is.null(matrixsuppl.regions)) {
 		# remove rows where all tfr entries are NA
 		matrixsuppl.regions$obs_matrix <- matrixsuppl.regions$obs_matrix[,!matrixsuppl.regions$all.na, drop=FALSE]
