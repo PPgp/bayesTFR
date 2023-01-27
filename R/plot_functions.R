@@ -501,7 +501,7 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL
   quantile_tbl <- tfr.object$tfr_quantile
   names(quantile_tbl)[1:(1 + 2 * length(pis))] <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
   names.col <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
-  requireNamespace('ggplot2', quietly=TRUE)
+  requireNamespace('ggplot2')
   q <- ggplot2::ggplot(data=quantile_tbl)  + ggplot2::xlab("year") + ggplot2::ylab("TFR")
   q <- q + ggplot2::geom_ribbon(ggplot2::aes_string(x="year", ymin=names.col[1], ymax=names.col[length(names.col)]), alpha=0.2, fill='red') +
     ggplot2::geom_line(ggplot2::aes_string(x="year", y="Q50"), size = 0.8, color="red") +
@@ -1268,17 +1268,14 @@ tfr.ggmap <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FAL
         )
     }
     
-    requireNamespace("ggplot2", quietly=TRUE)
-    requireNamespace("sf", quietly=TRUE)
-    requireNamespace("spData", quietly=TRUE)
-    requireNamespace("scales", quietly=TRUE)
+    for(pkg in c("ggplot2", "sf", "spData", "scales"))
+        requireNamespace(pkg)
     
     data.period <- do.call(get.data.for.worldmap, c(list(pred, quantile, year=year, 
                                                          par.name=par.name, adjusted=adjusted, projection.index=projection.index), data.args))
     data <- data.period$data
     period <- data.period$period
     tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
-    
     
     e <- new.env()
     data("iso3166", envir=e)
