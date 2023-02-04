@@ -1,10 +1,10 @@
-start.test <- function(name) cat('\n<=== Starting test of', name,'====\n')
+start.test <- function(name, wpp.year = NULL) cat('\n<=== Starting test of', name, if(!is.null(wpp.year)) paste0('(WPP ', wpp.year, ')') else '', '====\n')
 test.ok <- function(name) cat('\n==== Test of', name, 'OK.===>\n')
 
 test.load.UNtfr <- function(wpp.year=2008) {
 	# read the UN TFR input file
 	test.name <- 'loading UN TFR file'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	tfr <- bayesTFR:::read.UNtfr(wpp.year)
 	stopifnot(length(dim(tfr$data.object$data))==2)
 	stopifnot(dim(tfr$data.object$data)[1] > 150)
@@ -15,14 +15,14 @@ test.load.UNtfr <- function(wpp.year=2008) {
 }
 
 test.load.UNtfr.and.my.tfr.file <- function() {
-	# read the UN TFR input file
+	# read the UN TFR input file for WPP 2019
 	test.name <- 'loading UN TFR file and my_tfr_file'
 	start.test(test.name)
 	my.tfr.file <- file.path(find.package("bayesTFR"), 'extdata', 'my_tfr_template.txt')
-	tfr <- bayesTFR:::read.UNtfr(2010, my.tfr.file=my.tfr.file)
+	tfr <- bayesTFR:::read.UNtfr(2019, my.tfr.file=my.tfr.file)
 	stopifnot(length(dim(tfr$data.object$data))==2)
 	stopifnot(length(dim(tfr$suppl.data.object$data))==2)
-	stopifnot(dim(tfr$data.object$data)[1] == 232)
+	stopifnot(dim(tfr$data.object$data)[1] == 249)
 	stopifnot(dim(tfr$suppl.data.object$data)[1] == 104)
 	stopifnot(is.element('last.observed', colnames(tfr$data.object$data)))
 	stopifnot(length(tfr$data.object$replaced) == 1)
@@ -34,7 +34,7 @@ test.load.UNtfr.and.my.tfr.file <- function() {
 
 test.load.UNlocations <- function(wpp.year=2012) {
 	test.name <- 'loading WPP location file'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	tfr <- suppressWarnings(bayesTFR:::read.UNtfr(wpp.year)) # if wpp.year=2008, there are warnings about non-existent tfr_supplemental dataset
 	locs <- bayesTFR:::read.UNlocations(tfr$data.object$data, wpp.year) # this could give warnings if there are duplicates in UNlocations
 	stopifnot(length(dim(locs$loc_data)) == 2)
@@ -42,8 +42,9 @@ test.load.UNlocations <- function(wpp.year=2012) {
 	stopifnot(dim(locs$loc_data)[1] > 200)
 	stopifnot(all(is.element(intersect(c(0,1,2), locs$loc_data[,'include_code']), c(0,1,2))))
 	test.ok(test.name)
+	
 	test.name <- 'loading WPP location file with my.locations.file'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	new.locations <- data.frame(country_code=9999, name='my location', reg_code=9999, area_code=8888, reg_name='my region', area_name='my area', location_type=4)
 	f <- tempfile()
 	write.table(new.locations, file=f, sep='\t', row.names=FALSE)
@@ -65,7 +66,7 @@ test.load.UNlocations <- function(wpp.year=2012) {
 
 test.create.tfr.matrix <- function(wpp.year=2008) {
 	test.name <- 'creating TFR matrix'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	tfr <- bayesTFR:::read.UNtfr(wpp.year)
 	locs <- bayesTFR:::read.UNlocations(tfr$data.object$data, wpp.year)
 	tfr.and.regions <- bayesTFR:::get.TFRmatrix.and.regions(tfr$data.object$data, locs$loc_data, 
@@ -81,7 +82,7 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 
 	# run MCMC
 	test.name <- 'running Phase II MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, start.year=1950, 
 	                  compression.type=compression, wpp.year = wpp.year)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
@@ -91,7 +92,7 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 
 	# continue MCMC
 	test.name <- 'continuing Phase II MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m <- continue.tfr.mcmc(iter=5, output.dir=sim.dir)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 10)
 	stopifnot(get.total.iterations(m$mcmc.list, 0) == 10)
@@ -100,7 +101,7 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 
 	# run MCMC for an aggregation
 	test.name <- 'running Phase II MCMC for extra areas'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	data.dir <- file.path(find.package("bayesTFR"), 'extdata')
 	m <- run.tfr.mcmc.extra(sim.dir=sim.dir, 
 			my.tfr.file=file.path(data.dir, 'my_tfr_template.txt'), burnin=0)
@@ -108,7 +109,7 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	test.ok(test.name)
 
 	test.name <- 'running Phase III MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=20, thin=1, nr.chains=2,  compression.type=compression)
 	stopifnot(m3$mcmc.list[[1]]$finished.iter == 20)
 	stopifnot(get.total.iterations(m3$mcmc.list, 0) == 40)
@@ -117,7 +118,7 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 
 	# continue MCMC
 	test.name <- 'continuing Phase III MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m3 <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=5)
 	stopifnot(m3$mcmc.list[[1]]$finished.iter == 25)
 	stopifnot(get.total.iterations(m3$mcmc.list, 0) == 50)
@@ -125,7 +126,7 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 
 	# run prediction
 	test.name <- 'running projections with classic AR(1)'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	pred <- tfr.predict(m, burnin=0, use.tfr3=FALSE, rho=NULL, sigmaAR1=NULL, verbose=FALSE)
 	spred <- summary(pred)
 	stopifnot(spred$nr.traj == 10)
@@ -138,7 +139,7 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	mu <- pred$mu
 	
 	test.name <- 'running projections with BHM for phase III'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	pred <- tfr.predict(m, burnin=0, use.tfr3=TRUE, burnin3=5, verbose=FALSE, replace.output=TRUE)
 	spred <- summary(pred)
 	stopifnot(spred$nr.traj == 10)
@@ -149,7 +150,7 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	
 	# run MCMC for another aggregation
 	test.name <- 'running projections on extra areas'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m <- run.tfr.mcmc.extra(sim.dir=sim.dir, countries=903, burnin=0)
 	# run prediction only for the area 903
 	pred <- tfr.predict.extra(sim.dir=sim.dir, verbose=FALSE)
@@ -160,14 +161,14 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	test.ok(test.name)
 
 	test.name <- 'estimating AR(1) parameters'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	ar1pars <- get.ar1.parameters(mu, m$meta)
 	stopifnot(rho==ar1pars$rho)
 	stopifnot(sigma==ar1pars$sigmaAR1)
 	test.ok(test.name)
 
 	test.name <- 'shifting the median'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	projs <- summary(pred, country='Uganda')$projections
 	tfr.median.shift(sim.dir, country='Uganda', shift=1.5, from=2051, to=2080)
 	shifted.pred <- get.tfr.prediction(sim.dir)
@@ -177,14 +178,14 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	test.ok(test.name)
 
 	test.name <- 'resetting the median'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	shifted.pred <- tfr.median.shift(sim.dir, country='Uganda', reset = TRUE)
 	shifted.projs <- summary(shifted.pred, country='Uganda')$projections
 	stopifnot(all(projs[,c(1,3:dim(projs)[2])] == shifted.projs[,c(1,3:dim(projs)[2])]))
 	test.ok(test.name)
 
 	test.name <- 'setting the median'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	expert.values <- c(2.3, 2.4, 2.4)
 	cobj <- get.country.object('Uganda', m$meta)
 	shift <- expert.values - pred$quantiles[cobj$index, '0.5',2:4]
@@ -194,6 +195,28 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	stopifnot(all(mod.projs[c(1,5:17), c(1,3:dim(projs)[2])]==projs[c(1,5:17), c(1,3:dim(projs)[2])]))
 	test.ok(test.name)
 	
+	test.name <- 'shifting medians to WPP'
+	tfr.shift.prediction.to.wpp(sim.dir)
+	shifted.pred <- get.tfr.prediction(sim.dir)
+	shifted.projs <- summary(shifted.pred, country='Niger')$projections
+	shifted.projs <- data.table::data.table(shifted.projs)[, year := as.integer(rownames(shifted.projs))]
+	e <- new.env()
+	data("tfrprojMed", package = paste0("wpp", wpp.year), envir = e)
+	wpptfr <- data.table::data.table(e$tfrprojMed)
+	wpptfrl <- data.table::melt(wpptfr, id.vars = c("country_code", "name"), variable.name = "period")
+	wpptfrl <- wpptfrl[, year := as.integer(substr(period, 1,4)) + 3][name == "Niger"]
+	dat <- merge(wpptfrl, shifted.projs[, c("year", "50%"), with = FALSE], by = "year")
+	stopifnot(all.equal(dat$value, dat[, `50%`]))
+	stopifnot(!is.null(shifted.pred$median.shift))
+	stopifnot(length(shifted.pred$median.shift) == nrow(get.countries.table(shifted.pred)))
+	test.ok(test.name)
+	
+	test.name <- 'resetting all countries'
+	tfr.median.reset(sim.dir)
+	new.pred <- get.tfr.prediction(sim.dir)
+	stopifnot(is.null(new.pred$median.shift))
+	test.ok(test.name)
+	
 	unlink(sim.dir, recursive=TRUE)
 }
 
@@ -201,7 +224,7 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 	sim.dir <- tempfile()
 	# run MCMC
 	test.name <- 'running thinned Phase II MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m <- run.tfr.mcmc(iter=10, nr.chains=2, output.dir=sim.dir, thin=2, compression.type=compression,
 	                  wpp.year = wpp.year)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 10)
@@ -212,7 +235,7 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 
 	# continue MCMC
 	test.name <- 'continuing thinned Phase II MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m <- continue.tfr.mcmc(iter=10, output.dir=sim.dir)
 	stopifnot(m$mcmc.list[[1]]$finished.iter == 20)
 	stopifnot(m$mcmc.list[[1]]$length == 11)
@@ -222,14 +245,14 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 
 	# run MCMC for an aggregation
 	test.name <- 'running thinned MCMC for extra areas'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	data.dir <- file.path(find.package("bayesTFR"), 'extdata')
 	m <- run.tfr.mcmc.extra(sim.dir=sim.dir, my.tfr.file=file.path(data.dir, 'my_tfr_template.txt'), burnin=0)
 	stopifnot(is.element(900, m$meta$regions$country_code)) # 'World' should be included
 	test.ok(test.name)
 
 	test.name <- 'running thinned Phase III MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=20, nr.chains=3, thin=4, compression.type=compression)
 	stopifnot(m3$mcmc.list[[1]]$finished.iter == 20)
 	stopifnot(m3$mcmc.list[[1]]$length == 6)
@@ -239,7 +262,7 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 
 	# continue MCMC
 	test.name <- 'continuing thinned Phase III MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m3 <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=5)
 	stopifnot(m3$mcmc.list[[1]]$finished.iter == 25)
 	stopifnot(m3$mcmc.list[[1]]$length == 7)
@@ -249,7 +272,7 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 
 	# run prediction
 	test.name <- 'running thinned projections'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	pred <- tfr.predict(m, burnin=5, burnin3=3, verbose=FALSE)
 	spred <- summary(pred)
 	stopifnot(spred$nr.traj == 16) # 2x8
@@ -260,7 +283,7 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 	test.ok(test.name)
 
 	test.name <- 'running thinned projections on extra areas'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m <- run.tfr.mcmc.extra(sim.dir=sim.dir, countries=903, burnin=5)
 	# run prediction only for the area 903
 	pred <- tfr.predict.extra(sim.dir=sim.dir, verbose=FALSE)
@@ -268,7 +291,7 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 	test.ok(test.name)
 
 	test.name <- 'plotting DL curves with thinned MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	filename <- tempfile()
 	png(filename=filename)
 	DLcurve.plot(m, 903, burnin=5, nr.curves=5)
@@ -279,7 +302,7 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 	test.ok(test.name)
 
 	test.name <- 'plotting TFR trajectories with thinned MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	filename <- tempfile()
 	png(filename=filename)
 	tfr.trajectories.plot(pred, 900, nr.traj=5, pi=c(70,65))
@@ -290,14 +313,14 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 	test.ok(test.name)
 
 	test.name <- 'getting Phase II parameter traces with thinned MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	traces <- get.tfr.parameter.traces(m$mcmc.list, burnin=5, 
 					thinning.index=c(1, 3, 10, 15))
 	stopifnot(nrow(traces)==4)
 	test.ok(test.name)
 	
 	test.name <- 'getting Phase III parameter traces with thinned MCMC'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	m3 <- get.tfr3.mcmc(sim.dir)
 	traces <- get.tfr3.parameter.traces(m3$mcmc.list, burnin=10, 
 					thinning.index=c(1, 3, 5, 10))
@@ -305,7 +328,7 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 	test.ok(test.name)
 
 	test.name <- 'plotting Phase II parameter density'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	filename <- tempfile()
 	png(filename=filename)
 	tfr.pardensity.plot(m, burnin=10)
@@ -316,7 +339,7 @@ test.thinned.simulation <- function(compression='None', wpp.year = 2019) {
 	test.ok(test.name)
 	
 	test.name <- 'plotting Phase III parameter density'
-	start.test(test.name)
+	start.test(test.name, wpp.year)
 	filename <- tempfile()
 	png(filename=filename)
 	tfr3.pardensity.plot(m3, burnin=10)
@@ -548,7 +571,7 @@ test.plot.density <- function() {
 }
 
 test.plot.map <- function() {
-	test.name <- 'creating TFR maps'
+	test.name <- 'creating TFR maps via rworldmap'
 	start.test(test.name)
 	sim.dir <- file.path(find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
 	pred <- get.tfr.prediction(sim.dir=sim.dir)
@@ -574,6 +597,22 @@ test.plot.map <- function() {
 	tfr.map(pred, device='png', par.name='lambda', quantile=0.7, 
 			device.args=list(filename=filename), numCats=20, catMethod="pretty")
 	dev.off()
+	size <- file.info(filename)['size']
+	unlink(filename)
+	stopifnot(size > 0)
+	test.ok(test.name)
+	
+	test.name <- 'creating TFR maps using ggplot2'
+	filename <- paste0(tempfile(), ".png")
+	tfr.ggmap(pred, file.name = filename)
+	size <- file.info(filename)['size']
+	unlink(filename)
+	stopifnot(size > 0)
+	tfr.ggmap(pred, same.scale = TRUE, file.name = filename)
+	size <- file.info(filename)['size']
+	unlink(filename)
+	stopifnot(size > 0)
+	tfr.ggmap(pred, same.scale = TRUE, year = 2100, file.name = filename)
 	size <- file.info(filename)['size']
 	unlink(filename)
 	stopifnot(size > 0)
@@ -797,7 +836,7 @@ test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
 
     # run MCMC
     test.name <- 'running MCMC with uncertainty'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, uncertainty = TRUE, wpp.year = wpp.year)
     stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
     stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
@@ -805,23 +844,34 @@ test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
     
     # continue MCMC
     test.name <- 'continuing MCMC with uncertainty'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     m <- continue.tfr.mcmc(iter=5, output.dir=sim.dir)
     stopifnot(m$mcmc.list[[1]]$finished.iter == 10)
     stopifnot(get.total.iterations(m$mcmc.list, 0) == 10)
     stopifnot(m$mcmc.list[[1]]$uncertainty)
     test.ok(test.name)
     
+    # summary of MCMC
+    test.name <- 'summary of MCMC with uncertainty'
+    start.test(test.name, wpp.year)
+    sm <- summary(m, country = "Niger")
+    sm2 <- summary(m, country = "Japan")
+    smg <- summary(m)
+    stopifnot(!sm$phase3$estimation)
+    stopifnot(sm2$phase3$estimation)
+    stopifnot(!is.null(smg$phase3))
+    test.ok(test.name)
+    
     # run MCMC for an extra country
     test.name <- 'running MCMC with uncertainty for extra country'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     countries <- c(124, 840)
     m <- run.tfr.mcmc.extra(sim.dir=sim.dir, countries = countries, iso.unbiased = countries, burnin=0, uncertainty = TRUE)
     stopifnot(sum(m$meta$regions$country_code %in% countries) == length(countries)) # countries were replaced and not added
     test.ok(test.name)
     
     test.name <- 'checking Phase III with uncertainty'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     m3 <- get.tfr3.mcmc(sim.dir=sim.dir)
     stopifnot(m3$mcmc.list[[1]]$finished.iter == 10)
     stopifnot(get.total.iterations(m3$mcmc.list, 0) == 10)
@@ -829,7 +879,7 @@ test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
     
     # run prediction
     test.name <- 'running projections with uncertainty'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     pred <- tfr.predict(m, burnin=0, burnin3=0, uncertainty = TRUE)
     spred <- summary(pred)
     stopifnot(spred$nr.traj == 10)
@@ -840,7 +890,7 @@ test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
     
     # run MCMC and prediction for extra country
     test.name <- 'running projections with uncertainty for extra country'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     m <- run.tfr.mcmc.extra(sim.dir=sim.dir, countries=840, burnin=0, uncertainty = TRUE)
     # run prediction only for 840
     pred <- tfr.predict.extra(sim.dir=sim.dir, countries = 840, verbose=FALSE, uncertainty = TRUE)
@@ -850,13 +900,13 @@ test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
     test.ok(test.name)
 
     test.name <- 'getting bias and sd models'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     bias_sd <- tfr.bias.sd(m, "Nigeria")
     stopifnot(!is.null(bias_sd))
     test.ok(test.name)
     
     test.name <- 'plotting uncertainty'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     filename <- tempfile()
     png(filename=filename)
     g <- tfr.estimation.plot(pred, "US", save.image = FALSE)
@@ -868,17 +918,19 @@ test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
     test.ok(test.name)
     
     test.name <- 'write projection summary'
+    start.test(test.name, wpp.year)
     write.projection.summary(sim.dir, est.uncertainty = FALSE)
     write.projection.summary(sim.dir, est.uncertainty = TRUE)
-    
-    #unlink(sim.dir, recursive=TRUE)
+    # TODO: add a check of something
+    test.ok(test.name)
+    unlink(sim.dir, recursive=TRUE)
 }
 
 test.run.annual.simulation <- function(wpp.year = 2019) {
     sim.dir <- tempfile()
     
     test.name <- 'running MCMC with annual data'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     m <- run.tfr.mcmc(iter = 5, nr.chains = 1, output.dir = sim.dir, annual = TRUE, ar.phase2 = TRUE,
                       present.year = 2018, wpp.year = wpp.year)
     stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
@@ -888,21 +940,21 @@ test.run.annual.simulation <- function(wpp.year = 2019) {
     test.ok(test.name)
     
     test.name <- 'running annual MCMC for extra country'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     countries <- c(900, 908)
     m <- run.tfr.mcmc.extra(sim.dir = sim.dir, countries = countries, burnin = 0)
     stopifnot(countries %in% m$meta$regions$country_code)
     test.ok(test.name)
     
     test.name <- 'running Phase III MCMC with annual data'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=20, thin=1, nr.chains=2)
     stopifnot(get.total.iterations(m3$mcmc.list, 0) == 40)
     stopifnot(bayesTFR:::tfr.set.identical(m3, get.tfr3.mcmc(sim.dir), include.output.dir=FALSE))
     test.ok(test.name)
     
     test.name <- 'running annual projections'
-    start.test(test.name)
+    start.test(test.name, wpp.year)
     pred <- tfr.predict(m, burnin=0, burnin3=0)
     spred <- summary(pred)
     stopifnot(spred$nr.traj == 5)

@@ -1,3 +1,14 @@
+7.3-0 (02/03/2023)
+-----
+New function for plotting maps with ggplot, called tfr.ggmap.
+
+Fixed a bug in the summary function of mcmc (thanks to Angelica Rosario Santos).
+
+Functions for resetting the medians (tfr.median.reset, tfr.median.reset.estimation) 
+now work for all countries if the countries argument is NULL.
+
+LazyData switched off.
+
 7.2-1/2 (12/09/2022)
 -----
 New function for adjusting the prediction medians to WPP (tfr.shift.prediction.to.wpp).

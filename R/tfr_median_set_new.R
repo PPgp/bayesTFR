@@ -126,7 +126,7 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
   invisible(output)
 }
 
-tfr.median.reset.estimation <- function(sim.dir, countries)
+tfr.median.reset.estimation <- function(sim.dir, countries = NULL)
 {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta <- mcmc.set$meta
@@ -136,10 +136,13 @@ tfr.median.reset.estimation <- function(sim.dir, countries)
   output <- list()
   if (has.estimation && !is.null(meta$median.shift.estimation)) 
   {
-    for (country in countries) 
-    {
-      country.obj <- get.country.object(country, meta=meta)
-      meta$median.shift.estimation[[as.character(country.obj$code)]] <- NULL
+    if(is.null(countries)) meta$median.shift.estimation <- NULL # reset all countries
+    else {
+      for (country in countries) 
+      {
+        country.obj <- get.country.object(country, meta=meta)
+        meta$median.shift.estimation[[as.character(country.obj$code)]] <- NULL
+      }
     }
     output[['meta']] <- meta
     store.bayesTFR.meta.object(meta, meta$output.dir)
@@ -150,10 +153,13 @@ tfr.median.reset.estimation <- function(sim.dir, countries)
   }
   if (has.prediction && !is.null(pred$median.shift)) 
   {
-    for (country in countries) 
-    {
-      country.obj <- get.country.object(country, meta=meta)
-      pred$median.shift[[as.character(country.obj$code)]] <- NULL
+    if(is.null(countries)) pred$median.shift <- NULL # reset all countries
+    else {
+      for (country in countries) 
+      {
+        country.obj <- get.country.object(country, meta=meta)
+        pred$median.shift[[as.character(country.obj$code)]] <- NULL
+      }
     }
     output[['pred']] <- pred
     store.bayesTFR.prediction(pred)
@@ -161,18 +167,17 @@ tfr.median.reset.estimation <- function(sim.dir, countries)
   invisible(output)
 }
 
-tfr.shift.prediction.to.wpp <- function(sim.dir, verbose = TRUE){
-  pred <- get.tfr.prediction(sim.dir)
+.do.shift.prediction.to.wpp <- function(pred, wpp.dataset, wpp.year = NULL, verbose = TRUE){
   country_code <- NULL # for CRAN check not to complain
   meta <- pred$mcmc.set$meta
-  wpp.year <- meta$wpp.year
+  wpp.year <- if(!is.null(wpp.year)) wpp.year else meta$wpp.year
   countries <- get.countries.table(pred$mcmc.set)$code
   if(meta$annual.simulation && wpp.year < 2022) stop("No annual WPP data available.")
   
-  wppdata <- data.table::data.table(load.from.wpp("tfrprojMed", wpp.year = wpp.year, annual = meta$annual.simulation))
+  wppdata <- data.table::data.table(load.from.wpp(wpp.dataset, wpp.year = wpp.year, annual = meta$annual.simulation))
   wppdatal <- melt(wppdata, id.vars = c("country_code", "name"), value.name = "wpp", variable.name = "period", variable.factor = FALSE)
   wppdatal$year <- if(meta$annual.simulation) as.integer(wppdatal$period) else as.integer(substr(wppdatal$period, 1, 4)) + 3
-
+  
   pred.years <- as.numeric(dimnames(pred$quantiles)[[3]])
   pred$median.shift <- NULL
   
@@ -187,14 +192,21 @@ tfr.shift.prediction.to.wpp <- function(sim.dir, verbose = TRUE){
       }
     }
     cntry <- countries[icntry]
-    tfr.to.match <- merge(data.table::data.table(year = pred.years, median = pred$quantiles[icntry, "0.5", ]), 
+    to.match <- merge(data.table::data.table(year = pred.years, median = pred$quantiles[icntry, "0.5", ]), 
                           wppdatal[country_code == cntry], by = "year", all.x = TRUE)
-    tfr.to.match$wpp[is.na(tfr.to.match$wpp)] <- tfr.to.match$median[is.na(tfr.to.match$wpp)] # no shift for years that don't match
-    tfr.to.match$shift <- tfr.to.match$wpp - tfr.to.match$median
-    if(sum(tfr.to.match$shift) != 0)
-      pred$median.shift[[as.character(cntry)]] <- tfr.to.match$shift
+    to.match$wpp[is.na(to.match$wpp)] <- to.match$median[is.na(to.match$wpp)] # no shift for years that don't match
+    to.match$shift <- to.match$wpp - to.match$median
+    if(sum(to.match$shift) != 0)
+      pred$median.shift[[as.character(cntry)]] <- to.match$shift
   }
-  store.bayesTFR.prediction(pred)
   if(verbose) cat("\n")
-  invisible(pred)
+  return(pred)
+}
+
+
+tfr.shift.prediction.to.wpp <- function(sim.dir, ...){
+  pred <- get.tfr.prediction(sim.dir)
+  new.pred <- .do.shift.prediction.to.wpp(pred, wpp.dataset = "tfrprojMed", ...)
+  store.bayesTFR.prediction(new.pred)
+  invisible(new.pred)
 }

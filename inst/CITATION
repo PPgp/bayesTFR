@@ -1,10 +1,6 @@
-citHeader("To cite bayesTFR in publications use:")
-
-citEntry(entry = "Article",
+bibentry("Article",
   title        = "{bayesTFR}: An {R} Package for Probabilistic Projections of the Total Fertility Rate",
-  author       = personList(as.person("Hana \\v{S}ev\\v{c}{\\'\\i}kov\\'{a}"),
-                   as.person("Leontine Alkema"),
-                   as.person("Adrian E. Raftery")),
+  author       = c("Hana {\\v{S}}ev\\v{c}{\\'\\i}kov\\'{a}", "Leontine Alkema", "Adrian E. Raftery"),
   journal      = "Journal of Statistical Software",
   year         = "2011",
   volume       = "43",
@@ -16,6 +12,7 @@ citEntry(entry = "Article",
   paste("Hana Sevcikova, Leontine Alkema, Adrian E. Raftery (2011).",
         "bayesTFR: An R Package for Probabilistic Projections of the Total Fertility Rate.",
         "Journal of Statistical Software, 43(1), 1-29.",
-        "doi: 10.18637/jss.v043.i01.")
+        "doi: 10.18637/jss.v043.i01."),
+  header = "To cite bayesTFR in publications use:"
 )
 
