@@ -394,11 +394,11 @@ get.TFRmatrix.and.regions <- function(tfr_data, ..., verbose=FALSE){
 }
 
 set.wpp.extra <- function(meta, countries=NULL, my.tfr.file=NULL, my.locations.file=NULL, 
-                          annual = FALSE, verbose=FALSE, uncertainty=FALSE) {
+                          annual = FALSE, verbose=FALSE, uncertainty=FALSE, use.wpp.data = TRUE) {
 	#'countries' is a vector of country or region codes 
 	un.object <- read.UNtfr(wpp.year=meta$wpp.year, my.tfr.file=my.tfr.file, 
 							present.year=meta$present.year, annual = annual, countries = countries,
-							verbose=verbose)
+							use.wpp.data = use.wpp.data, verbose=verbose)
 	data <- un.object$data.object
 	extra.wpp <- .extra.matrix.regions(data=data, countries=countries, meta=meta, my.locations.file=my.locations.file, 
 	                                   verbose=verbose, annual=annual, uncertainty=uncertainty, 
