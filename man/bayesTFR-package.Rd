@@ -79,7 +79,7 @@ P. Liu, and A. E. Raftery (2020). Accounting for Uncertainty About Past Values I
 Raftery, A.E., Alkema, L. and Gerland, P. (2014). Bayesian Population Projections for the United Nations.
 Statistical Science, Vol. 29, 58-68. \doi{10.1214/13-STS419}.
 
-Hana Sevcikova, Adrian E. Raftery, Patrick Gerland (2018). Probabilistic Projection of Subnational Total Fertility Rates. Demographic Research, Vol. 38(60), 1843-1884 \doi{10.4054/DemRes.2018.38.60}.
+Hana Sevcikova, Adrian E. Raftery, Patrick Gerland (2018). Probabilistic Projection of Subnational Total Fertility Rates. Demographic Research, Vol. 38(60), 1843-1884. \doi{10.4054/DemRes.2018.38.60}.
 }
 
 \keyword{ package }

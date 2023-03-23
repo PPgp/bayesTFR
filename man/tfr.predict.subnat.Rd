@@ -47,7 +47,7 @@ Even though the resulting object contains subnational results, the names  of its
 }
 
 \references{
-Hana Sevcikova, Adrian E. Raftery, Patrick Gerland (2018). Probabilistic Projection of Subnational Total Fertility Rates. Demographic Research, Vol. 38(60), 1843-1884 \doi{10.4054/DemRes.2018.38.60}.
+Hana Sevcikova, Adrian E. Raftery, Patrick Gerland (2018). Probabilistic Projection of Subnational Total Fertility Rates. Demographic Research, Vol. 38(60), 1843-1884. \doi{10.4054/DemRes.2018.38.60}.
 }
 
 \author{
