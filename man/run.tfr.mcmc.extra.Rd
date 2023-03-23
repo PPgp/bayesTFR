@@ -12,7 +12,8 @@ run.tfr.mcmc.extra(sim.dir = file.path(getwd(), "bayesTFR.output"),
     countries = NULL, my.tfr.file = NULL, 
     iter = NULL, thin = 1, thin.extra = 1, burnin = 2000,
     parallel = FALSE, nr.nodes = NULL,  my.locations.file = NULL,
-    uncertainty = FALSE, my.tfr.raw.file = NULL, iso.unbiased = NULL, 
+    uncertainty = FALSE, my.tfr.raw.file = NULL, 
+    use.wpp.data = TRUE, iso.unbiased = NULL, 
     covariates = c('source', 'method'), cont_covariates = NULL, 
     source.col.name = "source", average.gammas.cov = TRUE, 
     verbose = FALSE, verbose.iter = 100, \dots)
@@ -44,6 +45,7 @@ Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes fo
 \item{my.locations.file}{File name containing user-specified locations. See Details below.}
 \item{uncertainty}{Whether past TFR uncertainty is considered. If \code{TRUE}, countries listed in \code{countries} will be re-simulated with the model that accounts for past TFR estimation. It will take observations either from \code{\link{rawTFR}} (default) or from a file given by \code{my.tfr.raw.file}, and estimate the distribution of these observations with respect to the true TFR. Then instead of treating the observed data as true data, it assumes the true TFR are unknown and includes an extra step for estimating past TFR.}
 \item{my.tfr.raw.file}{File name of the raw TFR used when uncertainty is \code{TRUE}. See details in \code{\link{run.tfr.mcmc}}.}
+\item{use.wpp.data}{Logical indicating if default WPP data should be used, i.e. if \code{my.tfr.file} will be matched with the WPP data in terms of time periods and locations. If \code{FALSE}, it is assumed that the \code{my.tfr.file} contains all locations and time periods to be included in the simulation.}
 \item{iso.unbiased}{Codes of countries for which the vital registration TFR estimates are considered unbiased. See details in \code{\link{run.tfr.mcmc}}.}
 \item{covariates, cont_covariates}{Categorical and continuous features used in estimating bias and standard deviation if \code{uncertainty} is \code{TRUE}. See details in \code{\link{run.tfr.mcmc}}.}
 \item{source.col.name}{If \code{uncertainty} is \code{TRUE} this is a column name within the given covariates that determines the data source. It is used if \code{iso.unbiased} is given to identify the vital registration records.}

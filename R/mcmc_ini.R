@@ -584,7 +584,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL, 
 									my.locations.file=NULL, burnin = 200, verbose=FALSE, uncertainty=FALSE, 
 									my.tfr.raw.file=ifelse(uncertainty, file.path(find.package("bayesTFR"), "data", "rawTFR.csv"), NULL),
-									average.gammas.cov = TRUE, iso.unbiased=NULL) {
+									average.gammas.cov = TRUE, iso.unbiased=NULL, use.wpp.data = TRUE) {
 	update.regions <- function(reg, ereg, id.replace, is.new, is.old) {
 		nreg <- list()
 		for (name in c('code', 'area_code', 'country_code')) {
@@ -601,7 +601,8 @@ mcmc.meta.ini.extra <- function(mcmc.set, countries=NULL, my.tfr.file = NULL,
 	meta <- mcmc.set$meta
 	#create tfr matrix only for the extra countries
 	tfr.with.regions <- set.wpp.extra(meta, countries=countries, annual = meta$annual.simulation,
-									  my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, verbose=verbose, uncertainty=uncertainty)
+									  my.tfr.file = my.tfr.file, my.locations.file=my.locations.file, 
+									  verbose=verbose, uncertainty=uncertainty, use.wpp.data = use.wpp.data)
 	if(is.null(tfr.with.regions)) return(list(meta=meta, index=c()))
 	has.mock.suppl <- FALSE
 	if(is.null(tfr.with.regions$suppl.data$regions) && !is.null(meta$suppl.data$regions)) {

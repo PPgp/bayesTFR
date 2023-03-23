@@ -369,7 +369,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								countries = NULL, my.tfr.file = NULL, iter = NULL,
 								thin=1, thin.extra=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
 								my.locations.file = NULL,
-								uncertainty=FALSE, my.tfr.raw.file=NULL, iso.unbiased=NULL, 
+								uncertainty=FALSE, my.tfr.raw.file=NULL, use.wpp.data = TRUE, iso.unbiased=NULL, 
 								covariates=c('source', 'method'), cont_covariates=NULL, source.col.name="source",
 								average.gammas.cov = TRUE, verbose=FALSE, verbose.iter=100, ...) {
   mcmc.set <- get.tfr.mcmc(sim.dir)
@@ -383,7 +383,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
   
   Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, my.locations.file=my.locations.file, 
 												burnin=burnin, verbose=verbose, uncertainty=uncertainty, 
-												my.tfr.raw.file=my.tfr.raw.file, average.gammas.cov = average.gammas.cov)
+												my.tfr.raw.file=my.tfr.raw.file, average.gammas.cov = average.gammas.cov,
+												use.wpp.data = use.wpp.data)
 	if(length(Eini$index) <= 0) {
 		cat('\nNothing to be done.\n')
 		return(invisible(mcmc.set))

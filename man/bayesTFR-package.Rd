@@ -70,12 +70,16 @@ Hana Sevcikova, Leontine Alkema, Adrian E. Raftery (2011). bayesTFR: An
   R Package for Probabilistic Projections of the Total Fertility Rate.
   Journal of Statistical Software, 43(1), 1-29. \doi{10.18637/jss.v043.i01}.
 
+Peiran Liu, Hana Sevcikova, Adrian E. Raftery (2023): Probabilistic Estimation and Projection of the Annual Total Fertility Rate Accounting for Past Uncertainty: A Major Update of the bayesTFR R Package. Journal of Statistical Software, 106(8), 1-36. \doi{10.18637/jss.v106.i08}.
+
 L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. \doi{10.1007/s13524-011-0040-5}.
 
 P. Liu, and A. E. Raftery (2020). Accounting for Uncertainty About Past Values In Probabilistic Projections of the Total Fertility Rate for All Countries. Annals of Applied Statistics, Vol 14, no. 2, 685-705. \doi{10.1214/19-AOAS1294}.
 
 Raftery, A.E., Alkema, L. and Gerland, P. (2014). Bayesian Population Projections for the United Nations.
 Statistical Science, Vol. 29, 58-68. \doi{10.1214/13-STS419}.
+
+Hana Sevcikova, Adrian E. Raftery, Patrick Gerland (2018). Probabilistic Projection of Subnational Total Fertility Rates. Demographic Research, Vol. 38(60), 1843-1884. \doi{10.4054/DemRes.2018.38.60}.
 }
 
 \keyword{ package }
