@@ -1,5 +1,9 @@
-7.3-1 (03/22/2023)
+7.3-2.9001 (2023-06-12)
 -----
+Added use.correlation argument to tfr.predict.extra().
+
+7.3-1/2 (03/23/2023)
+-------
 Citation updated.
 
 Added use.wpp.data argument to run.tfr.mcmc.
