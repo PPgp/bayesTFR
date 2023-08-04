@@ -260,7 +260,7 @@ get.observed.time.matrix.and.regions <- function(data, loc_data, start.year=1950
 	}
 	present.col <- names.tfr.data[num.columns][present.index[1]]
 
-	tfr_matrix <- t(tfr_data[,which.max(names(tfr_data)==start.col):which.max(names(tfr_data)==present.col)])
+	tfr_matrix <- t(tfr_data[,which.max(names(tfr_data)==start.col):which.max(names(tfr_data)==present.col), drop = FALSE])
 	start.years <- as.integer(substr(rownames(tfr_matrix), 1,4))
 	if (!annual) {
 	    end.years <- as.integer(substr(rownames(tfr_matrix), 6,9))

@@ -1,7 +1,7 @@
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
-                               end.year=2100, start.year=NULL, output.dir = NULL, nr.traj=NULL, seed = NULL, 
-                               min.tfr=0.5, ar.pars=c(mu = 1, rho = 0.92464, sigma = 0.04522), 
-                               save.as.ascii=0, verbose=TRUE) {
+                               end.year=2100, start.year=NULL, output.dir = NULL, annual = NULL,
+                               nr.traj=NULL, seed = NULL, min.tfr = 0.5, ar.pars = NULL, 
+                               save.as.ascii = 0, verbose = TRUE) {
   # Run subnational projections, using the Scale AR(1) model applied to a national bayesTFR simulation 
   # sim.dir is the world-national simulation. Set output.dir to store results somewhere else.  
 
@@ -11,7 +11,17 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
   if(!is.null(seed)) set.seed(seed)
   if (is.null(output.dir)) output.dir <- wmeta$output.dir
   quantiles.to.keep <- as.numeric(dimnames(wpred$quantiles)[[2]])
-  e <- new.env()
+  wannual <- wmeta$annual.simulation
+  if(is.null(annual)) annual <- wannual
+  if(annual && !wannual)  # interpolate the observed data
+    wdata <- interpolate.trajectories(wdata)
+  
+  ar.pars.default <- c(mu = 1, rho = 0.92464, sigma = 0.04522)
+  if(annual) {
+    ar.pars.default["sigma"] <- ar.pars.default["sigma"] * sqrt((1-ar.pars.default["rho"]^(2/5))/(1-ar.pars.default["rho"]^2))
+    ar.pars.default["rho"] <- ar.pars.default["rho"]^(1/5)
+  }
+  
   result <- list()
   orig.nr.traj <- nr.traj
   for (country in countries) {
@@ -22,10 +32,11 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
     }
     if(verbose) 
       cat('\nPredicting TFR for ', country.obj$name, '\n')
-    starty <- if(is.null(start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+5
+    year.step <- if(annual) 1 else 5
+    starty <- if(is.null(start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+year.step
     else start.year
     meta <- mcmc.meta.ini.subnat(wmeta, country=country.obj$code, my.tfr.file=my.tfr.file, 
-                                 start.year=1750, present.year=starty-5, verbose=verbose)
+                                 start.year=1750, present.year=starty-year.step, annual = annual, verbose=verbose)
     this.output.dir <- file.path(output.dir, 'subnat', paste0('c', country.obj$code))
     outdir <- file.path(this.output.dir, 'predictions')
     meta$output.dir <- this.output.dir
@@ -36,13 +47,22 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
     thinning.index <- round(seq(1, ncol(wtrajs), length=nr.traj))
     wtrajs <- wtrajs[as.integer(rownames(wtrajs)) <= end.year, thinning.index]
     nr.traj <- ncol(wtrajs)
+    if(annual && !wannual) { # interpolate the world trajectories
+      wtrajs <- interpolate.trajectories(wtrajs)
+    }
     wyears <- as.integer(rownames(wtrajs))
     wend.year <- max(wyears)
     wtfr <- wdata[,country.obj$index]
     wtfrobsy <- as.integer(names(wtfr))[-length(wtfr)]
-    seqy <- seq(min(wtfrobsy)-3, max(wyears)+2, by=5)
-    midy <- seqy+3
-    presenty <- midy[cut(starty, seqy, labels=FALSE)-1]
+    if(!annual){
+      seqy <- seq(min(wtfrobsy)-3, max(wyears)+2, by=5)
+      midy <- seqy+3
+      presenty <- midy[cut(starty, seqy, labels=FALSE)-1]
+    } else {
+      midy <- min(wtfrobsy):max(wyears)
+      presenty <- midy[which(midy == starty) - 1]
+    }
+    
     if(any(wyears < presenty)) { # remove time periods from national trajectories before present year
       wtrajs <- wtrajs[-which(wyears < presenty),]
     }
@@ -53,7 +73,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
       wtrajs <- rbind(adddata, wtrajs)
     }
     if(!presenty %in% rownames(meta$tfr_matrix_all)) { # add NAs to tfr matrix
-      addyears <- sort(seq(presenty, max(as.integer(rownames(meta$tfr_matrix_all))+5), by=-5))
+      addyears <- sort(seq(presenty, max(as.integer(rownames(meta$tfr_matrix_all))+year.step), by=-year.step))
       adddata <- matrix(NA, nrow=length(addyears), ncol=ncol(meta$tfr_matrix_all),
                         dimnames=list(addyears, colnames(meta$tfr_matrix_all)))
       for(tfrname in c("tfr_matrix_all", "tfr_matrix_observed", "tfr_matrix"))
@@ -73,6 +93,10 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
     meta$T_end <- nrow(meta$tfr_matrix_all)
     meta$T_end_c <- rep(meta$T_end, nr.reg)
     country.char <- as.character(country.obj$code)
+    
+    if(is.null(ar.pars)) ar.pars <- ar.pars.default
+    for(par in names(ar.pars.default)) if(! par %in% names(ar.pars)) ar.pars[par] <- ar.pars.default[par]
+      
     # Get observed variance (SD) from a time point that has at least one half of the regions non-NA
     for(i in meta$T_end:1) if(sum(!is.na(meta$tfr_matrix_observed)[i,]) >= max(2, nr.reg/2)) break # check NA's at the end
     widx <- which(names(wtfr) == rownames(meta$tfr_matrix_observed)[i])
@@ -82,6 +106,9 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
         reg.obj <- get.country.object(region, meta, index=TRUE)
         regcode.char <- as.character(reg.obj$code)			
         regtfr <- get.observed.tfr(region, meta, 'tfr_matrix_observed')
+        #if(is.null(names(regtfr))){ # this can happen if there is just one year of data
+        #  names(regtfr) <- rownames(meta$tfr_matrix_observed)
+        #}
         regtfr.last <- rep(regtfr[length(regtfr)], nr.traj)
         c.first <- regtfr.last/wtfr[names(wtfr) %in% names(regtfr.last)] # set of initial scales
         if(is.na(regtfr.last[1])) { # impute where NA's at the end
@@ -115,7 +142,6 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
         tfr.pred[1,] <- regtfr.last
       
       for(s in 1:ncol(tfr.pred)) { # iterate over trajectories
-        #is.in.phase3 <- is.reg.phase3
         scale.prev <- c.first[s]
         for(year in 2:(this.nr.project+1)) {		
           for(i in 1:100)	{
@@ -135,7 +161,7 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
       mean_sd[region,2,] <- apply(trajectories, 1, sd, na.rm = TRUE) 	
     }
     present.year.index <- which(rownames(meta$tfr_matrix_all) == rownames(wtrajs)[1])
-    #stop('')
+
     bayesTFR.prediction <- structure(list(
       quantiles = PIs_cqp,
       traj.mean.sd = mean_sd,
@@ -160,3 +186,12 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
   invisible(result)
 }
 
+interpolate.trajectories <- function(trajs) {
+  years <- as.integer(rownames(trajs))
+  years.to.interp.to <- (min(years) - 3):max(years) + 2
+  traj.new <- matrix(NA, ncol = ncol(trajs), nrow = length(years.to.interp.to))
+  rownames(traj.new) <- years.to.interp.to
+  for(col in 1:ncol(traj.new)) 
+    traj.new[, col] <- approx(years, trajs[, col], xout = years.to.interp.to, rule=2)$y
+  return(traj.new)
+}
