@@ -1277,7 +1277,7 @@ tfr.ggmap <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FAL
     period <- data.period$period
     tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
     
-    e <- new.env()
+    e <- new.env(parent = emptyenv())
     data("iso3166", envir=e)
     data("world", package = "spData", envir=e)
 
@@ -1362,7 +1362,7 @@ bdem.map.gvis.bayesTFR.prediction <- function(pred, year=NULL, quantile=0.5, pi=
  	un <- data.period$country.codes
  	countries.table <- get.countries.table(pred)
  	if(!is.null(par.name)) what <- par.name
- 	e <- new.env()
+ 	e <- new.env(parent = emptyenv())
 	data('iso3166', envir=e)
 	unmatch <- match(un, e$iso3166$uncode)
 	unidx <- which(!is.na(unmatch))	

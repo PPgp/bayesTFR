@@ -312,12 +312,12 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 				warning('Covariance of gamma is NA for all countries. Average from default covariance will be used.', 
 						immediate.=TRUE)
 			}
-			e <- new.env()
+			e <- new.env(parent = emptyenv())
 			data('proposal_cov_gammas_cii', envir=e)
 			cov.to.average <- e$proposal_cov_gammas_cii$values
 	} else {
 		# get default proposal_cov_gammas_cii and match with country codes of this run
-		e <- new.env()
+		e <- new.env(parent = emptyenv())
     	data('proposal_cov_gammas_cii', envir=e)
     	current.country.codes <- tfr.with.regions$regions$country_code
     	matched.index <- match(e$proposal_cov_gammas_cii$country_codes, current.country.codes)
@@ -359,7 +359,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	{
 	  if (is.null(my.tfr.raw.file)) 
 	  {
-	    ertfr <- new.env()
+	    ertfr <- new.env(parent = emptyenv())
 	    data("rawTFR", envir = ertfr)
 	    rawTFR <- ertfr$rawTFR
 	  }

@@ -1132,7 +1132,7 @@ get.wpp.revision.number <- function(pred) {
 do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicator.id=19, sex.id=3, adjusted=FALSE,
                                         est.uncertainty = FALSE, precision = 4) {
 	cat('Creating summary files ...\n')
-	e <- new.env()
+	e <- new.env(parent = emptyenv())
 	# R check does not like the two lines below; not sure why
 	#data('UN_time', envir=e)
 	#data('UN_variants', envir=e)
@@ -1393,7 +1393,7 @@ tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 
 	high.eps.cor <-  matrix(NA,nrow=nr_countries,ncol=nr_countries)
 	country.codes <- meta$regions$country_code
 	if(is.null(cor.pred)) {
-		e <- new.env()
+		e <- new.env(parent = emptyenv())
 		# the following code causes a NOTE in R check; not sure why
 		#data("correlation_predictors", envir=e)
 		do.call("data", list("correlation_predictors", envir=e))
