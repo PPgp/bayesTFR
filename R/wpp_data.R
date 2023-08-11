@@ -423,6 +423,8 @@ create.sublocation.dataset <- function(data) {
 
 do.read.subnat.file <- function(file.name, present.year=2012) {
 	tfr_data <- read.tfr.file(file=file.name)
+	if(! 'last.observed' %in% colnames(tfr_data) && 'last_observed' %in% colnames(tfr_data))
+	    colnames(tfr_data)[colnames(tfr_data) == 'last_observed'] <- 'last.observed' # guessing a typo, so rename
 	if(!is.element('last.observed', colnames(tfr_data)))
 		tfr_data <- cbind(tfr_data, last.observed=present.year)
 	if(!is.element('include_code', colnames(tfr_data)))
@@ -447,7 +449,7 @@ set.wpp.subnat <- function(country, start.year=1950, present.year=2010, annual =
 												datacolnames=c(country.code='reg_code', country.name='name', reg.name='reg_name',
 															reg.code='NA', area.name='country', area.code='country_code'),
 												verbose=verbose)
-									
+
 	return(list(tfr_matrix=TFRmatrix.regions$tfr_matrix, 
 				tfr_matrix_all=TFRmatrix.regions$tfr_matrix_all, 
 				regions=TFRmatrix.regions$regions, 

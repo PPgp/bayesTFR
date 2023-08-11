@@ -775,9 +775,13 @@ mcmc.meta.ini.subnat <- function(meta, country,
   
   tfr.with.regions <- set.wpp.subnat(country=country, start.year=start.year, present.year=present.year,  
                                      my.tfr.file = my.tfr.file, annual = annual, verbose=verbose)
+
   this.meta <- do.meta.ini.subnat(meta, tfr.with.regions)
   for (item in names(meta))
     if(!(item %in% names(this.meta))) this.meta[[item]] <- meta[[item]]
+  
+
+      
   return(structure(this.meta, class='bayesTFR.mcmc.meta'))
 }
 
