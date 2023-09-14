@@ -13,12 +13,21 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
   quantiles.to.keep <- as.numeric(dimnames(wpred$quantiles)[[2]])
   wannual <- wmeta$annual.simulation
   if(is.null(annual)) annual <- wannual
+  year.step <- if(annual) 1 else 5
+  wyear.step <- if(wannual) 1 else 5
   
   ar.pars.default <- c(mu = 1, rho = 0.92464, sigma = 0.04522)
   if(annual) { # Raftery's conversion from 5-year AR(1) parameters to 1-year parameters
     ar.pars.default["sigma"] <- ar.pars.default["sigma"] * sqrt((1-ar.pars.default["rho"]^(2/5))/(1-ar.pars.default["rho"]^2))
     ar.pars.default["rho"] <- ar.pars.default["rho"]^(1/5)
   }
+  # Make sure all AR(1) parameters are available. If not, take the default values.
+  if(is.null(ar.pars)) ar.pars <- ar.pars.default
+  for(par in names(ar.pars.default)) if(! par %in% names(ar.pars)) ar.pars[par] <- ar.pars.default[par]
+  
+  # set start year and present year of the national simulation
+  wstarty.global <- if(is.null(start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+wyear.step else start.year
+  wpresenty.global <- wstarty.global - wyear.step
   
   result <- list()
   orig.nr.traj <- nr.traj
@@ -30,15 +39,12 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
     }
     if(verbose) 
       cat('\nPredicting TFR for ', country.obj$name, '\n')
-    year.step <- if(annual) 1 else 5
-    wyear.step <- if(wannual) 1 else 5
     
     wtfr <- wdata[,country.obj$index]
     wtfrobsy <- as.integer(names(wtfr))[-length(wtfr)]
     
-    # set start year and present year of the national and subnational simulations
-    wstarty <- if(is.null(start.year)) as.integer(dimnames(wpred$tfr_matrix_reconstructed)[[1]][wpred$present.year.index])+wyear.step else start.year
-    wpresenty <- wstarty - wyear.step
+    wstarty <- wstarty.global
+    wpresenty <- wpresenty.global
     
     starty <- wstarty # set subnational start year to the national start year (might get overwritten below)
     presenty <- starty - year.step # subnational present year (might get overwritten below)
@@ -120,10 +126,6 @@ tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd()
     meta$T_end_c <- rep(meta$T_end, nr.reg)
     country.char <- as.character(country.obj$code)
     
-    # Make sure all AR(1) parameters are available. If not, take the default values.
-    if(is.null(ar.pars)) ar.pars <- ar.pars.default
-    for(par in names(ar.pars.default)) if(! par %in% names(ar.pars)) ar.pars[par] <- ar.pars.default[par]
-      
     # Get observed variance (SD) from a time point that has at least one half of the regions non-NA
     for(i in meta$T_end:1) if(sum(!is.na(meta$tfr_matrix_observed)[i,]) >= max(2, nr.reg/2)) break # check NA's at the end
     widx <- which(rownames(wtrajs.all) == rownames(meta$tfr_matrix_observed)[i])

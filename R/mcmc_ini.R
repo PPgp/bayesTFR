@@ -779,8 +779,6 @@ mcmc.meta.ini.subnat <- function(meta, country,
   this.meta <- do.meta.ini.subnat(meta, tfr.with.regions)
   for (item in names(meta))
     if(!(item %in% names(this.meta))) this.meta[[item]] <- meta[[item]]
-  
-
       
   return(structure(this.meta, class='bayesTFR.mcmc.meta'))
 }
