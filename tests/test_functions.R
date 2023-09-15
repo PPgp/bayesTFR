@@ -788,8 +788,36 @@ test.subnational.predictions <- function() {
   trajs <- get.tfr.trajectories(preds[["124"]], "Alberta")
   stopifnot(all(dim(trajs) == c(7, 30)))
   
-  test.ok(test.name)
   unlink(sim.dir, recursive=TRUE)
+  
+  # Annual subnational projections
+  my.subtfr.file.annual <- tempfile()
+  dat <- data.table::fread(my.subtfr.file) # load the data and save only the last time period, pretending this is a single year data point
+  dat <- dat[, .(country_code, country, reg_code, name, `2008` = `2005-2010`)]
+  data.table::fwrite(dat, file = my.subtfr.file.annual, sep = "\t") # save it
+  
+  sim.dir <- tempfile()
+  preds <- tfr.predict.subnat(c(36, 218, 124), my.tfr.file=my.subtfr.file.annual, sim.dir=nat.dir, 
+                              output.dir=sim.dir, start.year = 2009, end.year=2030, annual = TRUE)
+
+  # Retrieve trajectories
+  trajs <- get.tfr.trajectories(preds[["124"]], "Alberta")
+  stopifnot(all(dim(trajs) == c(23, 30))) # from 2008 to 2030
+  stopifnot(all(c(2021, 2029) %in% as.integer(rownames(trajs))))
+  
+  pred <- get.regtfr.prediction(sim.dir, 218)
+  spred <- summary(pred, "Manabi")
+  stopifnot(max(spred$projection.years) == 2030)
+  
+  t <- tfr.trajectories.table(preds[["124"]], "Ontario")
+  stopifnot(max(as.integer(rownames(t))) == 2030)
+  stopifnot(all(c(2009, 2014, 2029) %in% as.integer(rownames(t))))
+  
+  unlink(sim.dir, recursive=TRUE)
+  unlink(my.subtfr.file.annual)
+  
+  test.ok(test.name)
+  
 }
 
 test.reproduce.simulation <- function() {

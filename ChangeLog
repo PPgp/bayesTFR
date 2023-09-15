@@ -1,5 +1,12 @@
-7.3-1 (03/22/2023)
+7.4-0 (2023-09-14)
 -----
+Annual subnational projections are now possible, controlled by the argument "annual" 
+in tfr.predict.subnat(). 
+
+Added use.correlation argument to tfr.predict.extra().
+
+7.3-1/2 (03/23/2023)
+-------
 Citation updated.
 
 Added use.wpp.data argument to run.tfr.mcmc.

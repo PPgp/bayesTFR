@@ -117,6 +117,7 @@ get.observed.tfr <- function(country.index, meta, matrix.name='tfr_matrix', matr
 
 get.observed.with.supplemental <- function(country.index, matrix, suppl.data, matrix.name='tfr_matrix') {
 	data <- matrix[,country.index]
+	if(is.null(names(data))) names(data) <- rownames(matrix) # the names attribute is stripped if there is just one row
 	if(!is.null(suppl.data[[matrix.name]])) {
     	supp.c.idx <- suppl.data$index.from.all.countries[country.index]
     	if(is.na(supp.c.idx)) {sdata <- rep(NA, nrow(suppl.data[[matrix.name]])); names(sdata) <- rownames(suppl.data[[matrix.name]])}
@@ -311,12 +312,12 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 				warning('Covariance of gamma is NA for all countries. Average from default covariance will be used.', 
 						immediate.=TRUE)
 			}
-			e <- new.env()
+			e <- new.env(parent = emptyenv())
 			data('proposal_cov_gammas_cii', envir=e)
 			cov.to.average <- e$proposal_cov_gammas_cii$values
 	} else {
 		# get default proposal_cov_gammas_cii and match with country codes of this run
-		e <- new.env()
+		e <- new.env(parent = emptyenv())
     	data('proposal_cov_gammas_cii', envir=e)
     	current.country.codes <- tfr.with.regions$regions$country_code
     	matched.index <- match(e$proposal_cov_gammas_cii$country_codes, current.country.codes)
@@ -358,7 +359,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	{
 	  if (is.null(my.tfr.raw.file)) 
 	  {
-	    ertfr <- new.env()
+	    ertfr <- new.env(parent = emptyenv())
 	    data("rawTFR", envir = ertfr)
 	    rawTFR <- ertfr$rawTFR
 	  }
@@ -761,7 +762,7 @@ mcmc.ini.extra <- function(mcmc, countries, index.replace=NULL) {
 }
 
 mcmc.meta.ini.subnat <- function(meta, country,
-                                 start.year=1950, present.year=2010, 
+                                 start.year=1950, present.year=2010, annual = NULL,
                                  my.tfr.file = NULL, buffer.size=1000,
                                  verbose=FALSE
                                 ) {
@@ -769,10 +770,48 @@ mcmc.meta.ini.subnat <- function(meta, country,
   meta$start.year <- start.year
   meta$present.year <- present.year
   meta$buffer.size <- buffer.size
+  if(is.null(annual)) annual <- meta$annual.simulation
+  meta$annual.simulation <- annual
+  
   tfr.with.regions <- set.wpp.subnat(country=country, start.year=start.year, present.year=present.year,  
-                                     my.tfr.file = my.tfr.file, verbose=verbose)
-  this.meta <- do.meta.ini(meta, tfr.with.regions, verbose=verbose)
+                                     my.tfr.file = my.tfr.file, annual = annual, verbose=verbose)
+
+  this.meta <- do.meta.ini.subnat(meta, tfr.with.regions)
   for (item in names(meta))
     if(!(item %in% names(this.meta))) this.meta[[item]] <- meta[[item]]
+      
   return(structure(this.meta, class='bayesTFR.mcmc.meta'))
 }
+
+do.meta.ini.subnat <- function(meta, tfr.with.regions) {
+    tfr_matrix_all <- tfr.with.regions$tfr_matrix_all
+    tfr_matrix_observed <- tfr.with.regions$tfr_matrix
+    nr_countries = ncol(tfr_matrix_observed)
+    nr_countries_estimation <- tfr.with.regions$nr_countries_estimation
+
+    #tfr_min_c <- apply(tfr_matrix_observed, 2, min, na.rm = TRUE)
+
+    output <- list(
+        tfr_matrix=tfr_matrix_observed, 
+        tfr_matrix_all=tfr_matrix_all,
+        tfr_matrix_observed=tfr_matrix_observed,
+        #tau_c = results_tau$tau_c, lambda_c = lambda_c,
+        #proposal_cov_gammas_cii = prop_cov_gammas,
+        #start_c = results_tau$start_c, 
+        #id_Tistau = results_tau$id_Tistau, 
+        #id_DL = results_tau$id_DL, 
+        #id_early = results_tau$id_early,
+        #id_notearly = results_tau$id_notearly,
+        #id_notearly_estimation = results_tau$id_notearly[results_tau$id_notearly <= nr_countries_estimation],
+        #U.c.low=lower_U_c,
+        nr_countries=nr_countries,
+        nr_countries_estimation=nr_countries_estimation,
+        T_end=dim(tfr.with.regions$tfr_matrix)[1], #T_end_c=results_tau$T_end_c, 
+        regions=tfr.with.regions$regions#,
+        #suppl.data=suppl.data
+    )
+
+    return(output)
+    
+}
+
