@@ -80,11 +80,11 @@ L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., H
 
 Raftery, A.E., Alkema, L. and Gerland, P. (2014). Bayesian Population Projections for the United Nations. Statistical Science, Vol. 29, 58-68. \doi{10.1214/13-STS419}. 
 
-Fosdick, B., Raftery, A.E. (2014). \href{http://europepmc.org/articles/pmc4169201}{Regional Probabilistic Fertility Forecasting by Modeling Between-Country Correlations.} Demographic Research, Vol. 30, 1011-1034. 
+Fosdick, B., Raftery, A.E. (2014). Regional Probabilistic Fertility Forecasting by Modeling Between-Country Correlations. Demographic Research, Vol. 30, 1011-1034. \doi{10.4054/demres.2014.30.35}
 
 }
 \author{
-Hana Sevcikova, Leontine Alkema, Bailey Fosdick
+Hana Sevcikova, Leontine Alkema, Peiran Liu, Bailey Fosdick
 }
 
 

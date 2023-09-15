@@ -798,11 +798,11 @@ test.subnational.predictions <- function() {
   
   sim.dir <- tempfile()
   preds <- tfr.predict.subnat(c(36, 218, 124), my.tfr.file=my.subtfr.file.annual, sim.dir=nat.dir, 
-                              output.dir=sim.dir, end.year=2030, annual = TRUE)
+                              output.dir=sim.dir, start.year = 2009, end.year=2030, annual = TRUE)
 
   # Retrieve trajectories
   trajs <- get.tfr.trajectories(preds[["124"]], "Alberta")
-  stopifnot(all(dim(trajs) == c(13, 30)))
+  stopifnot(all(dim(trajs) == c(23, 30))) # from 2008 to 2030
   stopifnot(all(c(2021, 2029) %in% as.integer(rownames(trajs))))
   
   pred <- get.regtfr.prediction(sim.dir, 218)

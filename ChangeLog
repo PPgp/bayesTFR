@@ -1,6 +1,7 @@
-7.3-2.9001 (2023-08-04)
+7.4-0 (2023-09-14)
 -----
-Annual subnational projections are now possible, controlled by the argument annual in tfr.predict.subnat(). 
+Annual subnational projections are now possible, controlled by the argument "annual" 
+in tfr.predict.subnat(). 
 
 Added use.correlation argument to tfr.predict.extra().
 
