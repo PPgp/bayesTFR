@@ -22,32 +22,32 @@ write.projection.summary(dir = file.path(getwd(), "bayesTFR.output"),
 }
 \details{
 The first file that the function creates is called \file{projection_summary_user_friendly.csv} (or \file{projection_summary_user_friendly_adjusted.csv} if \code{adjusted=TRUE}), it is a comma-separated table with the following columns: 
-\itemize{\item{\dQuote{country_name}: }{country name}
-		 \item{\dQuote{country_code}: }{country code}
-		 \item{\dQuote{variant}: }{name of the variant, such as \dQuote{median}, \dQuote{lower 80}, \dQuote{upper 80}, \dQuote{lower 95}, \dQuote{upper 95}, \dQuote{-0.5child}, \dQuote{+0.5child}, \dQuote{constant}}
-		\item{period1: }{e.g. \dQuote{2005-2010}: TFR for the first time period. If \code{est.uncertainty} is \code{TRUE}, the first time period is the first observed time period. Otherwise it is the last observed one.}
-		\item{period2: }{e.g. \dQuote{2010-2015}: TFR for the second time period}
-		\item{\dots }{further columns with TFR projections}
+\describe{\item{country_name}{country name}
+		 \item{country_code}{country code}
+		 \item{variant}{name of the variant, such as \dQuote{median}, \dQuote{lower 80}, \dQuote{upper 80}, \dQuote{lower 95}, \dQuote{upper 95}, \dQuote{-0.5child}, \dQuote{+0.5child}, \dQuote{constant}}
+		\item{\emph{period1:}}{e.g. \dQuote{2005-2010}: TFR for the first time period. If \code{est.uncertainty} is \code{TRUE}, the first time period is the first observed time period. Otherwise it is the last observed one.}
+		\item{\emph{period2:}}{e.g. \dQuote{2010-2015}: TFR for the second time period}
+		\item{\dots}{further columns with TFR projections}
 	}
 
 The second file, called \file{projection_summary.csv} (or \file{projection_summary_adjusted.csv} if \code{adjusted=TRUE}), also comma-separated table, contains the same information as above in a UN-specific format:
-\itemize{\item{\dQuote{RevID}: }{revision number, passed to the function as an argument}
-		  \item{\dQuote{VarID}: }{variant identifier, extracted from the \code{\link{UN_variants}} dataset}
-		  \item{\dQuote{LocID}: }{country code}
-		  \item{\dQuote{TimeID}: }{time identifier, extracted from the \code{\link{UN_time}} dataset}
-		  \item{\dQuote{TFR}: }{the total fertility rate for this variant, location and time period}
+\describe{\item{RevID}{revision number, passed to the function as an argument}
+		  \item{VarID}{variant identifier, extracted from the \code{\link{UN_variants}} dataset}
+		  \item{LocID}{country code}
+		  \item{TimeID}{time identifier, extracted from the \code{\link{UN_time}} dataset}
+		  \item{TFR}{the total fertility rate for this variant, location and time period}
 }
 
 The third comma-separated file, called \file{projection_summary_parameters.csv} contains the following columns:
-\itemize{\item{\dQuote{country_name}: }{country name}
-		 \item{\dQuote{country_code}: }{country code}
-		 \item{\dQuote{TF_time_start_decline}: }{start period of TFR decline}
-		 \item{\dQuote{TF_max}: }{TFR at the onset of the fertitility transition (median of the \eqn{U_c} parameter)}
-		 \item{\dQuote{TF_max_decrement}: }{maximum decrement of TFR decline (median of the \eqn{d_c} parameter)}
-		 \item{\dQuote{TF_end_level}: }{median of the end level of the fertility transition (\eqn{\Delta_{c4}}{Triangle_c4} parameter)}
-		 \item{\dQuote{TF_end_level_low}: }{2.5 percentile of the \eqn{\Delta_{c4}}{Triangle_c4} distribution}
-		 \item{\dQuote{TF_end_level_high}: }{97.5 percentile of the \eqn{\Delta_{c4}}{Triangle_c4} distribution}
-		 \item{\dQuote{TF_time_end_decline}: }{period of the end decline, measured using the prediction median}
+\describe{\item{country_name}{country name}
+		 \item{country_code}{country code}
+		 \item{TF_time_start_decline}{start period of TFR decline}
+		 \item{TF_max}{TFR at the onset of the fertitility transition (median of the \eqn{U_c} parameter)}
+		 \item{TF_max_decrement}{maximum decrement of TFR decline (median of the \eqn{d_c} parameter)}
+		 \item{TF_end_level}{median of the end level of the fertility transition (\eqn{\Delta_{c4}}{Triangle_c4} parameter)}
+		 \item{TF_end_level_low}{2.5 percentile of the \eqn{\Delta_{c4}}{Triangle_c4} distribution}
+		 \item{TF_end_level_high}{97.5 percentile of the \eqn{\Delta_{c4}}{Triangle_c4} distribution}
+		 \item{TF_time_end_decline}{period of the end decline, measured using the prediction median}
 	}
 Note that this file is not created if \code{adjusted=TRUE}.
 }

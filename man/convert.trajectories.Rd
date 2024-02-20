@@ -19,12 +19,13 @@ convert.tfr.trajectories(dir = file.path(getwd(), 'bayesTFR.output'),
 }
 \details{
 The function creates two files. One is called \dQuote{ascii_trajectories.csv}, it is a comma-separated table with the following columns: 
-\itemize{\item{\dQuote{LocID}}{country code} 
-		\item{\dQuote{Period}}{prediction interval, e.g. 2015-2020} 
-		\item{\dQuote{Year}}{middle year of the prediction interval}
-		\item{\dQuote{Trajectory}}{identifier of the trajectory}
-		\item{\dQuote{TF}}{total fertility rate}
-}
+\describe{
+    \item{LocID}{country code} 
+		\item{Period}{prediction interval, e.g. 2015-2020} 
+		\item{Year}{middle year of the prediction interval}
+		\item{Trajectory}{identifier of the trajectory}
+		\item{TF}{total fertility rate}
+    }
 
 The second file is called \dQuote{ascii_trajectories_wide.csv}, it is also a comma-separated table and it contains the same information as above but in a \sQuote{transposed} format. I.e. the data for one country are ordered in columns, thus, there is one column per country. The country columns are ordered alphabetically. 
 

@@ -1210,11 +1210,10 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
     tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
     map <- rworldmap::getMap(resolution=resolution)
     #first get countries excluding Antarctica which crashes spTransform (says the help page for joinCountryData2Map)
-    sPDF <- map[-which(map$ADMIN=='Antarctica'), ]	
-    if(requireNamespace("rgdal", quietly=TRUE)) {
-        #transform map to the Robinson projection
-        sPDF <- sp::spTransform(sPDF, CRSobj=sp::CRS("+proj=robin +ellps=WGS84"))
-    }
+    sPDF <- map[-which(map$ADMIN=='Antarctica'), ]
+    #transform map to the Robinson projection
+    sPDF <- sp::spTransform(sPDF, CRSobj = sp::CRS("+proj=robin +ellps=WGS84"))
+
     ## recode missing UN codes and UN member states
     sPDF$UN <- sPDF$ISO_N3
     ## N. Cyprus -> assign to Cyprus
@@ -1223,7 +1222,7 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
     sPDF$UN[sPDF$ISO3=="KOS"] <- 688
     ## W. Sahara -> no UN numerical code assigned in Natural Earth map (its ISO3 changed in rworlmap 1.3.6)
     sPDF$UN[sPDF$ISO3=="ESH"] <- 732
-    ## Somaliland -> assign to Somalia -> fixed in rworlmap version 1.3.6
+    ## Somaliland -> assign to Somalia (SOM) -> fixed in rworlmap version 1.3.6
     #sPDF$UN[sPDF$ISO3=="SOL"] <- 706
     
     #mtfr <- joinCountryData2Map(tfr, joinCode='UN', nameJoinColumn='un')

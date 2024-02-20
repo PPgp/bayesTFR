@@ -1,3 +1,11 @@
+7.4-2.9001 (2024-02-19)
+-----
+Fixed bug related to a combination of ar.phase2 and missing data (thanks to Shunqi Cheng).
+
+7.4-1/2 (2023-10-17)
+-----
+Removed rgdal from suggested packages.
+
 7.4-0 (2023-09-14)
 -----
 Annual subnational projections are now possible, controlled by the argument "annual" 

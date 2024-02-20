@@ -392,10 +392,13 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	  }
 	  else
 	  {
-	    for(year in 1:fps.end.obs.index) 
+	      last.not.na <- 1
+	    for(year in 1:fps.end.obs.index) {
 	      all.f_ps[icountry,year,] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min+year-1]
+	      if(!is.na(all.f_ps[icountry,year,1])) last.not.na <- year
+	    }
 	    if (!is.null(mcmc.set$meta$ar.phase2) && (mcmc.set$meta$ar.phase2))
-	      f_ps_previous[, icountry] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min+year-2]
+	      f_ps_previous[, icountry] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min+last.not.na-2]
 	  }
 		first.two.na <- which(is.na(all.f_ps[icountry,,1]))[1:2]
 		which.Wsecond[icountry] <- first.two.na[2]
