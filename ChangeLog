@@ -4,6 +4,8 @@ Fixed bug related to a combination of ar.phase2 and missing data (thanks to Shun
 
 Added the mean variant into summary outputs.
 
+tfr.trajectories.plot() got an argument to plot the means, as well as selected trajectories.
+
 7.4-1/2 (2023-10-17)
 -----
 Removed rgdal from suggested packages.

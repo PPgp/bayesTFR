@@ -564,7 +564,8 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL
 tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95), 
                                   half.child.variant=TRUE, nr.traj=NULL,
                                   adjusted.only = TRUE, typical.trajectory=FALSE,
-                                  mark.estimation.points=FALSE,
+                                  mark.estimation.points=FALSE, 
+                                  traj.index = NULL, show.mean = FALSE,
                                   xlim=NULL, ylim=NULL, type='b', 
                                   xlab='Year', ylab='TFR', main=NULL, lwd=c(2,2,2,2,2,1), 
                                   col=c('black', 'green', 'red', 'red', 'blue', '#00000020'),
@@ -608,7 +609,11 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   }
   x1 <- as.integer(c(names(y1.part1), names(y1.part2)))
   x2 <- as.numeric(dimnames(tfr.pred$quantiles)[[3]])
+
+  if(!is.null(traj.index)) nr.traj <- length(traj.index)
   trajectories <- get.trajectories(tfr.pred, country$code, nr.traj, typical.trajectory=typical.trajectory)
+  if(!is.null(traj.index) && !is.null(trajectories$trajectories)) trajectories$index <- traj.index
+  
   # plot historical data: observed
   if (!add) {
     if(is.null(xlim)) xlim <- c(min(x1,x2), max(x1,x2))
@@ -681,6 +686,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
         }
     }
   }
+
   if (uncertainty)
   {
     col_median <- length(pi)+1
@@ -713,6 +719,15 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   legend <- c(legend, median.legend, if(length(pi) > 0) paste0(pi, '% PI') else c())
   cols <- c(cols, col[3], rep(col[4], length(pi)))
   lwds <- c(lwds, lwd[3], rep(lwd[4], length(pi)))
+  if(show.mean){
+      # plot mean
+      tfr.mean <- get.mean.from.prediction(tfr.pred, country$index, country$code)
+      lines(x2, tfr.mean, type='l', col=col[3], lwd=1, lty=max(lty)+1)
+      legend <- c(legend, 'mean')
+      cols <- c(cols, col[3])
+      lwds <- c(lwds, 1)
+      lty <- c(max(lty)+1, lty)
+  }
   if (half.child.variant) {
     lty <- c(lty, max(lty)+1)
     llty <- length(lty)
