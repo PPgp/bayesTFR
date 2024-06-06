@@ -4,7 +4,8 @@ Fixed bug related to a combination of ar.phase2 and missing data (thanks to Shun
 
 Added the mean variant into summary outputs.
 
-tfr.trajectories.plot() got an argument to plot the means, as well as selected trajectories.
+tfr.trajectories.plot() got arguments to plot the means (show.mean), 
+as well as selected trajectories (traj.index).
 
 7.4-1/2 (2023-10-17)
 -----
