@@ -1,12 +1,12 @@
 \name{write.projection.summary}
-\Rdversion{1.1}
+%\Rdversion{1.1}
 \alias{write.projection.summary}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Writing Projection Summary Files
 }
 \description{
-The function creates two files containing projection summaries, such as the median, the lower and upper bound of the 80 and 90\% probability intervals, respectively, the +/- 0.5 child variant and the constant variant. One file is in a user-friendly format, whereas the other is in a UN-specific format with internal coding of the time and the variants. In addition, a file containing  some of the model parameters is created.
+The function creates two files containing projection summaries, such as the median, mean, the lower and upper bound of the 80 and 90\% probability intervals, respectively, the +/- 0.5 child variant and the constant variant. One file is in a user-friendly format, whereas the other is in a UN-specific format with internal coding of the time and the variants. In addition, a file containing  some of the model parameters is created.
 }
 \usage{
 write.projection.summary(dir = file.path(getwd(), "bayesTFR.output"), 
@@ -24,7 +24,7 @@ write.projection.summary(dir = file.path(getwd(), "bayesTFR.output"),
 The first file that the function creates is called \file{projection_summary_user_friendly.csv} (or \file{projection_summary_user_friendly_adjusted.csv} if \code{adjusted=TRUE}), it is a comma-separated table with the following columns: 
 \describe{\item{country_name}{country name}
 		 \item{country_code}{country code}
-		 \item{variant}{name of the variant, such as \dQuote{median}, \dQuote{lower 80}, \dQuote{upper 80}, \dQuote{lower 95}, \dQuote{upper 95}, \dQuote{-0.5child}, \dQuote{+0.5child}, \dQuote{constant}}
+		 \item{variant}{name of the variant, such as \dQuote{median}, \dQuote{lower 80}, \dQuote{upper 80}, \dQuote{lower 95}, \dQuote{upper 95}, \dQuote{mean}, \dQuote{-0.5child}, \dQuote{+0.5child}, \dQuote{constant}}
 		\item{\emph{period1:}}{e.g. \dQuote{2005-2010}: TFR for the first time period. If \code{est.uncertainty} is \code{TRUE}, the first time period is the first observed time period. Otherwise it is the last observed one.}
 		\item{\emph{period2:}}{e.g. \dQuote{2010-2015}: TFR for the second time period}
 		\item{\dots}{further columns with TFR projections}

@@ -17,17 +17,17 @@ get.tfr.estimation(mcmc.list = NULL, country = NULL,
   \item{sim.dir}{Directory with the MCMC simulation results. Only used if \code{mcmc.list} is \code{NULL}.}
   \item{burnin}{Burn-in for getting trajectories and quantiles. A positive burn-in \eqn{x} will remove first \eqn{x} iterations from each chain.}
   \item{thin}{Thin for getting trajectories and quantiles. Thinning level \eqn{x} greater than 1 will store one iteration per \eqn{x} samples.}
-  \item{probs}{A vector of numbers between \eqn{[0,1]} specifying which estimation quantiles should be outputted. If it is set to \code{NULL} no quantiles are returned.}
+  \item{probs}{A vector of numbers between \eqn{[0,1]} specifying which estimation quantiles should be outputted. If it is set to \code{NULL} no quantiles are returned. It can be set to the word \dQuote{mean}, in which case the estimation mean is outputted.}
   \item{adjust}{Logical indicating whether the adjusted median and trajectories should be returned.}
   \item{country.code, ISO.code}{Deprecated arguments. Use argument \code{country} instead.}
 }
 \details{
-This function is used to obtain the TFR estimation trajectories as well as corresponding quantiles if the \code{mcmc.list} has been obtained while taking account for uncertainty about the past, i.e. \code{uncertainty=TRUE} in \code{\link{run.tfr.mcmc}}. Quantiles are included in the results if \code{probs} is not \code{NULL}.
+This function is used to obtain the TFR estimation trajectories as well as corresponding quantiles if the \code{mcmc.list} has been obtained while taking account for uncertainty about the past, i.e. \code{uncertainty=TRUE} in \code{\link{run.tfr.mcmc}}. Quantiles or the mean are included in the results if \code{probs} is not \code{NULL}.
 }
 \value{
   \item{tfr_table}{Table storing the trajectories. It is a matrix with rows equal to number of trajectories, and column equal to number of time periods.}
   \item{country.obj}{A list storing information about the country which the trajectories and quantiles correspond to. It corresponds to the output of \code{\link{get.country.object}}.}
-  \item{tfr_quantile}{Optional. A data.table object, storing the quantiles of estimates for each time period as specified by the \code{probs} argument. The time periods are contained in the \code{year} column.}
+  \item{tfr_quantile}{Optional. A data.table object, storing the quantiles or the mean of estimates for each time period as specified by the \code{probs} argument. The time periods are contained in the \code{year} column.}
 }
 \author{
 Peiran Liu, Hana Sevcikova

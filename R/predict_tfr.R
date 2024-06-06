@@ -1118,12 +1118,12 @@ get.projection.summary.header.bayesTFR.prediction <- function(pred, ...)
 
 "get.UN.variant.names" <- function(pred, ...) UseMethod("get.UN.variant.names")
 get.UN.variant.names.bayesTFR.prediction <- function(pred, ...) 
-	return(c('BHM median', 'BHM80 lower',  'BHM80 upper', 'BHM95 lower',  'BHM95 upper', 'Low', 
+	return(c('BHM median', 'BHM80 lower',  'BHM80 upper', 'BHM95 lower',  'BHM95 upper', 'BHM mean', 'Low', 
 					'High', 'Constant fertility'))
 					
 "get.friendly.variant.names" <- function(pred, ...) UseMethod("get.friendly.variant.names")
 get.friendly.variant.names.bayesTFR.prediction <- function(pred, ...)
-	return(c('median', 'lower 80', 'upper 80', 'lower 95', 'upper 95', '-0.5child', '+0.5child', 'constant'))
+	return(c('median', 'lower 80', 'upper 80', 'lower 95', 'upper 95', 'mean', '-0.5child', '+0.5child', 'constant'))
 
 get.wpp.revision.number <- function(pred) {
 	wpps <- c(2008, 2010, 2012, seq(2015, by = 2, length = 3), seq(2022, by = 2, length = 10))
@@ -1173,7 +1173,7 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 	UN.variant.names <- get.UN.variant.names(pred)
 	friendly.variant.names <- get.friendly.variant.names(pred)
 	# the code is dependent on the following order of the variants (it's presumed):
-	# median, lower 80, upper 80, lower 95, upper 95, -1/2child, +1/2 child, constant
+	# median, lower 80, upper 80, lower 95, upper 95, mean, -1/2child, +1/2 child, constant
 	nr.var <- length(UN.variant.names)
 	result1 <- result2 <- NULL
 	
@@ -1184,7 +1184,10 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 		if(est.uncertainty){ # add uncertainty
 		    est.object <- get.tfr.estimation(mcmc.list = pred$mcmc.set, country = country.obj$code, 
 		                                     probs = c(0.5, 0.1, 0.9, 0.025, 0.975), adjust = adjusted)
+		    est.object.mean <- get.tfr.estimation(mcmc.list = pred$mcmc.set, country = country.obj$code, 
+		                                     probs = "mean", adjust = adjusted)
 		    this.tfr.unc <- as.matrix(est.object$tfr_quantile)[1:ltfr, -ncol(est.object$tfr_quantile)]
+		    this.tfr.unc <- cbind(this.tfr.unc, mean = unlist(est.object.mean$tfr_quantile[1:ltfr, 1]))
 		    #this.tfr <- unlist(est.object$tfr_quantile[,1])[1:ltfr]
 		}
 		this.result1 <- cbind(
@@ -1194,15 +1197,18 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 		# prediction
 		median <- get.median.from.prediction(pred, country.obj$index, country.obj$code, adjusted=adjusted, 
 		                                     est.uncertainty = est.uncertainty)
+		mean <- get.mean.from.prediction(pred, country.obj$index, country.obj$code, adjusted=adjusted, 
+		                                     est.uncertainty = est.uncertainty)
 		proj.result <- rbind(median, 
 							   get.traj.quantiles(pred, country.obj$index, country.obj$code, pi=80, adjusted=adjusted, 
 							                      est.uncertainty = est.uncertainty),
 							   get.traj.quantiles(pred, country.obj$index, country.obj$code, pi=95, adjusted=adjusted, 
-							                      est.uncertainty = est.uncertainty))
+							                      est.uncertainty = est.uncertainty),
+							   mean)
 		if(any(friendly.variant.names == '-0.5child'))
 			proj.result <- rbind(proj.result,
 					   get.half.child.variant(median))
-		#browser()
+
 		proj.result <- round(rbind(proj.result,
 							   		rep(median[1], nr.proj)), precision) # constant variant
 		if(est.uncertainty){ # user-friendly output contains observed years as well
@@ -1219,7 +1225,6 @@ do.write.projection.summary <- function(pred, output.dir, revision=NULL, indicat
 		result1 <- rbind(result1, this.result1)
 		for(ivar in 1:nr.var) {
 		    this.obs.tfr <- if(est.uncertainty) obs.tfr[ivar,] else this.tfr
-		    #browser()
 			result2 <- rbind(result2, cbind(revision=rep(revision, nr.proj.all), 
 								   variant=rep(e$UN_variants[e$UN_variants$Vshort==UN.variant.names[ivar],'VarID'], nr.proj.all),
 								   country=rep(country.obj$code, nr.proj.all),

@@ -369,6 +369,19 @@ get.median.from.prediction <- function(tfr.pred, country.index, country.code=NUL
 	return(get.quantile.from.prediction(tfr.pred, quantile=0.5, country.index=country.index, 
 										country.code=country.code, adjusted=adjusted, ...))
 }
+get.mean.from.prediction <- function(tfr.pred, country.index, country.code=NULL, adjusted=TRUE,
+                                         est.uncertainty = FALSE) {
+    mean.values <- tfr.pred$traj.mean.sd[country.index, 1,]
+    if(est.uncertainty && has.est.uncertainty(tfr.pred$mcmc.set)){ # get the right value for present year
+        tfr.est <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.code, probs="mean", adjust = adjusted)
+        unc.last.time <- which(tfr.est$tfr_quantile$year == dimnames(tfr.pred$quantiles)[[3]][1])
+        mean.values[1] <- unlist(tfr.est$tfr_quantile[unc.last.time, 1])
+    }
+    if (!adjusted) return(mean.values)
+    shift <- get.tfr.shift(country.code, tfr.pred)
+    if(!is.null(shift)) mean.values <- mean.values + shift
+    return(mean.values)
+}
 	
 get.traj.quantiles <- function(tfr.pred, country.index, country.code, trajectories=NULL, pi=80, 
                                adjusted=TRUE, est.uncertainty = FALSE) {

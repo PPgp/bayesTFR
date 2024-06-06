@@ -365,7 +365,9 @@ get.tfr.estimation <- function(mcmc.list=NULL, country=NULL, sim.dir=NULL,
   output <- list(tfr_table=tfr_table, country.obj = country.obj)
   if (!is.null(probs))
   {
-    tfr_quantile <- apply(tfr_table, 2, quantile, probs = probs)
+      if(length(probs) == 1 && probs == "mean"){
+          tfr_quantile <- apply(tfr_table, 2, mean)
+      } else tfr_quantile <- apply(tfr_table, 2, quantile, probs = probs)
     if (is.null(dim(tfr_quantile))) tfr_quantile <- matrix(tfr_quantile, nrow = 1)
     tfr_quantile <- data.table::data.table(t(tfr_quantile))
     start.year <- mcmc.list$meta$start.year
