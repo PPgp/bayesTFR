@@ -102,6 +102,7 @@ export(
 	tfr.country.dlcurves,
 	tfr.dl.coverage,
 	get.median.from.prediction,
+	get.mean.from.prediction,
 	bdem.parameter.traces,
 	get.traj.ascii.header,
 	get.nr.countries,
