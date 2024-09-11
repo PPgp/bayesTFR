@@ -1,5 +1,7 @@
-7.4-2.90xx (2024-06-20)
+7.4-2.90xx (2024-09-11)
 -----
+Added dataset include_2024.
+
 Fixed bug related to a combination of ar.phase2 and missing data (thanks to Shunqi Cheng).
 
 Added the mean variant into summary outputs.

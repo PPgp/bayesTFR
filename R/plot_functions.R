@@ -746,7 +746,6 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
     lty <- c(max.lty+1, lty)
     max.lty <- max(lty)
   }
-  main.legend <- ""
   if(main.proj.name != ""){
     main.legend <- if(adjusted.only) main.proj.name else paste('adj.', main.proj.name)
     legend <- c(legend, main.legend)
