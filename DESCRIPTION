@@ -1,6 +1,6 @@
 Package: bayesTFR
-Version: 7.4-2.9004
-Date: 2024-09-11
+Version: 7.4-2.9005
+Date: 2024-09-25
 Title: Bayesian Fertility Projection
 Author: Hana Sevcikova (hanas@uw.edu), Leontine Alkema (alkema@nus.edu.sg), Peiran Liu (prliu@uw.edu), Adrian Raftery (raftery@uw.edu), Bailey Fosdick (bfosdick@uw.edu), Patrick Gerland (gerland@un.org)
 Maintainer: Hana Sevcikova <hanas@uw.edu>
