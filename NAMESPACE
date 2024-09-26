@@ -34,6 +34,8 @@ export(
 	get.tfr.shift.estimation,
 	tfr.median.reset.estimation,
 	tfr.median.adjust,
+	tfr.shift.estimation.to.wpp,
+	tfr.shift.prediction.to.wpp,
 	get.ar1.parameters,
 	convert.tfr.trajectories,
 	write.projection.summary,
@@ -87,6 +89,8 @@ export(
 	get.tfr.map.parameters,
 	tfr.map.all,
 	tfr.map,
+	tfr.map.gvis,
+	tfr.ggmap,
 	read.tfr.file,
 	#tfr.gelman.diag,
 	#tfr.plot.gelman,
@@ -98,6 +102,7 @@ export(
 	tfr.country.dlcurves,
 	tfr.dl.coverage,
 	get.median.from.prediction,
+	get.mean.from.prediction,
 	bdem.parameter.traces,
 	get.traj.ascii.header,
 	get.nr.countries,
@@ -112,11 +117,11 @@ export(
 	.get.gamma.pars,
 	.map.main.default,
 	bdem.map.gvis,
-	tfr.map.gvis,
 	get.mcmc.meta,
 	par.names.for.worldmap,
 	get.data.for.worldmap,
 	get.countries.table,
+	get.countries.phase,
 	tfr.predict.subnat,
 	get.regtfr.prediction,
 	get.tfr.estimation,
@@ -176,3 +181,6 @@ S3method(par.names.for.worldmap, bayesTFR.prediction)
 S3method(get.data.for.worldmap, bayesTFR.prediction)
 S3method(get.countries.table, bayesTFR.prediction)
 S3method(get.countries.table, bayesTFR.mcmc.set)
+S3method(get.countries.phase, bayesTFR.mcmc.set)
+S3method(get.countries.phase, bayesTFR.prediction)
+

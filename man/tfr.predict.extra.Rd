@@ -12,16 +12,17 @@ Using the posterior parameter samples the function  generates posterior trajecto
 tfr.predict.extra(sim.dir = file.path(getwd(), 'bayesTFR.output'), 
     prediction.dir = sim.dir, countries = NULL, 
     save.as.ascii = 0, verbose = TRUE, uncertainty=FALSE,
-    all.countries.required = TRUE)
+    all.countries.required = TRUE, use.correlation = NULL)
 	}
 \arguments{
   \item{sim.dir}{Directory with the MCMC simulation results.}
   \item{prediction.dir}{Directory where the prediction object and the trajectories are stored.}
   \item{countries}{Vector of country codes for which the prediction should be made. If it is \code{NULL}, the prediction is run for all countries that are included in the MCMC object but for which no prediction was generated.}
-  \item{save.as.ascii}{Either a number determining how many trajectories should be converted into an ascii file, or \dQuote{all} in which case all trajectories are converted. It should be set to 0, if no converions is desired. Note that the convertion is done on all countries.}
+  \item{save.as.ascii}{Either a number determining how many trajectories should be converted into an ascii file, or \dQuote{all} in which case all trajectories are converted. It should be set to 0, if no conversion is desired. Note that the conversion is done on all countries.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{uncertainty}{Logical. If the MCMC steps considered uncertainty of past TFR and \code{uncertainty=TRUE}, starting point of prediction trajectories will be the last estimated trajectories of TFR. Otherwise, it will use the last observed TFR as starting point of prediction.}
   \item{all.countries.required}{If \code{FALSE} it is not required that MCMCs of all countries are present.}
+  \item{use.correlation}{If missing and if the number of countries is larger than one, it takes the same value as was used in the main simulation. For one country the default is \code{FALSE}. If this parameter is \code{TRUE} the model errors are sampled jointly for all countries included in this prediction (Fosdick and Raftery, 2014).}
   }
 \details{
 In order to use this function, a prediction object must exist, i.e. the function \code{\link{tfr.predict}} must have been processed prior to using this function.

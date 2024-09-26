@@ -1,3 +1,76 @@
+7.4-2.90xx (2024-09-11)
+-----
+Added dataset include_2024.
+
+Fixed bug related to a combination of ar.phase2 and missing data (thanks to Shunqi Cheng).
+
+Added the mean variant into summary outputs.
+
+tfr.trajectories.plot() got arguments to plot the means (show.mean), medians (show.median),
+as well as selected trajectories (traj.index).
+
+7.4-1/2 (2023-10-17)
+-----
+Removed rgdal from suggested packages.
+
+7.4-0 (2023-09-14)
+-----
+Annual subnational projections are now possible, controlled by the argument "annual" 
+in tfr.predict.subnat(). 
+
+Added use.correlation argument to tfr.predict.extra().
+
+7.3-1/2 (03/23/2023)
+-------
+Citation updated.
+
+Added use.wpp.data argument to run.tfr.mcmc.
+
+7.3-0 (02/03/2023)
+-----
+New function for plotting maps with ggplot, called tfr.ggmap.
+
+Fixed a bug in the summary function of mcmc (thanks to Angelica Rosario Santos).
+
+Functions for resetting the medians (tfr.median.reset, tfr.median.reset.estimation) 
+now work for all countries if the countries argument is NULL.
+
+LazyData switched off.
+
+7.2-1/2 (12/09/2022)
+-----
+New function for adjusting the prediction medians to WPP (tfr.shift.prediction.to.wpp).
+
+New argument in run.tfr.mcmc called use.wpp.data that can be used to avoid loading default WPP data 
+(thanks to Marco Bressan).
+
+Bug fix in setting present year in raw tfr data (thanks to Angelica Rosario Santos).
+
+Removed infinite loops when likelihood increase is not found.
+
+7.2-0 (10/28/2022)
+-----
+Support for the wpp2022 package.
+
+New function get.countries.phase returns all countries and the phase they are in.
+
+Function get.countries.table now also returns the ISO character codes if the new argument iso is set to TRUE.
+
+Added argument est.uncertainty to write.projection.summary.
+
+New function for an adjustment of the estimates to WPP values (tfr.shift.estimation.to.wpp).
+
+New argument raw.outlier in run.tfr.mcmc triggers removing outliers in the raw TFR data.
+
+Bug fix in adjustments.
+
+Bug fix for handling Phase I countries when using the uncertainty feature, including in "extra" countries.
+
+Bug fix in missing the annual.simulation item in the meta object attached to prediction 
+(thanks to Lucia Andreozzi).
+
+
+
 7.1-1 (10/29/2021)
 -----
 Deprecated country.code and ISO.code arguments in various functions. Argument "country" is to be used instead.

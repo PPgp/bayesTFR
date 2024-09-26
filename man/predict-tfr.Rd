@@ -74,15 +74,17 @@ The resulting prediction object is saved into \file{\{output.dir\}/predictions}.
 	}
 	
 \references{
+Peiran Liu, Hana Sevcikova, Adrian E. Raftery (2023): Probabilistic Estimation and Projection of the Annual Total Fertility Rate Accounting for Past Uncertainty: A Major Update of the bayesTFR R Package. Journal of Statistical Software, 106(8), 1-36. \doi{10.18637/jss.v106.i08}.
+
 L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. \doi{10.1007/s13524-011-0040-5}.
 
 Raftery, A.E., Alkema, L. and Gerland, P. (2014). Bayesian Population Projections for the United Nations. Statistical Science, Vol. 29, 58-68. \doi{10.1214/13-STS419}. 
 
-Fosdick, B., Raftery, A.E. (2014). \href{http://europepmc.org/articles/pmc4169201}{Regional Probabilistic Fertility Forecasting by Modeling Between-Country Correlations.} Demographic Research, Vol. 30, 1011-1034. 
+Fosdick, B., Raftery, A.E. (2014). Regional Probabilistic Fertility Forecasting by Modeling Between-Country Correlations. Demographic Research, Vol. 30, 1011-1034. \doi{10.4054/demres.2014.30.35}
 
 }
 \author{
-Hana Sevcikova, Leontine Alkema, Bailey Fosdick
+Hana Sevcikova, Leontine Alkema, Peiran Liu, Bailey Fosdick
 }
 
 

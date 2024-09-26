@@ -3,7 +3,8 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 						# meta parameters
 						start.year=1950, present.year=2020, wpp.year=2019,
 						my.tfr.file = NULL, my.locations.file = NULL, my.tfr.raw.file = NULL, 
-						ar.phase2 = FALSE, buffer.size = 100,
+						use.wpp.data = TRUE, ar.phase2 = FALSE, buffer.size = 100,
+						raw.outliers = c(-2, 1),
 					 	U.c.low=5.5, U.up=8.8, U.width=3,
 					 	mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2,                                                
         				Triangle_c4.low = 1, Triangle_c4.up = 2.5,
@@ -85,7 +86,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 						start.year=start.year, present.year=present.year, 
 						wpp.year=wpp.year, annual.simulation = annual,
 						my.tfr.file = my.tfr.file, my.locations.file=my.locations.file,
-						output.dir=output.dir, phase=2,
+						output.dir=output.dir, phase=2, raw.outliers = raw.outliers,
 					 	U.c.low=U.c.low, U.up=U.up, U.width=U.width,
 					 	mean.eps.tau0=mean.eps.tau0, sd.eps.tau0 = sd.eps.tau0, nu.tau0 = nu.tau0,                                            
         				Triangle4.0 = Triangle4.0,  
@@ -105,7 +106,9 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 					 	proposal_cov_gammas = proposal_cov_gammas,
 					 	buffer.size=buffer.size, compression.type=compression.type, 
 					 	auto.conf=auto.conf, package.version = packageVersion("bayesTFR"),
-						verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, ar.phase2=ar.phase2)
+						verbose=verbose, uncertainty=uncertainty, my.tfr.raw.file=my.tfr.raw.file, 
+						ar.phase2=ar.phase2, iso.unbiased=iso.unbiased, source.col.name = source.col.name,
+						use.wpp.data = use.wpp.data)
 	if (uncertainty)
 	{
 	  bayesTFR.mcmc.meta[["covariates"]] <- covariates
@@ -243,7 +246,7 @@ mcmc.run.chain <- function(chain.id, meta, thin=1, iter=100, starting.values=NUL
 							verbose=FALSE, verbose.iter=10, uncertainty=FALSE, iso.unbiased=NULL, 
 							covariates=c('source', 'method'), cont_covariates=NULL, source.col.name="source") {
 								
-	cat('\n\nChain nr.', chain.id, '\n')
+  cat('\n\nChain nr.', chain.id, '\n')
     if (verbose) {
     	cat('************\n')
     	cat('Starting values:\n')
@@ -366,7 +369,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 								countries = NULL, my.tfr.file = NULL, iter = NULL,
 								thin=1, thin.extra=1, burnin=2000, parallel=FALSE, nr.nodes=NULL, 
 								my.locations.file = NULL,
-								uncertainty=FALSE, my.tfr.raw.file=NULL, iso.unbiased=NULL, 
+								uncertainty=FALSE, my.tfr.raw.file=NULL, use.wpp.data = TRUE, iso.unbiased=NULL, 
 								covariates=c('source', 'method'), cont_covariates=NULL, source.col.name="source",
 								average.gammas.cov = TRUE, verbose=FALSE, verbose.iter=100, ...) {
   mcmc.set <- get.tfr.mcmc(sim.dir)
@@ -380,7 +383,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
   
   Eini <- mcmc.meta.ini.extra(mcmc.set, countries=countries, my.tfr.file=my.tfr.file, my.locations.file=my.locations.file, 
 												burnin=burnin, verbose=verbose, uncertainty=uncertainty, 
-												my.tfr.raw.file=my.tfr.raw.file, average.gammas.cov = average.gammas.cov)
+												my.tfr.raw.file=my.tfr.raw.file, average.gammas.cov = average.gammas.cov,
+												use.wpp.data = use.wpp.data)
 	if(length(Eini$index) <= 0) {
 		cat('\nNothing to be done.\n')
 		return(invisible(mcmc.set))
@@ -450,7 +454,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	}
 	
 	meta <- mcmc.set$mcmc.list[[1]]$meta
-	if(length(Eini$index_DL) <= 0) {
+	if(length(Eini$index_DL) <= 0 && !uncertainty) {
 		cat('\nNo DL countries or regions. Nothing to be done.\n')
 		store.bayesTFR.meta.object(meta, meta$output.dir)
 		mcmc.set$meta <- meta
@@ -462,10 +466,11 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	post.idx <- if (thin > mcthin) unique(round(seq(thin, total.iter, by=thin/mcthin)))
 				else 1:total.iter
 	if (!is.null(mcmc.set$mcmc.list[[1]]$rng.state)) .Random.seed <- mcmc.set$mcmc.list[[1]]$rng.state
+	cntries.to.run <- if(uncertainty) Eini$index else Eini$index_DL
 	if (parallel) { # run chains in parallel
 		if(is.null(nr.nodes)) nr.nodes<-length(chain.ids)
 		chain.list <- bDem.performParallel(nr.nodes, chain.ids, mcmc.run.chain.extra, 
-						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, countries=Eini$index_DL, 
+						initfun=init.nodes, mcmc.list=mcmc.set$mcmc.list, countries=cntries.to.run, 
 						posterior.sample=post.idx, iter=iter, thin = thin.extra, burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, 
 						uncertainty=uncertainty, ...)
 		for (i in 1:length(chain.ids))
@@ -473,7 +478,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	} else { # run chains sequentially
 		for (chain.id in chain.ids) {
 			mcmc.set$mcmc.list[[chain.id]] <- mcmc.run.chain.extra(chain.id, mcmc.set$mcmc.list, 
-												countries=Eini$index_DL, posterior.sample=post.idx, iter=iter, thin = thin.extra,
+												countries=cntries.to.run, posterior.sample=post.idx, iter=iter, thin = thin.extra,
 												burnin=burnin, verbose=verbose, verbose.iter=verbose.iter, uncertainty=uncertainty)
 		}
 	}

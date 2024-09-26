@@ -5,7 +5,7 @@
 
 R package for projecting probabilistic total fertility rate. See [Documentation on CRAN](https://cran.r-project.org/web/packages/bayesTFR/bayesTFR.pdf). 
 
-For basic usage see [Sevcikova et al (2011)](https://www.jstatsoft.org/article/view/v043i01). Below we describe the package workflow after a major update in version 7.0, which adds the option of taking into account uncertainty about the observed data, as well as estimation and projections for annual data.
+For basic usage see [Sevcikova et al (2011)](https://www.jstatsoft.org/article/view/v043i01). Below we describe the package workflow after a major update in version 7.0, which adds the option of taking into account uncertainty about the observed data, as well as estimation and projections for annual data. See [Liu et al (2023)](https://doi.org/10.18637/jss.v106.i08) for more detail on the updated package.
 
 
 # Annual Version with Uncertainty

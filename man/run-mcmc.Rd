@@ -16,7 +16,8 @@ run.tfr.mcmc(nr.chains = 3, iter = 62000,
     thin = 1, replace.output = FALSE, annual = FALSE, uncertainty = FALSE, 
     start.year = 1950, present.year = 2020, wpp.year = 2019, 
     my.tfr.file = NULL, my.locations.file = NULL, my.tfr.raw.file = NULL, 
-    ar.phase2 = FALSE, buffer.size = 100, 
+    use.wpp.data = TRUE, ar.phase2 = FALSE, buffer.size = 100, 
+    raw.outliers = c(-2, 1),
     U.c.low = 5.5, U.up = 8.8, U.width = 3,
     mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2, 
     Triangle_c4.low = 1, Triangle_c4.up = 2.5, 
@@ -56,6 +57,7 @@ continue.tfr.mcmc(iter, chain.ids = NULL,
   \item{replace.output}{If \code{TRUE}, existing outputs in \code{output.dir} will be replaced by results of this simulation.}
   \item{annual}{If \code{TRUE}, the model will be trained based on annual TFR data.}
   \item{uncertainty}{Logical. If \code{TRUE}, the model described in Liu and Raftery(2020) which takes into account uncertainty about the past TFR observations is used. It will take the observations from \code{\link{rawTFR}} or from a file given by \code{my.tfr.raw.file}, estimate the distribution of these observations with respect to the true TFR. Then instead of treating the observed data as true data, it assumes the true TFR is unknown and include an extra step for estimating past TFR.}
+  \item{use.wpp.data}{Logical indicating if default WPP data should be used, i.e. if \code{my.tfr.file} will be matched with the WPP data in terms of time periods and locations. If \code{FALSE}, it is assumed that the \code{my.tfr.file} contains all locations and time periods to be included in the simulation.}
   \item{ar.phase2}{Logical where \code{TRUE} implies that the autoregressive component on the residual (for Phase II) is considered as a global parameter. Only used if \code{annual} is \code{TRUE}. See details below.}
   \item{start.year}{Start year for using historical data.}
   \item{present.year}{End year for using historical data.}
@@ -64,6 +66,7 @@ continue.tfr.mcmc(iter, chain.ids = NULL,
   \item{my.locations.file}{File name containing user-specified locations. See Details below.}
   \item{my.tfr.raw.file}{File name of the raw TFR, used when \code{uncertainty} is \code{TRUE}. See details below.}
   \item{buffer.size}{Buffer size (in number of iterations) for keeping data in the memory. The smaller the \code{buffer.size} the more often will the process access the hard disk and thus, the slower the run. On the other hand, the smaller the \code{buffer.size} the less data will be lost in case of failure.}
+  \item{raw.outliers}{Vector of size two giving the maximum annual decrease and increase of raw TFR change, respectively. The default values mean that any raw TFR data that decrease more than 2 or increase more than 1 in one year are considered as outliers.}
   \item{U.c.low, U.up}{Lower and upper bound of the parameter \eqn{U_c}, the start level of the fertility transition. The lower bound is set for each country as the maximum of \code{U.c.low} and the minimum of historical TFR for that country.}
   \item{U.width}{Width for slice sampling used when updating the \eqn{U_c} parameter.}
   \item{mean.eps.tau0, sd.eps.tau0}{Mean and standard deviation of the prior distribution of \eqn{m_{\tau}}{m_tau} which is the mean of the distortion terms \eqn{\epsilon_{c,\tau}}{eps_{c,tau}} in start periods \eqn{\tau_c}{tau_c}.}
@@ -120,7 +123,7 @@ continue.tfr.mcmc(iter, chain.ids = NULL,
 	
 Using the function \code{continue.tfr.mcmc} one can continue simulating an existing MCMCs by \code{iter} iterations for either all or selected chains.
 
-The function loads observed data (further denoted as WPP dataset) from the \code{\link[wpp2019]{tfr}} and \code{\link[wpp2019]{tfr_supplemental}} datasets in a \pkg{wpp}\eqn{x} package where \eqn{x} is the \code{wpp.year}. It is then merged with the  \code{\link{include}} dataset that corresponds to the same \code{wpp.year}. The argument \code{my.tfr.file} can be used to overwrite those default data. Such a file can include a subset of countries contained in the WPP dataset, as well as a set of new countries. In the former case,
+The function loads observed data (further denoted as WPP dataset) from the \code{\link[wpp2019]{tfr}} and \code{\link[wpp2019]{tfr_supplemental}} datasets in a \pkg{wpp}\eqn{x} package where \eqn{x} is the \code{wpp.year}. It is then merged with the  \code{\link{include}} dataset that corresponds to the same \code{wpp.year}. The argument \code{my.tfr.file} can be used to overwrite those default data. If \code{use.wpp.data} is \code{FALSE}, it fully replaces the default dataset. Otherwise (by default), such a file can include a subset of countries contained in the WPP dataset, as well as a set of new countries. In the former case,
   	the function replaces the corresponding country data from the WPP dataset by values in this file. Only columns are replaced that match column names of the WPP dataset, and in addition, columns \sQuote{last.observed} and \sQuote{include_code} are used, if present. Countries are merged with WPP using the column \sQuote{country_code}. In addition, in order the countries to be included in the simulation, in both cases (whether they are included in the WPP dataset or not), they must be contained in the table of locations (\code{\link[wpp2019]{UNlocations}}). In addition, their corresponding \code{\link[=include]{include_code}} must be set to 2. If the column \sQuote{include_code} is present in \code{my.tfr.file}, its value overwrites the default include code, unless it is -1.  
  
  The default UN table of locations mentioned above can be overwritten/extended by using a file passed as the \code{my.locations.file} argument. Such a file must have the same structure as the \code{\link[wpp2019]{UNlocations}} dataset. Entries in this file will overwrite corresponding entries in \code{\link[wpp2019]{UNlocations}} matched by the column \sQuote{country_code}. If there is no such entry in the default dataset, it will be appended. This option of appending new locations is especially useful in cases when \code{my.tfr.file} contains new countries/regions that are not included in \code{\link[wpp2019]{UNlocations}}. In such a case, one must provide a \code{my.locations.file} with a definition of those countries/regions.
@@ -145,6 +148,8 @@ Furthermore, if \code{annual} is \code{TRUE} and \code{my.tfr.file} is given, th
 	\item{mcmc.list}{A list of objects of class \code{\link{bayesTFR.mcmc}}, one for each MCMC.}
 }
 \references{
+Peiran Liu, Hana Sevcikova, Adrian E. Raftery (2023): Probabilistic Estimation and Projection of the Annual Total Fertility Rate Accounting for Past Uncertainty: A Major Update of the bayesTFR R Package. Journal of Statistical Software, 106(8), 1-36. \doi{10.18637/jss.v106.i08}.
+
 L. Alkema, A. E. Raftery, P. Gerland, S. J. Clark, F. Pelletier, Buettner, T., Heilig, G.K. (2011). Probabilistic Projections of the Total Fertility Rate for All Countries. Demography, Vol. 48, 815-839. \doi{10.1007/s13524-011-0040-5}.
 
 P. Liu, and A. E. Raftery (2020). Accounting for Uncertainty About Past Values In Probabilistic Projections of the Total Fertility Rate for All Countries. Annals of Applied Statistics, Vol 14, no. 2, 685-705. \doi{10.1214/19-AOAS1294}.

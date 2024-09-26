@@ -43,6 +43,7 @@
 \alias{get.mcmc.list.list}
 \alias{get.mcmc.meta}
 \alias{get.median.from.prediction}
+\alias{get.mean.from.prediction}
 \alias{get.meta.only}
 \alias{get.newTFRcolnames}
 \alias{get.nr.countries}
@@ -125,6 +126,8 @@
 \alias{write.table.into.file.cindep}
 \alias{write.values.into.file.cdep}
 \alias{write.values.into.file.cindep}
+\alias{.map.main.default}
+\alias{.get.gamma.pars}
 
 \alias{iso3166}
 \alias{proposal_cov_gammas_cii}
