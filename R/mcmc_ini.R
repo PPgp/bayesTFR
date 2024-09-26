@@ -97,7 +97,7 @@ find.lambda.for.one.country <- function(tfr, T_end, annual = FALSE) {
 	  lambda <- min(which(year.bin == lambda) + 2, Tendorig)
 	  if (Tendorig - lambda < 5) { # if in the last (observed) time period, set it to the end of the period
 	      lambda <- Tendorig
-	      while(is.na(tfrorig[lambda])) lambda <- lambda - 1 # move it before the last NA if any
+	      #while(is.na(tfrorig[lambda])) lambda <- lambda - 1 # move it before the last NA if any - not needed anymore
 	  }
 	}
 
