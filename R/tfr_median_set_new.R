@@ -167,7 +167,7 @@ tfr.median.reset.estimation <- function(sim.dir, countries = NULL)
   invisible(output)
 }
 
-.do.shift.prediction.to.wpp <- function(pred, wpp.dataset, wpp.year = NULL, verbose = TRUE){
+.do.shift.prediction.to.wpp <- function(pred, wpp.dataset, stat = "median", wpp.year = NULL, verbose = TRUE){
   country_code <- NULL # for CRAN check not to complain
   meta <- pred$mcmc.set$meta
   wpp.year <- if(!is.null(wpp.year)) wpp.year else meta$wpp.year
@@ -192,8 +192,10 @@ tfr.median.reset.estimation <- function(sim.dir, countries = NULL)
       }
     }
     cntry <- countries[icntry]
+    if(!stat %in% c("median", "mean")) stop("Argument 'stat' must be 'median' or 'mean', but is ", stat, ".")
     to.match <- merge(data.table::data.table(year = pred.years, median = pred$quantiles[icntry, "0.5", ]), 
                           wppdatal[country_code == cntry], by = "year", all.x = TRUE)
+    if(stat == "mean") to.match[["median"]] <- to.match[["median"]] + pred$traj.mean.sd[icntry, 1, ] - to.match[["median"]] # difference between the mean and median
     to.match$wpp[is.na(to.match$wpp)] <- to.match$median[is.na(to.match$wpp)] # no shift for years that don't match
     to.match$shift <- to.match$wpp - to.match$median
     if(sum(to.match$shift) != 0)
