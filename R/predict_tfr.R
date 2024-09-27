@@ -6,7 +6,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						use.tfr3=TRUE, burnin3=2000,
 						mu=2.1, rho=0.8859, sigmaAR1=0.1016,
 						min.tfr=0.5, use.correlation=FALSE,
-						save.as.ascii=0, output.dir = NULL,
+						save.as.ascii=0, output.dir = NULL, subdir = "predictions", 
 						low.memory=TRUE,
 						seed=NULL, verbose=TRUE, uncertainty=FALSE, ...) {
 	if(!is.null(mcmc.set)) {
@@ -55,7 +55,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 					start.year=start.year, nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, burnin3=burnin3,
 					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1, min.tfr=min.tfr, use.correlation=use.correlation,
 					save.as.ascii=save.as.ascii,
-					output.dir=output.dir, verbose=verbose, uncertainty=uncertainty, ...))			
+					output.dir=output.dir, subdir = subdir, verbose=verbose, uncertainty=uncertainty, ...))			
 }
 
 .find.burnin.nr.traj.from.diag <- function(diag.list, verbose = FALSE) {
@@ -88,7 +88,8 @@ get.burnin.nrtraj.from.diagnostics <- function(sim.dir, ...) {
 }
 
 tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-					prediction.dir=sim.dir, countries = NULL, save.as.ascii=0, verbose=TRUE, uncertainty=FALSE,
+					prediction.dir=sim.dir, subdir = "predictions", countries = NULL, save.as.ascii=0, 
+					verbose=TRUE, uncertainty=FALSE,
 					all.countries.required = TRUE, use.correlation = NULL) {
 	# Run prediction for given countries/regions (as codes). If they are not given it will be set to countries 
 	# for which there are MCMC results but no prediction.
@@ -96,9 +97,9 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
     mcmc.set <- get.tfr.mcmc(sim.dir)
 	if(is.null(mcmc.set))
 		stop('Error in "sim.dir" argument.')
-	pred <- get.tfr.prediction(sim.dir=prediction.dir)
+	pred <- get.tfr.prediction(sim.dir=prediction.dir, subdir = subdir)
 	if(is.null(pred))
-		stop('Error in "prediction.dir" argument.')
+		stop('Error in "sim.dir", "prediction.dir" or/and "subdir" argument. Use available.tfr.predictions() to check on valid predictions directories.')
 	if(length(setdiff(pred$mcmc.set$meta$regions$country_code, mcmc.set$meta$regions$country_code)) > 0)
 		stop('Prediction is inconsistent with the mcmc results. Use tfr.predict.')
 	if(is.null(countries)) {
@@ -125,7 +126,7 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 									use.correlation=use.correlation, 
 									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, 
 									min.tfr=pred$min.tfr, countries=countries.idx, save.as.ascii=0, output.dir=prediction.dir,
-									force.creating.thinned.mcmc=TRUE,
+									subdir = subdir, force.creating.thinned.mcmc=TRUE,
 									write.summary.files=FALSE, write.trajectories=TRUE, verbose=verbose, 
 									uncertainty=uncertainty, all.countries.required = all.countries.required)
 									
@@ -173,7 +174,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 								use.correlation=FALSE, countries = NULL,
 								adj.factor1=NA, adj.factor2=0, forceAR1=FALSE,
 								boost.first.period.in.phase2=TRUE,
-							    save.as.ascii=0, output.dir = NULL, write.summary.files=TRUE, 
+							    save.as.ascii=0, output.dir = NULL, subdir = "predictions", 
+								write.summary.files=TRUE, 
 							    is.mcmc.set.thinned=FALSE, force.creating.thinned.mcmc=FALSE,
 							    write.trajectories=TRUE, 
 							    verbose=verbose, uncertainty=FALSE, all.countries.required = TRUE){
@@ -213,10 +215,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	
 	#setup output directory
 	if (is.null(output.dir)) output.dir <- meta$output.dir
-	outdir <- file.path(output.dir, 'predictions')
+	outdir <- file.path(output.dir, subdir)
 	
 	if(is.null(countries)) {
-		if(!replace.output && has.tfr.prediction(sim.dir=output.dir))
+		if(!replace.output && has.tfr.prediction(sim.dir=output.dir, subdir = subdir))
 			stop('Prediction in ', outdir,
 			' already exists.\nSet replace.output=TRUE if you want to overwrite existing projections.')
 		unlink(outdir, recursive=TRUE)
@@ -1005,11 +1007,11 @@ do.convert.trajectories <- function(pred, n, output.dir, countries=NULL, verbose
 
 
 convert.tfr.trajectories <- function(dir=file.path(getwd(), 'bayesTFR.output'), 
-								 n=1000, output.dir=NULL, 
+								 n=1000, subdir = "predictions", output.dir=NULL, 
 								 verbose=FALSE) {
 	# Converts all trajectory rda files into UN ascii, selecting n trajectories by equal spacing.
 	if(n <= 0) return()
-	pred <- get.tfr.prediction(sim.dir=dir)
+	pred <- get.tfr.prediction(sim.dir=dir, subdir = subdir)
 	if (is.null(output.dir)) output.dir <- pred$output.directory
 	if(!file.exists(output.dir)) dir.create(output.dir, recursive=TRUE)
 	cat('Converting trajectories from', dir, '\n')
@@ -1028,11 +1030,11 @@ convert.tfr.trajectories <- function(dir=file.path(getwd(), 'bayesTFR.output'),
 }
 
 write.projection.summary <- function(dir=file.path(getwd(), 'bayesTFR.output'), 
-									 output.dir=NULL, revision=NULL, adjusted=FALSE, 
+                                     subdir = "predictions", output.dir=NULL, revision=NULL, adjusted=FALSE, 
 									 est.uncertainty = FALSE, ...) {
 # Writes three prediction summary files, one in a user-friendly format, one in a UN-format,
 # and one parameter file.
-	pred <- get.tfr.prediction(sim.dir=dir)
+	pred <- get.tfr.prediction(sim.dir=dir, subdir = subdir)
 	if (is.null(output.dir)) output.dir <- pred$output.directory
 	if(!file.exists(output.dir)) dir.create(output.dir, recursive=TRUE)
 	tfr.write.projection.summary.and.parameters(pred, output.dir, revision=revision, adjusted=adjusted, 
@@ -1302,19 +1304,19 @@ get.tfr.shift <- function(country.code, pred) {
 	return(pred)
 }
 
-tfr.median.reset <- function(sim.dir, countries = NULL) {
+tfr.median.reset <- function(sim.dir, countries = NULL, ...) {
     if(is.null(countries)) {
-        pred <- get.tfr.prediction(sim.dir)
+        pred <- get.tfr.prediction(sim.dir, ...)
         pred$median.shift <- NULL
         store.bayesTFR.prediction(pred)
         cat('\nMedians for all countries reset.\n')
     } else
-	    for(country in countries) pred <- tfr.median.shift(sim.dir, country, reset=TRUE)
+	    for(country in countries) pred <- tfr.median.shift(sim.dir, country, reset=TRUE, ...)
 	invisible(pred)
 }
 
-tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, to=NULL) {
-	pred <- get.tfr.prediction(sim.dir)
+tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, to=NULL, ...) {
+	pred <- get.tfr.prediction(sim.dir, ...)
 	pred <- .bdem.median.shift(pred, type='tfr', country=country, reset=reset, 
 				shift=shift, from=from, to=to)
 	store.bayesTFR.prediction(pred)
@@ -1354,16 +1356,17 @@ tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, 
 	return(pred)
 }
 
-tfr.median.set <- function(sim.dir, country, values, years=NULL) {
-	pred <- get.tfr.prediction(sim.dir)
+tfr.median.set <- function(sim.dir, country, values, years=NULL, ...) {
+	pred <- get.tfr.prediction(sim.dir, ...)
 	pred <- .bdem.median.set(pred, 'tfr', country=country, values=values, years=years)
 	store.bayesTFR.prediction(pred)
 	invisible(pred)
 }
 
-tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forceAR1=FALSE) {
-	pred <- get.tfr.prediction(sim.dir)
-	if (is.null(pred)) stop('No valid prediction in ', sim.dir)
+tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forceAR1=FALSE, subdir = "predictions") {
+	pred <- get.tfr.prediction(sim.dir, subdir = subdir)
+	if (is.null(pred)) stop('Prediction not found in ', file.path(sim.dir, subdir), 
+	                        '. Check available.tfr.predictions() and use the subdir argument to set non-standard prediction subdirectory.')
 	mcmc.set <- pred$mcmc.set
 	if(is.null(countries)) {
 		cat('\nNo countries given. Nothing to be done.\n')
@@ -1382,7 +1385,7 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 									use.tfr3=pred$use.tfr3, mcmc3.set=m3.set, burnin3=pred$burnin3,
 									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, min.tfr=pred$min.tfr,
 									countries=countries.idx, adj.factor1=factor1, adj.factor2=factor2,
-									forceAR1=forceAR1, save.as.ascii=0, output.dir=sim.dir,
+									forceAR1=forceAR1, save.as.ascii=0, output.dir=sim.dir, subdir = subdir,
 									write.summary.files=FALSE, is.mcmc.set.thinned=TRUE, 
 									write.trajectories=FALSE, verbose=FALSE)
 	new.means <- new.pred$traj.mean.sd[,1,2:dim(new.pred$traj.mean.sd)[3]]
@@ -1390,7 +1393,7 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 		tfr.median.set(sim.dir, countries[icountry], new.means[get.country.object(countries[icountry], mcmc.set$meta)$index,])
 	}
 	# reload adjusted prediction
-	invisible(get.tfr.prediction(sim.dir))
+	invisible(get.tfr.prediction(sim.dir, subdir = subdir))
 }
 
 tfr.correlation <- function(meta, cor.pred=NULL, low.coeffs=c(0.11, 0.26, 0.05, 0.09),

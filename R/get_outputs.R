@@ -222,14 +222,23 @@ create.thinned.tfr.mcmc <- function(mcmc.set, thin=1, burnin=0, output.dir=NULL,
 	return(thin.mcmc.set)
 }
 
-has.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL) {
+has.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, subdir = "predictions") {
 	if (!is.null(mcmc)) sim.dir <- if(is.character(mcmc)) mcmc else mcmc$meta$output.dir
 	if (is.null(sim.dir)) stop('Either mcmc or directory must be given.')
-	if(file.exists(file.path(sim.dir, 'predictions', 'prediction.rda'))) return(TRUE)
+	if(file.exists(file.path(sim.dir, subdir, 'prediction.rda'))) return(TRUE)
 	return(FALSE)
 }
 
-get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
+available.tfr.predictions <- function(mcmc=NULL, sim.dir=NULL, full.names = FALSE){
+    if (!is.null(mcmc)) sim.dir <- if(is.character(mcmc)) mcmc else mcmc$meta$output.dir
+    if (is.null(sim.dir)) stop('Either mcmc or directory must be given.')
+    all.dirs <- list.dirs(sim.dir, recursive = FALSE, full.names = TRUE)
+    pred.dirs <- names(unlist(sapply(all.dirs, function(x) list.files(x, pattern = "^prediction.rda$"))))
+    if(length(pred.dirs) == 0 || full.names == TRUE) return(pred.dirs)
+    return(sapply(pred.dirs, basename, USE.NAMES = FALSE))
+}
+
+get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL, subdir = "predictions") {
 	############
 	# Returns an object of class bayesTFR.prediction
 	# Set mcmc.dir to NA, if the prediction object should not have a pointer 
@@ -238,11 +247,15 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL) {
 	if (!is.null(mcmc)) 
 		sim.dir <- if(is.character(mcmc)) mcmc else mcmc$meta$output.dir
 	if (is.null(sim.dir)) stop('Either mcmc or directory must be given.')
-	output.dir <- file.path(sim.dir, 'predictions')
+	output.dir <- file.path(sim.dir, subdir)
 	pred.file <- file.path(output.dir, 'prediction.rda')
 	if(!file.exists(pred.file)) {
 		warning('File ', pred.file, ' does not exist.')
-		return(NULL)
+	    if(length((alt.preds <- available.tfr.predictions(sim.dir = sim.dir))) > 0){
+	        output.dir <- file.path(sim.dir, alt.preds[1])
+	        pred.file <- file.path(output.dir, 'prediction.rda')
+	        warning('Extracting predictions from ', alt.preds[1])
+	    } else return(NULL)
 	}
 	load(file=pred.file)
 	bayesTFR.prediction$output.directory <- normalizePath(output.dir)

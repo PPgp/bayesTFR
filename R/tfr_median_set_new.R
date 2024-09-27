@@ -30,9 +30,9 @@ tfr.shift.estimation.to.wpp <- function(sim.dir, ..., verbose = TRUE){
       meta$median.shift.estimation[[as.character(cntry)]] <- merged$shift
   }
   store.bayesTFR.meta.object(meta, meta$output.dir)
-  has.predictions <- has.tfr.prediction(sim.dir = sim.dir)
-  if(has.predictions) { # need to save this also in the collapsed chain of the prediction
-    pred <- get.tfr.prediction(sim.dir = sim.dir)
+  predictions <- available.tfr.predictions(sim.dir = sim.dir)
+  for(pred.subdir in predictions) { # need to save this also in the collapsed chain of the prediction
+    pred <- get.tfr.prediction(sim.dir = sim.dir, subdir = pred.subdir)
     pred$mcmc.set$meta$median.shift.estimation <- meta$median.shift.estimation
     store.bayesTFR.prediction(pred)
     store.bayesTFR.meta.object(pred$mcmc.set$meta, pred$mcmc.set$meta$output.dir)
@@ -47,12 +47,13 @@ get.tfr.shift.estimation <- function(country.code, meta)
   return(meta$median.shift.estimation[[as.character(country.code)]])
 }
 
-tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0, thin = 1)
+tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0, thin = 1, 
+                               subdir = "predictions")
 {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta <- mcmc.set$meta
   country.obj <- get.country.object(country, meta=meta)
-  has.predictions <- has.tfr.prediction(sim.dir = sim.dir)
+  has.predictions <- has.tfr.prediction(sim.dir = sim.dir, subdir = subdir)
   # browser()
   bdem.shift.estimation <- do.call('get.tfr.shift.estimation', list(country.obj$code, meta))
   estimation.years <- as.numeric(dimnames(meta$tfr_matrix)[[1]])
@@ -63,7 +64,7 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
   years.missing <- is.null(years)
   if (has.predictions)
   {
-    pred <- get.tfr.prediction(sim.dir = sim.dir)
+    pred <- get.tfr.prediction(sim.dir = sim.dir, subdir = subdir)
     pred.years <- as.numeric(dimnames(pred$quantiles)[[3]])
     bdem.shift <- do.call('get.tfr.shift', list(country.obj$code, pred))
     nr.proj <- pred$nr.projections + 1
@@ -130,8 +131,10 @@ tfr.median.reset.estimation <- function(sim.dir, countries = NULL)
 {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta <- mcmc.set$meta
-  has.prediction <- has.tfr.prediction(sim.dir = sim.dir)
-  if (has.prediction) pred <- get.tfr.prediction(sim.dir = sim.dir)
+  has.prediction <- has.tfr.prediction(sim.dir = sim.dir, subdir = subdir)
+  #if (has.prediction) pred <- get.tfr.prediction(sim.dir = sim.dir)
+  predictions <- available.tfr.predictions(sim.dir = sim.dir)
+
   has.estimation <- (!is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty)
   output <- list()
   if (has.estimation && !is.null(meta$median.shift.estimation)) 
@@ -146,23 +149,25 @@ tfr.median.reset.estimation <- function(sim.dir, countries = NULL)
     }
     output[['meta']] <- meta
     store.bayesTFR.meta.object(meta, meta$output.dir)
-    if (has.prediction){
+    for(pred.subdir in predictions) { # need to save this also in the prediction mcmc object
+        pred <- get.tfr.prediction(sim.dir = sim.dir, subdir = pred.subdir)
         pred$mcmc.set$meta$median.shift.estimation <- meta$median.shift.estimation
         store.bayesTFR.prediction(pred)
     }
   }
-  if (has.prediction && !is.null(pred$median.shift)) 
-  {
-    if(is.null(countries)) pred$median.shift <- NULL # reset all countries
-    else {
-      for (country in countries) 
-      {
-        country.obj <- get.country.object(country, meta=meta)
-        pred$median.shift[[as.character(country.obj$code)]] <- NULL
-      }
-    }
-    output[['pred']] <- pred
-    store.bayesTFR.prediction(pred)
+    for(pred.subdir in predictions) {
+        pred <- get.tfr.prediction(sim.dir = sim.dir, subdir = pred.subdir)
+        if(is.null(pred$median.shift)) next
+        if(is.null(countries)) pred$median.shift <- NULL # reset all countries
+        else {
+            for (country in countries) 
+            {
+                country.obj <- get.country.object(country, meta=meta)
+                pred$median.shift[[as.character(country.obj$code)]] <- NULL
+            }
+        }
+        output[['pred']] <- pred # this just returns the last prediction object which is not correct if there are more than one prediction directories
+        store.bayesTFR.prediction(pred)
   }
   invisible(output)
 }
@@ -206,8 +211,8 @@ tfr.median.reset.estimation <- function(sim.dir, countries = NULL)
 }
 
 
-tfr.shift.prediction.to.wpp <- function(sim.dir, ...){
-  pred <- get.tfr.prediction(sim.dir)
+tfr.shift.prediction.to.wpp <- function(sim.dir, subdir = "predictions", ...){
+  pred <- get.tfr.prediction(sim.dir, subdir = subdir)
   new.pred <- .do.shift.prediction.to.wpp(pred, wpp.dataset = "tfrprojMed", ...)
   store.bayesTFR.prediction(new.pred)
   invisible(new.pred)

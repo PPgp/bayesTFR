@@ -1,11 +1,11 @@
 tfr.predict.subnat <- function(countries, my.tfr.file, sim.dir=file.path(getwd(), 'bayesTFR.output'),
-                               end.year=2100, start.year=NULL, output.dir = NULL, annual = NULL,
+                               end.year=2100, start.year=NULL, subdir = "predictions", output.dir = NULL, annual = NULL,
                                nr.traj=NULL, seed = NULL, min.tfr = 0.5, ar.pars = NULL, 
                                save.as.ascii = 0, verbose = TRUE) {
   # Run subnational projections, using the Scale AR(1) model applied to a national bayesTFR simulation 
   # sim.dir is the world-national simulation. Set output.dir to store results somewhere else.  
 
-  wpred <- get.tfr.prediction(sim.dir) # contains national projections
+  wpred <- get.tfr.prediction(sim.dir, subdir = subdir) # contains national projections
   wdata <- wpred$tfr_matrix_reconstructed
   wmeta <- wpred$mcmc.set$meta
   if(!is.null(seed)) set.seed(seed)

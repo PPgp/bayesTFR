@@ -49,6 +49,7 @@ export(
 	get.thinned.tfr.mcmc,
 	get.tfr.prediction,
 	has.tfr.prediction,
+	available.tfr.predictions,
 	get.tfr.convergence.all,
 	get.tfr.convergence,
 	get.tfr3.convergence.all,
