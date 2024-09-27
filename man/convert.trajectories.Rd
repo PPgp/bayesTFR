@@ -9,11 +9,12 @@ Converts TFR trajectories stored in a binary format into two CSV files of a UN-s
 }
 \usage{
 convert.tfr.trajectories(dir = file.path(getwd(), 'bayesTFR.output'), 
-    n = 1000, output.dir = NULL, verbose = FALSE)
+    n = 1000, subdir = "predictions", output.dir = NULL, verbose = FALSE)
 }
 \arguments{
   \item{dir}{Directory containing the prediction object. It should correspond to the \code{output.dir} argument of the \code{\link{tfr.predict}} function.}
   \item{n}{Number of trajectories to be stored. It can be either a single number or the word \dQuote{all} in which case all trajectories are stored.}
+  \item{subdir}{Name of subdirectory of \code{dir} containing the prediction.}
   \item{output.dir}{Directory in which the resulting files will be stored. If \code{NULL} the same directory is used as for the prediction.}
   \item{verbose}{Logical switching log messages on and off.}
 }

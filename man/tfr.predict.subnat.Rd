@@ -10,9 +10,9 @@ Generates posterior trajectories of the total fertility rate for subregions of g
 \usage{
 tfr.predict.subnat(countries, my.tfr.file, 
                 sim.dir = file.path(getwd(), "bayesTFR.output"), 
-                end.year = 2100, start.year = NULL, output.dir = NULL, 
-                annual = NULL, nr.traj = NULL, seed = NULL, min.tfr = 0.5, 
-                ar.pars = NULL, save.as.ascii = 0, verbose = TRUE)
+                end.year = 2100, start.year = NULL, subdir = "predictions", 
+                output.dir = NULL, annual = NULL, nr.traj = NULL, seed = NULL, 
+                min.tfr = 0.5, ar.pars = NULL, save.as.ascii = 0, verbose = TRUE)
 }
 
 \arguments{
@@ -21,6 +21,7 @@ tfr.predict.subnat(countries, my.tfr.file,
   \item{sim.dir}{Simulation directory with the national projections generated using \code{\link{tfr.predict}}.}
  \item{end.year}{End year of the projections.}
  \item{start.year}{Start year of the projections. By default, projections start at the same time point as the national projections.} 
+   \item{subdir}{Subdirectory of \code{sim.dir} containing the national predictions.}
    \item{output.dir}{Directory into which the resulting prediction objects and the trajectories are stored. See below for details.}
 \item{annual}{Logical indicating if the subnational projection should be on an annual scale or a 5-year scale. By default, 
 the scale is matched to the national simulation. If the subnational and national scales are not the same, the national trajectories are either interpolated (if \code{annual = TRUE} and the national simulation is not annual) or averaged to 5-year values (if \code{annual = FALSE} and the national simulation is annual).}

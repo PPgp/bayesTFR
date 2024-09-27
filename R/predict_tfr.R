@@ -215,7 +215,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	
 	#setup output directory
 	if (is.null(output.dir)) output.dir <- meta$output.dir
-	outdir <- file.path(output.dir, subdir)
+	outdir <- file.path(output.dir, basename(subdir))
 	
 	if(is.null(countries)) {
 		if(!replace.output && has.tfr.prediction(sim.dir=output.dir, subdir = subdir))

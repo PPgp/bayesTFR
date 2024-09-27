@@ -12,7 +12,7 @@ These functions are to be used by expert analysts. They allow to change the esti
 }
 \usage{
 tfr.median.set.all(sim.dir, country, values, years = NULL, 
-    burnin = 0, thin = 1)
+    burnin = 0, thin = 1, subdir = "predictions")
 
 tfr.median.reset.estimation(sim.dir, countries = NULL)
 
@@ -27,6 +27,7 @@ tfr.shift.estimation.to.wpp(sim.dir, \dots, verbose = TRUE)
   \item{years}{Numeric vector giving years which \code{values} correspond to. Ideally it should be of the same length as \code{values}.}
   \item{burnin}{Burnin to use when computing the estimation median.}
   \item{thin}{Thinning interval to use when computing the estimation median.}
+  \item{subdir}{Subdirectory of \code{sim.dir} containing the predictions.}
   \item{\dots}{Can be used to pass \code{burnin} \code{thin} to the underlying funcions.}
   \item{verbose}{Logical. If \code{TRUE} a progress of the adjustment is shown.}
 }

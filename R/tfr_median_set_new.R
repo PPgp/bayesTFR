@@ -131,10 +131,7 @@ tfr.median.reset.estimation <- function(sim.dir, countries = NULL)
 {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta <- mcmc.set$meta
-  has.prediction <- has.tfr.prediction(sim.dir = sim.dir, subdir = subdir)
-  #if (has.prediction) pred <- get.tfr.prediction(sim.dir = sim.dir)
   predictions <- available.tfr.predictions(sim.dir = sim.dir)
-
   has.estimation <- (!is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty)
   output <- list()
   if (has.estimation && !is.null(meta$median.shift.estimation)) 
