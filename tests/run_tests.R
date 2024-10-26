@@ -28,13 +28,13 @@ if(!cran) {
 	test.plot.all()
 	test.reproduce.simulation()
 	test.subnational.predictions()
-	for (wpp in c(2019, 2022)){
+	for (wpp in c(2019, 2024)){
 	    test.run.mcmc.simulation(wpp.year = wpp)
 	    test.run.mcmc.simulation.with.uncertainty(wpp.year = wpp)
 	    test.thinned.simulation(wpp.year = wpp)
 	    test.run.annual.simulation(wpp.year = wpp)
 	}
-	for(wpp in rev(c(2010, 2012, 2015, 2017, 2022))) { # these are either suggested packages or not on CRAN
+	for(wpp in rev(c(2010, 2012, 2015, 2017, 2024))) { # these are either suggested packages or not on CRAN
 	    test.load.UNtfr(wpp)
 	    test.load.UNlocations(wpp)
 	    test.create.tfr.matrix(wpp)
