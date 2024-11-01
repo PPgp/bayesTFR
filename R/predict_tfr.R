@@ -1014,7 +1014,7 @@ convert.tfr.trajectories <- function(dir=file.path(getwd(), 'bayesTFR.output'),
 	pred <- get.tfr.prediction(sim.dir=dir, subdir = subdir)
 	if (is.null(output.dir)) output.dir <- pred$output.directory
 	if(!file.exists(output.dir)) dir.create(output.dir, recursive=TRUE)
-	cat('Converting trajectories from', dir, '\n')
+	cat('Converting trajectories from', file.path(dir, subdir), '\n')
 	if (is.null(pred$na.index)) {
 		if(verbose) cat('Finding NA values in each country ...\n')
 		for (country in 1:pred$mcmc.set$meta$nr_countries) {
