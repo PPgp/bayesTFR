@@ -1,4 +1,8 @@
-7.4-2.90xx (2024-09-26)
+7.4-4 (2024-11-01)
+-----
+Two countries added to small countries in include_2024.
+
+7.4-3 (2024-10-31)
 -----
 Added option of keeping multiple predictions directories in one simulation directory
 (argument "subdir" added to various functions).

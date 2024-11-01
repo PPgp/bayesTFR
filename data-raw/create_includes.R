@@ -3,6 +3,9 @@ library(usethis)
 
 # Run this from the data-raw directory
 
+include_2024 <- as.data.frame(fread("include_2024.txt", sep = "\t")[, .(country_code, include_code)])
+use_data(include_2024, overwrite = TRUE)
+
 include_2022 <- as.data.frame(fread("include_2022.txt", sep = "\t")[, .(country_code, include_code)])
 use_data(include_2022, overwrite = TRUE)
 
