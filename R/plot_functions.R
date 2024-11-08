@@ -369,6 +369,19 @@ get.median.from.prediction <- function(tfr.pred, country.index, country.code=NUL
 	return(get.quantile.from.prediction(tfr.pred, quantile=0.5, country.index=country.index, 
 										country.code=country.code, adjusted=adjusted, ...))
 }
+get.mean.from.prediction <- function(tfr.pred, country.index, country.code=NULL, adjusted=TRUE,
+                                         est.uncertainty = FALSE) {
+    mean.values <- tfr.pred$traj.mean.sd[country.index, 1,]
+    if(est.uncertainty && has.est.uncertainty(tfr.pred$mcmc.set)){ # get the right value for present year
+        tfr.est <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.code, probs="mean", adjust = adjusted)
+        unc.last.time <- which(tfr.est$tfr_quantile$year == dimnames(tfr.pred$quantiles)[[3]][1])
+        mean.values[1] <- unlist(tfr.est$tfr_quantile[unc.last.time, 1])
+    }
+    if (!adjusted) return(mean.values)
+    shift <- get.tfr.shift(country.code, tfr.pred)
+    if(!is.null(shift)) mean.values <- mean.values + shift
+    return(mean.values)
+}
 	
 get.traj.quantiles <- function(tfr.pred, country.index, country.code, trajectories=NULL, pi=80, 
                                adjusted=TRUE, est.uncertainty = FALSE) {
@@ -551,7 +564,8 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL
 tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95), 
                                   half.child.variant=TRUE, nr.traj=NULL,
                                   adjusted.only = TRUE, typical.trajectory=FALSE,
-                                  mark.estimation.points=FALSE,
+                                  mark.estimation.points=FALSE, 
+                                  traj.index = NULL, show.mean = FALSE, show.median = TRUE,
                                   xlim=NULL, ylim=NULL, type='b', 
                                   xlab='Year', ylab='TFR', main=NULL, lwd=c(2,2,2,2,2,1), 
                                   col=c('black', 'green', 'red', 'red', 'blue', '#00000020'),
@@ -595,7 +609,11 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   }
   x1 <- as.integer(c(names(y1.part1), names(y1.part2)))
   x2 <- as.numeric(dimnames(tfr.pred$quantiles)[[3]])
+
+  if(!is.null(traj.index)) nr.traj <- length(traj.index)
   trajectories <- get.trajectories(tfr.pred, country$code, nr.traj, typical.trajectory=typical.trajectory)
+  if(!is.null(traj.index) && !is.null(trajectories$trajectories)) trajectories$index <- traj.index
+  
   # plot historical data: observed
   if (!add) {
     if(is.null(xlim)) xlim <- c(min(x1,x2), max(x1,x2))
@@ -648,69 +666,116 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
       lines(x2, trajectories$trajectories[,trajectories$index[i]], type='l', col=col[6], lwd=lwd[6])
     }
   }
-  # plot median
-  tfr.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
-  if(uncertainty) {
+  if(uncertainty) 
       unc.last.time <- which(tfr.object$tfr_quantile$year == x2[1])
-      tfr.median[1] <- unlist(tfr.object$tfr_quantile[unc.last.time,])[length(pi)+1]
+  
+  # extract median & mean
+  tfr.median <- tfr.mean <- tfr.main.proj <- NULL
+  if(show.median)
+    tfr.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
+  if(show.mean)
+    tfr.mean <- get.mean.from.prediction(tfr.pred, country$index, country$code)      
+  
+  # set the main projection (solid line)
+  main.proj.name <- ""
+  if(!is.null(tfr.median)){
+      tfr.main.proj <- tfr.median
+      main.proj.name <- "median"
+  } else {
+      if(!is.null(tfr.mean)){
+        tfr.main.proj <- tfr.mean
+        main.proj.name <- "mean"
+      }
   }
-  lines(x2, tfr.median, type='l', col=col[3], lwd=lwd[3])
-  lty <- 1
+  lty <- c()
+  if(!is.null(tfr.main.proj)){
+    if(uncertainty) # replace last observed with estimated median
+        tfr.main.proj[1] <- unlist(tfr.object$tfr_quantile[unc.last.time,])[length(pi)+1]
+    # draw main projection
+    lines(x2, tfr.main.proj, type='l', col=col[3], lwd=lwd[3])
+    lty <- 1
+  }
+  
   # plot given CIs
   if(length(pi) > 0){
-    lty <- c(lty, 2:(length(pi)+1))
+      pi.lty <- 2:(length(pi)+1)
+    lty <- c(lty, pi.lty)
     for (i in 1:length(pi)) {
         cqp <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i], 
                               est.uncertainty = uncertainty)
         if (!is.null(cqp)) {
-            lines(x2, cqp[1,], type='l', col=col[4], lty=lty[i+1], lwd=lwd[4])
-            lines(x2, cqp[2,], type='l', col=col[4], lty=lty[i+1], lwd=lwd[4])
+            lines(x2, cqp[1,], type='l', col=col[4], lty=pi.lty[i], lwd=lwd[4])
+            lines(x2, cqp[2,], type='l', col=col[4], lty=pi.lty[i], lwd=lwd[4])
         }
     }
   }
+  max.lty <- if(length(lty) == 0) 1 else max(lty)
+  
   if (uncertainty)
   {
     col_median <- length(pi)+1
     lines(tfr.object$tfr_quantile$year, as.data.frame(tfr.object$tfr_quantile)[, col_median], type='l', col=col_unc, lwd=lwd[3]) 
     if(!adjusted.only) { # plot unadjusted estimation median
-        unadj.lty <- max(lty)+1
+        unadj.lty <- max.lty+1
         tfr.object.unadj <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
                                          probs=0.5, adjust = FALSE)
-        lines(tfr.object.unadj$tfr_quantile$year, as.data.frame(tfr.object.unadj$tfr_quantile)$V1, type='l', col=col_unc, lwd=lwd[3], lty = max(lty)+1) 
+        lines(tfr.object.unadj$tfr_quantile$year, as.data.frame(tfr.object.unadj$tfr_quantile)$V1, type='l', col=col_unc, lwd=lwd[3], lty = unadj.lty) 
     }
     if(length(pi) > 0) {
         for (i in 1:length(pi)) {
-            lines(tfr.object$tfr_quantile$year, as.data.frame(tfr.object$tfr_quantile)[, length(pi)+1-i], type='l', col=col_unc, lty=lty[i+1], lwd=lwd[4])
-            lines(tfr.object$tfr_quantile$year, as.data.frame(tfr.object$tfr_quantile)[, length(pi)+1+i], type='l', col=col_unc, lty=lty[i+1], lwd=lwd[4])
+            lines(tfr.object$tfr_quantile$year, as.data.frame(tfr.object$tfr_quantile)[, length(pi)+1-i], type='l', col=col_unc, lty=pi.lty[i], lwd=lwd[4])
+            lines(tfr.object$tfr_quantile$year, as.data.frame(tfr.object$tfr_quantile)[, length(pi)+1+i], type='l', col=col_unc, lty=pi.lty[i], lwd=lwd[4])
         }
     }
   }
   legend <- c()
   cols <- c()
   lwds <- c()
-  if(!adjusted.only) { # plot unadjusted median
-    bhm.median <- get.median.from.prediction(tfr.pred, country$index, country$code, adjusted=FALSE)
-    lines(x2, bhm.median, type='l', col=col[3], lwd=lwd[3], lty=max(lty)+1)
-    legend <- c(legend, 'BHM median')
+  if(!adjusted.only) { # plot unadjusted median & mean
+      if(main.proj.name == "mean"){
+          bhm.main <- get.mean.from.prediction(tfr.pred, country$index, country$code, adjusted=FALSE)
+          bhm.main.name <- 'BHM mean'
+      } else {
+          bhm.main <- get.median.from.prediction(tfr.pred, country$index, country$code, adjusted=FALSE)
+          bhm.main.name <- 'BHM median'
+      }
+    lines(x2, bhm.main, type='l', col=col[3], lwd=lwd[3], lty=max.lty+1)
+    legend <- c(legend, bhm.main.name)
     cols <- c(cols, col[3])
     lwds <- c(lwds, lwd[3])
-    lty <- c(max(lty)+1, lty)
+    lty <- c(max.lty+1, lty)
+    max.lty <- max(lty)
   }
-  median.legend <- if(adjusted.only) 'median' else 'adj. median'
-  legend <- c(legend, median.legend, if(length(pi) > 0) paste0(pi, '% PI') else c())
-  cols <- c(cols, col[3], rep(col[4], length(pi)))
-  lwds <- c(lwds, lwd[3], rep(lwd[4], length(pi)))
-  if (half.child.variant) {
-    lty <- c(lty, max(lty)+1)
+  if(main.proj.name != ""){
+    main.legend <- if(adjusted.only) main.proj.name else paste('adj.', main.proj.name)
+    legend <- c(legend, main.legend)
+    cols <- c(cols, col[3])
+    lwds <- c(lwds, lwd[3])
+  }
+  legend <- c(legend, if(length(pi) > 0) paste0(pi, '% PI') else c())
+  cols <- c(cols, rep(col[4], length(pi)))
+  lwds <- c(lwds, rep(lwd[4], length(pi)))
+  if(show.median && show.mean){
+      # plot mean in addition to median
+      lines(x2, tfr.mean, type='l', col=col[3], lwd=1, lty=max(lty)+1)
+      legend <- c(legend, 'mean')
+      cols <- c(cols, col[3])
+      lwds <- c(lwds, 1)
+      lty <- c(lty, max.lty+1)
+      max.lty <- max(lty)
+  }
+  if (half.child.variant && !is.null(tfr.main.proj)) {
+    lty <- c(lty, max.lty+1)
+    max.lty <- max(lty)
     llty <- length(lty)
-    up.low <- get.half.child.variant(median=tfr.median)
+    up.low <- get.half.child.variant(median=tfr.main.proj)
     if(uncertainty) {
         up.low <- up.low[,-1]
         x2t <- x2[-1]
     } else x2t <- x2
     lines(x2t, up.low[1,], type='l', col=col[5], lty=lty[llty], lwd=lwd[5])
     lines(x2t, up.low[2,], type='l', col=col[5], lty=lty[llty], lwd=lwd[5])
-    legend <- c(legend, '+/- 0.5 child')
+    legend <- c(legend, paste(main.proj.name, '+/- 0.5 child'))
     cols <- c(cols, col[5])
     lwds <- c(lwds, lwd[5])
   }
@@ -1210,11 +1275,10 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
     tfr <- data.frame(cbind(un=data.period$country.codes, tfr=data))
     map <- rworldmap::getMap(resolution=resolution)
     #first get countries excluding Antarctica which crashes spTransform (says the help page for joinCountryData2Map)
-    sPDF <- map[-which(map$ADMIN=='Antarctica'), ]	
-    if(requireNamespace("rgdal", quietly=TRUE)) {
-        #transform map to the Robinson projection
-        sPDF <- sp::spTransform(sPDF, CRSobj=sp::CRS("+proj=robin +ellps=WGS84"))
-    }
+    sPDF <- map[-which(map$ADMIN=='Antarctica'), ]
+    #transform map to the Robinson projection
+    sPDF <- sp::spTransform(sPDF, CRSobj = sp::CRS("+proj=robin +ellps=WGS84"))
+
     ## recode missing UN codes and UN member states
     sPDF$UN <- sPDF$ISO_N3
     ## N. Cyprus -> assign to Cyprus
@@ -1223,7 +1287,7 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
     sPDF$UN[sPDF$ISO3=="KOS"] <- 688
     ## W. Sahara -> no UN numerical code assigned in Natural Earth map (its ISO3 changed in rworlmap 1.3.6)
     sPDF$UN[sPDF$ISO3=="ESH"] <- 732
-    ## Somaliland -> assign to Somalia -> fixed in rworlmap version 1.3.6
+    ## Somaliland -> assign to Somalia (SOM) -> fixed in rworlmap version 1.3.6
     #sPDF$UN[sPDF$ISO3=="SOL"] <- 706
     
     #mtfr <- joinCountryData2Map(tfr, joinCode='UN', nameJoinColumn='un')

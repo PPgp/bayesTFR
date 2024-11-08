@@ -43,6 +43,7 @@
 \alias{get.mcmc.list.list}
 \alias{get.mcmc.meta}
 \alias{get.median.from.prediction}
+\alias{get.mean.from.prediction}
 \alias{get.meta.only}
 \alias{get.newTFRcolnames}
 \alias{get.nr.countries}

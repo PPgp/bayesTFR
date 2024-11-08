@@ -22,3 +22,4 @@
 13	204	"BHM80 lower"	"BHM80 lower"	"Standard"
 13	206	"BHM95 upper"	"BHM95 upper"	"Standard"
 13	207	"BHM95 lower"	"BHM95 lower"	"Standard"
+13	208	"BHM mean"	"BHM mean"	"Standard"

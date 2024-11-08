@@ -1,3 +1,27 @@
+7.4-4 (2024-11-01)
+-----
+Two countries added to small countries in include_2024.
+
+7.4-3 (2024-10-31)
+-----
+Added option of keeping multiple predictions directories in one simulation directory
+(argument "subdir" added to various functions).
+
+Added option of shifting projection to wpp by matching means. 
+
+Added dataset include_2024.
+
+Fixed bug related to a combination of ar.phase2 and missing data (thanks to Shunqi Cheng).
+
+Added the mean variant into summary outputs.
+
+tfr.trajectories.plot() got arguments to plot the means (show.mean), medians (show.median),
+as well as selected trajectories (traj.index).
+
+7.4-1/2 (2023-10-17)
+-----
+Removed rgdal from suggested packages.
+
 7.4-0 (2023-09-14)
 -----
 Annual subnational projections are now possible, controlled by the argument "annual" 

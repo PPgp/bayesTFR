@@ -17,7 +17,8 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
     use.diagnostics = FALSE, use.tfr3 = TRUE, burnin3 = 2000,
     mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016, min.tfr = 0.5,
     use.correlation = FALSE, save.as.ascii = 0, output.dir = NULL, 
-    low.memory = TRUE, seed = NULL, verbose = TRUE, uncertainty = FALSE, \dots)
+    subdir = "predictions", low.memory = TRUE, seed = NULL, 
+    verbose = TRUE, uncertainty = FALSE, \dots)
 }
 
 \arguments{
@@ -34,6 +35,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
   \item{burnin3}{Burnin used for phase III MCMCs. Only relevant if \code{use.tfr3} is \code{TRUE}.}
   \item{save.as.ascii}{Either a number determining how many trajectories should be converted into an ASCII file, or \dQuote{all} in which case all trajectories are converted. It should be set to 0, if no conversion is desired.}
   \item{output.dir}{Directory into which the resulting prediction object and the trajectories are stored. If it is \code{NULL}, it is set to either \code{sim.dir}, or to \code{output.dir} of \code{mcmc.set$meta} if \code{mcmc.set} is given.}
+  \item{subdir}{Subdirectory of \code{output.dir} to store the predictions. It is defined relative to \code{output.dir} and can only have one level.}
   \item{low.memory}{Logical indicating if the prediction should run in a low-memory mode. If it is \code{FALSE}, the whole traces of all parameters, including the burnin, are loaded into memory. Otherwise, burnins are discarded and parameters are loaded as they are needed and are not kept in the memory.}
   \item{mu}{Long-term mean \eqn{\mu}{mu} in the AR(1) projection model. Only used if \code{use.tfr3} is \code{FALSE}.}
   \item{rho}{Autoregressive parameter \eqn{\rho}{rho} in AR(1) projection model. If it is \code{NULL} it is estimated from the data. Only used if \code{use.tfr3} is \code{FALSE}.}
@@ -52,7 +54,7 @@ If Phase III is projected using a BHM (i.e. if \code{use.tfr3} is \code{TRUE}), 
 
 The projection is run for all missing values before the present year, if any. Medians over the trajectories are used as  imputed values and the trajectories are discarded. The process then continues by projecting the future values where all generated trajectories are kept.
 
-The resulting prediction object is saved into \file{\{output.dir\}/predictions}. Trajectories for all countries are saved into the same directory in a binary format, one file per country. At the end of the projection, if \code{save.as.ascii} is larger than 0, the function converts the given number of trajectories into a CSV file of a UN-specific format. They are selected by equal spacing (see function \code{\link{convert.tfr.trajectories}} for more details on the conversion). In addition, two summary files are created: one in a user-friendly format, the other using a UN-specific coding of the variants and time (see \code{\link{write.projection.summary}} for more details).
+The resulting prediction object is saved into \file{\{output.dir\}/\{subdir\}}. Trajectories for all countries are saved into the same directory in a binary format, one file per country. At the end of the projection, if \code{save.as.ascii} is larger than 0, the function converts the given number of trajectories into a CSV file of a UN-specific format. They are selected by equal spacing (see function \code{\link{convert.tfr.trajectories}} for more details on the conversion). In addition, two summary files are created: one in a user-friendly format, the other using a UN-specific coding of the variants and time (see \code{\link{write.projection.summary}} for more details).
 }
 
 \value{
