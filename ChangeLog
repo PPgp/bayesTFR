@@ -1,3 +1,7 @@
+7.4-4.9001 (2026-02-06)
+-----
+Allow user-defined function for finding phase 3 in predictions. 
+
 7.4-4 (2024-11-01)
 -----
 Two countries added to small countries in include_2024.
