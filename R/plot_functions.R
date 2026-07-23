@@ -252,26 +252,26 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
         	)
 }
 
-.get.trajectories.table <- function(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant=FALSE, 
+.get.trajectories.table <- function(tfr.pred, country, obs.data, pi, pred.median, cqp, 
+                                    obs.cqp = NULL, main.proj.name = "median", half.child.variant = FALSE, 
                                     uncertainty=FALSE, adjusted = TRUE) {
     l <- tfr.pred$nr.projections
 	obs.data <- obs.data[!is.na(obs.data)]
 	x1 <- as.integer(names(obs.data))
 	year.step <- ifelse(get.item(tfr.pred$mcmc.set$meta, "annual.simulation", FALSE), 1, 5)
 	x2 <- seq(max(x1)+year.step, by=year.step, length=l)
-	if (!uncertainty)
+	if (!uncertainty || is.null(obs.cqp))
 	  tfr <- as.matrix(obs.data, ncol=1)
 	else
 	{
-	  tmp <- get.tfr.estimation(mcmc.list = tfr.pred$mcmc.set, country = country$code, 
-	                            probs = c(0.5, sort(c((100-pi)/200, 1-(100-pi)/200))), adjust = adjusted)
-	  tfr <- as.matrix(tmp$tfr_quantile)[,1:(1+2*length(pi))]
+	  tfr <- as.matrix(obs.cqp)[,1:(1+2*length(pi))]
+	  tfr[, 1] <- obs.data
 	}
 	rownames(tfr) <- x1
 	pred.table <- matrix(NA, ncol=2*length(pi)+1, nrow=l)
 	pred.table[,1] <- pred.median[2:(l+1)]
-	colnames(pred.table) <- c('median', rep(NA,ncol(pred.table)-1))
-	if (uncertainty) colnames(tfr) <- c('median', rep(NA,ncol(pred.table)-1))
+	colnames(pred.table) <- c(main.proj.name, rep(NA,ncol(pred.table)-1))
+	if (uncertainty) colnames(tfr) <- c(main.proj.name, rep(NA,ncol(pred.table)-1))
 	idx <- 2
 	for (i in 1:length(pi)) {
 		al <- (1-pi[i]/100)/2
@@ -301,10 +301,13 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
   return(rbind(cbind(tfr, matrix(NA, nrow=nrow(tfr), ncol=ncol(pred.table)-ncol(tfr))), pred.table))
 }
 
-tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.variant=TRUE, adjusted = TRUE) {
+tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.variant=TRUE, adjusted = TRUE,
+                                   main.proj = c("median", "mean"), raw.observed = FALSE) {
   if (missing(country)) {
 		stop('Argument "country" must be given.')
-	}
+  }
+    main.proj <- match.arg(main.proj)
+    
 	country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	if(is.null(country.obj$code)) stop("Country ", country, " not found.")
 	country <- country.obj
@@ -312,15 +315,50 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 	if ((length(tfr.pred$mcmc.set$mcmc.list)>0 && !is.null(tfr.pred$mcmc.set$mcmc.list[[1]]$uncertainty) && 
 	     tfr.pred$mcmc.set$mcmc.list[[1]]$uncertainty) || (country$index %in% tfr.pred$mcmc.set$meta$extra))
 	  uncertainty <- TRUE
-	obs.data <- get.data.for.country.imputed(tfr.pred, country$index)
-	if(!is.null(tfr.pred$present.year.index)) obs.data <- obs.data[1:min(length(obs.data), tfr.pred$present.year.index.all)]
-	pred.median <- get.median.from.prediction(tfr.pred, country$index, country$code, adjusted = adjusted)
+	
+	# extract observed data (either raw or median or mean)
+	obs.data <- get.data.for.country.imputed(tfr.pred, country$index) # raw
+	obs.cqp <- NULL
+	
+	if (uncertainty)
+	{
+	    tfr.object <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+	                                     probs= c(0.5, sort(c((100-pi)/200, 1-(100-pi)/200))),
+	                                     adjust = adjusted)
+	    if(! raw.observed) { # observed data are not raw data; extract observed mean or median
+	        if(main.proj == "mean"){
+	            obs.data.df <-  get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+	                                        probs = "mean", adjust = adjusted)$tfr_quantile
+	            obs.data <- unlist(obs.data.df[,1])
+	            names(obs.data) <- obs.data.df$year
+	        } else {
+	            if(main.proj == "median"){
+	                obs.data <- unlist(tfr.object$tfr_quantile[, "50%"])
+	                names(obs.data) <- tfr.object$tfr_quantile$year
+	            }
+	        }
+	    }
+	    obs.cqp <- tfr.object$tfr_quantile
+	}
+	
+	if(!is.null(tfr.pred$present.year.index)) obs.data <- obs.data[1:min(length(obs.data), 
+	                                                                     tfr.pred$present.year.index.all)]
+	
+	if(main.proj == "median")
+	    pred.main <- get.median.from.prediction(tfr.pred, country$index, country$code, adjusted = adjusted)
+	
+	if(main.proj == "mean")
+	    pred.main <- get.mean.from.prediction(tfr.pred, country$index, country$code, adjusted = adjusted)
+	
 	trajectories <- get.trajectories(tfr.pred, country$code, adjusted = adjusted)
 	cqp <- list()
 	for (i in 1:length(pi))
 		cqp[[i]] <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i], 
 		                               est.uncertainty = uncertainty, adjusted = adjusted)
-	return(.get.trajectories.table(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant, uncertainty, adjusted = adjusted))
+	return(.get.trajectories.table(tfr.pred, country, obs.data, pi, pred.main, cqp, 
+	                               obs.cqp = obs.cqp, main.proj.name = main.proj,
+	                               half.child.variant = half.child.variant, uncertainty = uncertainty, 
+	                               adjusted = adjusted))
 }
 
 get.typical.trajectory.index <- function(trajectories) {
