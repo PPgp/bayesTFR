@@ -1294,6 +1294,7 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
     # join sPDF with tfr
     mtfr <- rep(NA, length(sPDF$UN))
     valididx <- which(is.element(sPDF$UN, tfr$un))
+    if(length(valididx) == 0) stop("No location codes match UN country codes.")
     mtfr[valididx] <- tfr$tfr[sapply(sPDF$UN[valididx], function(x,y) which(y==x),  tfr$un)]
     sPDF$tfr <- mtfr
     if(is.null(main)) {
