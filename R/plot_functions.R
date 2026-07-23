@@ -327,13 +327,13 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 	                                     adjust = adjusted)
 	    if(estim.observed) { # for historical data extract estimated mean or median
 	        if(main.proj == "mean"){
-	            obs.data.df <-  get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
-	                                        probs = "mean", adjust = adjusted)$tfr_quantile
-	            obs.data <- unlist(obs.data.df[,1])
+	            obs.data.df <-  as.data.frame(get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+	                                        probs = "mean", adjust = adjusted)$tfr_quantile)
+	            obs.data <- obs.data.df$V1
 	            names(obs.data) <- obs.data.df$year
 	        } else {
 	            if(main.proj == "median"){
-	                obs.data <- unlist(tfr.object$tfr_quantile[, "50%"])
+	                obs.data <- unlist(tfr.object$tfr_quantile[, "50%", with = FALSE])
 	                names(obs.data) <- tfr.object$tfr_quantile$year
 	            }
 	        }
@@ -630,6 +630,9 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   {
     tfr.object <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
                                      probs=sort(c((1-pi/100)/2, 0.5, pi/100 + (1-pi/100)/2)))
+    if(show.mean)
+        obs.mean <-  get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+                                           probs = "mean")$tfr_quantile
   }
   country <- country.obj
   tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
@@ -711,7 +714,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
       unc.last.time <- which(tfr.object$tfr_quantile$year == x2[1])
   
   # extract median & mean
-  tfr.median <- tfr.mean <- tfr.main.proj <- NULL
+  tfr.median <- tfr.mean <- tfr.main.proj <- tfr.main.obs <- NULL
   if(show.median)
     tfr.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
   if(show.mean)
@@ -721,17 +724,19 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   main.proj.name <- ""
   if(!is.null(tfr.median)){
       tfr.main.proj <- tfr.median
+      if(uncertainty) tfr.main.obs <- unlist(tfr.object$tfr_quantile[1:unc.last.time, length(pi)+1, with = FALSE])
       main.proj.name <- "median"
   } else {
       if(!is.null(tfr.mean)){
         tfr.main.proj <- tfr.mean
+        if(uncertainty) tfr.main.obs <- unlist(obs.mean[1:unc.last.time, 1, with = FALSE])
         main.proj.name <- "mean"
       }
   }
   lty <- c()
   if(!is.null(tfr.main.proj)){
     if(uncertainty) # replace last observed with estimated median
-        tfr.main.proj[1] <- unlist(tfr.object$tfr_quantile[unc.last.time,])[length(pi)+1]
+        tfr.main.proj[1] <- tfr.main.obs[length(tfr.main.obs)]
     # draw main projection
     lines(x2, tfr.main.proj, type='l', col=col[3], lwd=lwd[3])
     lty <- 1
@@ -754,13 +759,17 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   
   if (uncertainty)
   {
-    col_median <- length(pi)+1
-    lines(tfr.object$tfr_quantile$year, as.data.frame(tfr.object$tfr_quantile)[, col_median], type='l', col=col_unc, lwd=lwd[3]) 
+    lines(tfr.object$tfr_quantile$year[1:unc.last.time], tfr.main.obs, type='l', col=col_unc, lwd=lwd[3]) 
     if(!adjusted.only) { # plot unadjusted estimation median
         unadj.lty <- max.lty+1
-        tfr.object.unadj <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+        if(main.proj.name %in% c("", "median")) 
+            tfr.object.unadj <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
                                          probs=0.5, adjust = FALSE)
-        lines(tfr.object.unadj$tfr_quantile$year, as.data.frame(tfr.object.unadj$tfr_quantile)$V1, type='l', col=col_unc, lwd=lwd[3], lty = unadj.lty) 
+        else tfr.object.unadj <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+                                                    probs="mean", adjust = FALSE)
+        lines(tfr.object.unadj$tfr_quantile$year[1:unc.last.time], 
+              as.data.frame(tfr.object.unadj$tfr_quantile)$V1[1:unc.last.time], type='l', 
+              col=col_unc, lwd=lwd[3], lty = unadj.lty)
     }
     if(length(pi) > 0) {
         for (i in 1:length(pi)) {
@@ -799,6 +808,9 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   if(show.median && show.mean){
       # plot mean in addition to median
       lines(x2, tfr.mean, type='l', col=col[3], lwd=1, lty=max(lty)+1)
+      if(uncertainty)
+        lines(obs.mean$year[1:unc.last.time], unlist(obs.mean[1:unc.last.time, 1, with = FALSE]), type = 'l', lwd=1, 
+              lty=max(lty)+1, col = col_unc)
       legend <- c(legend, 'mean')
       cols <- c(cols, col[3])
       lwds <- c(lwds, 1)
