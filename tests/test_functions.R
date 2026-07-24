@@ -945,6 +945,16 @@ test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
     stopifnot(size > 0)
     test.ok(test.name)
     
+    test.name <- "prediction table with mean"
+    start.test(test.name, wpp.year)
+    tab.med <- tfr.trajectories.table(pred, "Nigeria") # median
+    tab.mean <- tfr.trajectories.table(pred, "Nigeria", main.proj = "mean") # mean
+    stopifnot(colnames(tab.med)[1] == "median")
+    stopifnot(colnames(tab.mean)[1] == "mean")
+    stopifnot(tab.med[1,1] != tab.mean[1,1]) # historical first year should be also different
+    stopifnot(tab.med[nrow(tab.med),1] != tab.mean[nrow(tab.mean),1]) # lat projection year
+    test.ok(test.name)
+    
     test.name <- 'write projection summary'
     start.test(test.name, wpp.year)
     write.projection.summary(sim.dir, est.uncertainty = FALSE)

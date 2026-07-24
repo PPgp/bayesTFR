@@ -1,5 +1,10 @@
-7.4-4.9002 (2026-07-23)
+7.4-5 (2026-07-24)
 -----
+New arguments in tfr.trajectories.table (main.proj, estim.observed) to output
+means or the raw data.
+
+In tfr.trajectories.plot, if show.mean is TRUE, it applies also to the observed data.
+
 Map function gives an error if no location match country codes.
 
 Allow user-defined function for finding phase 3 in predictions. 

@@ -553,16 +553,21 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL
   names(quantile_tbl)[1:(1 + 2 * length(pis))] <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
   names.col <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
   requireNamespace('ggplot2')
+  year <- Q50 <- tfr <- NULL
   q <- ggplot2::ggplot(data=quantile_tbl)  + ggplot2::xlab("year") + ggplot2::ylab("TFR")
-  q <- q + ggplot2::geom_ribbon(ggplot2::aes(x=.data[["year"]], ymin=.data[[names.col[1]]], 
-                                             ymax=.data[[names.col[length(names.col)]]]), alpha=0.2, fill='red') +
-    ggplot2::geom_line(ggplot2::aes(x=.data[["year"]], y=.data[["Q50"]]), linewidth = 0.8, color="red") +
-    ggplot2::geom_point(ggplot2::aes(x=.data[["year"]], y=.data[["Q50"]]), size = 1, color="red") + 
+  q <- q + ggplot2::geom_ribbon(ggplot2::aes(x = year, 
+                                             ymin = quantile_tbl[[names.col[1]]],
+                                             ymax = quantile_tbl[[names.col[length(names.col)]]]),
+                                alpha=0.2, fill='red') +
+    ggplot2::geom_line(ggplot2::aes(x = year, y = Q50), linewidth = 0.8, color="red") +
+    ggplot2::geom_point(ggplot2::aes(x = year, y = Q50), size = 1, color="red") + 
     ggplot2::ggtitle(country.obj$name)
 
   if (length(pis) > 1)
-    q <- q + ggplot2::geom_ribbon(ggplot2::aes(x=.data[["year"]], ymin=.data[[names.col[2]]], 
-                                               ymax=.data[[names.col[length(names.col)-1]]]), alpha=0.3, fill='red')
+    q <- q + ggplot2::geom_ribbon(ggplot2::aes(x = year, 
+                                               ymin = quantile_tbl[[names.col[2]]], 
+                                               ymax = quantile_tbl[[names.col[length(names.col)-1]]]), 
+                                  alpha=0.3, fill='red')
   
   if (plot.raw)
   {
@@ -573,11 +578,16 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL
     
     if(grouping %in% colnames(raw.data)) {
         ngroups <- t(unique(subset(raw.data, select=grouping)))
-        q <- q + ggplot2::geom_point(mapping = ggplot2::aes(x=.data[["year"]], y=.data[["tfr"]], 
-                                                            color=.data[[grouping]], shape=.data[[grouping]]), 
-                                 data=raw.data, size=2.5) + ggplot2::scale_shape_manual(values=rep(15:18, len=length(ngroups)))
+        raw.col <- raw.data[[grouping]]
+        raw.shape <- raw.data[[grouping]]
+        q <- q + ggplot2::geom_point(mapping = ggplot2::aes(x = year, y = tfr, 
+                                                            color = raw.col, 
+                                                            shape = raw.shape), 
+                                 data=raw.data, size=2.5) + 
+            ggplot2::scale_shape_manual(values=rep(15:18, len=length(ngroups)))
     } else {
-        q <- q + ggplot2::geom_point(mapping = ggplot2::aes(x=.data[["year"]], y=.data[["tfr"]]), data=raw.data, size=2.5)
+        q <- q + ggplot2::geom_point(mapping = ggplot2::aes(x = year, y = tfr), 
+                                     data=raw.data, size=2.5)
         warning("No grouping of raw data used because column ", grouping, " not available. Use argument 'grouping' to group raw data.")
     }
   }
@@ -585,12 +595,13 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL
   wpp.data <- get.observed.tfr(country.obj$index, meta, "tfr_matrix_all")
   wpp.data <- data.frame(year=quantile_tbl$year, tfr = as.numeric(wpp.data))
   #wpp.data <- wpp.data[wpp.data$year %% 5 == 3,]
-  q <- q + ggplot2::geom_line(data = wpp.data, ggplot2::aes(x=.data[["year"]], y=.data[["tfr"]]), linewidth = 0.8) + ggplot2::theme_bw() + 
-      ggplot2::geom_point(data = wpp.data, ggplot2::aes(x=.data[["year"]], y=.data[["tfr"]]), size = 0.7)
+  q <- q + ggplot2::geom_line(data = wpp.data, ggplot2::aes(x = year, y = tfr), 
+                              linewidth = 0.8) + ggplot2::theme_bw() + 
+      ggplot2::geom_point(data = wpp.data, ggplot2::aes(x = year, y = tfr), size = 0.7)
 
   # re-draw the median
-  q <- q + ggplot2::geom_line(ggplot2::aes(x=.data[["year"]], y=.data[["Q50"]]), linewidth = 0.8, color="red") +
-      ggplot2::geom_point(ggplot2::aes(x=.data[["year"]], y=.data[["Q50"]]), size = 1, color="red")
+  q <- q + ggplot2::geom_line(ggplot2::aes(x = year, y = Q50), linewidth = 0.8, color="red") +
+      ggplot2::geom_point(ggplot2::aes(x = year, y = Q50), size = 1, color="red")
   
   if (save.image)
   {
@@ -1428,10 +1439,10 @@ tfr.ggmap <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FAL
     #                                         direction = "horizontal"))
     #g5 <- g2 + ggtitle("(3) Palette: gradient from yellow to red") +
     #    scale_fill_gradient(low = "yellow", high = "red", breaks = round(quantile(world$tfr, probs = seq(0, 1, length = 10)), 2), trans = make_quantile_trans(world$tfr))
-    
+    tfr <- NULL
     world.rob <- sf::st_transform(e$world, "+proj=robin +ellps=WGS84")
-    
-    grobin <- ggplot2::ggplot(world.rob) + ggplot2::geom_sf(ggplot2::aes(fill = .data[["tfr"]]), colour = "grey", lwd = 0.1, ...) + 
+    grobin <- ggplot2::ggplot(world.rob) + ggplot2::geom_sf(ggplot2::aes(fill = tfr), 
+                                                            colour = "grey", lwd = 0.1, ...) + 
         ggplot2::coord_sf(datum = NA) +
         ggplot2::scale_fill_viridis_c(option = viridis.option, direction = -1, na.value= "white",
                              breaks = round(quantile(all.data, probs = seq(0, 1, length = nr.cats), na.rm = TRUE), 2), 
@@ -1439,7 +1450,8 @@ tfr.ggmap <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FAL
                              limits = range(all.data)) +
         ggplot2::theme(legend.position="bottom", axis.text.x = ggplot2::element_blank(), axis.text.y = ggplot2::element_blank(), 
               axis.ticks = ggplot2::element_blank())
-    grobin <- grobin + ggplot2::guides(fill = ggplot2::guide_colourbar(title = "", barwidth = ggplot2::unit(0.5, "npc", data = grobin), 
+    grobin <- grobin + ggplot2::guides(fill = ggplot2::guide_colourbar(title = "", 
+                                                                       barwidth = ggplot2::unit(0.5, "npc"), 
                                                         barheight = 0.5, direction = "horizontal")) +
                 ggplot2::ggtitle(main)
 
