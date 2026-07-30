@@ -1,4 +1,4 @@
-7.4-5 (2026-07-24)
+7.4-5 (2026-07-29)
 -----
 New arguments in tfr.trajectories.table (main.proj, estim.observed) to output
 means or the raw data.
