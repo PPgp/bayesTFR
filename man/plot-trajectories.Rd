@@ -26,7 +26,8 @@ tfr.trajectories.plot.all(tfr.pred,
     output.type = "png", main = NULL, verbose = FALSE, \dots)
 	
 tfr.trajectories.table(tfr.pred, country, pi = c(80, 95), 
-    half.child.variant = TRUE, adjusted = TRUE)
+    half.child.variant = TRUE, adjusted = TRUE, 
+    main.proj = c("median", "mean"), estim.observed = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -39,7 +40,7 @@ tfr.trajectories.table(tfr.pred, country, pi = c(80, 95),
   \item{typical.trajectory}{Logical. If \code{TRUE} one trajectory is shown that has the smallest distance to the median.}
   \item{mark.estimation.points}{Logical. If \code{TRUE}, points that were not used in the estimation (phase I) are shown in lighter color than points in phase II and III.}
   \item{traj.index}{Vector of trajectory indices to show. If not given, the trajectories are selected using equidistant spacing.}
-  \item{show.mean, show.median}{Logical indicating if the mean or/and the median of the distribution should be shown.}
+  \item{show.mean, show.median}{Logical indicating if the mean or/and the median of the distribution should be shown. If \code{uncertainty} is \code{TRUE}, it applies also to the observed data.}
   \item{xlim, ylim, type, xlab, ylab}{Graphical parameters passed to the \code{plot} function.}
     \item{lwd, col}{Vector of six elements giving the line width and color for: 1. observed data, 2. imputed missing data, 3. median, 4. quantiles, 5. half-child variant, 6. trajectories.}
   \item{show.legend}{Logical controlling whether the legend should be drawn.}
@@ -52,11 +53,13 @@ tfr.trajectories.table(tfr.pred, country, pi = c(80, 95),
   \item{uncertainty}{Logical: \code{TRUE} means uncertainty of past TFR should be plotted with the same level of uncertainty interval.}
   \item{col_unc}{Color of past TFR estimation uncertainty plot.}
   \item{adjusted}{Logical. If \code{FALSE} the unadjusted values are returned.}
+  \item{main.proj}{Statistics that should be shown in the table as first column. By default, the median is shown, but can be changed to show the mean. It applies also to the historical data, if the simulation accounted for past uncertainty.}
+  \item{estim.observed}{Logical. If the simulation accounted for past uncertainty, by default the historical time periods of the first column in the table correspond to the median (default) or the mean of the esitmated distribution. If this argument is set to \code{FALSE}, those values are replaced by the input observed data.}
 }
 \details{
 \code{tfr.trajectories.plot} plots posterior distribution of TFR trajectories for a given country. \code{tfr.trajectories.table} gives the same output as a table. \code{tfr.trajectories.plot.all} creates a set of graphs (one per country) that are stored in \code{output.dir}. 
 
-The median and given probability intervals are computed using all available trajectories. Thus, \code{nr.traj} does not influence those values - it is used only to control the number of trajectories plotted.
+The median (or mean) and given probability intervals are computed using all available trajectories. Thus, \code{nr.traj} does not influence those values - it is used only to control the number of trajectories plotted.
 }
 
 \author{

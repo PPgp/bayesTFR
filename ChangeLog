@@ -1,3 +1,14 @@
+7.4-5 (2026-07-29)
+-----
+New arguments in tfr.trajectories.table (main.proj, estim.observed) to output
+means or the raw data.
+
+In tfr.trajectories.plot, if show.mean is TRUE, it applies also to the observed data.
+
+Map function gives an error if no location match country codes.
+
+Allow user-defined function for finding phase 3 in predictions. 
+
 7.4-4 (2024-11-01)
 -----
 Two countries added to small countries in include_2024.

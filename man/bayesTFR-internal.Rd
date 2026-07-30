@@ -1,4 +1,5 @@
 \name{bayesTFR-internal}
+\alias{bayesTFR-internal}
 \alias{burn.and.thin}
 \alias{bdem.map.gvis}
 \alias{bdem.parameter.traces}

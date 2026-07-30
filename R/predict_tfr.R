@@ -428,6 +428,9 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		if(interactive()) cat('\n')
 	}
 	
+	is.phase3.proj <- function(tfr, index, ...){
+	    return(tfr[index] > tfr[index - 1])
+	}
 	#########################################
 	for (s in 1:nr_simu){ # Iterate over trajectories
 	#########################################
@@ -496,13 +499,16 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 						if(year == first.projection[icountry]) { # first projection period
 							if(!is.element(country, meta$id_Tistau)) {
 								is.in.phase3[icountry] <- ((meta$lambda_c[country] < this.T_end) || 
-	                							((min(all.tfr[1:this.T_end], na.rm=TRUE) <= 
-	                									cs.par.values.list[[country]][s, cs.var.names[[country]]$Triangle_c4]) && 
-	                 								(all.tfr[this.T_end] > all.tfr[this.T_end-1])))
-	                 		}
+								                ((min(all.tfr[1:this.T_end], na.rm=TRUE) <= 
+								                        cs.par.values.list[[country]][s, cs.var.names[[country]]$Triangle_c4]) &&
+								                            do.call(getOption("projTFRphase3findfct", "is.phase3.proj"), 
+								                                        list(all.tfr, this.T_end, annual = meta$annual.simulation))))
+							}
 	                 	} else is.in.phase3[icountry] <- ((min(all.f_ps[icountry, 1:(year-1),s]) <= 
 	                 										cs.par.values.list[[country]][s, cs.var.names[[country]]$Triangle_c4]) && 
-	                 									(all.f_ps[icountry, year-1,s] > all.f_ps[icountry,year-2,s]))
+	                 										    do.call(getOption("projTFRphase3findfct", "is.phase3.proj"), 
+	                 										            list(c(all.tfr[1:(this.T_end-1)], all.f_ps[icountry, ,s]), this.T_end - 1 + year - 1, 
+	                 										                 annual = meta$annual.simulation)))
 		 			}
 					if(adjust.true) {
 						if(year == first.projection[icountry]) { # first projection period

@@ -252,26 +252,26 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
         	)
 }
 
-.get.trajectories.table <- function(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant=FALSE, 
+.get.trajectories.table <- function(tfr.pred, country, obs.data, pi, pred.median, cqp, 
+                                    obs.cqp = NULL, main.proj.name = "median", half.child.variant = FALSE, 
                                     uncertainty=FALSE, adjusted = TRUE) {
     l <- tfr.pred$nr.projections
 	obs.data <- obs.data[!is.na(obs.data)]
 	x1 <- as.integer(names(obs.data))
 	year.step <- ifelse(get.item(tfr.pred$mcmc.set$meta, "annual.simulation", FALSE), 1, 5)
 	x2 <- seq(max(x1)+year.step, by=year.step, length=l)
-	if (!uncertainty)
+	if (!uncertainty || is.null(obs.cqp))
 	  tfr <- as.matrix(obs.data, ncol=1)
 	else
 	{
-	  tmp <- get.tfr.estimation(mcmc.list = tfr.pred$mcmc.set, country = country$code, 
-	                            probs = c(0.5, sort(c((100-pi)/200, 1-(100-pi)/200))), adjust = adjusted)
-	  tfr <- as.matrix(tmp$tfr_quantile)[,1:(1+2*length(pi))]
+	  tfr <- as.matrix(obs.cqp)[,1:(1+2*length(pi))]
+	  tfr[, 1] <- obs.data
 	}
 	rownames(tfr) <- x1
 	pred.table <- matrix(NA, ncol=2*length(pi)+1, nrow=l)
 	pred.table[,1] <- pred.median[2:(l+1)]
-	colnames(pred.table) <- c('median', rep(NA,ncol(pred.table)-1))
-	if (uncertainty) colnames(tfr) <- c('median', rep(NA,ncol(pred.table)-1))
+	colnames(pred.table) <- c(main.proj.name, rep(NA,ncol(pred.table)-1))
+	if (uncertainty) colnames(tfr) <- c(main.proj.name, rep(NA,ncol(pred.table)-1))
 	idx <- 2
 	for (i in 1:length(pi)) {
 		al <- (1-pi[i]/100)/2
@@ -301,10 +301,13 @@ DLcurve.plot <- function (mcmc.list, country, burnin = NULL, pi = 80, tfr.max = 
   return(rbind(cbind(tfr, matrix(NA, nrow=nrow(tfr), ncol=ncol(pred.table)-ncol(tfr))), pred.table))
 }
 
-tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.variant=TRUE, adjusted = TRUE) {
+tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.variant=TRUE, adjusted = TRUE,
+                                   main.proj = c("median", "mean"), estim.observed = TRUE) {
   if (missing(country)) {
 		stop('Argument "country" must be given.')
-	}
+  }
+    main.proj <- match.arg(main.proj)
+    
 	country.obj <- get.country.object(country, tfr.pred$mcmc.set$meta)
 	if(is.null(country.obj$code)) stop("Country ", country, " not found.")
 	country <- country.obj
@@ -312,15 +315,50 @@ tfr.trajectories.table <- function(tfr.pred, country, pi=c(80, 95), half.child.v
 	if ((length(tfr.pred$mcmc.set$mcmc.list)>0 && !is.null(tfr.pred$mcmc.set$mcmc.list[[1]]$uncertainty) && 
 	     tfr.pred$mcmc.set$mcmc.list[[1]]$uncertainty) || (country$index %in% tfr.pred$mcmc.set$meta$extra))
 	  uncertainty <- TRUE
-	obs.data <- get.data.for.country.imputed(tfr.pred, country$index)
-	if(!is.null(tfr.pred$present.year.index)) obs.data <- obs.data[1:min(length(obs.data), tfr.pred$present.year.index.all)]
-	pred.median <- get.median.from.prediction(tfr.pred, country$index, country$code, adjusted = adjusted)
+	
+	# extract observed data (either raw or median or mean)
+	obs.data <- get.data.for.country.imputed(tfr.pred, country$index) # raw
+	obs.cqp <- NULL
+	
+	if (uncertainty)
+	{
+	    tfr.object <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+	                                     probs= c(0.5, sort(c((100-pi)/200, 1-(100-pi)/200))),
+	                                     adjust = adjusted)
+	    if(estim.observed) { # for historical data extract estimated mean or median
+	        if(main.proj == "mean"){
+	            obs.data.df <-  as.data.frame(get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+	                                        probs = "mean", adjust = adjusted)$tfr_quantile)
+	            obs.data <- obs.data.df$V1
+	            names(obs.data) <- obs.data.df$year
+	        } else {
+	            if(main.proj == "median"){
+	                obs.data <- unlist(tfr.object$tfr_quantile[, "50%", with = FALSE])
+	                names(obs.data) <- tfr.object$tfr_quantile$year
+	            }
+	        }
+	    }
+	    obs.cqp <- tfr.object$tfr_quantile
+	}
+	
+	if(!is.null(tfr.pred$present.year.index)) obs.data <- obs.data[1:min(length(obs.data), 
+	                                                                     tfr.pred$present.year.index.all)]
+	
+	if(main.proj == "median")
+	    pred.main <- get.median.from.prediction(tfr.pred, country$index, country$code, adjusted = adjusted)
+	
+	if(main.proj == "mean")
+	    pred.main <- get.mean.from.prediction(tfr.pred, country$index, country$code, adjusted = adjusted)
+	
 	trajectories <- get.trajectories(tfr.pred, country$code, adjusted = adjusted)
 	cqp <- list()
 	for (i in 1:length(pi))
 		cqp[[i]] <- get.traj.quantiles(tfr.pred, country$index, country$code, trajectories$trajectories, pi[i], 
 		                               est.uncertainty = uncertainty, adjusted = adjusted)
-	return(.get.trajectories.table(tfr.pred, country, obs.data, pi, pred.median, cqp, half.child.variant, uncertainty, adjusted = adjusted))
+	return(.get.trajectories.table(tfr.pred, country, obs.data, pi, pred.main, cqp, 
+	                               obs.cqp = obs.cqp, main.proj.name = main.proj,
+	                               half.child.variant = half.child.variant, uncertainty = uncertainty, 
+	                               adjusted = adjusted))
 }
 
 get.typical.trajectory.index <- function(trajectories) {
@@ -515,14 +553,21 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL
   names(quantile_tbl)[1:(1 + 2 * length(pis))] <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
   names.col <- paste0("Q", sort(c((100-pis)/2, 50, pis + (100-pis)/2)))
   requireNamespace('ggplot2')
+  year <- Q50 <- tfr <- NULL
   q <- ggplot2::ggplot(data=quantile_tbl)  + ggplot2::xlab("year") + ggplot2::ylab("TFR")
-  q <- q + ggplot2::geom_ribbon(ggplot2::aes_string(x="year", ymin=names.col[1], ymax=names.col[length(names.col)]), alpha=0.2, fill='red') +
-    ggplot2::geom_line(ggplot2::aes_string(x="year", y="Q50"), size = 0.8, color="red") +
-    ggplot2::geom_point(ggplot2::aes_string(x="year", y="Q50"), size = 1, color="red") + 
+  q <- q + ggplot2::geom_ribbon(ggplot2::aes(x = year, 
+                                             ymin = quantile_tbl[[names.col[1]]],
+                                             ymax = quantile_tbl[[names.col[length(names.col)]]]),
+                                alpha=0.2, fill='red') +
+    ggplot2::geom_line(ggplot2::aes(x = year, y = Q50), linewidth = 0.8, color="red") +
+    ggplot2::geom_point(ggplot2::aes(x = year, y = Q50), size = 1, color="red") + 
     ggplot2::ggtitle(country.obj$name)
 
   if (length(pis) > 1)
-    q <- q + ggplot2::geom_ribbon(ggplot2::aes_string(x="year", ymin=names.col[2], ymax=names.col[length(names.col)-1]), alpha=0.3, fill='red')
+    q <- q + ggplot2::geom_ribbon(ggplot2::aes(x = year, 
+                                               ymin = quantile_tbl[[names.col[2]]], 
+                                               ymax = quantile_tbl[[names.col[length(names.col)-1]]]), 
+                                  alpha=0.3, fill='red')
   
   if (plot.raw)
   {
@@ -533,10 +578,16 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL
     
     if(grouping %in% colnames(raw.data)) {
         ngroups <- t(unique(subset(raw.data, select=grouping)))
-        q <- q + ggplot2::geom_point(mapping = ggplot2::aes_string(x="year", y="tfr", color=grouping, shape=grouping), 
-                                 data=raw.data, size=2.5) + ggplot2::scale_shape_manual(values=rep(15:18, len=length(ngroups)))
+        raw.col <- raw.data[[grouping]]
+        raw.shape <- raw.data[[grouping]]
+        q <- q + ggplot2::geom_point(mapping = ggplot2::aes(x = year, y = tfr, 
+                                                            color = raw.col, 
+                                                            shape = raw.shape), 
+                                 data=raw.data, size=2.5) + 
+            ggplot2::scale_shape_manual(values=rep(15:18, len=length(ngroups)))
     } else {
-        q <- q + ggplot2::geom_point(mapping = ggplot2::aes_string(x="year", y="tfr"), data=raw.data, size=2.5)
+        q <- q + ggplot2::geom_point(mapping = ggplot2::aes(x = year, y = tfr), 
+                                     data=raw.data, size=2.5)
         warning("No grouping of raw data used because column ", grouping, " not available. Use argument 'grouping' to group raw data.")
     }
   }
@@ -544,12 +595,13 @@ tfr.estimation.plot <- function(mcmc.list = NULL, country = NULL, sim.dir = NULL
   wpp.data <- get.observed.tfr(country.obj$index, meta, "tfr_matrix_all")
   wpp.data <- data.frame(year=quantile_tbl$year, tfr = as.numeric(wpp.data))
   #wpp.data <- wpp.data[wpp.data$year %% 5 == 3,]
-  q <- q + ggplot2::geom_line(data = wpp.data, ggplot2::aes_string(x="year", y="tfr"), size = 0.8) + ggplot2::theme_bw() + 
-      ggplot2::geom_point(data = wpp.data, ggplot2::aes_string(x="year", y="tfr"), size = 0.7)
+  q <- q + ggplot2::geom_line(data = wpp.data, ggplot2::aes(x = year, y = tfr), 
+                              linewidth = 0.8) + ggplot2::theme_bw() + 
+      ggplot2::geom_point(data = wpp.data, ggplot2::aes(x = year, y = tfr), size = 0.7)
 
   # re-draw the median
-  q <- q + ggplot2::geom_line(ggplot2::aes_string(x="year", y="Q50"), size = 0.8, color="red") +
-      ggplot2::geom_point(ggplot2::aes_string(x="year", y="Q50"), size = 1, color="red")
+  q <- q + ggplot2::geom_line(ggplot2::aes(x = year, y = Q50), linewidth = 0.8, color="red") +
+      ggplot2::geom_point(ggplot2::aes(x = year, y = Q50), size = 1, color="red")
   
   if (save.image)
   {
@@ -589,6 +641,9 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   {
     tfr.object <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
                                      probs=sort(c((1-pi/100)/2, 0.5, pi/100 + (1-pi/100)/2)))
+    if(show.mean)
+        obs.mean <-  get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+                                           probs = "mean")$tfr_quantile
   }
   country <- country.obj
   tfr_observed <- get.observed.tfr(country$index, tfr.pred$mcmc.set$meta, 'tfr_matrix_observed', 'tfr_matrix_all')
@@ -670,7 +725,7 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
       unc.last.time <- which(tfr.object$tfr_quantile$year == x2[1])
   
   # extract median & mean
-  tfr.median <- tfr.mean <- tfr.main.proj <- NULL
+  tfr.median <- tfr.mean <- tfr.main.proj <- tfr.main.obs <- NULL
   if(show.median)
     tfr.median <- get.median.from.prediction(tfr.pred, country$index, country$code)
   if(show.mean)
@@ -680,17 +735,19 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   main.proj.name <- ""
   if(!is.null(tfr.median)){
       tfr.main.proj <- tfr.median
+      if(uncertainty) tfr.main.obs <- unlist(tfr.object$tfr_quantile[1:unc.last.time, length(pi)+1, with = FALSE])
       main.proj.name <- "median"
   } else {
       if(!is.null(tfr.mean)){
         tfr.main.proj <- tfr.mean
+        if(uncertainty) tfr.main.obs <- unlist(obs.mean[1:unc.last.time, 1, with = FALSE])
         main.proj.name <- "mean"
       }
   }
   lty <- c()
   if(!is.null(tfr.main.proj)){
     if(uncertainty) # replace last observed with estimated median
-        tfr.main.proj[1] <- unlist(tfr.object$tfr_quantile[unc.last.time,])[length(pi)+1]
+        tfr.main.proj[1] <- tfr.main.obs[length(tfr.main.obs)]
     # draw main projection
     lines(x2, tfr.main.proj, type='l', col=col[3], lwd=lwd[3])
     lty <- 1
@@ -713,13 +770,17 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   
   if (uncertainty)
   {
-    col_median <- length(pi)+1
-    lines(tfr.object$tfr_quantile$year, as.data.frame(tfr.object$tfr_quantile)[, col_median], type='l', col=col_unc, lwd=lwd[3]) 
+    lines(tfr.object$tfr_quantile$year[1:unc.last.time], tfr.main.obs, type='l', col=col_unc, lwd=lwd[3]) 
     if(!adjusted.only) { # plot unadjusted estimation median
         unadj.lty <- max.lty+1
-        tfr.object.unadj <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+        if(main.proj.name %in% c("", "median")) 
+            tfr.object.unadj <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
                                          probs=0.5, adjust = FALSE)
-        lines(tfr.object.unadj$tfr_quantile$year, as.data.frame(tfr.object.unadj$tfr_quantile)$V1, type='l', col=col_unc, lwd=lwd[3], lty = unadj.lty) 
+        else tfr.object.unadj <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.obj$code, 
+                                                    probs="mean", adjust = FALSE)
+        lines(tfr.object.unadj$tfr_quantile$year[1:unc.last.time], 
+              as.data.frame(tfr.object.unadj$tfr_quantile)$V1[1:unc.last.time], type='l', 
+              col=col_unc, lwd=lwd[3], lty = unadj.lty)
     }
     if(length(pi) > 0) {
         for (i in 1:length(pi)) {
@@ -758,6 +819,9 @@ tfr.trajectories.plot <- function(tfr.pred, country, pi=c(80, 95),
   if(show.median && show.mean){
       # plot mean in addition to median
       lines(x2, tfr.mean, type='l', col=col[3], lwd=1, lty=max(lty)+1)
+      if(uncertainty)
+        lines(obs.mean$year[1:unc.last.time], unlist(obs.mean[1:unc.last.time, 1, with = FALSE]), type = 'l', lwd=1, 
+              lty=max(lty)+1, col = col_unc)
       legend <- c(legend, 'mean')
       cols <- c(cols, col[3])
       lwds <- c(lwds, 1)
@@ -1294,6 +1358,7 @@ tfr.map <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FALSE
     # join sPDF with tfr
     mtfr <- rep(NA, length(sPDF$UN))
     valididx <- which(is.element(sPDF$UN, tfr$un))
+    if(length(valididx) == 0) stop("No location codes match UN country codes.")
     mtfr[valididx] <- tfr$tfr[sapply(sPDF$UN[valididx], function(x,y) which(y==x),  tfr$un)]
     sPDF$tfr <- mtfr
     if(is.null(main)) {
@@ -1374,10 +1439,10 @@ tfr.ggmap <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FAL
     #                                         direction = "horizontal"))
     #g5 <- g2 + ggtitle("(3) Palette: gradient from yellow to red") +
     #    scale_fill_gradient(low = "yellow", high = "red", breaks = round(quantile(world$tfr, probs = seq(0, 1, length = 10)), 2), trans = make_quantile_trans(world$tfr))
-    
+    tfr <- NULL
     world.rob <- sf::st_transform(e$world, "+proj=robin +ellps=WGS84")
-    
-    grobin <- ggplot2::ggplot(world.rob) + ggplot2::geom_sf(ggplot2::aes_string(fill = "tfr"), colour = "grey", lwd = 0.1, ...) + 
+    grobin <- ggplot2::ggplot(world.rob) + ggplot2::geom_sf(ggplot2::aes(fill = tfr), 
+                                                            colour = "grey", lwd = 0.1, ...) + 
         ggplot2::coord_sf(datum = NA) +
         ggplot2::scale_fill_viridis_c(option = viridis.option, direction = -1, na.value= "white",
                              breaks = round(quantile(all.data, probs = seq(0, 1, length = nr.cats), na.rm = TRUE), 2), 
@@ -1385,7 +1450,8 @@ tfr.ggmap <- function(pred, quantile=0.5, year=NULL, par.name=NULL, adjusted=FAL
                              limits = range(all.data)) +
         ggplot2::theme(legend.position="bottom", axis.text.x = ggplot2::element_blank(), axis.text.y = ggplot2::element_blank(), 
               axis.ticks = ggplot2::element_blank())
-    grobin <- grobin + ggplot2::guides(fill = ggplot2::guide_colourbar(title = "", barwidth = ggplot2::unit(0.5, "npc", data = grobin), 
+    grobin <- grobin + ggplot2::guides(fill = ggplot2::guide_colourbar(title = "", 
+                                                                       barwidth = ggplot2::unit(0.5, "npc"), 
                                                         barheight = 0.5, direction = "horizontal")) +
                 ggplot2::ggtitle(main)
 
