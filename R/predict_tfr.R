@@ -1266,26 +1266,39 @@ get.tfr.shift.all <- function(pred, projection.index) {
 	meta <- pred$mcmc.set$meta
 	nr.countries <- get.nr.countries(meta)
 	shift <- rep(0, nr.countries)
-	if(is.null(pred$median.shift)) return(shift)
+	if(is.null(pred$stat.shift)) return(shift)
 	codes <- meta$regions$country_code
-	for(code in names(pred$median.shift)) {
+	for(code in names(pred$stat.shift)) {
 		idx <- which(code == codes)
-		shift[idx] <- pred$median.shift[[code]][projection.index]
+		shift[idx] <- pred$stat.shift[[code]][projection.index]
 	}
 	return(shift)
 }
 
 get.tfr.shift <- function(country.code, pred) {
-	if(is.null(pred$median.shift)) return(NULL)
-	return(pred$median.shift[[as.character(country.code)]])
+	if(is.null(pred$stat.shift)) return(NULL)
+	return(pred$stat.shift[[as.character(country.code)]])
 }
 
-.bdem.median.shift <- function(pred, type, country, reset=FALSE, shift=0, from=NULL, to=NULL, 
-                               verbose = TRUE) {
+get.tfr.shift.name <- function(country.code, pred) {
+    if(is.null(pred$shift.stat.name)) return("median")
+    return(pred$shift.stat.name[[as.character(country.code)]])
+}
+
+.bdem.median.shift <- function(...) {
+    .bdem.stat.shift(..., stat = "median")
+}
+
+.bdem.stat.shift <- function(pred, type, country, reset=FALSE, shift=0, from=NULL, to=NULL, 
+                               stat = "median", verbose = TRUE) {
 	meta <- pred$mcmc.set$meta
 	country.obj <- get.country.object(country, meta=meta)
 	if(is.null(country.obj$name)) stop('Country not found.')
-	bdem.shift <- do.call(paste('get.', type, '.shift', sep=''), list(country.obj$code, pred))
+	bdem.shift <- do.call(paste0('get.', type, '.shift'), list(country.obj$code, pred))
+	stat.name.fct <- paste0('get.', type, '.shift.stat.name')
+	if(exists(stat.name.fct))
+	    stat.name <- do.call(stat.name.fct, list(country.obj$code, pred))
+	else stat.name <- "median"
 	pred.years <- as.numeric(dimnames(pred$quantiles)[[3]])
 	nr.proj <- pred$nr.projections+1 
 	if(is.null(from)) from <- pred.years[2]
@@ -1304,20 +1317,31 @@ get.tfr.shift <- function(country.code, pred) {
 		action <- 'modified'
 	}
 	if(sum(bdem.shift) == 0) bdem.shift <- NULL
-	pred$median.shift[[as.character(country.obj$code)]] <- bdem.shift
-	if(verbose) cat('\nMedian of', country.obj$name, action, 
+	pred$stat.shift[[as.character(country.obj$code)]] <- bdem.shift
+	pred$shift.stat.name[[as.character(country.obj$code)]] <- stat.name
+	if(verbose) cat('\nThe ', stat.name, ' of', country.obj$name, action, 
 		if(all.years) 'for all years' else c('for years', pred.years[which.years]), '.\n')
 	return(pred)
 }
 
 tfr.median.reset <- function(sim.dir, countries = NULL, ...) {
+    lifecycle::deprecate_warn("7.4-6", "tfr.median.reset(...)", "tfr.shift.reset(...)")
+    tfr.stat.reset(sim.dir, countries = countries, ...)
+}
+
+tfr.shift.reset <- function(sim.dir, countries = NULL, ...) {
     if(is.null(countries)) {
         pred <- get.tfr.prediction(sim.dir, ...)
-        pred$median.shift <- NULL
+        pred$stat.shift <- NULL
+        pred$shift.stat.name <- NULL
         store.bayesTFR.prediction(pred)
-        cat('\nMedians for all countries reset.\n')
+        cat('\nMedians/Means for all countries reset.\n')
     } else
-	    for(country in countries) pred <- tfr.median.shift(sim.dir, country, reset=TRUE, ...)
+	    for(country in countries) {
+	        stat <- get.tfr.shift.name(country, pred)
+	        pred <- do.call(paste0("tfr.", stat, ".shift", 
+	                               c(list(sim.dir, country, reset=TRUE), list(...))))
+	    }
 	invisible(pred)
 }
 
@@ -1329,11 +1353,27 @@ tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, 
 	invisible(pred)
 }
 
-.bdem.median.set <- function(pred, type, country, values, years=NULL, verbose = TRUE) {
+tfr.mean.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, to=NULL, ...) {
+    pred <- get.tfr.prediction(sim.dir, ...)
+    pred <- .bdem.stat.shift(pred, type='tfr', country=country, reset=reset, 
+                               shift=shift, from=from, to=to, stat = "mean")
+    store.bayesTFR.prediction(pred)
+    invisible(pred)
+}
+
+.bdem.median.set <- function(...) {
+    .bdem.stat.set(..., stat = "median")
+}
+
+.bdem.stat.set <- function(pred, type, country, values, stat = "median", years=NULL, verbose = TRUE) {
 	meta <- pred$mcmc.set$meta
 	country.obj <- get.country.object(country, meta=meta)
 	if(is.null(country.obj$name)) stop('Country not found.')
-	bdem.shift <- do.call(paste('get.', type, '.shift', sep=''), list(country.obj$code, pred))
+	bdem.shift <- do.call(paste0('get.', type, '.shift'), list(country.obj$code, pred))
+	stat.name.fct <- paste0('get.', type, '.shift.stat.name')
+	if(exists(stat.name.fct))
+	    stat.name <- do.call(stat.name.fct, list(country.obj$code, pred))
+	else stat.name <- "median"
 	pred.years <- as.numeric(dimnames(pred$quantiles)[[3]])
 	nr.proj <- pred$nr.projections+1 
 	if(is.null(years)) years <- pred.years[2:nr.proj]
@@ -1354,11 +1394,16 @@ tfr.median.shift <- function(sim.dir, country, reset=FALSE, shift=0, from=NULL, 
 		which.years[start:nr.proj] <- FALSE
 	}
 	if(is.null(bdem.shift)) bdem.shift <- rep(0, nr.proj)
-	medians <- pred$quantiles[country.obj$index, '0.5',]
-	bdem.shift[which.years] <- values - medians[which.years]
+	if(stat.name == "median")
+	    stat.values <- pred$quantiles[country.obj$index, '0.5',]
+	else { # mean
+	    stat.values <- pred$traj.mean.sd[country.obj$index, 1,]
+	}
+	bdem.shift[which.years] <- values - stat.values[which.years]
 	if(sum(bdem.shift) == 0) bdem.shift <- NULL
-	pred$median.shift[[as.character(country.obj$code)]] <- bdem.shift
-	if(verbose) cat('\nMedian of', country.obj$name, 'modified for years', pred.years[which.years], '\n')
+	pred$stat.shift[[as.character(country.obj$code)]] <- bdem.shift
+	pred$shift.stat.name[[as.character(country.obj$code)]] <- stat.name
+	if(verbose) cat('\nThe ', stat.name, ' of', country.obj$name, 'modified for years', pred.years[which.years], '\n')
 	return(pred)
 }
 
@@ -1369,7 +1414,26 @@ tfr.median.set <- function(sim.dir, country, values, years=NULL, ...) {
 	invisible(pred)
 }
 
+tfr.mean.set <- function(sim.dir, country, values, years=NULL, ...) {
+    pred <- get.tfr.prediction(sim.dir, ...)
+    pred <- .bdem.stat.set(pred, 'tfr', country=country, values=values, 
+                           stat = "mean", years=years)
+    store.bayesTFR.prediction(pred)
+    invisible(pred)
+}
+
 tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forceAR1=FALSE, subdir = "predictions") {
+    tfr.stat.adjust(sim.dir, countries, factor1=factor1, factor2=factor2, forceAR1=forceAR1, 
+                    subdir = subdir, stat = "median")
+}
+
+tfr.mean.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forceAR1=FALSE, subdir = "predictions") {
+    tfr.stat.adjust(sim.dir, countries, factor1=factor1, factor2=factor2, forceAR1=forceAR1, 
+                    subdir = subdir, stat = "mean")
+}
+
+tfr.stat.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forceAR1=FALSE, 
+                            subdir = "predictions", stat = "median") {
 	pred <- get.tfr.prediction(sim.dir, subdir = subdir)
 	if (is.null(pred)) stop('Prediction not found in ', file.path(sim.dir, subdir), 
 	                        '. Check available.tfr.predictions() and use the subdir argument to set non-standard prediction subdirectory.')
@@ -1396,7 +1460,9 @@ tfr.median.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forc
 									write.trajectories=FALSE, verbose=FALSE)
 	new.means <- new.pred$traj.mean.sd[,1,2:dim(new.pred$traj.mean.sd)[3]]
 	for(icountry in 1:length(countries)) {
-		tfr.median.set(sim.dir, countries[icountry], new.means[get.country.object(countries[icountry], mcmc.set$meta)$index,])
+		do.call(paste0("tfr.", stat, ".set"), list(sim.dir, countries[icountry], 
+		                                           new.means[get.country.object(countries[icountry], 
+		                                                                        mcmc.set$meta)$index,]))
 	}
 	# reload adjusted prediction
 	invisible(get.tfr.prediction(sim.dir, subdir = subdir))

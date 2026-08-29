@@ -262,6 +262,10 @@ get.tfr.prediction <- function(mcmc=NULL, sim.dir=NULL, mcmc.dir=NULL, subdir = 
 	
 	pred <- bayesTFR.prediction
 	if(!is.null(pred$mcmc.set) && is.null(pred$mcmc.set$meta$annual.simulation)) pred$mcmc.set$meta$annual.simulation <- FALSE
+	if(!is.null(pred$median.shift)) { # rename median.shift to stat.shift
+	    pred$stat.shift <- pred$median.shift
+	    pred$median.shift <- NULL
+	}
 	if(!is.null(mcmc.dir) && is.na(mcmc.dir)) return(pred)
 	# re-route mcmcs if necessary and load
 	if(!is.null(mcmc.dir) || !has.tfr.mcmc(pred$mcmc.set$meta$output.dir)) {
@@ -1426,6 +1430,7 @@ get.prediction.summary.data <- function(object, unchanged.pars, country, compact
 	shift <- get.tfr.shift(country$code, object)
 	res$manual <- FALSE
 	if(!is.null(shift)) {
+	    # the shift is here added to means as well as to the quantiles
 		res$projections[,c(1,3:dim(res$projections)[2])] <- res$projections[,c(1,3:dim(res$projections)[2])] + t(matrix(shift,
 												 ncol=nrow(res$projections), nrow=ncol(res$projections)-1, byrow=TRUE))
 		res$manual <- TRUE
