@@ -170,7 +170,8 @@ mcmc.update.Triangle_c4 <- function(country, mcmc, ...) {
   Triangle_c4_trans <- log(max(mcmc$Triangle_c4[country] - mcmc$meta$Triangle_c4.low, 1e-20)/
                              max(mcmc$meta$Triangle_c4.up - mcmc$Triangle_c4[country], 1e-20))
 
-  epsT.idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  #epsT.idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  epsT.idx <- mcmc$meta$start_c[country]:(mcmc$meta$T_end_c[country]-1)
   # exclude indices with extreme epsT.idx
   raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
   if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
@@ -250,7 +251,8 @@ mcmc.update.gamma <- function(country, mcmc, ...) {
                   mcmc$Triangle_c4[country], mcmc$d_c[country]) 
   eps_T_prop <- get.eps.T(theta_prop, country, mcmc$meta, ...)
 
-  idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  #idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  idx <- mcmc$meta$start_c[country]:(mcmc$meta$T_end_c[country]-1)
   # exclude indices with extreme eps in idx
   raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
   if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
@@ -278,7 +280,8 @@ mcmc.update.gamma <- function(country, mcmc, ...) {
 mcmc.update.d <- function(country, mcmc, ...) {
   # if accepted, update d_c and the distortions
   d_trans <- log((mcmc$d_c[country] - mcmc$meta$d.low)/(mcmc$meta$d.up - mcmc$d_c[country]))
-  idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  #idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  idx <- mcmc$meta$start_c[country]:(mcmc$meta$T_end_c[country]-1)
   # Exclude extreme indices in computing loglik
   raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
   if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
@@ -330,7 +333,8 @@ mcmc.update.d <- function(country, mcmc, ...) {
 
 
 mcmc.update.U <- function(country, mcmc, ...) {
-  idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  #idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+  idx <- mcmc$meta$start_c[country]:(mcmc$meta$T_end_c[country]-1)
   # exclude those extreme indices in computing loglik
   raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
   if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 

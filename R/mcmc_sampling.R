@@ -71,8 +71,9 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     mcenv$thin <- thin
     ones <- matrix(1, ncol=nr_DL, nrow=3)
   
-  matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix')
-    
+  #matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix')
+  matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix_observed')
+  
   if(is.null(mcenv$eps_Tc)) 
   {
     if (!is.null(mcenv$meta$ar.phase2) && mcenv$meta$ar.phase2) 
@@ -97,13 +98,17 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
     for (country in 1:nr_countries_all){
     	# could exclude 1:(tau_c-1) here
       this.data <- array(dim = mcenv$meta$T_end_c[country] - 1)
-      if (country %in% id_DL_all)
-      	this.data[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)] <- 
-      	  get.observed.tfr(country, mcenv$meta, matrix.name=matrix.name)[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)]
-      	
+      if (country %in% id_DL_all){
+      	#this.data[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)] <- 
+      	#  get.observed.tfr(country, mcenv$meta, matrix.name=matrix.name)[mcenv$meta$start_c[country]:(mcenv$meta$lambda_c[country] - 1)]
+        this.data[mcenv$meta$start_c[country]:(mcenv$meta$T_end_c[country] - 1)] <- 
+          get.observed.tfr(country, mcenv$meta, matrix.name=matrix.name)[mcenv$meta$start_c[country]:(mcenv$meta$T_end_c[country] - 1)]
+      }
     	mcenv$data.list[[country]] <- this.data
+    	#mcenv$add_to_sd_Tc[1:(mcenv$meta$T_end_c[country]-1),country] <- (
+        #			this.data - mcenv$S_sd)*ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
     	mcenv$add_to_sd_Tc[1:(mcenv$meta$T_end_c[country]-1),country] <- (
-        			this.data - mcenv$S_sd)*ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
+    	    this.data - mcenv$S_sd)*ifelse(this.data > mcenv$S_sd, -mcenv$a_sd, mcenv$b_sd)
     }
     
 	mcenv$const_sd_dummie_Tc <- matrix(0, mcenv$meta$T_end-1+suppl.T, nr_countries_all)

@@ -24,7 +24,8 @@ DLcurve <- function(DLpar, tfr, p1, p2, annual = FALSE){
 
 get.eps.T <- function (DLpar, country, meta, ...) 
 {
-    tfr <- get.observed.tfr(country, meta, ...)[meta$start_c[country]:meta$lambda_c[country]]
+    #tfr <- get.observed.tfr(country, meta, ...)[meta$start_c[country]:meta$lambda_c[country]]
+    tfr <- get.observed.tfr(country, meta, ...)[meta$start_c[country]:meta$T_end_c[country]]
     ldl <- length(tfr)-1
     dl <- DLcurve(DLpar, tfr[1:ldl], meta$dl.p1, meta$dl.p2, annual = meta$annual.simulation)
     eps <- tfr[2:(ldl+1)] - tfr[1:ldl] + dl
@@ -53,7 +54,8 @@ get_eps_T_all <- function (mcmc, ...) {
   for (country in mcmc$meta$id_DL){
     theta <- c((mcmc$U_c[country]-mcmc$Triangle_c4[country])*exp(mcmc$gamma_ci[country,])/                                     
       sum(exp(mcmc$gamma_ci[country,])), mcmc$Triangle_c4[country], mcmc$d_c[country])
-    idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+    #idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
+    idx <- mcmc$meta$start_c[country]:(mcmc$meta$T_end_c[country]-1)
     raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
     if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
       raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
@@ -559,7 +561,7 @@ mcmc.ini <- function(chain.id, mcmc.meta, iter=100,
 	# note: the eps will always be NA outside (tau_c, lambda-1)!!
 	# ini the epsilons
 	if (!is.null(mcmc.meta$ar.phase2) && mcmc.meta$ar.phase2) mcmc$rho.phase2 <- 0.7
-	mcmc$eps_Tc <- get_eps_T_all(mcmc, rho.phase2=mcmc$rho.phase2)
+	mcmc$eps_Tc <- get_eps_T_all(mcmc, rho.phase2=mcmc$rho.phase2, matrix.name='tfr_matrix_observed')
 	if (uncertainty)
 	{
 	  # mcmc <- get.obs.estimate.diff(mcmc)
