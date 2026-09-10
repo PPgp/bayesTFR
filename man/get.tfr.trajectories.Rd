@@ -16,7 +16,7 @@ get.tfr.trajectories(tfr.pred, country)
   \item{country}{Name or code of a country. The code can be either numeric or ISO-2 or ISO-3 characters.}
 }
 \details{
-The function loads TFR trajectories for the given country from disk, offsets it if needed (see \code{\link{tfr.median.shift}}) and returns it as a matrix.
+The function loads TFR trajectories for the given country from disk, offsets it if needed (see \code{\link{tfr.traj.shift}}) and returns it as a matrix.
 }
 \value{
 Array of size number of projection periods (including the present year) times the number of trajectories. The row names correspond to the mid-years of the prediction periods.
@@ -33,7 +33,7 @@ Hana Sevcikova
 
 
 \seealso{
-\code{\link{bayesTFR.prediction}}, \code{\link{get.tfr.prediction}}, \code{\link{tfr.trajectories.table}}, \code{\link{tfr.median.shift}}
+\code{\link{bayesTFR.prediction}}, \code{\link{get.tfr.prediction}}, \code{\link{tfr.trajectories.table}}, \code{\link{tfr.traj.shift}}
 }
 \examples{
 sim.dir <- file.path(find.package("bayesTFR"), "ex-data", "bayesTFR.output") 

@@ -1,4 +1,4 @@
-tfr.shift.estimation.to.wpp <- function(sim.dir, ..., verbose = TRUE){
+tfr.shift.estimation.to.wpp <- function(sim.dir, ..., stat = "median", verbose = TRUE){
   mcmc.set <- get.tfr.mcmc(sim.dir)
   country_code <- NULL # for CRAN check not to complain
   if(!has.est.uncertainty(mcmc.set)) stop("Function can be only applied to estimation with uncertainty.")
@@ -10,7 +10,8 @@ tfr.shift.estimation.to.wpp <- function(sim.dir, ..., verbose = TRUE){
   wppdata <- data.table::data.table(load.from.wpp("tfr", wpp.year = wpp.year, annual = meta$annual.simulation))
   wppdatal <- melt(wppdata, id.vars = c("country_code", "name"), value.name = "wpp", variable.name = "period", variable.factor = FALSE)
   wppdatal$year <- if(meta$annual.simulation) as.integer(wppdatal$period) else as.integer(substr(wppdatal$period, 1, 4)) + 3
-  meta$median.shift.estimation <- NULL
+  meta$traj.shift.estimation <- NULL
+
   if(verbose) cat("\n")
   for(icntry in seq_along(countries)) {
     if (verbose) {
@@ -22,18 +23,23 @@ tfr.shift.estimation.to.wpp <- function(sim.dir, ..., verbose = TRUE){
       }
     }
     cntry <- countries[icntry]
-    est.obj <- get.tfr.estimation(mcmc.set, country = cntry, probs=0.5, adjust =  FALSE, ...) # extract median estimates
-    est.obj$tfr_quantile$period <- if(!meta$annual.simulation) paste(est.obj$tfr_quantile$year - 3, est.obj$tfr_quantile$year + 2, sep = "-") else as.character(est.obj$tfr_quantile$year)
-    merged <- merge(data.table::data.table(est.obj$tfr_quantile), wppdatal[country_code == cntry], by = "period")
+    est.obj <- get.tfr.estimation(mcmc.set, country = cntry, 
+                                  probs=if(stat == "median") 0.5 else "mean", 
+                                  adjust =  FALSE, ...) # extract median/mean estimates
+    est.obj$tfr_quantile$period <- if(!meta$annual.simulation) paste(est.obj$tfr_quantile$year - 3, 
+                                                                     est.obj$tfr_quantile$year + 2, sep = "-") else as.character(est.obj$tfr_quantile$year)
+    merged <- merge(data.table::data.table(est.obj$tfr_quantile), wppdatal[country_code == cntry], 
+                    by = "period")
     merged$shift <- merged$wpp - merged$V1
-    if(sum(merged$shift) != 0)
-      meta$median.shift.estimation[[as.character(cntry)]] <- merged$shift
+    if(sum(merged$shift) != 0) {
+      meta$traj.shift.estimation[[as.character(cntry)]] <- merged$shift
+    }
   }
   store.bayesTFR.meta.object(meta, meta$output.dir)
   predictions <- available.tfr.predictions(sim.dir = sim.dir)
   for(pred.subdir in predictions) { # need to save this also in the collapsed chain of the prediction
     pred <- get.tfr.prediction(sim.dir = sim.dir, subdir = pred.subdir)
-    pred$mcmc.set$meta$median.shift.estimation <- meta$median.shift.estimation
+    pred$mcmc.set$meta$traj.shift.estimation <- meta$traj.shift.estimation
     store.bayesTFR.prediction(pred)
     store.bayesTFR.meta.object(pred$mcmc.set$meta, pred$mcmc.set$meta$output.dir)
   }
@@ -43,18 +49,33 @@ tfr.shift.estimation.to.wpp <- function(sim.dir, ..., verbose = TRUE){
 
 get.tfr.shift.estimation <- function(country.code, meta)
 {
-  if(is.null(meta$median.shift.estimation)) return(NULL)
-  return(meta$median.shift.estimation[[as.character(country.code)]])
+  if(is.null(meta$traj.shift.estimation)) return(NULL)
+  return(meta$traj.shift.estimation[[as.character(country.code)]])
 }
 
 tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0, thin = 1, 
-                               subdir = "predictions")
+                               subdir = "predictions"){
+  tfr.stat.set.all(sim.dir, country, values, years=years, burnin = burnin, thin = thin, 
+                                 subdir = subdir, stat = "median")
+}
+
+tfr.mean.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0, thin = 1, 
+                               subdir = "predictions"){
+  tfr.stat.set.all(sim.dir, country, values, years=years, burnin = burnin, thin = thin, 
+                               subdir = subdir, stat = "mean")
+}
+
+
+tfr.stat.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0, thin = 1, 
+                               subdir = "predictions", stat = "median")
+# sets a shift for both, estimation and projections
 {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta <- mcmc.set$meta
   country.obj <- get.country.object(country, meta=meta)
+  if(is.null(country.obj$name)) stop('Country not found.')
+  
   has.predictions <- has.tfr.prediction(sim.dir = sim.dir, subdir = subdir)
-  # browser()
   bdem.shift.estimation <- do.call('get.tfr.shift.estimation', list(country.obj$code, meta))
   estimation.years <- as.numeric(dimnames(meta$tfr_matrix)[[1]])
   nr.estimation <- length(estimation.years)
@@ -70,7 +91,7 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
     nr.proj <- pred$nr.projections + 1
   }
   else if(!has.uncertainty) stop('No estimation and no prediction to adjust.')
-  if(is.null(country.obj$name)) stop('Country not found.')
+  
   if(is.null(years)) 
   {
     if (has.uncertainty) years <- c(years, estimation.years)
@@ -90,17 +111,23 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
   {
     if (!has.uncertainty)
       stop("Provided years for estimation but uncertainty is not considered in the modeling step")
-    tfr.object <- get.tfr.estimation(mcmc.list = mcmc.set, country = country.obj$code, probs = 0.5, burnin = burnin, thin = thin)
-    estimation.medians <- as.numeric(unlist(tfr.object$tfr_quantile[,1]))
-    bdem.shift.estimation[is.element(estimation.years, years)] <- values[which.estimation] - estimation.medians[is.element(estimation.years, years)]
+    tfr.object <- get.tfr.estimation(mcmc.list = mcmc.set, country = country.obj$code, 
+                                     probs = if(stat == "median") 0.5 else "mean", 
+                                     burnin = burnin, thin = thin)
+    estimation.values <- as.numeric(unlist(tfr.object$tfr_quantile[,1]))
+    bdem.shift.estimation[is.element(estimation.years, years)] <- values[which.estimation] - estimation.values[is.element(estimation.years, years)]
   }
   if (has.predictions) 
   {
     which.pred <- is.element(years, pred.years)
-    pred.medians <- pred$quantiles[country.obj$index, '0.5',]
+    if(stat == "median")
+      pred.values <- pred$quantiles[country.obj$index, '0.5',]
+    else { # mean
+      pred.values <- pred$traj.mean.sd[country.obj$index, 1,]
+    }
     if (any(which.pred))
     {
-      bdem.shift[is.element(pred.years, years)] <- values[which.pred] - pred.medians[is.element(pred.years, years)]
+      bdem.shift[is.element(pred.years, years)] <- values[which.pred] - pred.values[is.element(pred.years, years)]
     }
   }
   if (sum(bdem.shift) == 0) bdem.shift <- NULL
@@ -108,18 +135,18 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
   output <- list()
   if (has.uncertainty)
   {
-    meta$median.shift.estimation[[as.character(country.obj$code)]] <- bdem.shift.estimation
+    meta$traj.shift.estimation[[as.character(country.obj$code)]] <- bdem.shift.estimation
     store.bayesTFR.meta.object(meta, meta$output.dir)
     output[['meta']] <- meta
     if(has.predictions) { # need to save this also in the collapsed chain of the prediction
-        pred$mcmc.set$meta$median.shift.estimation <- meta$median.shift.estimation
+        pred$mcmc.set$meta$traj.shift.estimation <- meta$traj.shift.estimation
         store.bayesTFR.prediction(pred)
         store.bayesTFR.meta.object(pred$mcmc.set$meta, pred$mcmc.set$meta$output.dir)
     }
   }
   if (has.predictions)
   {
-    pred$median.shift[[as.character(country.obj$code)]] <- bdem.shift
+    pred$traj.shift[[as.character(country.obj$code)]] <- bdem.shift
     store.bayesTFR.prediction(pred)
     output[['pred']] <- pred
   }
@@ -127,40 +154,45 @@ tfr.median.set.all <- function(sim.dir, country, values, years=NULL, burnin = 0,
   invisible(output)
 }
 
-tfr.median.reset.estimation <- function(sim.dir, countries = NULL)
+tfr.median.reset.estimation <- function(...){
+  lifecycle::deprecate_warn("7.4-6", "tfr.median.reset.estimation(...)", "tfr.shift.reset.estimation(...)")
+  tfr.shift.reset.estimation(...)
+}  
+  
+tfr.shift.reset.estimation <- function(sim.dir, countries = NULL)
 {
   mcmc.set <- get.tfr.mcmc(sim.dir)
   meta <- mcmc.set$meta
   predictions <- available.tfr.predictions(sim.dir = sim.dir)
   has.estimation <- (!is.null(mcmc.set$mcmc.list[[1]]$uncertainty) && mcmc.set$mcmc.list[[1]]$uncertainty)
   output <- list()
-  if (has.estimation && !is.null(meta$median.shift.estimation)) 
+  if (has.estimation && !is.null(meta$traj.shift.estimation)) 
   {
-    if(is.null(countries)) meta$median.shift.estimation <- NULL # reset all countries
+    if(is.null(countries)) meta$traj.shift.estimation <- NULL # reset all countries
     else {
       for (country in countries) 
       {
         country.obj <- get.country.object(country, meta=meta)
-        meta$median.shift.estimation[[as.character(country.obj$code)]] <- NULL
+        meta$traj.shift.estimation[[as.character(country.obj$code)]] <- NULL
       }
     }
     output[['meta']] <- meta
     store.bayesTFR.meta.object(meta, meta$output.dir)
     for(pred.subdir in predictions) { # need to save this also in the prediction mcmc object
         pred <- get.tfr.prediction(sim.dir = sim.dir, subdir = pred.subdir)
-        pred$mcmc.set$meta$median.shift.estimation <- meta$median.shift.estimation
+        pred$mcmc.set$meta$traj.shift.estimation <- meta$traj.shift.estimation
         store.bayesTFR.prediction(pred)
     }
   }
     for(pred.subdir in predictions) {
         pred <- get.tfr.prediction(sim.dir = sim.dir, subdir = pred.subdir)
-        if(is.null(pred$median.shift)) next
-        if(is.null(countries)) pred$median.shift <- NULL # reset all countries
+        if(is.null(pred$traj.shift)) next
+        if(is.null(countries)) pred$traj.shift <- NULL # reset all countries
         else {
             for (country in countries) 
             {
                 country.obj <- get.country.object(country, meta=meta)
-                pred$median.shift[[as.character(country.obj$code)]] <- NULL
+                pred$traj.shift[[as.character(country.obj$code)]] <- NULL
             }
         }
         output[['pred']] <- pred # this just returns the last prediction object which is not correct if there are more than one prediction directories
@@ -181,7 +213,7 @@ tfr.median.reset.estimation <- function(sim.dir, countries = NULL)
   wppdatal$year <- if(meta$annual.simulation) as.integer(wppdatal$period) else as.integer(substr(wppdatal$period, 1, 4)) + 3
   
   pred.years <- as.numeric(dimnames(pred$quantiles)[[3]])
-  pred$median.shift <- NULL
+  pred$traj.shift <- NULL
   
   if(verbose) cat("\n")
   for(icntry in seq_along(countries)) {
@@ -197,11 +229,11 @@ tfr.median.reset.estimation <- function(sim.dir, countries = NULL)
     if(!stat %in% c("median", "mean")) stop("Argument 'stat' must be 'median' or 'mean', but is ", stat, ".")
     to.match <- merge(data.table::data.table(year = pred.years, median = pred$quantiles[icntry, "0.5", ]), 
                           wppdatal[country_code == cntry], by = "year", all.x = TRUE)
-    if(stat == "mean") to.match[["median"]] <- to.match[["median"]] + pred$traj.mean.sd[icntry, 1, ] - to.match[["median"]] # difference between the mean and median
+    if(stat == "mean") to.match[["median"]] <- pred$traj.mean.sd[icntry, 1, ] 
     to.match$wpp[is.na(to.match$wpp)] <- to.match$median[is.na(to.match$wpp)] # no shift for years that don't match
     to.match$shift <- to.match$wpp - to.match$median
     if(sum(to.match$shift) != 0)
-      pred$median.shift[[as.character(cntry)]] <- to.match$shift
+      pred$traj.shift[[as.character(cntry)]] <- to.match$shift
   }
   if(verbose) cat("\n")
   return(pred)

@@ -1,26 +1,39 @@
-\name{tfr.median.set}
+\name{tfr.traj.shift}
 \alias{tfr.median.set}
+\alias{tfr.mean.set}
 \alias{tfr.median.shift}
+\alias{tfr.traj.shift}
 \alias{tfr.median.adjust}
+\alias{tfr.mean.adjust}
 \alias{tfr.median.reset}
+\alias{tfr.shift.reset}
 \alias{tfr.shift.prediction.to.wpp}
 
 \title{
-Editing Medians of the Projection
+Shifting the Distribution of the Projection
 }
 \description{
-These functions are to be used by expert analysts. They allow to change the projection medians either to specific values, including the WPP values, or shift the medians by a given constant, or by a specific adjusting procedure.
+These functions are to be used by expert analysts. They allow to change the projection medians/means either to specific values, including the WPP values, or shift the distribution by a given constant, or by a specific adjusting procedure.
 }
 \usage{
 tfr.median.set(sim.dir, country, values, years = NULL, \dots)
 
-tfr.median.shift(sim.dir, country, reset = FALSE, shift = 0, 
+tfr.mean.set(sim.dir, country, values, years = NULL, \dots)
+
+tfr.traj.shift(sim.dir, country, reset = FALSE, shift = 0, 
     from = NULL, to = NULL, \dots)
     
+tfr.median.shift(\dots) # obsolete
+
 tfr.median.adjust(sim.dir, countries, factor1 = 2/3, factor2 = 1/3, forceAR1 = FALSE,
     subdir = "predictions")
+    
+tfr.mean.adjust(sim.dir, countries, factor1 = 2/3, factor2 = 1/3, forceAR1 = FALSE,
+    subdir = "predictions")
 
-tfr.median.reset(sim.dir, countries = NULL, \dots)
+tfr.shift.reset(sim.dir, countries = NULL, \dots)
+
+tfr.median.reset(\dots) # obsolete
 
 tfr.shift.prediction.to.wpp(sim.dir, subdir = "predictions", \dots)
 }
@@ -41,14 +54,14 @@ tfr.shift.prediction.to.wpp(sim.dir, subdir = "predictions", \dots)
   \item{\dots}{Additional arguments passed to the underlying adjustment function. For \code{tfr.shift.prediction.to.wpp} it can be \code{stat} with values \dQuote{median} (default) or \dQuote{mean} to specify which statistics should be adjusted; \code{verbose} to show/hide the progress of the adjustment and \code{wpp.year} to adjust it to if it differs from the wpp year of the simulation. For the other functions it can be \code{subdir} to specify the location of the prediction.}
 }
 \details{
-The function \code{tfr.median.set} can be used to set the medians of the given country to specific values. Function \code{tfr.median.shift} can be used to offset the medians by a specific constant, or to reset the medians to their original BHM values.
-Function \code{tfr.median.adjust} runs the prediction procedure for the given countries with an additional decrement in the model in the first two projection periods. In the first projection period it is computed as \code{factor1*S} where \code{S} is a difference between observed decrement and the expected decrement (by the double logistic function) in the last observed period. In the second projection period, in the formula \code{factor1} is replaced by \code{factor2}. If \code{forceAR1} is set to \code{TRUE}, we recommend to set \code{factor1} and \code{factor2} to 0. The function then calls \code{tfr.median.set} in order to store the new median for each country.
+The functions \code{tfr.median.set} and \code{tfr.mean.set} can be used to set the medians/means of the given country to specific values. Function \code{tfr.traj.shift} can be used to offset the trajectories by a specific constant, or to reset the distributions to their original BHM values. The function \code{tfr.median.shift} is obsolete, replaced by \code{tfr.traj.shift}.
+Functions \code{tfr.median.adjust} and \code{tfr.mean.adjust} run the prediction procedure for the given countries with an additional decrement in the model in the first two projection periods. In the first projection period it is computed as \code{factor1*S} where \code{S} is a difference between observed decrement and the expected decrement (by the double logistic function) in the last observed period. In the second projection period, in the formula \code{factor1} is replaced by \code{factor2}. If \code{forceAR1} is set to \code{TRUE}, we recommend to set \code{factor1} and \code{factor2} to 0. The function then calls \code{tfr.median.set} or \code{tfr.mean.set} in order to store the new median/mean for each country.
 
-Function\code{tfr.shift.prediction.to.wpp} shifts the projected medians or means (if \code{stat} is \dQuote{mean}), so that they correspond to the values found in the \code{tfrprojMed} datasets of the \pkg{wpp} package that either corresponds to the package used for the simulation itself or is given by the \code{wpp.year} argument. If using \pkg{wpp2022} or higher, the dataset name is automatically adjusted depending if it is an annual or a 5-year simulation. Note that regardless if it is an adjustment of the median or mean, the corresponding offset is always converted to a shift of the median. 
+Function\code{tfr.shift.prediction.to.wpp} shifts the projected medians or means (if \code{stat} is \dQuote{mean}), so that they correspond to the values found in the \code{tfrprojMed} datasets of the \pkg{wpp} package that either corresponds to the package used for the simulation itself or is given by the \code{wpp.year} argument. If using \pkg{wpp2022} or higher, the dataset name is automatically adjusted depending if it is an annual or a 5-year simulation. 
 
-Function \code{tfr.median.reset} resets medians of the given countries to the original values. By default it deletes adjustments for all countries.
+Function \code{tfr.shift.reset} resets the distribution of the given countries to the original values. By default it deletes adjustments for all countries. Function \code{tfr.median.reset} is obsolete, replaced by \code{tfr.shift.reset}.
 
-In all five functions, if a median is modified, the corresponding offset is stored in the prediction object (element \code{median.shift}) and the updated prediction object is written back to disk. All functions in the package that use trajectories and trajectory statistics use the \code{median.shift} values to offset the results correspondingly, i.e. trajectories are shifted the same way as the medians.
+In all these functions, if a median or mean is modified, the corresponding offset is stored in the prediction object (element \code{traj.shift}) and the updated prediction object is written back to disk. All functions in the package that use trajectories and trajectory statistics use the \code{traj.shift} values to offset the results correspondingly by shifting the trajectories.
 }
 \value{
 All functions return an updated object of class \code{\link{bayesTFR.prediction}}.
@@ -56,7 +69,7 @@ All functions return an updated object of class \code{\link{bayesTFR.prediction}
 
 \author{Hana Sevcikova, Leontine Alkema}
 
-\seealso{\code{\link{tfr.median.set.all}} for shifting estimation medians.}
+\seealso{\code{\link{tfr.median.set.all}} and \code{\link{tfr.mean.set.all}} for shifting estimation medians and means.}
 
 %\examples{
 %}

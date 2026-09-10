@@ -170,7 +170,7 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	test.name <- 'shifting the median'
 	start.test(test.name, wpp.year)
 	projs <- summary(pred, country='Uganda')$projections
-	tfr.median.shift(sim.dir, country='Uganda', shift=1.5, from=2051, to=2080)
+	tfr.traj.shift(sim.dir, country='Uganda', shift=1.5, from=2051, to=2080)
 	shifted.pred <- get.tfr.prediction(sim.dir)
 	shifted.projs <- summary(shifted.pred, country='Uganda')$projections
 	stopifnot(all(projs[8:13,c(1,3:dim(projs)[2])]+1.5 == shifted.projs[8:13,c(1,3:dim(projs)[2])]))
@@ -179,7 +179,7 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 
 	test.name <- 'resetting the median'
 	start.test(test.name, wpp.year)
-	shifted.pred <- tfr.median.shift(sim.dir, country='Uganda', reset = TRUE)
+	shifted.pred <- tfr.traj.shift(sim.dir, country='Uganda', reset = TRUE)
 	shifted.projs <- summary(shifted.pred, country='Uganda')$projections
 	stopifnot(all(projs[,c(1,3:dim(projs)[2])] == shifted.projs[,c(1,3:dim(projs)[2])]))
 	test.ok(test.name)
@@ -195,26 +195,45 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	stopifnot(all(mod.projs[c(1,5:17), c(1,3:dim(projs)[2])]==projs[c(1,5:17), c(1,3:dim(projs)[2])]))
 	test.ok(test.name)
 	
+	test.name <- 'setting the mean'
+	start.test(test.name, wpp.year)
+	expert.values <- c(2.3, 2.4, 2.4)
+	cobj <- get.country.object('Uganda', m$meta)
+	shift <- expert.values - pred$traj.mean.sd[cobj$index, 1, 2:4]
+	tfr.shift.reset(sim.dir, countries = "Uganda") # reset first
+	mod.pred <- tfr.mean.set(sim.dir, country='Uganda', values=expert.values, years=2024)
+	mod.projs <- summary(mod.pred, country='Uganda')$projections
+	stopifnot(all(mod.projs[2:4, c(1,3:dim(projs)[2])]==projs[2:4, c(1,3:dim(projs)[2])]+shift))
+	stopifnot(all(mod.projs[c(1,5:17), c(1,3:dim(projs)[2])]==projs[c(1,5:17), c(1,3:dim(projs)[2])]))
+	test.ok(test.name)
+	
 	test.name <- 'shifting medians to WPP'
 	tfr.shift.prediction.to.wpp(sim.dir)
 	shifted.pred <- get.tfr.prediction(sim.dir)
 	shifted.projs <- summary(shifted.pred, country='Niger')$projections
-	shifted.projs <- data.table::data.table(shifted.projs)[, year := as.integer(rownames(shifted.projs))]
+	shifted.projs.med <- data.table::data.table(shifted.projs)[, year := as.integer(rownames(shifted.projs))]
+	tfr.shift.prediction.to.wpp(sim.dir, stat = "mean")
+	shifted.pred <- get.tfr.prediction(sim.dir)
+	shifted.projs <- summary(shifted.pred, country='Niger')$projections
+	shifted.projs.mean <- data.table::data.table(shifted.projs)[, year := as.integer(rownames(shifted.projs))]
+	
 	e <- new.env()
 	data("tfrprojMed", package = paste0("wpp", wpp.year), envir = e)
 	wpptfr <- data.table::data.table(e$tfrprojMed)
 	wpptfrl <- data.table::melt(wpptfr, id.vars = c("country_code", "name"), variable.name = "period")
 	wpptfrl <- wpptfrl[, year := as.integer(substr(period, 1,4)) + 3][name == "Niger"]
-	dat <- merge(wpptfrl, shifted.projs[, c("year", "50%"), with = FALSE], by = "year")
-	stopifnot(all.equal(dat$value, dat[, `50%`]))
-	stopifnot(!is.null(shifted.pred$median.shift))
-	stopifnot(length(shifted.pred$median.shift) == nrow(get.countries.table(shifted.pred)))
+	dat <- merge(wpptfrl, shifted.projs.med[, c("year", "50%"), with = FALSE], by = "year")
+	dat <- merge(dat, shifted.projs.mean[, c("year", "mean"), with = FALSE], by = "year")
+	stopifnot(all.equal(dat$value, dat[["50%"]]))
+	stopifnot(all.equal(dat$value, dat[["mean"]]))
+	stopifnot(!is.null(shifted.pred$traj.shift))
+	stopifnot(length(shifted.pred$traj.shift) == nrow(get.countries.table(shifted.pred)))
 	test.ok(test.name)
 	
 	test.name <- 'resetting all countries'
-	tfr.median.reset(sim.dir)
+	tfr.shift.reset(sim.dir)
 	new.pred <- get.tfr.prediction(sim.dir)
-	stopifnot(is.null(new.pred$median.shift))
+	stopifnot(is.null(new.pred$traj.shift))
 	test.ok(test.name)
 	
 	unlink(sim.dir, recursive=TRUE)

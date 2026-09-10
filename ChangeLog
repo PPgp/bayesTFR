@@ -1,3 +1,13 @@
+7.4-6 (2026-09-10)
+-----
+New functions for adjusting predictive means (tfr.mean.set, tfr.mean.set.all,
+tfr.mean.adjust).
+
+Some adjusment functions renamed:
+tfr.median.shift -> tfr.traj.shift
+tfr.median.reset -> tfr.shift.reset
+tfr.median.reset.estimation -> tfr.shift.reset.estimation
+
 7.4-5 (2026-07-29)
 -----
 New arguments in tfr.trajectories.table (main.proj, estim.observed) to output
@@ -5,7 +15,7 @@ means or the raw data.
 
 In tfr.trajectories.plot, if show.mean is TRUE, it applies also to the observed data.
 
-Map function gives an error if no location match country codes.
+Map function gives an error if no location matches country codes.
 
 Allow user-defined function for finding phase 3 in predictions. 
 
