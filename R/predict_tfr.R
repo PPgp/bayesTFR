@@ -1310,7 +1310,7 @@ get.tfr.shift <- function(country.code, pred) {
 	}
 	if(sum(bdem.shift) == 0) bdem.shift <- NULL
 	pred$traj.shift[[as.character(country.obj$code)]] <- bdem.shift
-	if(verbose) cat('\nTFR trajectories of', country.obj$name, action, 
+	if(verbose) cat('\n', type, 'trajectories of', country.obj$name, action, 
 		if(all.years) 'for all years' else c('for years', pred.years[which.years]), '.\n')
 	return(pred)
 }
@@ -1334,7 +1334,7 @@ tfr.shift.reset <- function(sim.dir, countries = NULL, ...) {
 }
 
 tfr.median.shift <- function(...){
-    lifecycle::deprecate_warn("7.4-6", "tfr.median.shift(...)", "tfr.traj.shift(...)")
+    lifecycle::deprecate_warn("7.4-6", "tfr.median.shift()", "tfr.traj.shift()")
     tfr.traj.shift(...)
 }
 
