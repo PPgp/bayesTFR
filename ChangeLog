@@ -1,3 +1,8 @@
+7.4-6.9001 (2026-09-24)
+-----
+tfr.map and write.projection.summary() can use the user-defined function 
+for finding phase 3, defined in option TFRphase3findfct.
+
 7.4-6 (2026-09-10)
 -----
 New functions for adjusting predictive means (tfr.mean.set, tfr.mean.set.all,
