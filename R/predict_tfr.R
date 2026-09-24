@@ -1101,7 +1101,9 @@ do.write.parameters.summary <- function(pred, output.dir, adjusted=FALSE, est.un
 					par.names=NULL, par.names.cs=tfr.parameter.names.cs(trans=FALSE, back.trans=FALSE), 
 					thin=1, burnin=0))
 		sink(type='message')
-		lambda_c <- find.lambda.for.one.country(tfr.and.pred.median, length(tfr.and.pred.median))
+		lambda_c <- do.call(getOption("TFRphase3findfct", "find.lambda.for.one.country"), 
+		                              list(tfr.and.pred.median, length(tfr.and.pred.median),
+		                                   annual = meta$annual.simulation))
 		result <- rbind(result, c(country.obj$name, country.obj$code, 
 			if(meta$tau_c[country.obj$index] > 0) tfr.years[meta$tau_c[country.obj$index]] else -1, #tau_c
 			round(s$statistics[paste('U_c',country.obj$code, sep=''),1],precision), # TFR at tau_c

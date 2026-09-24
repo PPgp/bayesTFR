@@ -1263,7 +1263,9 @@ get.data.for.worldmap.bayesTFR.prediction <- function(pred, quantile=0.5, year=N
 				tfr.and.pred.median <- c(tfr[,country], 
 						get.quantile.from.prediction(pred, quantile, country.obj$index, country.obj$code, 
 												adjusted=adjusted)[-1])
-				lambda <- all.years[find.lambda.for.one.country(tfr.and.pred.median, nr.data)]
+				lambda <- all.years[do.call(getOption("TFRphase3findfct", "find.lambda.for.one.country"), 
+				                            list(tfr.and.pred.median, nr.data,
+				                                 annual = meta$annual.simulation))]
 				data <- c(data, lambda)
 			}
 			codes <- meta$regions$country_code
