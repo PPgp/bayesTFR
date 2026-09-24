@@ -394,11 +394,15 @@ get.quantile.from.prediction <- function(tfr.pred, quantile, country.index, coun
                                          est.uncertainty = FALSE) {
 	quant.values <- tfr.pred$quantiles[country.index, as.character(quantile),]
 	if(est.uncertainty && has.est.uncertainty(tfr.pred$mcmc.set)){ # get the right value for present year
+	    if(is.null(country.code))
+	        country.code <- get.country.object(country.index, tfr.pred$mcmc.set$meta, index = TRUE)$code
 	    tfr.est <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.code, probs=0.5, adjust = adjusted)
 	    unc.last.time <- which(tfr.est$tfr_quantile$year == dimnames(tfr.pred$quantiles)[[3]][1])
 	    quant.values[1] <- unlist(tfr.est$tfr_quantile[unc.last.time, 1])
 	}
 	if (!adjusted) return(quant.values)
+	if(is.null(country.code))
+	    country.code <- get.country.object(country.index, tfr.pred$mcmc.set$meta, index = TRUE)$code
 	shift <- get.tfr.shift(country.code, tfr.pred)
 	if(!is.null(shift)) quant.values <- quant.values + shift
 	return(quant.values)
@@ -411,11 +415,17 @@ get.mean.from.prediction <- function(tfr.pred, country.index, country.code=NULL,
                                          est.uncertainty = FALSE) {
     mean.values <- tfr.pred$traj.mean.sd[country.index, 1,]
     if(est.uncertainty && has.est.uncertainty(tfr.pred$mcmc.set)){ # get the right value for present year
+        if(is.null(country.code))
+            country.code <- get.country.object(country.index, tfr.pred$mcmc.set$meta, index = TRUE)$code
         tfr.est <- get.tfr.estimation(mcmc.list=tfr.pred$mcmc.set, country = country.code, probs="mean", adjust = adjusted)
         unc.last.time <- which(tfr.est$tfr_quantile$year == dimnames(tfr.pred$quantiles)[[3]][1])
         mean.values[1] <- unlist(tfr.est$tfr_quantile[unc.last.time, 1])
     }
+    if(is.null(names(mean.values)))
+        names(mean.values) <- dimnames(tfr.pred$quantiles)[[3]]
     if (!adjusted) return(mean.values)
+    if(is.null(country.code))
+        country.code <- get.country.object(country.index, tfr.pred$mcmc.set$meta, index = TRUE)$code
     shift <- get.tfr.shift(country.code, tfr.pred)
     if(!is.null(shift)) mean.values <- mean.values + shift
     return(mean.values)

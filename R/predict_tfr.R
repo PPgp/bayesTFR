@@ -271,6 +271,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	proj.middleyears <- get.prediction.years(meta, nr_project+1, present.year.index)
 	dimnames(PIs_cqp)[[3]] <- proj.middleyears
 	mean_sd <- array(NA, c(nr_countries, 2, nr_project+1))
+	dimnames(mean_sd)[[2]] <- c("mean", "sd")
+	dimnames(mean_sd)[[3]] <- proj.middleyears
 	hasNAs <- rep(FALSE, nr_simu)
 	adjust.true <- !is.na(adj.factor1)
 	if (verbose) cat('Load parameters mean_eps_tau and sd_eps_tau.\n')
