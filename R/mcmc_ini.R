@@ -38,6 +38,18 @@ get.eps.T.index <- function(country, meta) {
   return(list(idx=idx, keep=match(idx, rows)))
 }
 
+get.eps.T.excluded.by.row <- function(meta) {
+  # For each row of eps_Tc, countries for which the row is excluded because of outliers
+  # (consistent with get.eps.T.index)
+  res <- list()
+  for (cn in names(meta$indices.outliers)) {
+    country <- as.integer(cn)
+    rows <- setdiff(meta$start_c[country]:(meta$lambda_c[country]-1), get.eps.T.index(country, meta)$idx)
+    for (r in rows) res[[as.character(r)]] <- c(res[[as.character(r)]], country)
+  }
+  return(res)
+}
+
 get.eps.T.index.cached <- function(country, mcmc) {
   # Indices are constant during sampling, thus they are cached in mcmc$eps.T.index
   # if available (it is removed in .cleanup.mcmc)
@@ -423,7 +435,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	    if (length(indices) > 0) {
 	      indices.outliers[[as.character(country.index)]] <- indices
 	      for (ind in indices) {
-	        if (as.character(ind) %in% year.outliers) yearly.outliers[[as.character(ind)]] <- c(yearly.outliers[[as.character(ind)]], country.index)
+	        if (as.character(ind) %in% names(yearly.outliers)) yearly.outliers[[as.character(ind)]] <- c(yearly.outliers[[as.character(ind)]], country.index)
 	        else yearly.outliers[[as.character(ind)]] <- country.index
 	      }
 	        

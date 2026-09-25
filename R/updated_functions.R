@@ -574,6 +574,8 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
                    exp(mcmc$gamma_ci)/ apply(exp(mcmc$gamma_ci), 1, sum), 
                  mcmc$Triangle_c4, mcmc$d_c)
   nr_countries <- mcmc$meta$nr_countries
+  # eps_Tc of outliers are excluded from the Phase II estimation and thus should stay NA
+  eps.excluded <- get.eps.T.excluded.by.row(mcmc$meta)
   phase3par <- matrix(nrow = nr_countries, ncol=2)
   phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, mcmc$rho.c)
   ## _r represents phases from year -> year + 1
@@ -678,7 +680,8 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     if (year < mcmc$meta$T_end)
     {
       idx_update <- intersect(idx_accept, id_phase2_r)
-      mcmc$eps_Tc[year, idx_update] <- loglik_mid_prop$eps[idx_update]
+      idx_eps <- setdiff(idx_update, eps.excluded[[as.character(year)]])
+      mcmc$eps_Tc[year, idx_eps] <- loglik_mid_prop$eps[idx_eps]
       mcmc$sd_Tc[year, idx_update] <- loglik_mid_prop$std[idx_update]
       tmp <- tfr_proposed[idx_update] - mcmc$S_sd
       idx <- which(tmp < 0)
@@ -688,12 +691,12 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     }
     if (year > 1)
     {
-      idx_update <- intersect(idx_accept, id_phase2_l)
+      idx_update <- setdiff(intersect(idx_accept, id_phase2_l), eps.excluded[[as.character(year - 1)]])
       mcmc$eps_Tc[year - 1, idx_update] <- loglik_prev_prop$eps[idx_update]
     }
     if ((year < mcmc$meta$T_end - 1) && !is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
     {
-      idx_update <- intersect(idx_accept, mcmc$meta$id_phase2_by_year[[year + 1]])
+      idx_update <- setdiff(intersect(idx_accept, mcmc$meta$id_phase2_by_year[[year + 1]]), eps.excluded[[as.character(year + 1)]])
       mcmc$eps_Tc[year + 1, idx_update] <- loglik_next_prop$eps[idx_update]
     }
     
