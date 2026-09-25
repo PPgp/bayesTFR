@@ -10,13 +10,30 @@ store.mcmc <- local({
 	default.buffer.size <- 10
 	buffer <- buffer.cs <- NULL
 	
-	get.gamma <- function(mcmc, country) {
-		return(mcmc$gamma_ci[country,])
+	# Country-specific parameters are buffered in one matrix per parameter, 
+	# with one row per iteration and a block of columns per country 
+	# (countries given by cs.index; each block has cs.width[[par]] columns).
+	cs.index <- cs.index.tfr <- cs.width <- NULL
+	
+	get.cs.values <- function(mcmc, par, country.index) {
+		# values of a country-specific parameter for the given countries, concatenated by country
+		return(switch(par,
+			gamma = as.vector(t(mcmc$gamma_ci[country.index,,drop=FALSE])),
+			eps_T = as.vector(mcmc$eps_Tc[,country.index,drop=FALSE]),
+			tfr = as.vector(mcmc$meta[['tfr_all']][,country.index,drop=FALSE]),
+			mcmc[[var.names[[par]]]][country.index]))
 	}
-    get.eps_T <- function(mcmc, country) {
-        return(t(mcmc$eps_Tc[,country]))
-    }
-	special.case <- c('gamma', 'eps_T')
+	
+	get.cs.width <- function(mcmc, par) {
+		# number of values per country
+		return(switch(par, 
+			gamma = ncol(mcmc$gamma_ci),
+			eps_T = nrow(mcmc$eps_Tc),
+			tfr = nrow(mcmc$meta[['tfr_all']]),
+			1))
+	}
+	
+	has.tfr <- function(mcmc) return(!is.null(mcmc$uncertainty) && mcmc$uncertainty)
 	
 	buffers.insert <- function(mcmc, countries=NULL) {
 	  counter <<- counter + 1
@@ -26,31 +43,9 @@ store.mcmc <- local({
 				buffer[[par]][counter,] <<- mcmc[[par]]
 			}
 		  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) buffer[['rho.phase2']][counter,] <<- mcmc[["rho.phase2"]]
-			country.index <- mcmc$meta$id_DL
-			country.index.tfr <- 1:mcmc$meta$nr_countries
-		} else {
-			country.index <- country.index.tfr <- countries
 		}
-		for (par in par.cs.names) {
-			if (is.element(var.names[[par]], mcmc$dontsave)) next
-			
-			for (country in country.index){
-				if (is.element(par, special.case)) {
-					result <- eval(call(paste('get', par, sep='.'), mcmc, country))
-				} else {
-					result <- mcmc[[var.names[[par]]]][country]
-				}
-				buffer.cs[[par]][[country]][counter,] <<- result
-			}
-		}
-	  
-		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
-		{
-		  for (country in country.index.tfr){
-		    result <- mcmc$meta[['tfr_all']][, country]
-		    buffer.cs[['tfr']][[country]][counter,] <<- result
-		  }
-		}
+		for (par in names(buffer.cs))
+			buffer.cs[[par]][counter,] <<- get.cs.values(mcmc, par, if(par == 'tfr') cs.index.tfr else cs.index)
 	}
 		
 	buffers.ini <- function(mcmc, size, countries=NULL) {
@@ -62,31 +57,19 @@ store.mcmc <- local({
 			}
 		    if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
 		        buffer[['rho.phase2']] <<- matrix(NA, ncol=1, nrow=size)
-			country.index <- mcmc$meta$id_DL
-			country.index.tfr <- 1:mcmc$meta$nr_countries
+			cs.index <<- mcmc$meta$id_DL
+			cs.index.tfr <<- 1:mcmc$meta$nr_countries
 		} else {
-			country.index <- country.index.tfr <- countries
+			cs.index <<- cs.index.tfr <<- countries
 		}
-		buffer.cs <<-list()
-		for (par in par.cs.names) {
-			if (is.element(var.names[[par]], mcmc$dontsave)) next
-			buffer.cs[[par]] <<- list()
-			for (country in country.index){
-				if (is.element(par, special.case)) {
-					v <- eval(call(paste('get', par, sep='.'), mcmc, country))
-				} else {
-					v <- mcmc[[var.names[[par]]]][country]
-				}
-				buffer.cs[[par]][[country]] <<- matrix(NA, ncol=length(v), nrow=size)
-			}
-		}
-		
-		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
-		{
-		  for (country in country.index.tfr){
-		    v <- mcmc$meta[['tfr_all']][, country]
-		    buffer.cs[['tfr']][[country]] <<- matrix(NA, ncol=length(v), nrow=size)
-		  }
+		buffer.cs <<- list()
+		cs.width <<- list()
+		cs.pars <- par.cs.names[!sapply(par.cs.names, function(par) is.element(var.names[[par]], mcmc$dontsave))]
+		if (has.tfr(mcmc)) cs.pars <- c(cs.pars, 'tfr')
+		for (par in cs.pars) {
+			cs.width[[par]] <<- get.cs.width(mcmc, par)
+			ncountries <- length(if(par == 'tfr') cs.index.tfr else cs.index)
+			buffer.cs[[par]] <<- matrix(NA, ncol=cs.width[[par]] * ncountries, nrow=size)
 		}
 		counter <<- 0
 	}
@@ -120,36 +103,16 @@ store.mcmc <- local({
 		    write.values.into.file.cindep('rho_phase2', values, output.dir, mode=open, 
 		                                  compression.type=mcmc$compression.type)
 		  }
-			country.index <- mcmc$meta$id_DL
-			country.index.tfr <- 1:mcmc$meta$nr_countries
-		} else {
-			country.index <- country.index.tfr <- countries
 		}
-		for (par in par.cs.names) { # write country-specific parameters
-			if (is.null(buffer.cs[[par]])) next
-			for (country in country.index){
-				if (counter == 1) {
-					values <- t(buffer.cs[[par]][[country]][1:counter,])
-				} else {
-					values <- buffer.cs[[par]][[country]][1:counter,]
-				}
+		for (par in names(buffer.cs)) { # write country-specific parameters (and tfr if uncertainty)
+			w <- cs.width[[par]]
+			country.index <- if(par == 'tfr') cs.index.tfr else cs.index
+			for (i in seq_along(country.index)){
+				values <- buffer.cs[[par]][1:counter, (i-1)*w + (1:w), drop=FALSE]
 				write.values.into.file.cdep(par, values, output.dir, 
-						get.country.object(country, meta=mcmc$meta, index=TRUE)$code, mode=open, 
+						get.country.object(country.index[i], meta=mcmc$meta, index=TRUE)$code, mode=open, 
 											compression.type=mcmc$compression.type)
 			}
-		}
-		if (!is.null(mcmc$uncertainty) && (mcmc$uncertainty))
-		{
-		  for (country in country.index.tfr){
-		    if (counter == 1) {
-		      values <- t(buffer.cs[['tfr']][[country]][1:counter,])
-		    } else {
-		      values <- buffer.cs[['tfr']][[country]][1:counter,]
-		    }
-		    write.values.into.file.cdep('tfr', values, output.dir, 
-		                                get.country.object(country, meta=mcmc$meta, index=TRUE)$code, mode=open, 
-		                                compression.type=mcmc$compression.type)
-		  }
 		}
 		
 		resmc <- as.list(mcmc)
@@ -184,19 +147,24 @@ store.mcmc3 <- local({
 	default.buffer.size <- 10
 	buffer3 <- buffer3.cs <- NULL
 		
+	# Country-specific parameters are buffered in one matrix per parameter, 
+	# with one row per iteration and a block of columns per country 
+	# (countries given by cs3.index; each block has cs3.width[[par]] columns).
+	cs3.index <- cs3.width <- NULL
+	
+	get.cs.values <- function(mcmc, par, country.index) {
+		# values of a country-specific parameter for the given countries, concatenated by country
+		if(is.null(dim(mcmc[[par]]))) return(mcmc[[par]][country.index])
+		return(as.vector(mcmc[[par]][,country.index,drop=FALSE]))
+	}
+	
 	buffers.insert <- function(mcmc, countries=NULL) {
 	  counter3 <<- counter3 + 1
 		if (is.null(countries)) {
 			for (par in par.names) buffer3[[par]][counter3,] <<- mcmc[[par]]
-			country.index <- 1: mcmc$meta$nr.countries
-		} else country.index <- countries
-		for (par in par.cs.names) {		
-		  
-			for (country in country.index)
-				buffer3.cs[[par]][[country]][counter3,] <<- if(is.null(dim(mcmc[[par]]))) mcmc[[par]][country] 
-                								          else mcmc[[par]][,country]
 		}
-		
+		for (par in par.cs.names)
+			buffer3.cs[[par]][counter3,] <<- get.cs.values(mcmc, par, cs3.index)
 	}
 		
 	buffers.ini <- function(mcmc, size, countries=NULL) {
@@ -204,15 +172,13 @@ store.mcmc3 <- local({
 		if (is.null(countries)) {
 			for (par in par.names) 
 				buffer3[[par]] <<- matrix(NA, ncol=length(mcmc[[par]]), nrow=size)
-			country.index <- 1:mcmc$meta$nr.countries
-		} else country.index <- countries
+			cs3.index <<- 1:mcmc$meta$nr.countries
+		} else cs3.index <<- countries
 		buffer3.cs <<-list()
+		cs3.width <<- list()
 		for (par in par.cs.names) {
-			buffer3.cs[[par]] <<- list()
-			for (country in country.index){
-				v <- if(is.null(dim(mcmc[[par]]))) mcmc[[par]][country] else mcmc[[par]][,country]
-				buffer3.cs[[par]][[country]] <<- matrix(NA, ncol=length(v), nrow=size)
-			}
+			cs3.width[[par]] <<- if(is.null(dim(mcmc[[par]]))) 1 else nrow(mcmc[[par]])
+			buffer3.cs[[par]] <<- matrix(NA, ncol=cs3.width[[par]] * length(cs3.index), nrow=size)
 		}
 		counter3 <<- 0
 	}
@@ -240,16 +206,15 @@ store.mcmc3 <- local({
 				write.values.into.file.cindep(par, values, output.dir, mode=open, 
 												compression.type=mcmc$compression.type)
 			}
-			country.index <- 1:mcmc$meta$nr.countries	
-		} else country.index <- countries
+		}
 
 		for (par in par.cs.names) { # write country-specific parameters
 			if (is.null(buffer3.cs[[par]])) next
-			for (country in country.index){
-				values <- if (counter3 == 1) t(buffer3.cs[[par]][[country]][1:counter3,])
-							else buffer3.cs[[par]][[country]][1:counter3,]
+			w <- cs3.width[[par]]
+			for (i in seq_along(cs3.index)){
+				values <- buffer3.cs[[par]][1:counter3, (i-1)*w + (1:w), drop=FALSE]
 				write.values.into.file.cdep(par, values, output.dir, 
-						get.country.object(mcmc$meta$id_phase3[country], meta=mcmc$meta$parent, index=TRUE)$code, mode=open, 
+						get.country.object(mcmc$meta$id_phase3[cs3.index[i]], meta=mcmc$meta$parent, index=TRUE)$code, mode=open, 
 											compression.type=mcmc$compression.type)
 			}
 		}

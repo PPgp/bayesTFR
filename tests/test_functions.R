@@ -147,6 +147,18 @@ test.run.mcmc.simulation <- function(compression='None', wpp.year = 2019) {
 	stopifnot(!is.element(903, pred$mcmc.set$regions$country_code))
 	test.ok(test.name)
 	npred <- dim(pred$tfr_matrix_reconstructed)[2]
+
+	test.name <- 'running projections with correlation'
+	start.test(test.name, wpp.year)
+	# stored outside of sim.dir in order not to overwrite the projections above
+	cor.dirs <- c(tempfile(), tempfile())
+	cpreds <- lapply(cor.dirs, function(d) tfr.predict(m, burnin=0, use.tfr3=TRUE, burnin3=5, use.correlation=TRUE,
+	                                                   seed=1, output.dir=d, verbose=FALSE))
+	stopifnot(summary(cpreds[[1]])$nr.traj == 10)
+	stopifnot(identical(cpreds[[1]]$quantiles, cpreds[[2]]$quantiles)) # reproducible with seed
+	stopifnot(min(cpreds[[1]]$quantiles, na.rm=TRUE) >= 0.5) # min.tfr
+	unlink(cor.dirs, recursive=TRUE)
+	test.ok(test.name)
 	
 	# run MCMC for another aggregation
 	test.name <- 'running projections on extra areas'
@@ -1020,4 +1032,107 @@ test.run.annual.simulation <- function(wpp.year = 2019) {
     test.ok(test.name)
     
     unlink(sim.dir, recursive=TRUE)
+}
+
+test.outliers <- function(wpp.year = 2019) {
+    # Outliers in raw data (defined via iso.unbiased and raw.outliers) are excluded from the Phase II estimation.
+    # Tight thresholds are used in order to get outliers also for countries with start_c > 1 
+    # and several countries with an outlier in the same year.
+    data(rawTFR, package = "bayesTFR")
+    vr <- unique(rawTFR$country_code[rawTFR$source == "VR"])
+    for (ar in c(FALSE, TRUE)) {
+        sim.dir <- tempfile()
+        test.name <- paste0('running MCMC with outliers', if(ar) ' and AR(1) in Phase II' else '')
+        start.test(test.name, wpp.year)
+        m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, uncertainty=TRUE, annual=TRUE, ar.phase2=ar,
+                          iso.unbiased=vr, raw.outliers=c(-0.3, 0.3), save.all.parameters=TRUE, 
+                          wpp.year=wpp.year, seed=1)
+        mc <- m$mcmc.list[[1]]
+        meta <- mc$meta
+        stopifnot(length(meta$indices.outliers) > 0)
+        stopifnot(any(meta$start_c[as.integer(names(meta$indices.outliers))] > 1))
+        # yearly.outliers must contain all countries that have an outlier in that year
+        for (cn in names(meta$indices.outliers))
+            for (r in meta$indices.outliers[[cn]]) 
+                stopifnot(as.integer(cn) %in% meta$yearly.outliers[[as.character(r)]])
+        stopifnot(sum(sapply(meta$yearly.outliers, length)) == sum(sapply(meta$indices.outliers, length)))
+        # eps_Tc must be NA at excluded rows and match the unfiltered eps elsewhere
+        for (country in meta$id_DL) {
+            rows <- meta$start_c[country]:(meta$lambda_c[country]-1)
+            excl <- !rows %in% bayesTFR:::get.eps.T.index(country, meta)$idx
+            theta <- c((mc$U_c[country]-mc$Triangle_c4[country])*exp(mc$gamma_ci[country,])/sum(exp(mc$gamma_ci[country,])), 
+                       mc$Triangle_c4[country], mc$d_c[country])
+            all.eps <- bayesTFR:::get.eps.T(theta, country, meta, matrix.name='tfr_all', rho.phase2=mc$rho.phase2, 
+                                            keep=seq_along(rows))
+            stopifnot(all(is.na(mc$eps_Tc[rows[excl], country])))
+            stopifnot(isTRUE(all.equal(unname(mc$eps_Tc[rows[!excl], country]), unname(all.eps[!excl]))))
+        }
+        test.ok(test.name)
+        unlink(sim.dir, recursive=TRUE)
+    }
+}
+
+test.mvn.shortcuts <- function() {
+    # The MCMC and projections use precomputed decompositions instead of calling 
+    # mvtnorm::rmvnorm and MASS::mvrnorm. With the same seed, they must give the same draws, 
+    # otherwise results of seeded runs would change.
+    test.name <- 'replicating multivariate normal functions'
+    start.test(test.name)
+    sim.dir <- file.path(find.package("bayesTFR"), "ex-data", 'bayesTFR.output')
+    meta <- get.tfr.mcmc(sim.dir)$meta
+    # proposals for gammas in MCMC
+    for (country in c(1, 50, 150)) {
+        sigma <- meta$proposal_cov_gammas_cii[country,,]
+        mu <- c(-0.5, 0.2, 1)
+        set.seed(1)
+        x1 <- mvtnorm::rmvnorm(1, mu, sigma)
+        set.seed(1)
+        x2 <- matrix(rnorm(3), nrow=1) %*% bayesTFR:::get.proposal.gamma.factor(sigma)
+        x2[1,] <- x2[1,] + mu
+        stopifnot(identical(unname(x1), unname(x2)))
+    }
+    # correlated errors in projections
+    eps.cor <- bayesTFR:::tfr.correlation(meta)
+    cor.mat.na <- which(apply(is.na(eps.cor$low), 2, sum) > dim(eps.cor$low)[1]-2)
+    for (hiTFR in list(integer(0), 1:50, seq(1, meta$nr_countries, by=3))) {
+        # correlation matrix constructed as originally done in tfr.predict
+        cor.mat <- eps.cor$low
+        cor.mat[hiTFR,] <- eps.cor$high[hiTFR,]
+        cor.mat[,hiTFR] <- eps.cor$high[,hiTFR]
+        if (length(cor.mat.na) > 0) cor.mat <- cor.mat[-cor.mat.na, -cor.mat.na]
+        if (!bayesTFR:::is.cor.positive.definite(cor.mat)) cor.mat <- bayesTFR:::zero.neg.evals(cor.mat)
+        p <- nrow(cor.mat)
+        set.seed(1)
+        e1 <- MASS::mvrnorm(1, rep(0, p), cor.mat)
+        set.seed(1)
+        e2 <- drop(bayesTFR:::get.eps.cor.factor(hiTFR, eps.cor, cor.mat.na) %*% t(matrix(rnorm(p), 1)))
+        stopifnot(identical(unname(e1), unname(e2)))
+    }
+    # likelihood of gammas (diagonal covariance)
+    gamma <- c(0.3, -0.2, 0.5); alpha <- c(-1, 0.5, 1.5); delta <- c(0.3, 0.4, 0.5)
+    eps <- c(0.1, -0.2); sd.eps <- c(0.2, 0.3); mean.eps <- c(0, 0)
+    stopifnot(isTRUE(all.equal(bayesTFR:::log_like_gammas(gamma, eps, sd.eps, mean.eps, alpha, delta),
+                               sum(dnorm(eps, mean.eps, sd.eps, log=TRUE)) + 
+                                   mvtnorm::dmvnorm(gamma, alpha, diag(delta^2), log=TRUE))))
+    test.ok(test.name)
+}
+
+test.buffer.size <- function(wpp.year = 2019) {
+    # Trace files must not depend on how often the buffers are flushed 
+    # (buffer.size=1 flushes after each iteration).
+    for (unc in c(FALSE, TRUE)) {
+        test.name <- paste0('storing MCMC with different buffer sizes', if(unc) ' with uncertainty' else '')
+        start.test(test.name, wpp.year)
+        dirs <- c(tempfile(), tempfile())
+        for (i in 1:2) 
+            run.tfr.mcmc(iter=5, nr.chains=1, output.dir=dirs[i], seed=1, buffer.size=c(1, 500)[i], 
+                         save.all.parameters=TRUE, uncertainty=unc, wpp.year=wpp.year)
+        files <- list.files(dirs[1], pattern="\\.txt$", recursive=TRUE)
+        stopifnot(length(files) > 0)
+        stopifnot(setequal(files, list.files(dirs[2], pattern="\\.txt$", recursive=TRUE)))
+        for (f in files) 
+            stopifnot(identical(readLines(file.path(dirs[1], f)), readLines(file.path(dirs[2], f))))
+        test.ok(test.name)
+        unlink(dirs, recursive=TRUE)
+    }
 }

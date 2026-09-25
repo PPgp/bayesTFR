@@ -1,4 +1,19 @@
-7.4-6.9001 (2026-09-24)
+7.4-7.9001 (2026-09-25)
+-----
+Speed-up of the MCMC (about 3x per iteration) and of projections (up to 6x when 
+use.correlation=TRUE), without changing results of seeded runs.
+
+Default of buffer.size in run.tfr.mcmc and run.tfr3.mcmc increased from 100 to 500.
+
+Fixed bugs related to outliers in raw data (iso.unbiased with uncertainty): 
+misalignment of distortions (eps) for countries with start of Phase II > 1 
+(which could cause an error), only one country kept per year in yearly outliers, 
+and distortions of outliers being overwritten when updating TFR.
+
+New tests: test.outliers, test.mvn.shortcuts, test.buffer.size, and projections 
+with correlation in test.run.mcmc.simulation.
+
+7.4-7 (2026-09-24)
 -----
 tfr.map and write.projection.summary() can use the user-defined function 
 for finding phase 3, defined in option TFRphase3findfct.

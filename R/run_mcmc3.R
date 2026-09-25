@@ -1,7 +1,7 @@
 run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 						thin=10, replace.output=FALSE,
 						# meta parameters
-						my.tfr.file = NULL, buffer.size=100,
+						my.tfr.file = NULL, buffer.size=500,
 						use.extra.countries=FALSE,
 						mu.prior.range=c(0, 2.1), 
 						rho.prior.range=c(0,1-.Machine$double.xmin),

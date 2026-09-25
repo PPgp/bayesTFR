@@ -10,7 +10,7 @@ Runs (or continues running) MCMCs for simulating Phase III total fertility rate,
 }
 \usage{
 run.tfr3.mcmc(sim.dir, nr.chains = 3, iter = 50000, thin = 10, 
-    replace.output = FALSE, my.tfr.file = NULL, buffer.size = 100, 
+    replace.output = FALSE, my.tfr.file = NULL, buffer.size = 500, 
     use.extra.countries = FALSE, 
     mu.prior.range = c(0, 2.1), rho.prior.range = c(0, 1 - .Machine$double.xmin), 
     sigma.mu.prior.range = c(1e-05, 0.318), sigma.rho.prior.range = c(1e-05, 0.289), 

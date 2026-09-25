@@ -3,7 +3,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 						# meta parameters
 						start.year=1950, present.year=2020, wpp.year=2019,
 						my.tfr.file = NULL, my.locations.file = NULL, my.tfr.raw.file = NULL, 
-						use.wpp.data = TRUE, ar.phase2 = FALSE, buffer.size = 100,
+						use.wpp.data = TRUE, ar.phase2 = FALSE, buffer.size = 500,
 						raw.outliers = c(-2, 1),
 					 	U.c.low=5.5, U.up=8.8, U.width=3,
 					 	mean.eps.tau0 = -0.25, sd.eps.tau0 = 0.4, nu.tau0 = 2,                                                
