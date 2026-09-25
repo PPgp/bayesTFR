@@ -115,8 +115,9 @@ tfr.mcmc.sampling <- function(mcmc, thin=1, start.iter=2, verbose=FALSE, verbose
 	mcenv$mean_eps_Tc[idx.tau_c.id.notearly.all] <- mcenv$mean_eps_tau
 	
 	idx.tau_c.id.notearly <- matrix(c(mcenv$meta$tau_c[id_notearly], id_notearly), ncol=2)
-	# cache eps indices (constant during sampling); removed in .cleanup.mcmc
+	# cache eps indices and gamma proposal factors (constant during sampling); removed in .cleanup.mcmc
 	mcenv$eps.T.index <- get.eps.T.index.all(mcenv$meta)
+	mcenv$proposal.gamma.factor <- get.proposal.gamma.factor.all(mcenv$meta)
   ################################################################### 
     # Start MCMC
 	############
@@ -350,7 +351,8 @@ one.step.mcmc3.sampling <- function(mcmc)
 .cleanup.mcmc <- function(mcmc) {
 	if(is.environment(mcmc)) {
 		rm(list=mcmc$dontsave[mcmc$dontsave != 'meta' & mcmc$dontsave %in% ls(mcmc)], envir=mcmc)
-		if(exists('eps.T.index', envir=mcmc, inherits=FALSE)) rm('eps.T.index', envir=mcmc)
+		cache.items <- c('eps.T.index', 'proposal.gamma.factor')
+		rm(list=cache.items[cache.items %in% ls(mcmc)], envir=mcmc)
 		return(NULL)
 	}
 	for(rmitem in mcmc$dontsave[mcmc$dontsave != 'meta'  & mcmc$dontsave %in% names(mcmc)]) mcmc[[rmitem]] <- NULL
@@ -468,8 +470,9 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 	updated.var.names <- c('gamma_ci', 'd_c', 'Triangle_c4', 'U_c')
 	if (uncertainty) updated.var.names <- c(updated.var.names, 'rho.c', 'mu.c')
 	idx.tau_c.id.notearly <- matrix(c(mcmc$meta$tau_c[id_notearly], id_notearly), ncol=2)
-	# cache eps indices (constant during sampling)
+	# cache eps indices and gamma proposal factors (constant during sampling)
 	mcenv$eps.T.index <- get.eps.T.index.all(mcenv$meta)
+	mcenv$proposal.gamma.factor <- get.proposal.gamma.factor.all(mcenv$meta)
 
     ################################################################### 
     # Start MCMC

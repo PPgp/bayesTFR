@@ -232,6 +232,26 @@ mcmc.update.Triangle_c4 <- function(country, mcmc, ...) {
 
 
 ############################################
+get.proposal.gamma.factor <- function(sigma) {
+  # matrix R such that z %*% R ~ N(0, sigma) for z ~ N(0, I);
+  # computed the same way as in mvtnorm::rmvnorm (method 'eigen')
+  ev <- eigen(sigma, symmetric = TRUE)
+  return(t(ev$vectors %*% (t(ev$vectors) * sqrt(pmax(ev$values, 0)))))
+}
+
+get.proposal.gamma.factor.all <- function(meta) {
+  res <- list()
+  for (country in meta$id_DL) res[[country]] <- get.proposal.gamma.factor(meta$proposal_cov_gammas_cii[country,,])
+  return(res)
+}
+
+get.proposal.gamma.factor.cached <- function(country, mcmc) {
+  # The proposal covariance is constant during sampling, thus its factor is cached
+  # in mcmc$proposal.gamma.factor if available (it is removed in .cleanup.mcmc)
+  if (country <= length(mcmc$proposal.gamma.factor) && !is.null(R <- mcmc$proposal.gamma.factor[[country]])) return(R)
+  return(get.proposal.gamma.factor(mcmc$meta$proposal_cov_gammas_cii[country,,]))
+}
+
 mcmc.update.gamma <- function(country, mcmc, ...) {
   # within country loop, update gamma_c's
   #################################
@@ -242,7 +262,10 @@ mcmc.update.gamma <- function(country, mcmc, ...) {
   #################################
   # block update, propose new gamma_ci
   #################################
-  gamma_prop <- rmvnorm(1, mcmc$gamma_ci[country,], mcmc$meta$proposal_cov_gammas_cii[country,,])
+  # equivalent to rmvnorm(1, mcmc$gamma_ci[country,], mcmc$meta$proposal_cov_gammas_cii[country,,])
+  # but with the decomposition of the (constant) covariance precomputed
+  gamma_prop <- matrix(rnorm(3), nrow=1) %*% get.proposal.gamma.factor.cached(country, mcmc)
+  gamma_prop[1,] <- gamma_prop[1,] + mcmc$gamma_ci[country,]
   pci_prob <- exp(gamma_prop)/sum(exp(gamma_prop))
   theta_prop <- c(pci_prob*(mcmc$U_c[country] - mcmc$Triangle_c4[country]), 
                   mcmc$Triangle_c4[country], mcmc$d_c[country]) 

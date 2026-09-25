@@ -369,6 +369,9 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		nr.countries.no.na <- nr_countries - length(cor.mat.na)
 		epsilons <- rep(NA, nr_countries)
 		kappa<-eps.correlation$kappa
+		# cache for decompositions of the correlation matrix (by pattern of high-TFR countries)
+		cor.factor.cache <- new.env(hash=TRUE)
+		cor.factor.cache.max <- 200
 	}
 	
 	# array for results - includes also historical data for periods with missing data
@@ -433,6 +436,11 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	is.phase3.proj <- function(tfr, index, ...){
 	    return(tfr[index] > tfr[index - 1])
 	}
+	# function for detecting Phase III; if it is the default is.phase3.proj, 
+	# the comparison is done directly in the loop (to avoid constructing the TFR vector)
+	phase3.findfct <- getOption("projTFRphase3findfct", "is.phase3.proj")
+	default.phase3.findfct <- identical(phase3.findfct, "is.phase3.proj")
+	ar.phase2 <- !is.null(mcmc.set$meta$ar.phase2) && mcmc.set$meta$ar.phase2
 	#########################################
 	for (s in 1:nr_simu){ # Iterate over trajectories
 	#########################################
@@ -467,15 +475,15 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		#########################################
 			ALLtfr.prev <- all.f_ps[,year-1,s]
 			if(use.correlation) {
-				cor.mat <- eps.correlation$low
 				hiTFR <- which(ALLtfr.prev >= kappa)
-				# this leaves low on spots where both countries are low
-				cor.mat[hiTFR,] <- eps.correlation$high[hiTFR,]
-        		cor.mat[,hiTFR] <- eps.correlation$high[,hiTFR]		
-        		cor.mat.no.na <- if(length(cor.mat.na)==0) cor.mat else cor.mat[-cor.mat.na, -cor.mat.na]
-        		if(!is.cor.positive.definite(cor.mat.no.na))
-        			cor.mat.no.na <- zero.neg.evals(cor.mat.no.na)
-        	} 
+				# the decomposition of the correlation matrix depends only on hiTFR, thus it is cached
+				cor.key <- paste0('k', paste(hiTFR, collapse='.'))
+				cor.factor <- cor.factor.cache[[cor.key]]
+				if(is.null(cor.factor)) {
+					cor.factor <- get.eps.cor.factor(hiTFR, eps.correlation, cor.mat.na)
+					if(length(cor.factor.cache) < cor.factor.cache.max) cor.factor.cache[[cor.key]] <- cor.factor
+				}
+        	}
         	stop.country.loop <- FALSE
 			country.loop <- 1  
 			# loop for resampling if tfr is outside of the bounds
@@ -484,7 +492,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				country.loop <- country.loop + 1
 				stop.country.loop <- TRUE
 				if(use.correlation) {
-        			epsilons.no.na <- mvrnorm(1,rep(0,nr.countries.no.na), cor.mat.no.na)
+        			# equivalent to mvrnorm(1, rep(0,nr.countries.no.na), cor.mat.no.na)
+        			epsilons.no.na <- drop(cor.factor %*% t(matrix(rnorm(nr.countries.no.na), 1)))
         			if(length(cor.mat.na)>0) epsilons[-cor.mat.na] <- epsilons.no.na
         			else epsilons[] <- epsilons.no.na
 				}
@@ -503,14 +512,17 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 								is.in.phase3[icountry] <- ((meta$lambda_c[country] < this.T_end) || 
 								                ((min(all.tfr[1:this.T_end], na.rm=TRUE) <= 
 								                        cs.par.values.list[[country]][s, cs.var.names[[country]]$Triangle_c4]) &&
-								                            do.call(getOption("projTFRphase3findfct", "is.phase3.proj"), 
-								                                        list(all.tfr, this.T_end, annual = meta$annual.simulation))))
+								                            (if(default.phase3.findfct) all.tfr[this.T_end] > all.tfr[this.T_end - 1]
+								                             else do.call(phase3.findfct, 
+								                                        list(all.tfr, this.T_end, annual = meta$annual.simulation)))))
 							}
 	                 	} else is.in.phase3[icountry] <- ((min(all.f_ps[icountry, 1:(year-1),s]) <= 
 	                 										cs.par.values.list[[country]][s, cs.var.names[[country]]$Triangle_c4]) && 
-	                 										    do.call(getOption("projTFRphase3findfct", "is.phase3.proj"), 
+	                 										    (if(default.phase3.findfct) # same as is.phase3.proj applied to the vector below
+	                 										        all.f_ps[icountry, year-1, s] > (if(year > 2) all.f_ps[icountry, year-2, s] else all.tfr[this.T_end-1])
+	                 										     else do.call(phase3.findfct, 
 	                 										            list(c(all.tfr[1:(this.T_end-1)], all.f_ps[icountry, ,s]), this.T_end - 1 + year - 1, 
-	                 										                 annual = meta$annual.simulation)))
+	                 										                 annual = meta$annual.simulation))))
 		 			}
 					if(adjust.true) {
 						if(year == first.projection[icountry]) { # first projection period
@@ -534,24 +546,25 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		  			}
 		  			# Simulate projection
 					if (!is.in.phase3[icountry]){ # Phase II
-						new.tfr <- (all.f_ps[icountry,year-1,s]- DLcurve(theta_si.list[[country]][s,], all.f_ps[icountry,year-1,s], 
-						                                                 meta$dl.p1, meta$dl.p2, meta$annual.simulation) - 
-						                W[icountry,year]*S11[icountry])
+						tfr.cur <- all.f_ps[icountry,year-1,s]
+						boost.first <- boost.first.period.in.phase2 && is.element(country, meta$id_Tistau) && (year == first.projection[icountry])
+						if(ar.phase2 && !boost.first) {
+							# DL decrement for current and previous TFR computed in one call
+							tfr_prev <- if(year == first.projection[icountry]) f_ps_previous[s, icountry] else all.f_ps[icountry, year-2, s]
+							dl <- DLcurve(theta_si.list[[country]][s,], c(tfr.cur, tfr_prev), meta$dl.p1, meta$dl.p2, meta$annual.simulation)
+						} else dl <- DLcurve(theta_si.list[[country]][s,], tfr.cur, meta$dl.p1, meta$dl.p2, meta$annual.simulation)
+						new.tfr <- (tfr.cur - dl[1] - W[icountry,year]*S11[icountry])
 						# get errors
-						if(boost.first.period.in.phase2 && is.element(country, meta$id_Tistau) && (year == first.projection[icountry])) {
+						if(boost.first) {
 							eps.mean <- tau.par.values[s, 'mean_eps_tau']
 							sigma_eps <- tau.par.values[s, 'sd_eps_tau']
 							if(use.correlation && !is.na(epsilons[country])) sigma_eps <- rnorm(1, eps.mean, sigma_eps)
 						} else {
 							eps.mean <- 0
-							if (!is.null(mcmc.set$meta$ar.phase2) && (mcmc.set$meta$ar.phase2))
+							if (ar.phase2)
 							{
-							  if(year == first.projection[icountry]) 
-							    tfr_prev <- f_ps_previous[s, icountry]
-							  else
-							    tfr_prev <- all.f_ps[icountry, year-2, s]
-							  tfr_mean <- tfr_prev - DLcurve(theta_si.list[[country]][s,], tfr_prev, meta$dl.p1, meta$dl.p2, meta$annual.simulation)
-							  eps_prev <- all.f_ps[icountry, year-1, s] - tfr_mean
+							  tfr_mean <- tfr_prev - dl[2]
+							  eps_prev <- tfr.cur - tfr_mean
 							  eps.mean <- eps_prev * rho.phase2.values[s]
 							}
 							sigma_eps <- max(var.par.values[s,'sigma0'] + (all.f_ps[icountry, year -1,s] - var.par.values[s,'S_sd'])*
@@ -765,6 +778,24 @@ getValue <- function(pointer)
 			m3.par.values.cs=m3.par.values.cs))
 }
 
+
+get.eps.cor.factor <- function(hiTFR, eps.correlation, cor.mat.na) {
+	# Returns matrix A such that A %*% z (z ~ N(0,I)) is a sample from N(0, cor.mat),
+	# where cor.mat is the correlation matrix for countries with high TFR given by hiTFR.
+	# A is computed the same way as in MASS::mvrnorm.
+	cor.mat <- eps.correlation$low
+	# this leaves low on spots where both countries are low
+	cor.mat[hiTFR,] <- eps.correlation$high[hiTFR,]
+	cor.mat[,hiTFR] <- eps.correlation$high[,hiTFR]
+	cor.mat.no.na <- if(length(cor.mat.na)==0) cor.mat else cor.mat[-cor.mat.na, -cor.mat.na]
+	E <- eigen(cor.mat.no.na, symmetric=TRUE)
+	if(!all(E$values >= -1e-06 * abs(E$values[1L]))) { # same as !is.cor.positive.definite(cor.mat.no.na)
+		cor.mat.no.na <- zero.neg.evals(cor.mat.no.na)
+		E <- eigen(cor.mat.no.na, symmetric=TRUE)
+		if (!all(E$values >= -1e-06 * abs(E$values[1L]))) stop("'Sigma' is not positive definite")
+	}
+	return(E$vectors %*% diag(sqrt(pmax(E$values, 0)), length(E$values)))
+}
 
 is.cor.positive.definite <- function(m, tol = 1e-06) {
 	E <- eigen(m, symmetric=TRUE)
