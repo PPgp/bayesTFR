@@ -22,9 +22,38 @@ DLcurve <- function(DLpar, tfr, p1, p2, annual = FALSE){
 # note: this function gives only the eps's in (tau, lambda-1)
 # (because rest is NA!!)
 
-get.eps.T <- function (DLpar, country, meta, ...) 
+get.eps.T.tfr <- function(country, meta, ...)
+  # observed TFR used by get.eps.T; can be passed to get.eps.T to avoid re-extracting it
+  return(get.observed.tfr(country, meta, ...)[meta$start_c[country]:meta$lambda_c[country]])
+
+get.eps.T.index <- function(country, meta) {
+  # Returns a list with 'idx' (rows of eps_Tc excluding outliers) and 'keep' 
+  # (the corresponding positions within the eps vector computed by get.eps.T, 
+  # which starts at row start_c). Outliers are given as rows of eps_Tc.
+  outliers <- meta$indices.outliers[[as.character(country)]]
+  if (!is.null(meta$ar.phase2) && meta$ar.phase2)
+    outliers <- sort(unique(c(outliers, outliers+1)))
+  rows <- meta$start_c[country]:(meta$lambda_c[country]-1)
+  idx <- setdiff(rows, outliers)
+  return(list(idx=idx, keep=match(idx, rows)))
+}
+
+get.eps.T.index.cached <- function(country, mcmc) {
+  # Indices are constant during sampling, thus they are cached in mcmc$eps.T.index
+  # if available (it is removed in .cleanup.mcmc)
+  if (country <= length(mcmc$eps.T.index) && !is.null(ind <- mcmc$eps.T.index[[country]])) return(ind)
+  return(get.eps.T.index(country, mcmc$meta))
+}
+
+get.eps.T.index.all <- function(meta) {
+  res <- list()
+  for (country in meta$id_DL) res[[country]] <- get.eps.T.index(country, meta)
+  return(res)
+}
+
+get.eps.T <- function (DLpar, country, meta, ..., tfr = get.eps.T.tfr(country, meta, ...),
+                       keep = get.eps.T.index(country, meta)$keep)
 {
-    tfr <- get.observed.tfr(country, meta, ...)[meta$start_c[country]:meta$lambda_c[country]]
     ldl <- length(tfr)-1
     dl <- DLcurve(DLpar, tfr[1:ldl], meta$dl.p1, meta$dl.p2, annual = meta$annual.simulation)
     eps <- tfr[2:(ldl+1)] - tfr[1:ldl] + dl
@@ -34,16 +63,10 @@ get.eps.T <- function (DLpar, country, meta, ...)
       if ('rho.phase2' %in% names(args) && length(eps) > 1) eps <- c(eps[1], eps[2:ldl]-args[['rho.phase2']] * eps[1:(ldl-1)])
     }
 
-    # Put NAs on eps indexed by meta$indices.outliers[[country]]
-    if (as.character(country) %in% names(meta$indices.outliers))
-    {
-      outlier_indices <- meta$indices.outliers[[as.character(country)]]
-      if (!is.null(meta$ar.phase2) && meta$ar.phase2)
-        outlier_indices <- sort(unique(c(outlier_indices, outlier_indices+1)))
-      
-      eps <- eps[-outlier_indices]
-    }
-      
+    # Remove eps indexed by meta$indices.outliers[[country]]
+    if (length(keep) < length(eps))
+      eps <- eps[keep]
+
     return (eps)
 }
 
@@ -53,12 +76,8 @@ get_eps_T_all <- function (mcmc, ...) {
   for (country in mcmc$meta$id_DL){
     theta <- c((mcmc$U_c[country]-mcmc$Triangle_c4[country])*exp(mcmc$gamma_ci[country,])/                                     
       sum(exp(mcmc$gamma_ci[country,])), mcmc$Triangle_c4[country], mcmc$d_c[country])
-    idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
-    raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
-    if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
-      raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
-    idx <- setdiff(idx, raw.outliers)
-    eps_Tc[idx, country] <- get.eps.T(theta, country, mcmc$meta, ...)
+    ind <- get.eps.T.index.cached(country, mcmc)
+    eps_Tc[ind$idx, country] <- get.eps.T(theta, country, mcmc$meta, ..., keep=ind$keep)
   }
 	
   return(eps_Tc)
@@ -386,7 +405,7 @@ do.meta.ini <- function(meta, tfr.with.regions, proposal_cov_gammas = NULL,
 	  country.ind.by.year <- list()
 	  ind.by.year <- list()
 	  
-	  # Defining a list containing indices of outliers by countries 
+	  # Defining a list containing years of outliers by countries 
 	  # (only countries with outliers will have an entry in the list)
 	  # outliers are those where the annual delta is outside of the interval (meta$raw.outliers[1], meta$raw.outliers[2])
 	  

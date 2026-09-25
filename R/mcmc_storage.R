@@ -345,6 +345,7 @@ store.bayesTFR.object <- function(mcmc, output.dir) {
 	for (item in bayesTFR.mcmc$dontsave)  # don't save meta and some other data
 		bayesTFR.mcmc[[item]] <- NULL
 	bayesTFR.mcmc$meta <- NULL
+	bayesTFR.mcmc$eps.T.index <- NULL # cache used during sampling
 	save(bayesTFR.mcmc, file=file.path(output.dir, 'bayesTFR.mcmc.rda'))
 }
 

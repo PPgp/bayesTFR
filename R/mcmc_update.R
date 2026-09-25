@@ -1,6 +1,15 @@
 
-mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
+get.data.list.matrix <- function(mcmc) {
+  # stack mcmc$data.list into a matrix of the same shape as add_to_sd_Tc (NA-padded)
+  data.mat <- matrix(NA, nrow(mcmc$add_to_sd_Tc), ncol(mcmc$add_to_sd_Tc))
+  for (country in 1:mcmc$meta$nr_countries)
+    data.mat[seq_along(mcmc$data.list[[country]]), country] <- mcmc$data.list[[country]]
+  return(data.mat)
+}
+
+mcmc.update.abS <- function(what, eps_Tc_temp, mcmc, data.mat) {
   # 'what' is one of ('a', 'b', 'S')
+  # data.mat is the matrix of mcmc$data.list (see get.data.list.matrix)
   var.index <- (1:3)[what == c('a', 'b', 'S')]
   abS.values <- list(a=mcmc$a_sd, b=mcmc$b_sd, S=mcmc$S_sd)
   var.value <- abS.values[[var.index]]
@@ -22,21 +31,11 @@ mcmc.update.abS <- function(what, eps_Tc_temp, mcmc) {
   interval <- c(max(var.value - v*var.width, var.low),
                 min(var.value + (1-v)*var.width,var.up))
   
-  add_to_sd_Tc_prop <- matrix(NA, nrow(mcmc$add_to_sd_Tc), ncol(mcmc$add_to_sd_Tc))
-  for (country in 1:mcmc$meta$nr_countries){
-    add_to_sd_Tc_prop[1:length(mcmc$data.list[[country]]), country] <- (mcmc$data.list[[country]] - abS.values$S)*
-      ifelse(mcmc$data.list[[country]] > abS.values$S, 
-             -abS.values$a, abS.values$b)
-  }  
-  #while (TRUE){
   for(i in 1:50) {
     var_prop <- runif(1,interval[1], interval[2])
     abS.values[[what]] <- var_prop
-    for (country in 1:mcmc$meta$nr_countries){
-      add_to_sd_Tc_prop[1:length(mcmc$data.list[[country]]), country] <- (mcmc$data.list[[country]] - abS.values$S)*
-        ifelse(mcmc$data.list[[country]] > abS.values$S, 
-               -abS.values$a, abS.values$b)
-    }  
+    add_to_sd_Tc_prop <- (data.mat - abS.values$S)*
+      ifelse(data.mat > abS.values$S, -abS.values$a, abS.values$b)
     like <- log_cond_abf_sd(add_to_sd_Tc_prop, mcmc$const_sd, mcmc$sigma0, eps_Tc_temp, 
                             mcmc$const_sd_dummie_Tc, mcmc$meta$sigma0.min)     
     if (like >= z) {
@@ -152,9 +151,10 @@ mcmc.update.abSsigma0const <- function(mcmc, id.not.early.index) {
   # put NAs on tau_c spots for id_not_early countries
   eps_Tc_temp[id.not.early.index] <- NA
   
-  mcmc.update.abS('a', eps_Tc_temp, mcmc)
-  mcmc.update.abS('b', eps_Tc_temp, mcmc)
-  mcmc.update.abS('S', eps_Tc_temp, mcmc)
+  data.mat <- get.data.list.matrix(mcmc)
+  mcmc.update.abS('a', eps_Tc_temp, mcmc, data.mat)
+  mcmc.update.abS('b', eps_Tc_temp, mcmc, data.mat)
+  mcmc.update.abS('S', eps_Tc_temp, mcmc, data.mat)
   mcmc.update.sigma0const('sigma0', 'log_cond_sigma0', eps_Tc_temp, mcmc)
   mcmc.update.sigma0const('const', 'log_cond_const_sd', eps_Tc_temp, mcmc)
   mcmc$sd_Tc <- ifelse(mcmc$const_sd_dummie_Tc==1, mcmc$const_sd, 1)*
@@ -170,23 +170,22 @@ mcmc.update.Triangle_c4 <- function(country, mcmc, ...) {
   Triangle_c4_trans <- log(max(mcmc$Triangle_c4[country] - mcmc$meta$Triangle_c4.low, 1e-20)/
                              max(mcmc$meta$Triangle_c4.up - mcmc$Triangle_c4[country], 1e-20))
 
-  epsT.idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
-  # exclude indices with extreme epsT.idx
-  raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
-  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
-    raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
-  epsT.idx <- setdiff(epsT.idx, raw.outliers)
-  
+  # indices excluding extreme epsT.idx
+  ind <- get.eps.T.index.cached(country, mcmc)
+  epsT.idx <- ind$idx
+  tfr <- get.eps.T.tfr(country, mcmc$meta, ...)
+  sd.eps <- mcmc$sd_Tc[epsT.idx,country]
+  mean.eps <- mcmc$mean_eps_Tc[epsT.idx,country]
+
   lepsT.idx <- length(epsT.idx)
-  #        z <- (log_cond_Triangle_c4_trans(Triangle_c4_trans, 
+  #        z <- (log_cond_Triangle_c4_trans(Triangle_c4_trans,
   #                mcmc$eps_Tc[epsT.idx,country],
   #                mcmc$sd_Tc[epsT.idx,country],
   #                mcmc$mean_eps_Tc[epsT.idx,country], mcmc$Triangle4, mcmc$delta4) - rexp(1))
   log_cond <- 0.0
-  logcondt <- .C("log_cond_Triangle_c4_trans", Triangle_c4_trans, 
+  logcondt <- .C("log_cond_Triangle_c4_trans", Triangle_c4_trans,
                  mcmc$eps_Tc[epsT.idx,country],
-                 mcmc$sd_Tc[epsT.idx,country],
-                 mcmc$mean_eps_Tc[epsT.idx,country],
+                 sd.eps, mean.eps,
                  lepsT.idx, mcmc$Triangle4, mcmc$delta4, log_cond=log_cond,
                  PACKAGE = "bayesTFR")
   z <-  logcondt$log_cond - rexp(1)
@@ -206,10 +205,9 @@ mcmc.update.Triangle_c4 <- function(country, mcmc, ...) {
                        sum(exp(mcmc$gamma_ci[country,])), 
                      Triangle_c4_prop, 
                      mcmc$d_c[country])
-    eps_T_prop <- get.eps.T(theta_prop,country, mcmc$meta, ...)
+    eps_T_prop <- get.eps.T(theta_prop,country, mcmc$meta, ..., tfr=tfr, keep=ind$keep)
     like <- .C("log_cond_Triangle_c4_trans", Triangle_c4_trans_prop, eps_T_prop,
-               mcmc$sd_Tc[epsT.idx,country],
-               mcmc$mean_eps_Tc[epsT.idx,country], lepsT.idx, mcmc$Triangle4, mcmc$delta4,
+               sd.eps, mean.eps, lepsT.idx, mcmc$Triangle4, mcmc$delta4,
                log_cond=log_cond, PACKAGE = "bayesTFR")$log_cond
     if (like >= z) {
       mcmc$eps_Tc[epsT.idx, country] <- eps_T_prop
@@ -248,22 +246,18 @@ mcmc.update.gamma <- function(country, mcmc, ...) {
   pci_prob <- exp(gamma_prop)/sum(exp(gamma_prop))
   theta_prop <- c(pci_prob*(mcmc$U_c[country] - mcmc$Triangle_c4[country]), 
                   mcmc$Triangle_c4[country], mcmc$d_c[country]) 
-  eps_T_prop <- get.eps.T(theta_prop, country, mcmc$meta, ...)
+  # indices excluding extreme eps
+  ind <- get.eps.T.index.cached(country, mcmc)
+  idx <- ind$idx
+  eps_T_prop <- get.eps.T(theta_prop, country, mcmc$meta, ..., keep=ind$keep)
+  sd.eps <- mcmc$sd_Tc[idx, country]
+  mean.eps <- mcmc$mean_eps_Tc[idx, country]
 
-  idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
-  # exclude indices with extreme eps in idx
-  raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
-  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
-    raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
-  
-  idx <- setdiff(idx, raw.outliers)
-  
   prob_accept <- exp(log_like_gammas(gamma_prop,eps_T_prop,
-                                     mcmc$sd_Tc[idx, country], mcmc$mean_eps_Tc[idx, country], 
-                                     mcmc$alpha, mcmc$delta) - 
-                       log_like_gammas(mcmc$gamma_ci[country,,drop=FALSE],
-                                       mcmc$eps_Tc[idx, country], mcmc$sd_Tc[idx, country], 
-                                       mcmc$mean_eps_Tc[idx, country], 
+                                     sd.eps, mean.eps,
+                                     mcmc$alpha, mcmc$delta) -
+                       log_like_gammas(mcmc$gamma_ci[country,],
+                                       mcmc$eps_Tc[idx, country], sd.eps, mean.eps,
                                        mcmc$alpha, mcmc$delta) )
   
   if (runif(1) < prob_accept){
@@ -278,17 +272,15 @@ mcmc.update.gamma <- function(country, mcmc, ...) {
 mcmc.update.d <- function(country, mcmc, ...) {
   # if accepted, update d_c and the distortions
   d_trans <- log((mcmc$d_c[country] - mcmc$meta$d.low)/(mcmc$meta$d.up - mcmc$d_c[country]))
-  idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
   # Exclude extreme indices in computing loglik
-  raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
-  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
-    raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
-  
-  idx <- setdiff(idx, raw.outliers)
-  z <- (log_cond_d_trans(d_trans, 
+  ind <- get.eps.T.index.cached(country, mcmc)
+  idx <- ind$idx
+  tfr <- get.eps.T.tfr(country, mcmc$meta, ...)
+  sd.eps <- mcmc$sd_Tc[idx, country]
+  mean.eps <- mcmc$mean_eps_Tc[idx, country]
+  z <- (log_cond_d_trans(d_trans,
                          mcmc$eps_Tc[idx, country],
-                         mcmc$sd_Tc[idx, country],
-                         mcmc$mean_eps_Tc[idx, country],
+                         sd.eps, mean.eps,
                          mcmc$psi, mcmc$chi)
         - rexp(1))
   
@@ -305,10 +297,9 @@ mcmc.update.d <- function(country, mcmc, ...) {
   for(i in 1:50) {
     d_trans_prop <- runif(1,interval[1], interval[2])
     d_prop <- (mcmc$meta$d.up*exp(d_trans_prop) +mcmc$meta$d.low)/(1+exp(d_trans_prop))
-    eps_T_prop <- get.eps.T(c(theta_prop[-5], d_prop),country, mcmc$meta, ...)
-    if ((like <- log_cond_d_trans(d_trans_prop,eps_T_prop, 
-                         mcmc$sd_Tc[idx, country],
-                         mcmc$mean_eps_Tc[idx, country],
+    eps_T_prop <- get.eps.T(c(theta_prop[-5], d_prop),country, mcmc$meta, ..., tfr=tfr, keep=ind$keep)
+    if ((like <- log_cond_d_trans(d_trans_prop,eps_T_prop,
+                         sd.eps, mean.eps,
                          mcmc$psi, mcmc$chi)) >= z) {
       mcmc$eps_Tc[idx, country] <- eps_T_prop
       mcmc$d_c[country] <- d_prop
@@ -330,17 +321,14 @@ mcmc.update.d <- function(country, mcmc, ...) {
 
 
 mcmc.update.U <- function(country, mcmc, ...) {
-  idx <- mcmc$meta$start_c[country]:(mcmc$meta$lambda_c[country]-1)
   # exclude those extreme indices in computing loglik
-  raw.outliers <- mcmc$meta$indices.outliers[[as.character(country)]]
-  if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2) 
-    raw.outliers <- sort(unique(c(raw.outliers, raw.outliers+1)))
-  
-  idx <- setdiff(idx, raw.outliers)
-  
-  z  <- (log_cond_U(mcmc$eps_Tc[idx, country],
-                    mcmc$sd_Tc[idx,country],
-                    mcmc$mean_eps_Tc[idx,country])
+  ind <- get.eps.T.index.cached(country, mcmc)
+  idx <- ind$idx
+  tfr <- get.eps.T.tfr(country, mcmc$meta, ...)
+  sd.eps <- mcmc$sd_Tc[idx,country]
+  mean.eps <- mcmc$mean_eps_Tc[idx,country]
+
+  z  <- (log_cond_U(mcmc$eps_Tc[idx, country], sd.eps, mean.eps)
          - rexp(1))
   
   # find U_prop with g(theta_i*)>z
@@ -358,9 +346,8 @@ mcmc.update.U <- function(country, mcmc, ...) {
     # keep proportions the same, just update the deltas
     theta_prop[1:3] <- theta_current[1:3]/(mcmc$U_c[country] - 
                                              mcmc$Triangle_c4[country])*(U_prop - mcmc$Triangle_c4[country])
-    eps_T_prop <- get.eps.T(theta_prop, country, mcmc$meta, ...)
-    if ((like <- log_cond_U(eps_T_prop, mcmc$sd_Tc[idx,country],
-                   mcmc$mean_eps_Tc[idx,country])) >= z) {
+    eps_T_prop <- get.eps.T(theta_prop, country, mcmc$meta, ..., tfr=tfr, keep=ind$keep)
+    if ((like <- log_cond_U(eps_T_prop, sd.eps, mean.eps)) >= z) {
       mcmc$eps_Tc[idx, country] <- eps_T_prop
       mcmc$U_c[country] <- U_prop
       return()

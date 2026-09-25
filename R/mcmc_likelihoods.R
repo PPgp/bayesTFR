@@ -61,23 +61,13 @@ return(sum(dnorm(eps_T, mean = mean_eps_T, sd = sd_eps_T, log = TRUE)))
 
 # for block updates
 log_like_gammas <- function(gamma, eps_T, sd_eps_T, mean_eps_T, alpha, delta) {
-        #log_like_gamma <- (sum(dnorm(eps_T, mean = mean_eps_T, sd = sd_eps_T, log = TRUE)) + 
+        #log_like_gamma <- (sum(dnorm(eps_T, mean = mean_eps_T, sd = sd_eps_T, log = TRUE)) +
         #                dmvnorm(gamma, alpha, diag(delta^2), log = TRUE))
-        log_like_gamma <- (sum(dnorm(eps_T, mean = mean_eps_T, sd = sd_eps_T, log = TRUE)) + 
-                        fastdmvnorm(gamma, alpha, diag(delta^2)))
+        # Since the covariance is diagonal, the multivariate normal density
+        # is the product of univariate normal densities
+        log_like_gamma <- (sum(dnorm(eps_T, mean = mean_eps_T, sd = sd_eps_T, log = TRUE)) +
+                        sum(dnorm(gamma, mean = alpha, sd = delta, log = TRUE)))
         return(log_like_gamma)
-}
-
-#### the standard dmvnorm is slow because it checks a lot of thing (like is Sigma symmetric)
-#### so I replace it with a faster version without checks (it's dangerous though!!!)
-# Source: Implementation in R of the Parallel Adaptive Wang-Landau algorithm (rpawl)
-
-fastdmvnorm <- function(x, mu, Sigma){
-	# assumed log=TRUE
-    distval <- mahalanobis(x, center = mu, cov = Sigma)
-    logdet <- sum(log(eigen(Sigma, symmetric = TRUE, only.values = TRUE)$values))
-    logretval <- -(ncol(x) * log(2 * pi) + logdet + distval)/2
-    return(logretval)
 }
 
 
