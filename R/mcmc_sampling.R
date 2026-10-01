@@ -459,7 +459,8 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
 	    mcmc$length_obs <- Ts
 	  }
 	}
-	matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix')
+	#matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix')
+	matrix.name <- ifelse(uncertainty, 'tfr_all', 'tfr_matrix_observed')
 	
 	mcenv <- as.environment(mcmc) # Create an environment for the mcmc stuff in order to avoid 
 					              # copying of the mcmc list 
