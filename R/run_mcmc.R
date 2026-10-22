@@ -144,6 +144,10 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	                         compression.type=compression.type, buffer.size=buffer.size, auto.conf=auto.conf
 	  ), class='bayesTFR.mcmc.meta')
 	  meta$nr.countries <- length(meta$id_phase3)
+	  # truncated normal prior for mu (uniform if not given)
+	  meta$mu.prior.mean <- phase3.parameter[['mu.prior.mean']]
+	  meta$mu.prior.sd <- phase3.parameter[['mu.prior.sd']]
+	  if(is.null(meta$mu.prior.mean) != is.null(meta$mu.prior.sd)) stop('Both mu.prior.mean and mu.prior.sd must be given in phase3.parameter.')
 	  for (varname in phase3.par.names)
 	  {
 	    prior.range <- paste0(varname, '.prior.range')

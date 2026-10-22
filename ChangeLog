@@ -9,10 +9,14 @@ MCMCs were estimated with it.
 
 tfr3.parameter.names and tfr3.parameter.names.cs have a new argument meta.
 
+The prior of the Phase III world mean mu can be a truncated normal: arguments mu.prior.mean 
+and mu.prior.sd in run.tfr3.mcmc (or items in phase3.parameter of run.tfr.mcmc); it is 
+truncated to mu.prior.range. By default, the prior is uniform as before.
+
 The Phase III sampling for extra countries with uncertainty now uses the updated 
 TFR estimates (previously the initial TFR values were used).
 
-New tests: test.estimate.ar2.phase3, test.run.ar2.phase3.simulation, and 
+New tests: test.estimate.ar2.phase3, test.mu.prior.phase3, test.run.ar2.phase3.simulation, and 
 test.run.mcmc.simulation.with.uncertainty with ar.order=2.
 
 7.4-7.9001 (2026-09-25)

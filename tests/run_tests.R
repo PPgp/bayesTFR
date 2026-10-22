@@ -31,6 +31,7 @@ if(!cran) {
 	test.subnational.predictions()
 	test.buffer.size()
 	test.estimate.ar2.phase3()
+	test.mu.prior.phase3()
 	test.run.ar2.phase3.simulation()
 	test.run.mcmc.simulation.with.uncertainty(ar.order = 2)
 	for (wpp in c(2019, 2024)){

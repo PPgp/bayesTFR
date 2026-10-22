@@ -56,18 +56,11 @@ one.step.mcmc3.sampling <- function(mcmc)
   #### Start MCMC
 
   # Metropolis-Hastings for mu
-  mu.integral.to.mC <- (mu.rho.integral(mcmc[['mu']], mcmc[['sigma.mu']], low=0))^(-nr.countries)
-  prop.mu <- proposal.mu.rho(mcmc[['mu.c']], mcmc[['sigma.mu']], nr.countries,
-                             meta[['mu.prior.range']][1], meta[['mu.prior.range']][2])
-  accept.prob <- min(((mu.rho.integral(prop.mu, mcmc[['sigma.mu']], low=0))^(-nr.countries))/mu.integral.to.mC, 1)
-  if (runif(1) < accept.prob) {
-    mcmc[['mu']] <- prop.mu
-    mcmc[['recompute.mu.integral']] <- TRUE
-  } else mcmc[['recompute.mu.integral']] <- FALSE
+  mcmc3.update.mu(mcmc)
 
   # Metropolis-Hastings for sigma_mu=1/sqrt(lambda_mu)
   S <- sum((mcmc[['mu.c']]-mcmc[['mu']])^2)
-  if(mcmc[['recompute.mu.integral']]) mu.integral.to.mC <- mu.rho.integral(mcmc[['mu']], mcmc[['sigma.mu']], low=0)^(-nr.countries)
+  mu.integral.to.mC <- mu.rho.integral(mcmc[['mu']], mcmc[['sigma.mu']], low=0)^(-nr.countries)
   prop.lambda.mu <- rgamma.trunc((nr.countries-1)/2, S/2, low=gamma.mu.low, high=gamma.mu.up)
   accept.prob <- min(((mu.rho.integral(mcmc[['mu']], 1/prop.lambda.mu, low=0))^(-nr.countries))/mu.integral.to.mC, 1)
   if (runif(1) < accept.prob) {
@@ -97,6 +90,26 @@ one.step.mcmc3.sampling <- function(mcmc)
 
   # Gibbs for sigma.eps
   mcmc$sigma.eps <- 1/sqrt(rgamma.trunc((res$STn-1)/2, res$S.eps/2, low=gamma.eps.low, high=gamma.eps.up))
+}
+
+mcmc3.update.mu <- function(mcmc) {
+  # Metropolis-Hastings for the world mean mu. The proposal is the full conditional ignoring 
+  # the truncation of mu.c at 0, which is corrected for in the acceptance probability.
+  # The prior of mu is uniform on mu.prior.range, or, if mu.prior.mean and mu.prior.sd are given, 
+  # normal truncated to mu.prior.range.
+  meta <- mcmc$meta
+  nr.countries <- meta$nr.countries
+  mu.integral.to.mC <- (mu.rho.integral(mcmc[['mu']], mcmc[['sigma.mu']], low=0))^(-nr.countries)
+  if(is.null(meta$mu.prior.sd)) {
+    prop.mu <- proposal.mu.rho(mcmc[['mu.c']], mcmc[['sigma.mu']], nr.countries,
+                               meta[['mu.prior.range']][1], meta[['mu.prior.range']][2])
+  } else {
+    prec <- nr.countries/mcmc[['sigma.mu']]^2 + 1/meta$mu.prior.sd^2
+    prop.mu <- rnorm.trunc(mean=(sum(mcmc[['mu.c']])/mcmc[['sigma.mu']]^2 + meta$mu.prior.mean/meta$mu.prior.sd^2)/prec, 
+                           sd=1/sqrt(prec), low=meta[['mu.prior.range']][1], high=meta[['mu.prior.range']][2])
+  }
+  accept.prob <- min(((mu.rho.integral(prop.mu, mcmc[['sigma.mu']], low=0))^(-nr.countries))/mu.integral.to.mC, 1)
+  if (runif(1) < accept.prob) mcmc[['mu']] <- prop.mu
 }
 
 mcmc3.update.cs.pars <- function(mcmc) {

@@ -12,7 +12,8 @@ Runs (or continues running) MCMCs for simulating Phase III total fertility rate,
 run.tfr3.mcmc(sim.dir, nr.chains = 3, iter = 50000, thin = 10, 
     replace.output = FALSE, my.tfr.file = NULL, buffer.size = 500, 
     use.extra.countries = FALSE, ar.order = 1,
-    mu.prior.range = c(0, 2.1), rho.prior.range = c(0, 1 - .Machine$double.xmin), 
+    mu.prior.range = c(0, 2.1), mu.prior.mean = NULL, mu.prior.sd = NULL,
+    rho.prior.range = c(0, 1 - .Machine$double.xmin), 
     sigma.mu.prior.range = c(1e-05, 0.318), sigma.rho.prior.range = c(1e-05, 0.289), 
     sigma.eps.prior.range = c(1e-05, 0.5), 
     alpha1.prior.range = c(0, 1), alpha2.prior.range = c(-1, 1),
@@ -48,6 +49,7 @@ continue.tfr3.mcmc(sim.dir, iter, chain.ids=NULL,
   \item{use.extra.countries}{By default, only countries are used in the MCMCs that were assigned for estimation (i.e. their \sQuote{include_code} is 2 in the \link{include}) dataset and are in phase III at present time (argument \code{present.year} in \code{\link{run.tfr.mcmc}}). If this argument is \code{TRUE}, countries that were added using \code{\link{run.tfr.mcmc.extra}} and are in phase III are also included.}
   \item{ar.order}{Order of the autoregressive process, either 1 (default) or 2. See Details.}
   \item{mu.prior.range, rho.prior.range, sigma.mu.prior.range, sigma.rho.prior.range, sigma.eps.prior.range}{Min and max for the prior (uniform) distribution of these paraemters. \code{rho.prior.range} and \code{sigma.rho.prior.range} are only used if \code{ar.order} is 1.}
+  \item{mu.prior.mean, mu.prior.sd}{If given, the prior distribution of the world mean \eqn{\bar{\mu}}{mu} is normal with this mean and standard deviation, truncated to \code{mu.prior.range}. By default, the prior is uniform on \code{mu.prior.range}. Both arguments must be given together.}
   \item{alpha1.prior.range, alpha2.prior.range, sigma.alpha1.prior.range, sigma.alpha2.prior.range}{Min and max for the prior (uniform) distribution of the world means and standard deviations of the partial autocorrelations. Only used if \code{ar.order} is 2.}
   \item{mu.ini, rho.ini, sigma.mu.ini, sigma.rho.ini, sigma.eps.ini, alpha1.ini, alpha2.ini, sigma.alpha1.ini, sigma.alpha2.ini}{Initial value(s) of the parameters. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the corresponding range. Otherwise, it is uniformly randomly distributed within the range.
 }

@@ -1216,3 +1216,25 @@ test.run.ar2.phase3.simulation <- function(wpp.year = 2019) {
     test.ok(test.name)
     unlink(sim.dir, recursive=TRUE)
 }
+
+test.mu.prior.phase3 <- function() {
+    # Check the MH update of the Phase III world mean mu against its exact posterior 
+    # for the uniform and the truncated normal prior
+    test.name <- 'updating Phase III mu with uniform and truncated normal prior'
+    start.test(test.name)
+    set.seed(1)
+    mu.c <- c(0.2, 0.35, 0.5, 0.6, 0.8, 0.9, 1.1, 1.3); s <- 0.5
+    for(pr in list(list(range=c(0, 2.1)), list(range=c(0.5, 2.1), m=1.1, sd=0.3))) {
+        mc <- as.environment(list(meta=list(nr.countries=length(mu.c), mu.prior.range=pr$range, 
+                                            mu.prior.mean=pr$m, mu.prior.sd=pr$sd),
+                                  mu=1, sigma.mu=s, mu.c=mu.c))
+        draws <- sapply(1:20000, function(i) {bayesTFR:::mcmc3.update.mu(mc); mc$mu})
+        g <- seq(pr$range[1], pr$range[2], length=4001)
+        lp <- sapply(g, function(m) sum(dnorm(mu.c, m, s, log=TRUE)) - length(mu.c)*pnorm(m/s, log.p=TRUE)) +
+            (if(is.null(pr$m)) 0 else dnorm(g, pr$m, pr$sd, log=TRUE))
+        p <- exp(lp - max(lp)); p <- p/sum(p)
+        stopifnot(abs(mean(draws) - sum(p*g)) < 0.01)
+        stopifnot(all(draws >= pr$range[1] & draws <= pr$range[2]))
+    }
+    test.ok(test.name)
+}
