@@ -6,20 +6,27 @@
 Running Markov Chain Monte Carlo for Parameters of Total Fertility Rate in Phase III
 }
 \description{
-Runs (or continues running) MCMCs for simulating Phase III total fertility rate, using a Bayesian hierarchical version of an AR(1) model.
+Runs (or continues running) MCMCs for simulating Phase III total fertility rate, using a Bayesian hierarchical version of an AR(1) or AR(2) model.
 }
 \usage{
 run.tfr3.mcmc(sim.dir, nr.chains = 3, iter = 50000, thin = 10, 
     replace.output = FALSE, my.tfr.file = NULL, buffer.size = 500, 
-    use.extra.countries = FALSE, 
+    use.extra.countries = FALSE, ar.order = 1,
     mu.prior.range = c(0, 2.1), rho.prior.range = c(0, 1 - .Machine$double.xmin), 
     sigma.mu.prior.range = c(1e-05, 0.318), sigma.rho.prior.range = c(1e-05, 0.289), 
     sigma.eps.prior.range = c(1e-05, 0.5), 
+    alpha1.prior.range = c(0, 1), alpha2.prior.range = c(-1, 1),
+    sigma.alpha1.prior.range = c(1e-05, 0.289), 
+    sigma.alpha2.prior.range = c(1e-05, 2*0.289),
     mu.ini = NULL, mu.ini.range = mu.prior.range, 
     rho.ini = NULL, rho.ini.range = rho.prior.range, 
     sigma.mu.ini = NULL, sigma.mu.ini.range = sigma.mu.prior.range, 
     sigma.rho.ini = NULL, sigma.rho.ini.range = sigma.rho.prior.range, 
     sigma.eps.ini = NULL, sigma.eps.ini.range = sigma.eps.prior.range, 
+    alpha1.ini = NULL, alpha1.ini.range = alpha1.prior.range,
+    alpha2.ini = NULL, alpha2.ini.range = alpha2.prior.range,
+    sigma.alpha1.ini = NULL, sigma.alpha1.ini.range = sigma.alpha1.prior.range,
+    sigma.alpha2.ini = NULL, sigma.alpha2.ini.range = sigma.alpha2.prior.range,
     seed = NULL, parallel = FALSE, nr.nodes = nr.chains, compression.type = "None", 
     auto.conf = list(max.loops = 5, iter = 50000, iter.incr = 20000, nr.chains = 3, 
                     thin = 60, burnin = 10000), 
@@ -39,10 +46,12 @@ continue.tfr3.mcmc(sim.dir, iter, chain.ids=NULL,
   \item{my.tfr.file}{File name containing user-specified TFR time series for one or more countries. See description of this argument in \code{\link{run.tfr.mcmc}}.}
   \item{buffer.size}{Buffer size (in number of iterations) for keeping data in the memory.}
   \item{use.extra.countries}{By default, only countries are used in the MCMCs that were assigned for estimation (i.e. their \sQuote{include_code} is 2 in the \link{include}) dataset and are in phase III at present time (argument \code{present.year} in \code{\link{run.tfr.mcmc}}). If this argument is \code{TRUE}, countries that were added using \code{\link{run.tfr.mcmc.extra}} and are in phase III are also included.}
-  \item{mu.prior.range, rho.prior.range, sigma.mu.prior.range, sigma.rho.prior.range, sigma.eps.prior.range}{Min and max for the prior (uniform) distribution of these paraemters.}
-  \item{mu.ini, rho.ini, sigma.mu.ini, sigma.rho.ini, sigma.eps.ini}{Initial value(s) of the parameters. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the corresponding range. Otherwise, it is uniformly randomly distributed within the range.
+  \item{ar.order}{Order of the autoregressive process, either 1 (default) or 2. See Details.}
+  \item{mu.prior.range, rho.prior.range, sigma.mu.prior.range, sigma.rho.prior.range, sigma.eps.prior.range}{Min and max for the prior (uniform) distribution of these paraemters. \code{rho.prior.range} and \code{sigma.rho.prior.range} are only used if \code{ar.order} is 1.}
+  \item{alpha1.prior.range, alpha2.prior.range, sigma.alpha1.prior.range, sigma.alpha2.prior.range}{Min and max for the prior (uniform) distribution of the world means and standard deviations of the partial autocorrelations. Only used if \code{ar.order} is 2.}
+  \item{mu.ini, rho.ini, sigma.mu.ini, sigma.rho.ini, sigma.eps.ini, alpha1.ini, alpha2.ini, sigma.alpha1.ini, sigma.alpha2.ini}{Initial value(s) of the parameters. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the corresponding range. Otherwise, it is uniformly randomly distributed within the range.
 }
-  \item{mu.ini.range, rho.ini.range, sigma.mu.ini.range, sigma.rho.ini.range, sigma.eps.ini.range}{Min and max for the initial values.}
+  \item{mu.ini.range, rho.ini.range, sigma.mu.ini.range, sigma.rho.ini.range, sigma.eps.ini.range, alpha1.ini.range, alpha2.ini.range, sigma.alpha1.ini.range, sigma.alpha2.ini.range}{Min and max for the initial values.}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set.}
   \item{parallel}{Logical determining if the simulation should run multiple chains in parallel. If it is \code{TRUE}, the package \pkg{\link[snowFT]{snowFT}} is required.}
   \item{nr.nodes}{Relevant only if \code{parallel} is \code{TRUE}. It gives the number of nodes for running the simulation in parallel.}
@@ -54,6 +63,13 @@ continue.tfr3.mcmc(sim.dir, iter, chain.ids=NULL,
   \item{chain.ids}{Array of chain identifiers that should be resumed. If it is \code{NULL}, all existing chains are resumed.}
 }
 \details{
+By default (\code{ar.order = 1}), the model is given by equations (12)-(14) in Raftery et al. (2014), i.e. \eqn{f_{c,t+1} - \mu_c = \rho_c (f_{c,t} - \mu_c) + \varepsilon_{c,t}}.
+
+If \code{ar.order = 2}, the model is extended to
+\deqn{f_{c,t+1} - \mu_c = \rho_{1,c} (f_{c,t} - \mu_c) + \rho_{2,c} (f_{c,t-1} - \mu_c) + \varepsilon_{c,t}.}
+To ensure stationarity, the AR coefficients are parametrized by the partial autocorrelations \eqn{\alpha_{1,c}}{alpha1.c} and \eqn{\alpha_{2,c}}{alpha2.c} as \eqn{\rho_{1,c} = \alpha_{1,c} (1 - \alpha_{2,c})}, \eqn{\rho_{2,c} = \alpha_{2,c}}, with
+\eqn{\alpha_{1,c} \sim TN_{[0,1)}(\bar{\alpha}_1, \sigma^2_{1,\alpha})} and \eqn{\alpha_{2,c} \sim TN_{[-1,1)}(\bar{\alpha}_2, \sigma^2_{2,\alpha})}. The world-level parameters are called \sQuote{alpha1}, \sQuote{alpha2}, \sQuote{sigma.alpha1} and \sQuote{sigma.alpha2}, the country-specific parameters \sQuote{alpha1.c} and \sQuote{alpha2.c} (see \code{\link{tfr3.parameter.names}}). The process is conditioned on the first two Phase III observations, and thus only countries with at least three Phase III observations are included in the estimation. Other Phase III countries use the world-level parameters in projections.
+
 The MCMCs are stored in \code{sim.dir} in a subdirectory called \dQuote{phaseIII}. It has exactly the same structure as phase II MCMCs described in \code{\link{run.tfr.mcmc}}.
 }
 \value{
@@ -81,6 +97,9 @@ m <- run.tfr.mcmc(nr.chains=1, iter=5, output.dir=sim.dir, verbose=TRUE)
 # Runs Phase III MCMCs
 m3 <- run.tfr3.mcmc(sim.dir=sim.dir, nr.chains=2, iter=50, thin=1, verbose=TRUE)
 m3 <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=10, verbose=TRUE)
+summary(m3, burnin=10)
+# AR(2) model for Phase III
+m3 <- run.tfr3.mcmc(sim.dir=sim.dir, nr.chains=2, iter=50, thin=1, ar.order=2, replace.output=TRUE)
 summary(m3, burnin=10)
 unlink(sim.dir, recursive=TRUE)}
 }

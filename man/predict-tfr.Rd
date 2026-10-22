@@ -70,6 +70,7 @@ The resulting prediction object is saved into \file{\{output.dir\}/\{subdir\}}. 
 	\item{burnin, thin, burnin3, thin3}{Burnin and thin used for this prediction for Phase II and Phase III, respectively.}
 	\item{end.year}{The end year of this prediction.}
 	\item{mu, rho, sigma_t, sigmaAR1}{Parameters of the AR(1) process. \code{sigma_t} is a vector of actual values of the standard deviation \eqn{s} used for each projection.}
+	\item{ar.order, rho2, rho2.c}{Order of the Phase III AR process. If it is 2, \code{rho} and \code{rho2} are the posterior means of the world-level AR coefficients \eqn{\rho_1}{rho1} and \eqn{\rho_2}{rho2}, and \code{rho.c} and \code{rho2.c} are their country-specific posterior means.}
 	\item{min.tfr}{Input value of minimum threshold for TFR.}
 	\item{na.index}{Index of trajectories for which at least one country got \code{NA} values.}
 	\item{mcmc.set}{Object of class \code{\link{bayesTFR.mcmc.set}} used for this prediction, i.e. the burned, thinned, and collapsed MCMC chain.}

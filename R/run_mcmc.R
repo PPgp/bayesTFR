@@ -127,45 +127,34 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	  }
 	  
 	  dir.create(file.path(output.dir, 'phaseIII'))
-	  if ('mu.prior.range' %in% names(phase3.parameter)) {mu.prior.range <- phase3.parameter[['mu.prior.range']]}
-	  else {mu.prior.range <- c(0, 2.1)}
-	  if ('rho.prior.range' %in% names(phase3.parameter)) {rho.prior.range <- phase3.parameter[['rho.prior.range']]}
-	  else {rho.prior.range <- c(0,1-.Machine$double.xmin)}
-	  if ('sigma.mu.prior.range' %in% names(phase3.parameter)) {sigma.mu.prior.range <- phase3.parameter[['sigma.mu.prior.range']]}
-	  else {sigma.mu.prior.range <- c(1e-5,0.318)}
-	  if ('sigma.rho.prior.range' %in% names(phase3.parameter)) {sigma.rho.prior.range <- phase3.parameter[['sigma.rho.prior.range']]}
-	  else {sigma.rho.prior.range <- c(1e-5,0.289)}
-	  if ('sigma.eps.prior.range' %in% names(phase3.parameter)) {sigma.eps.prior.range <- phase3.parameter[['sigma.eps.prior.range']]}
-	  else {sigma.eps.prior.range <- c(1e-5, 0.5)}
-	  
-	  for (varname in c('mu', 'rho', 'sigma.mu', 'sigma.rho', 'sigma.eps'))
-	  {
-	    assign(paste0(varname, '.ini.range'), get(paste0(varname, '.prior.range')))
-	    if (paste0(varname, '.ini') %in% names(phase3.starting.values))
-	    {
-	      assign(paste0(varname, '.ini'), phase3.starting.values[[paste0(varname, '.ini')]])
-	    }
-	    else
-	    {
-	      assign(paste0(varname, '.ini'), get.init.values(get(paste0(varname, '.prior.range'))))
-	    }
-	  }
+	  ar.order <- if ('ar.order' %in% names(phase3.parameter)) phase3.parameter[['ar.order']] else 1
+	  if(!ar.order %in% c(1, 2)) stop('ar.order in phase3.parameter must be 1 or 2.')
+	  # default prior ranges, consistent with run.tfr3.mcmc
+	  prior.ranges <- list(mu=c(0, 2.1), rho=c(0,1-.Machine$double.xmin), 
+	                       sigma.mu=c(1e-5,0.318), sigma.rho=c(1e-5,0.289), sigma.eps=c(1e-5, 0.5),
+	                       alpha1=c(0, 1), alpha2=c(-1, 1), 
+	                       sigma.alpha1=c(1e-5, 0.289), sigma.alpha2=c(1e-5, 2*0.289))
+	  phase3.par.names <- tfr3.parameter.names(meta = list(ar.order = ar.order))
 	  c.index <- 1:get.nr.countries(bayesTFR.mcmc.meta)
 	  meta <- structure(list(nr.chains=nr.chains,
 	                         my.tfr.file=my.tfr.file, output.dir=output.dir,
-	                         phase=3, id_phase3 = which(bayesTFR.mcmc.meta$lambda_c[c.index] < bayesTFR.mcmc.meta$T_end_c[c.index]),
-	                         nr.countries=sum(bayesTFR.mcmc.meta$lambda_c[c.index] < bayesTFR.mcmc.meta$T_end_c[c.index]),
-	                         mu.prior.range=mu.prior.range, rho.prior.range=rho.prior.range,
-	                         sigma.mu.prior.range=sigma.mu.prior.range, 
-	                         sigma.rho.prior.range=sigma.rho.prior.range,
-	                         sigma.eps.prior.range=sigma.eps.prior.range,
-	                         mu.ini = get("mu.ini"), mu.ini.range=get("mu.ini.range"), 
-	                         rho.ini=get("rho.ini"), rho.ini.range=get("rho.ini.range"), 
-	                         sigma.mu.ini=get("sigma.mu.ini"), sigma.mu.ini.range=get("sigma.mu.ini.range"),
-	                         sigma.rho.ini=get("sigma.rho.ini"), sigma.rho.ini.range=get("sigma.rho.ini.range"),
-	                         sigma.eps.ini=get("sigma.eps.ini"), sigma.eps.ini.range=get("sigma.eps.ini.range"),
+	                         phase=3, ar.order=ar.order,
+	                         id_phase3 = get.phase3.countries.index(bayesTFR.mcmc.meta$lambda_c[c.index], 
+	                                                                bayesTFR.mcmc.meta$T_end_c[c.index], ar.order),
 	                         compression.type=compression.type, buffer.size=buffer.size, auto.conf=auto.conf
-	  ), class='bayesTFR.mcmc.meta')	
+	  ), class='bayesTFR.mcmc.meta')
+	  meta$nr.countries <- length(meta$id_phase3)
+	  for (varname in phase3.par.names)
+	  {
+	    prior.range <- paste0(varname, '.prior.range')
+	    if (prior.range %in% names(phase3.parameter)) meta[[prior.range]] <- phase3.parameter[[prior.range]]
+	    else meta[[prior.range]] <- prior.ranges[[varname]]
+	    meta[[paste0(varname, '.ini.range')]] <- meta[[prior.range]]
+	    if (paste0(varname, '.ini') %in% names(phase3.starting.values))
+	      meta[[paste0(varname, '.ini')]] <- phase3.starting.values[[paste0(varname, '.ini')]]
+	    else
+	      meta[[paste0(varname, '.ini')]] <- get.init.values(meta[[prior.range]])
+	  }
 	  store.bayesTFR.meta.object(meta, file.path(output.dir, 'phaseIII'))
 	  if(meta$nr.countries <= 0) run.phase3 <- FALSE else run.phase3 <- TRUE
 	  for (name in names(meta))
@@ -177,11 +166,8 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	  }
 	  bayesTFR.mcmc.meta$run.phase3 <- run.phase3
 	  bayesTFR.mcmc.meta$parent <- bayesTFR.mcmc.meta
-	  for (var in c('mu.ini', 'rho.ini', 'sigma.mu.ini', 'sigma.rho.ini', 'sigma.eps.ini', 'iter')) {
-	    if (length(get(var)) < nr.chains) 
-	      assign(var, rep(get(var), nr.chains)[1:nr.chains])
-	    if (var != 'iter') starting.values[[var]] <- get(var)
-	  }
+	  for (var in paste0(phase3.par.names, '.ini')) 
+	    starting.values[[var]] <- rep(meta[[var]], nr.chains)[1:nr.chains]
 	}
 	
 	# propagate initial values for all chains if needed
@@ -394,7 +380,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	if (uncertainty && has.tfr3.mcmc(sim.dir))
 	{
 	  mcmc3.set <- get.tfr3.mcmc(sim.dir)
-	  for (par.name in tfr3.parameter.names())
+	  Eini$meta$ar.order <- mcmc3.set$meta$ar.order
+	  for (par.name in tfr3.parameter.names(meta = mcmc3.set$meta))
 	  {
 	    for (suffix in c('prior.range', 'ini', 'ini.range'))
 	    {
@@ -417,7 +404,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 		if (uncertainty)
 		{
 		  mcmc.set$mcmc.list[[chain]]$meta$nr.countries <- length(Eini$meta[['id_phase3']])
-		  for(varname in c('mu', 'rho')) {
+		  for(varname in sub('\\.c$', '', tfr3.parameter.names.cs(meta = meta))) {
 		    var <- paste(varname, 'c', sep='.')
 		    range.var <- paste(varname,'ini.range', sep='.')
 		    mcmc.set$mcmc.list[[chain]][[var]] <- runif(length(Eini$meta[['id_phase3']]), 

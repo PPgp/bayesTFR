@@ -1024,7 +1024,7 @@ tfr.partraces.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(get
 }
 
 tfr3.partraces.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-									chain.ids=NULL, par.names=tfr3.parameter.names(), 
+									chain.ids=NULL, par.names=tfr3.parameter.names(meta = get.mcmc.list(mcmc.list)[[1]]$meta), 
 									nr.points=NULL, dev.ncol=3, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
@@ -1035,7 +1035,7 @@ tfr3.partraces.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'baye
 }
 
 tfr3.partraces.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'),
-									chain.ids=NULL, par.names=tfr3.parameter.names.cs(), 
+									chain.ids=NULL, par.names=tfr3.parameter.names.cs(meta = get.mcmc.list(mcmc.list)[[1]]$meta), 
 									nr.points=NULL, dev.ncol=2, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
@@ -1130,7 +1130,7 @@ tfr.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(ge
 }
 
 tfr3.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-									chain.ids=NULL, par.names=tfr3.parameter.names(), 
+									chain.ids=NULL, par.names=tfr3.parameter.names(meta = get.mcmc.list(mcmc.list)[[1]]$meta), 
 									burnin=NULL, dev.ncol=3, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)
@@ -1142,7 +1142,7 @@ tfr3.pardensity.plot <- function(mcmc.list=NULL, sim.dir=file.path(getwd(), 'bay
 }
 
 tfr3.pardensity.cs.plot <- function(country, mcmc.list=NULL, sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-									chain.ids=NULL, par.names=tfr3.parameter.names.cs(), 
+									chain.ids=NULL, par.names=tfr3.parameter.names.cs(meta = get.mcmc.list(mcmc.list)[[1]]$meta), 
 									burnin=NULL, dev.ncol=2, low.memory=TRUE, ...) {
 	if (is.null(mcmc.list))
 		mcmc.list <- get.tfr3.mcmc(sim.dir, low.memory=low.memory)

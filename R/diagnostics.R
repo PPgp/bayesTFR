@@ -496,9 +496,9 @@ tfr3.raftery.diag <- function(mcmc=NULL,
 							 verbose=TRUE, ...) {
 	mcmc.set <- if (is.null(mcmc)) get.tfr3.mcmc(sim.dir=sim.dir, low.memory=TRUE) else mcmc
 	if(is.missing(par.names))
-	    par.names <- tfr3.parameter.names()
+	    par.names <- tfr3.parameter.names(meta = mcmc.set$meta)
 	if(is.missing(par.names.cs)) 
-	    par.names.cs <- tfr3.parameter.names.cs()
+	    par.names.cs <- tfr3.parameter.names.cs(meta = mcmc.set$meta)
 	return(tfr.raftery.diag(mcmc=mcmc.set, burnin=burnin,
 						country=country, par.names=par.names, par.names.cs=par.names.cs,
 						country.sampling.prop=country.sampling.prop, verbose=verbose, ...))

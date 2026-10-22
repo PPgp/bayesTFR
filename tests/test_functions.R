@@ -890,13 +890,14 @@ test.reproduce.simulation <- function() {
     unlink(sim.dir, recursive=TRUE)
 }
 
-test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
+test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019, ar.order = 1) {
     sim.dir <- tempfile()
 
     # run MCMC
-    test.name <- 'running MCMC with uncertainty'
+    test.name <- paste0('running MCMC with uncertainty and AR(', ar.order, ') in phase III')
     start.test(test.name, wpp.year)
-    m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, uncertainty = TRUE, wpp.year = wpp.year)
+    m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, uncertainty = TRUE, wpp.year = wpp.year,
+                      phase3.parameter = list(ar.order = ar.order))
     stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
     stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
     stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))
@@ -934,6 +935,8 @@ test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019) {
     m3 <- get.tfr3.mcmc(sim.dir=sim.dir)
     stopifnot(m3$mcmc.list[[1]]$finished.iter == 10)
     stopifnot(get.total.iterations(m3$mcmc.list, 0) == 10)
+    stopifnot(bayesTFR:::get.ar.order.phase3(m3$meta) == ar.order)
+    stopifnot(all(tfr3.parameter.names(meta = m3$meta) %in% colnames(get.tfr3.parameter.traces(m3$mcmc.list))))
     test.ok(test.name)
     
     # run prediction
@@ -1135,4 +1138,81 @@ test.buffer.size <- function(wpp.year = 2019) {
         test.ok(test.name)
         unlink(dirs, recursive=TRUE)
     }
+}
+
+test.estimate.ar2.phase3 <- function() {
+    # Simulate AR(2) data with known parameters and check that the Phase III Gibbs sampler recovers them
+    test.name <- 'recovering parameters of AR(2) in Phase III'
+    start.test(test.name)
+    set.seed(123)
+    rtn <- function(n, mean, sd, low, high) qnorm(runif(n, pnorm(low, mean, sd), pnorm(high, mean, sd)), mean, sd)
+    C <- 60; Tn <- 40; niter <- 1500; burnin <- 500
+    truth <- c(mu=1.8, alpha1=0.85, alpha2=-0.3, sigma.eps=0.08)
+    mu.c <- rtn(C, truth['mu'], 0.25, 0, Inf)
+    alpha1.c <- rtn(C, truth['alpha1'], 0.1, 0, 1)
+    alpha2.c <- rtn(C, truth['alpha2'], 0.3, -1, 1)
+    obs <- list()
+    for(country in 1:C) {
+        rho1 <- alpha1.c[country] * (1 - alpha2.c[country])
+        f <- rep(mu.c[country], Tn + 50)
+        for(t in 3:length(f)) 
+            f[t] <- mu.c[country] + rho1*(f[t-1] - mu.c[country]) + alpha2.c[country]*(f[t-2] - mu.c[country]) + 
+                        rnorm(1, 0, truth['sigma.eps'])
+        obs[[country]] <- f[-(1:50)] # remove burnin
+    }
+    meta <- list(nr.countries=C, ar.order=2, mu.prior.range=c(0, 2.1), sigma.mu.prior.range=c(1e-5, 0.318),
+                 alpha1.prior.range=c(0, 1), alpha2.prior.range=c(-1, 1),
+                 sigma.alpha1.prior.range=c(1e-5, 0.289), sigma.alpha2.prior.range=c(1e-5, 2*0.289),
+                 sigma.eps.prior.range=c(1e-5, 0.5))
+    mcenv <- as.environment(list(meta=meta, observations=obs, length_obs=rep(Tn, C),
+                mu=1, sigma.mu=0.2, alpha1=0.5, sigma.alpha1=0.2, alpha2=0, sigma.alpha2=0.3, sigma.eps=0.2,
+                mu.c=runif(C, 0, 2.1), alpha1.c=runif(C), alpha2.c=runif(C, -1, 1)))
+    traces <- matrix(NA, niter, length(truth), dimnames=list(NULL, names(truth)))
+    alpha2.c.mean <- 0
+    for(i in 1:niter) {
+        bayesTFR:::one.step.mcmc3.sampling(mcenv)
+        traces[i,] <- unlist(mget(names(truth), envir=mcenv))
+        if(i > burnin) alpha2.c.mean <- alpha2.c.mean + mcenv$alpha2.c/(niter - burnin)
+    }
+    post.mean <- colMeans(traces[-(1:burnin),])
+    stopifnot(all(abs(post.mean - truth) < c(0.1, 0.1, 0.1, 0.01)))
+    stopifnot(cor(alpha2.c.mean, alpha2.c) > 0.7)
+    test.ok(test.name)
+}
+
+test.run.ar2.phase3.simulation <- function(wpp.year = 2019) {
+    sim.dir <- tempfile()
+    m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, wpp.year = wpp.year)
+    
+    test.name <- 'running Phase III MCMC with AR(2)'
+    start.test(test.name, wpp.year)
+    m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=20, thin=1, nr.chains=2, ar.order=2)
+    stopifnot(m3$mcmc.list[[1]]$finished.iter == 20)
+    stopifnot(bayesTFR:::tfr.set.identical(m3, get.tfr3.mcmc(sim.dir), include.output.dir=FALSE))
+    # countries need at least three Phase III observations
+    stopifnot(all(m$meta$T_end_c[m3$meta$id_phase3] - m$meta$lambda_c[m3$meta$id_phase3] >= 2))
+    stopifnot(m3$meta$nr.countries < sum(m$meta$lambda_c < m$meta$T_end_c))
+    traces <- get.tfr3.parameter.traces(m3$mcmc.list, burnin=5)
+    stopifnot(all(c('alpha1', 'alpha2', 'sigma.alpha1', 'sigma.alpha2') %in% colnames(traces)))
+    stopifnot(all(traces[,'alpha1'] >= 0 & traces[,'alpha1'] <= 1))
+    stopifnot(all(traces[,'alpha2'] >= -1 & traces[,'alpha2'] <= 1))
+    m3 <- continue.tfr3.mcmc(sim.dir=sim.dir, iter=5)
+    stopifnot(m3$mcmc.list[[1]]$finished.iter == 25)
+    country <- m$meta$regions$country_code[m3$meta$id_phase3[1]]
+    s <- summary(m3, country=country, burnin=5)
+    stopifnot(all(paste0(c('mu.c', 'alpha1.c', 'alpha2.c'), '_c', country) %in% rownames(s$phase3$results$statistics)))
+    test.ok(test.name)
+    
+    test.name <- 'running projections with AR(2) in Phase III'
+    start.test(test.name, wpp.year)
+    pred <- tfr.predict(m, burnin=0, burnin3=5, verbose=FALSE)
+    stopifnot(pred$use.tfr3)
+    stopifnot(bayesTFR:::get.ar.order.phase3(pred) == 2)
+    stopifnot(!is.null(pred$rho2))
+    stopifnot(all(pred$quantiles >= 0.5, na.rm=TRUE))
+    stopifnot(!any(is.na(pred$quantiles[m3$meta$id_phase3,,])))
+    pred <- tfr.predict(m, burnin=0, burnin3=5, use.correlation=TRUE, verbose=FALSE, replace.output=TRUE)
+    stopifnot(!any(is.na(pred$quantiles[m3$meta$id_phase3,,])))
+    test.ok(test.name)
+    unlink(sim.dir, recursive=TRUE)
 }

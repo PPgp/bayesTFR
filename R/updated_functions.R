@@ -232,11 +232,46 @@ get.eps.all.phases <- function(Dlpar, mcmc, country)
   }
   if (mcmc$meta$lambda_c[country] < mcmc$meta$T_end_c[country])
   {
-    id3 <- which(mcmc$meta$id_phase3 == country)
-    eps_return[mcmc$meta$lambda_c[country]:(mcmc$meta$T_end_c[country] - 1)] <- mcmc$meta$tfr_all[(mcmc$meta$lambda_c[country]+1):mcmc$meta$T_end_c[country], country] - 
-      mcmc$meta$tfr_all[mcmc$meta$lambda_c[country]:(mcmc$meta$T_end_c[country]-1), country] * mcmc$rho.c[id3] - (1-mcmc$rho.c[id3]) * mcmc$mu.c[id3]
+    idx3 <- mcmc$meta$lambda_c[country]:(mcmc$meta$T_end_c[country] - 1)
+    eps_return[idx3] <- get.eps.phase3(mcmc, country, idx3)
   }
   return (eps_return)
+}
+
+get.eps.phase3 <- function(mcmc, country, idx)
+{
+  # Phase III errors for transitions idx -> idx+1 (all idx must be in Phase III).
+  # For AR(2), the first Phase III transition is not modeled (the AR process is conditioned 
+  # on the first two Phase III observations), as well as all transitions of countries 
+  # with less than three Phase III observations. Their errors are set to 0.
+  tfr <- mcmc$meta$tfr_all[, country]
+  id3 <- which(mcmc$meta$id_phase3 == country)
+  if (length(id3) == 0) return (rep(0, length(idx)))
+  mu <- mcmc$mu.c[id3]
+  if (!is.ar2.phase3(mcmc$meta)) 
+    return (tfr[idx + 1] - tfr[idx] * mcmc$rho.c[id3] - (1-mcmc$rho.c[id3]) * mu)
+  eps <- rep(0, length(idx))
+  is.ar <- idx > mcmc$meta$lambda_c[country]
+  t <- idx[is.ar]
+  rho1 <- mcmc$alpha1.c[id3] * (1 - mcmc$alpha2.c[id3])
+  eps[is.ar] <- tfr[t + 1] - mu - rho1 * (tfr[t] - mu) - mcmc$alpha2.c[id3] * (tfr[t - 1] - mu)
+  return (eps)
+}
+
+get.phase3.ar.par.matrix <- function(mcmc)
+{
+  # Matrix of Phase III parameters (mu, rho1, rho2) for all countries; rho2 is 0 for AR(1)
+  phase3par <- matrix(nrow = mcmc$meta$nr_countries, ncol=3)
+  if (is.ar2.phase3(mcmc$meta))
+    phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, mcmc$alpha1.c * (1 - mcmc$alpha2.c), mcmc$alpha2.c)
+  else phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, mcmc$rho.c, 0)
+  return (phase3par)
+}
+
+get.ar2.phase3.countries <- function(mcmc, year.ind, id_phase3 = mcmc$meta$id_phase3_by_year[[year.ind]])
+{
+  # Countries for which the transition year.ind -> year.ind+1 is modeled by the Phase III AR(2) process
+  return (id_phase3[mcmc$meta$lambda_c[id_phase3] < year.ind & id_phase3 %in% mcmc$meta$id_phase3])
 }
 
 get.sd.all.phases <- function(mcmc, country)
@@ -271,9 +306,13 @@ mcmc.update.tfr <- function(country, mcmc)
   eps_tfr_prop <- eps_tfr_prev
   sd_tfr_prop <- sd_tfr_prev
   if (country %in% mcmc$meta$id_phase3) {id3 <- which(mcmc$meta$id_phase3 == country)}
+  ar2.phase3 <- is.ar2.phase3(mcmc$meta)
   for (year in 1:mcmc$meta$T_end_c[country])
   {
     tmp.years <- max(1, year-1):min(year, mcmc$meta$T_end_c[country] -1)
+    # for AR(2) in Phase III, TFR in year also enters the error of the transition year+1 -> year+2
+    if (ar2.phase3 && year >= mcmc$meta$lambda_c[country] && year < mcmc$meta$T_end_c[country] - 1)
+      tmp.years <- c(tmp.years, year + 1)
     if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
     {
       tmp.extra.year <- max(2, year-1):min(year+1, mcmc$meta$T_end_c[country] -1)
@@ -311,8 +350,7 @@ mcmc.update.tfr <- function(country, mcmc)
     }
     else if (year > mcmc$meta$lambda_c[country])
     {
-      eps_tfr_prop[tmp.years] <- mcmc$meta$tfr_all[tmp.years + 1, country] - mcmc$meta$tfr_all[tmp.years, country] * 
-        mcmc$rho.c[id3] - (1-mcmc$rho.c[id3]) * mcmc$mu.c[id3]
+      eps_tfr_prop[tmp.years] <- get.eps.phase3(mcmc, country, tmp.years)
     }
     else 
       eps_tfr_prop <- get.eps.all.phases(Dlpar, mcmc, country)
@@ -499,8 +537,21 @@ get.log.lik.year <- function(year.ind, mcmc, Dlpar, phase3par, tfr=NULL, prev=TR
   {
     eps[id_phase2] <- mcmc$eps_Tc[year.ind, id_phase2]
   }
-  eps[id_phase3] <- tfr_1[id_phase3] - phase3par[id_phase3, 1] - 
-    phase3par[id_phase3, 2] * (tfr_0[id_phase3] - phase3par[id_phase3, 1])
+  if (is.ar2.phase3(mcmc$meta))
+  {
+    # transitions not modeled by AR(2) keep eps = 0, which cancels out in the acceptance ratio
+    id_ar2 <- get.ar2.phase3.countries(mcmc, year.ind, id_phase3)
+    if (length(id_ar2) > 0)
+    {
+      tfr_minus_1 <- if (!is.null(tfr) && prev_two) tfr else mcmc$meta$tfr_all[year.ind - 1, ]
+      eps[id_ar2] <- tfr_1[id_ar2] - phase3par[id_ar2, 1] - 
+        phase3par[id_ar2, 2] * (tfr_0[id_ar2] - phase3par[id_ar2, 1]) - 
+        phase3par[id_ar2, 3] * (tfr_minus_1[id_ar2] - phase3par[id_ar2, 1])
+    }
+  }
+  else
+    eps[id_phase3] <- tfr_1[id_phase3] - phase3par[id_phase3, 1] - 
+      phase3par[id_phase3, 2] * (tfr_0[id_phase3] - phase3par[id_phase3, 1])
   
   std <- numeric(mcmc$meta$nr_countries)
   std[id_phase1] <- mcmc$sd_eps_tau
@@ -576,8 +627,9 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
   nr_countries <- mcmc$meta$nr_countries
   # eps_Tc of outliers are excluded from the Phase II estimation and thus should stay NA
   eps.excluded <- get.eps.T.excluded.by.row(mcmc$meta)
-  phase3par <- matrix(nrow = nr_countries, ncol=2)
-  phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, mcmc$rho.c)
+  phase3par <- get.phase3.ar.par.matrix(mcmc)
+  ar.phase2 <- !is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2
+  ar2.phase3 <- is.ar2.phase3(mcmc$meta)
   ## _r represents phases from year -> year + 1
   id_phase1_r <- mcmc$meta$id_phase1_by_year[[1]]
   id_phase3_r <- mcmc$meta$id_phase3_by_year[[1]]
@@ -638,11 +690,17 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     ## Compute Log likelihood
     ## For outliers keep log likelihood to be frozen to 0 for both 
     ## loglik_orig annd loglik_proposed
-    if ((year < mcmc$meta$T_end - 1) && !is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
+    # TFR in year enters the transition year+1 -> year+2 if Phase II or Phase III is an AR(2) process
+    if ((year < mcmc$meta$T_end - 1) && (ar.phase2 || ar2.phase3))
     {
       loglik_next <- get.log.lik.year(year + 1, mcmc, Dlpar, phase3par)$log.lik
       loglik_next_prop <- get.log.lik.year(year + 1, mcmc, Dlpar, phase3par, tfr_proposed, prev_two = TRUE)
-      
+      if (!ar.phase2)
+      { # only the Phase III AR(2) transitions are relevant
+        not.ar2 <- setdiff(1:nr_countries, get.ar2.phase3.countries(mcmc, year + 1))
+        loglik_next[not.ar2] <- 0.0
+        loglik_next_prop$log.lik[not.ar2] <- 0.0
+      }
       loglik_next[indices_outliers_p1] <- 0.0
       loglik_next_prop$log.lik[indices_outliers_p1] <- 0.0
       loglik_orig <- loglik_orig + loglik_next
@@ -737,110 +795,3 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     }
   }
 }
-
-
-one.step.mcmc3.sampling <- function(mcmc)
-{
-  meta <- mcmc$meta
-  niter <- mcmc$iter
-  nr.countries <- meta$nr.countries
-  countries.index <- meta$id_phase3
-  ardata <- mcmc$observations
-  Ts <- mcmc$length_obs
-  gamma.mu.low <- 1/(meta$sigma.mu.prior.range[2])^2
-  gamma.mu.up <- if (meta$sigma.mu.prior.range[1] == 0) NA else 1/(meta$sigma.mu.prior.range[1])^2
-  gamma.rho.low <- 1/(meta$sigma.rho.prior.range[2])^2
-  gamma.rho.up <- if (meta$sigma.rho.prior.range[1] == 0) NA else 1/(meta$sigma.rho.prior.range[1])^2
-  gamma.eps.low <- 1/(meta$sigma.eps.prior.range[2])^2
-  gamma.eps.up <- if (meta$sigma.eps.prior.range[1] == 0) NA else 1/(meta$sigma.eps.prior.range[1])^2
-
-  #### Start MCMC
-
-  mu.integral.to.mC <- (mu.rho.integral(mcmc[['mu']], mcmc[['sigma.mu']], low=0))^(-nr.countries)
-  prop.mu <- proposal.mu.rho(mcmc[['mu.c']], mcmc[['sigma.mu']], nr.countries,
-                             meta[['mu.prior.range']][1], meta[['mu.prior.range']][2])
-  accept.prob <- min(((mu.rho.integral(prop.mu, mcmc[['sigma.mu']], low=0))^(-nr.countries))/mu.integral.to.mC, 1)
-  if (runif(1) < accept.prob) {
-    mcmc[['mu']] <- prop.mu
-    mcmc[['recompute.mu.integral']] <- TRUE
-  } else mcmc[['recompute.mu.integral']] <- FALSE
-
-  # Metropolis-Hastings for sigma_mu=1/sqrt(lambda_mu)
-  S <- sum((mcmc[['mu.c']]-mcmc[['mu']])^2)
-  if(mcmc[['recompute.mu.integral']]) mu.integral.to.mC <- mu.rho.integral(mcmc[['mu']], mcmc[['sigma.mu']], low=0)^(-nr.countries)
-  prop.lambda.mu <- rgamma.trunc((nr.countries-1)/2, S/2, low=gamma.mu.low, high=gamma.mu.up)
-  accept.prob <- min(((mu.rho.integral(mcmc[['mu']], 1/prop.lambda.mu, low=0))^(-nr.countries))/mu.integral.to.mC, 1)
-  if (runif(1) < accept.prob) {
-    mcmc[['sigma.mu']] <- 1/sqrt(prop.lambda.mu)
-    recompute.mu.integral <- TRUE
-  } else recompute.mu.integral <- FALSE
-
-  # Slice sampling for rho
-  mcmc[['rho']] <- slice.sampling(mcmc[['rho']], logdensity.mu.rho, 1,
-                                  low=meta[['rho.prior.range']][1], up=meta[['rho.prior.range']][2],
-                                  par.c=mcmc[['rho.c']], sd=mcmc[['sigma.rho']],
-                                  c.low=0, c.up=1)
-  # Metropolis-Hastings for rho
-  # rho.integral.to.mC <- (mu.rho.integral(mcmc[['rho']], mcmc[['sigma.rho']], low=0, up=1))^(-nr.countries)
-  # prop.rho <- proposal.mu.rho(mcmc[['rho.c']], mcmc[['sigma.rho']], nr.countries,
-  # meta[['rho.prior.range']][1], meta[['rho.prior.range']][2])
-  # accept.prob <- min(((mu.rho.integral(prop.rho, mcmc[['sigma.rho']], low=0, up=1))^(-nr.countries))/rho.integral.to.mC, 1)
-  # if (runif(1) < accept.prob) {
-  # mcmc[['rho']] <- prop.rho
-  # recompute.rho.integral <- TRUE
-  # } else recompute.rho.integral <- FALSE
-
-  mcmc[['sigma.rho']] <- slice.sampling(mcmc[['sigma.rho']], logdensity.sigma.mu.rho, 1,
-                                        low=meta$sigma.rho.prior.range[1], up=meta$sigma.rho.prior.range[2],
-                                        par.c=mcmc[['rho.c']], mean=mcmc[['rho']],
-                                        c.low=0, c.up=1)
-
-  # Metropolis-Hastings for sigma_rho=1/sqrt(lambda_rho)
-  # S <- sum((mcmc[['rho.c']]-mcmc[['rho']])^2)
-  # if(recompute.rho.integral)
-  # rho.integral.to.mC <- (mu.rho.integral(mcmc[['rho']], mcmc[['sigma.rho']], low=0, up=1))^(-nr.countries)
-  # prop.lambda.rho <- rgamma.trunc((nr.countries-1)/2, S/2, low=gamma.rho.low, high=gamma.rho.up)
-  # accept.prob <- min(((mu.rho.integral(mcmc[['rho']], 1/prop.lambda.rho, low=0, up=1))^(-nr.countries))/rho.integral.to.mC, 1)
-  # if (runif(1) < accept.prob) {
-  # mcmc[['sigma.rho']] <- 1/sqrt(prop.lambda.rho)
-  # recompute.rho.integral <- TRUE
-  # } else recompute.rho.integral <- FALSE
-
-  sigma.eps.sq <- mcmc$sigma.eps^2
-  sigma.mu.sq <- mcmc$sigma.mu^2
-  sigma.mu.sq.inv <- 1/sigma.mu.sq
-  mu.over.sigma.sq <- mcmc$mu/sigma.mu.sq
-  sigma.rho.sq <- mcmc$sigma.rho^2
-  sigma.rho.sq.inv <- 1/sigma.rho.sq
-  rho.over.sigma.sq <- mcmc$rho/sigma.rho.sq
-  S.eps <- STn <- 0
-  one.minus.rho <- 1-mcmc$rho.c
-  one.minus.rho.sq <- one.minus.rho^2
-  W <- one.minus.rho.sq/sigma.eps.sq
-
-  # country-specific parameters - Gibbs sampler
-  for(country in 1:nr.countries) {
-    f.ct <- ardata[[country]][2:Ts[country]]
-    f.ctm1 <- ardata[[country]][1:(Ts[country]-1)]
-    # mu.c
-    s <- sum((f.ct - mcmc$rho.c[country]*f.ctm1)/one.minus.rho[country])
-    nomin <- W[country] * s + mu.over.sigma.sq
-    denom <- (Ts[country]-1) * W[country] + sigma.mu.sq.inv
-    mcmc$mu.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0)
-
-    # rho.c
-    d1 <- f.ctm1 - mcmc$mu.c[country]
-    a <- sum(d1^2)/sigma.eps.sq
-    b <- sum(d1*(f.ct - mcmc$mu.c[country]))/sigma.eps.sq
-    nomin <- b + rho.over.sigma.sq
-    denom <- a + sigma.rho.sq.inv
-    mcmc$rho.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0, #high=1-10*.Machine$double.xmin
-                                       high=0.999999)
-    S.eps <- S.eps + sum((f.ct - mcmc$mu.c[country] - mcmc$rho.c[country]*d1)^2)
-    STn <- STn + Ts[country]-1
-  }
-  # Gibbs for sigma.eps
-  mcmc$sigma.eps <- 1/sqrt(rgamma.trunc((STn-1)/2, S.eps/2, low=gamma.eps.low, high=gamma.eps.up))
-
-}
-

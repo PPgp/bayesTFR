@@ -1,3 +1,20 @@
+7.4-7.9002 (2026-10-21)
+-----
+Phase III can be modeled as an AR(2) process: argument ar.order in run.tfr3.mcmc, 
+or item ar.order in phase3.parameter of run.tfr.mcmc (uncertainty=TRUE). 
+The AR coefficients are parametrized by partial autocorrelations alpha1 in [0,1) and 
+alpha2 in [-1,1). Only countries with at least three Phase III observations are 
+included in the AR(2) estimation. Projections use the AR(2) process if the Phase III 
+MCMCs were estimated with it.
+
+tfr3.parameter.names and tfr3.parameter.names.cs have a new argument meta.
+
+The Phase III sampling for extra countries with uncertainty now uses the updated 
+TFR estimates (previously the initial TFR values were used).
+
+New tests: test.estimate.ar2.phase3, test.run.ar2.phase3.simulation, and 
+test.run.mcmc.simulation.with.uncertainty with ar.order=2.
+
 7.4-7.9001 (2026-09-25)
 -----
 Speed-up of the MCMC (about 3x per iteration) and of projections (up to 6x when 

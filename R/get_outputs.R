@@ -497,7 +497,7 @@ bdem.parameter.traces.bayesTFR.mcmc <- function(mcmc, par.names, ...) {
 		backtran.names <- get.backtrans.parameter.names(cs=TRUE)
 		tobacktran.names <- get.tobacktrans.parameter.names(cs=TRUE)
 	} else {
-		if(mcmc$meta$phase == 3) all.standard.names <- c(tfr3.parameter.names(), tfr3.parameter.names.cs())
+		if(mcmc$meta$phase == 3) all.standard.names <- c(tfr3.parameter.names(meta = mcmc$meta), tfr3.parameter.names.cs(meta = mcmc$meta))
 	}
 	return(.do.get.traces(mcmc, par.names=par.names, ..., 
 							all.standard.names=all.standard.names,
@@ -759,8 +759,27 @@ tfr.parameter.names.cs <- function(country.code=NULL, trans=NULL, back.trans=TRU
 	return(paste(par.names, '_c', country.code, sep=''))
 }
 
-tfr3.parameter.names <- function() return(c('mu', 'rho', 'sigma.mu', 'sigma.rho', 'sigma.eps'))
-tfr3.parameter.names.cs <- function(country.code=NULL) return(paste(c('mu', 'rho'), '.c', country.code,sep=''))
+get.ar.order.phase3 <- function(meta = NULL)
+    return(if(is.null(meta$ar.order)) 1 else meta$ar.order)
+
+is.ar2.phase3 <- function(meta = NULL) return(get.ar.order.phase3(meta) == 2)
+
+tfr3.parameter.names <- function(meta = NULL) {
+    # For AR(2), the AR parameters are parametrized by the partial autocorrelations alpha1 and alpha2
+    if(is.ar2.phase3(meta))
+        return(c('mu', 'alpha1', 'alpha2', 'sigma.mu', 'sigma.alpha1', 'sigma.alpha2', 'sigma.eps'))
+    return(c('mu', 'rho', 'sigma.mu', 'sigma.rho', 'sigma.eps'))
+}
+
+tfr3.parameter.names.cs <- function(country.code=NULL, meta = NULL) {
+    pars <- if(is.ar2.phase3(meta)) c('mu', 'alpha1', 'alpha2') else c('mu', 'rho')
+    return(paste(pars, '.c', country.code,sep=''))
+}
+
+get.phase3.countries.index <- function(lambda_c, T_end_c, ar.order = 1)
+    # Countries with enough Phase III observations to estimate the AR model:
+    # at least two for AR(1), at least three for AR(2)
+    return(which(T_end_c - lambda_c >= ar.order))
 
 get.total.iterations <- function(mcmc.list, burnin=0) {
 	# Return total number of iterations sum-up over chains after discarding burnin in each chain
@@ -862,10 +881,10 @@ get.tfr.parameter.traces.cs <- function(mcmc.list, country.obj, par.names=tfr.pa
 										burnin=burnin, thinning.index=thinning.index, thin=thin))
 }
 
-get.tfr3.parameter.traces <- function(mcmc.list, par.names=tfr3.parameter.names(), ...)
+get.tfr3.parameter.traces <- function(mcmc.list, par.names=tfr3.parameter.names(meta = get.mcmc.list(mcmc.list)[[1]]$meta), ...)
   return(get.tfr.parameter.traces(mcmc.list, par.names, ...))
 	
-get.tfr3.parameter.traces.cs <- function(mcmc.list, country.obj, par.names=tfr3.parameter.names.cs(), ...)
+get.tfr3.parameter.traces.cs <- function(mcmc.list, country.obj, par.names=tfr3.parameter.names.cs(meta = get.mcmc.list(mcmc.list)[[1]]$meta), ...)
 	return(get.tfr.parameter.traces.cs(mcmc.list, country.obj, par.names, ...))
 
 load.tfr.parameter.traces <- function(mcmc, par.names=tfr.parameter.names(), burnin=0, thinning.index=NULL) 
@@ -878,10 +897,10 @@ load.tfr.parameter.traces.cs <- function(mcmc, country, par.names=tfr.parameter.
 						thinning.index=thinning.index))
 }
 
-load.tfr3.parameter.traces <- function(mcmc, par.names=tfr3.parameter.names(), ...)
+load.tfr3.parameter.traces <- function(mcmc, par.names=tfr3.parameter.names(meta = mcmc$meta), ...)
 	return(load.tfr.parameter.traces(mcmc, par.names=par.names, ...))
 
-load.tfr3.parameter.traces.cs <- function(mcmc, country, par.names=tfr3.parameter.names.cs(), ...)
+load.tfr3.parameter.traces.cs <- function(mcmc, country, par.names=tfr3.parameter.names.cs(meta = mcmc$meta), ...)
 	return(load.tfr.parameter.traces.cs(mcmc, country=country, par.names=par.names, ...))
 
 load.tfr.parameter.traces.all <- function(mcmc, par.names=tfr.parameter.names(), 
@@ -900,8 +919,8 @@ load.tfr.parameter.traces.all <- function(mcmc, par.names=tfr.parameter.names(),
 	return (result)
 }
 
-load.tfr3.parameter.traces.all <- function(mcmc, par.names=tfr3.parameter.names(), 
-										 par.names.cs=tfr3.parameter.names.cs(), ...)
+load.tfr3.parameter.traces.all <- function(mcmc, par.names=tfr3.parameter.names(meta = mcmc$meta), 
+										 par.names.cs=tfr3.parameter.names.cs(meta = mcmc$meta), ...)
 	return(load.tfr.parameter.traces.all(mcmc, par.names=par.names, par.names.cs=par.names.cs, ...))
 	
 get.full.par.names.cs <- function(par.names, full.par.names, country=NULL, index=FALSE) {
@@ -946,10 +965,10 @@ coda.mcmc.bayesTFR.mcmc <- function(mcmc, country=NULL, par.names=NULL,
 	if(!is.null(btobject$index)) index <- btobject$index
 	if(is.null(country) && missing(par.names)) 
 		par.names <- if(!is.null(mcmc$meta$phase) && mcmc$meta$phase == 3)
-			tfr3.parameter.names() else tfr.parameter.names(meta = mcmc$meta)
+			tfr3.parameter.names(meta = mcmc$meta) else tfr.parameter.names(meta = mcmc$meta)
 	if(missing(par.names.cs)) 
 		par.names.cs <- if(!is.null(mcmc$meta$phase) && mcmc$meta$phase == 3)
-			tfr3.parameter.names.cs() else tfr.parameter.names.cs()
+			tfr3.parameter.names.cs(meta = mcmc$meta) else tfr.parameter.names.cs()
 
 	if (!is.null(country)) { # for specific country
 		if (burnin < mcmc$traces.burnin || no.traces.loaded(mcmc)) {
@@ -1032,8 +1051,8 @@ coda.list.mcmc <- function(mcmc=NULL, country=NULL, chain.ids=NULL,
 
 coda.list.mcmc3 <- function(mcmc=NULL, country=NULL, chain.ids=NULL,
 							sim.dir=file.path(getwd(), 'bayesTFR.output'), 
-							par.names=tfr3.parameter.names(), 
-							par.names.cs=tfr3.parameter.names.cs(), 
+							par.names=tfr3.parameter.names(meta = get.mcmc.list(mcmc)[[1]]$meta), 
+							par.names.cs=tfr3.parameter.names.cs(meta = get.mcmc.list(mcmc)[[1]]$meta), 
 							burnin=0, low.memory=FALSE, ...) {
 	if (is.null(mcmc)) 
 		mcmc <- get.tfr3.mcmc(sim.dir, chain.ids=chain.ids, low.memory=low.memory, 
@@ -1148,10 +1167,10 @@ summary.bayesTFR.mcmc <- function(object, country = NULL, par.names = NULL, par.
     if(is.null(country) && missing(par.names.cs)) par.names.cs <- NULL
 	if(is.null(country) && is.null(par.names))
 	 	par.names <- if(is.null(object$meta$phase) || object$meta$phase == 2) tfr.parameter.names(trans=TRUE, meta = object$meta) 
-	 					else tfr3.parameter.names()
+	 					else tfr3.parameter.names(meta = object$meta)
 	if(is.null(par.names.cs) && !is.null(country))
 		par.names.cs <- if(is.null(object$meta$phase) || object$meta$phase == 2) tfr.parameter.names.cs(trans=TRUE) 
-	 					else tfr3.parameter.names.cs()
+	 					else tfr3.parameter.names.cs(meta = object$meta)
 	if (!is.null(country)) {
 		country.obj <- get.country.object(country, object$meta)
 		if(is.null(country.obj$name)) stop("Country ", country, " not found.")
@@ -1175,22 +1194,22 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	if(is.null(object$meta$phase) || object$meta$phase == 2) {
 	  all.standard.names <- c(tfr.parameter.names(meta=object$meta), get.trans.parameter.names(), 
 	                          tfr.parameter.names.cs(), get.trans.parameter.names(cs=TRUE), 'tfr')
-	  par.names3 <- par.names[par.names %in% tfr3.parameter.names()]
-	  par.names3.cs <- par.names.cs[par.names.cs %in% tfr3.parameter.names.cs()]
+	  par.names3 <- par.names[par.names %in% tfr3.parameter.names(meta = object$meta)]
+	  par.names3.cs <- par.names.cs[par.names.cs %in% tfr3.parameter.names.cs(meta = object$meta)]
 	  if(is.null(country) && is.null(par.names)) 
 		{
 		  par.names <- tfr.parameter.names(trans=TRUE, meta = object$meta)
 		  if (!is.null(object$mcmc.list[[1]]$uncertainty) && object$mcmc.list[[1]]$uncertainty)
-		    par.names3 <- tfr3.parameter.names()
+		    par.names3 <- tfr3.parameter.names(meta = object$meta)
 		}
 		if(!is.null(country) && is.null(par.names.cs)) 
 		{
 		  par.names.cs <- tfr.parameter.names.cs(trans=TRUE)
 		  if (!is.null(object$mcmc.list[[1]]$uncertainty) && object$mcmc.list[[1]]$uncertainty)
-		    par.names3.cs <- tfr3.parameter.names.cs()
+		    par.names3.cs <- tfr3.parameter.names.cs(meta = object$meta)
 		}
-	  par.names <- par.names[!(par.names %in% tfr3.parameter.names())]
-	  par.names.cs <- par.names.cs[!(par.names.cs %in% tfr3.parameter.names.cs())]
+	  par.names <- par.names[!(par.names %in% tfr3.parameter.names(meta = object$meta))]
+	  par.names.cs <- par.names.cs[!(par.names.cs %in% tfr3.parameter.names.cs(meta = object$meta))]
 	  
 	  if (length(par.names) > 0 || length(par.names.cs) > 0)
 	    res$phase2 <- .summary.mcmc.set.phaseII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
@@ -1224,8 +1243,8 @@ summary.bayesTFR.mcmc.set <- function(object, country=NULL, chain.id=NULL,
 	    }
 	  }
 	} else { # phase III
-		if(is.null(country) && is.null(par.names)) par.names <- tfr3.parameter.names()
-		if(!is.null(country) && is.null(par.names.cs)) par.names.cs <- tfr3.parameter.names.cs()
+		if(is.null(country) && is.null(par.names)) par.names <- tfr3.parameter.names(meta = object$meta)
+		if(!is.null(country) && is.null(par.names.cs)) par.names.cs <- tfr3.parameter.names.cs(meta = object$meta)
 		res$phase3 <- .summary.mcmc.set.phaseIII(object, country, chain.id, par.names, par.names.cs, meta.only, thin, burnin, ...)
 	}
     class(res) <- "summary.bayesTFR.mcmc.set"

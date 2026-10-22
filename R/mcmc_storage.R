@@ -141,8 +141,8 @@ store.mcmc <- local({
 store.mcmc3 <- local({
 	# Writes parameter values into ascii files - one file per parameter and country (if country-specific)
 	##########################
-	par.names <- tfr3.parameter.names()
-	par.cs.names <- tfr3.parameter.names.cs()
+	# parameter names depend on the AR order and are set in buffers.ini
+	par.names <- par.cs.names <- NULL
 	
 	default.buffer.size <- 10
 	buffer3 <- buffer3.cs <- NULL
@@ -168,6 +168,8 @@ store.mcmc3 <- local({
 	}
 		
 	buffers.ini <- function(mcmc, size, countries=NULL) {
+		par.names <<- tfr3.parameter.names(meta = mcmc$meta)
+		par.cs.names <<- tfr3.parameter.names.cs(meta = mcmc$meta)
 		buffer3 <<- list()
 		if (is.null(countries)) {
 			for (par in par.names) 

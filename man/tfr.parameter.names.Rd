@@ -19,14 +19,14 @@ tfr.parameter.names.cs(country.code = NULL, trans = NULL, back.trans = TRUE)
 tfr.parameter.names.extended()
 tfr.parameter.names.cs.extended(country.code = NULL)
 
-tfr3.parameter.names()
-tfr3.parameter.names.cs(country.code = NULL)
+tfr3.parameter.names(meta = NULL)
+tfr3.parameter.names.cs(country.code = NULL, meta = NULL)
 }
 \arguments{
   \item{trans}{It can be \code{NULL} or logical. If \code{TRUE},
 	 names of the transformable parameters (i.e. \sQuote{alpha} in case of country-independent parameters, or \sQuote{gamma} in case of country-specific parameters) are replaced by the names of the transformed parameters (i.e. \sQuote{alphat}, or \sQuote{gammat}). If \code{trans=FALSE}, there is no such replacement. If \code{trans=NULL}, all parameter names, 
 including the transformable parameters are returned.}
-\item{meta}{It can be \code{NULL} or a \code{\link{bayesTFR.mcmc.meta}} object. If not \code{NULL} and its element \code{ar.phase2} is \code{TRUE} (i.e. the simulation considered an additional AR(1) parameter in the estimation), then the names include also \sQuote{phi}.}
+\item{meta}{It can be \code{NULL} or a \code{\link{bayesTFR.mcmc.meta}} object. In \code{tfr.parameter.names}, if not \code{NULL} and its element \code{ar.phase2} is \code{TRUE} (i.e. the simulation considered an additional AR(1) parameter in the estimation), then the names include also \sQuote{phi}. In \code{tfr3.parameter.names} and \code{tfr3.parameter.names.cs}, if its element \code{ar.order} is 2 (see \code{\link{run.tfr3.mcmc}}), names of the AR(2) parameters are returned.}
 \item{country.code}{Country code. If it is given, the country-specific parameter names contain the postfix \sQuote{_c\eqn{x}} where \eqn{x} is the \code{country.code}.}
 \item{back.trans}{Logical indicating if back-transformable parameter names (i.e. \sQuote{Triangle_c1}, \dots, \sQuote{Triangle_c3}) should be returned.}
 }

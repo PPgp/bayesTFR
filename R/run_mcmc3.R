@@ -2,18 +2,26 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 						thin=10, replace.output=FALSE,
 						# meta parameters
 						my.tfr.file = NULL, buffer.size=500,
-						use.extra.countries=FALSE,
+						use.extra.countries=FALSE, ar.order = 1,
 						mu.prior.range=c(0, 2.1), 
 						rho.prior.range=c(0,1-.Machine$double.xmin),
 						 sigma.mu.prior.range=c(1e-5,0.318),
 						 sigma.rho.prior.range=c(1e-5,0.289),
 						 sigma.eps.prior.range=c(1e-5, 0.5),
+						# AR(2) parameters (partial autocorrelations)
+						alpha1.prior.range=c(0, 1), alpha2.prior.range=c(-1, 1),
+						sigma.alpha1.prior.range=c(1e-5, 0.289),
+						sigma.alpha2.prior.range=c(1e-5, 2*0.289),
 						# starting values (length of 1 or nr.chains)
 						mu.ini = NULL, mu.ini.range=mu.prior.range, 
 						rho.ini=NULL, rho.ini.range=rho.prior.range, 
 						sigma.mu.ini=NULL, sigma.mu.ini.range=sigma.mu.prior.range,
 						sigma.rho.ini=NULL, sigma.rho.ini.range=sigma.rho.prior.range,
 						sigma.eps.ini=NULL, sigma.eps.ini.range=sigma.eps.prior.range,
+						alpha1.ini=NULL, alpha1.ini.range=alpha1.prior.range,
+						alpha2.ini=NULL, alpha2.ini.range=alpha2.prior.range,
+						sigma.alpha1.ini=NULL, sigma.alpha1.ini.range=sigma.alpha1.prior.range,
+						sigma.alpha2.ini=NULL, sigma.alpha2.ini.range=sigma.alpha2.prior.range,
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
 					 	compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=50000, iter.incr=20000, nr.chains=3, thin=60, burnin=10000),
@@ -25,6 +33,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 				)
 	}
 	
+	if(!ar.order %in% c(1, 2)) stop('Argument ar.order must be 1 or 2.')
 	mc <- get.tfr.mcmc(sim.dir)
 	output.dir <- file.path(sim.dir, 'phaseIII')
 	if(file.exists(output.dir)) {
@@ -51,7 +60,9 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 	
 	# starting values
 	#==============================
-	for(varname in c('mu.ini', 'rho.ini', 'sigma.mu.ini', 'sigma.rho.ini', 'sigma.eps.ini')) {
+	par.names <- tfr3.parameter.names(meta = list(ar.order = ar.order))
+	ini.names <- paste(par.names, 'ini', sep='.')
+	for(varname in ini.names) {
 		if(is.null(get(varname)))
 			assign(varname, get.init.values(get(paste(varname, '.range', sep=''))))
 	}
@@ -59,19 +70,18 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 	c.index <- 1: (if(use.extra.countries) get.nr.countries(mc$meta) else get.nrest.countries(mc$meta))
 	bayesTFR.mcmc.meta <- structure(list(nr.chains=nr.chains,
 								my.tfr.file=my.tfr.file, output.dir=output.dir,
-								phase=3, id_phase3 = which(mc$meta$lambda_c[c.index] < mc$meta$T_end_c[c.index]),
-								nr.countries=sum(mc$meta$lambda_c[c.index] < mc$meta$T_end_c[c.index]),
-								mu.prior.range=mu.prior.range, rho.prior.range=rho.prior.range,
-						 		sigma.mu.prior.range=sigma.mu.prior.range, 
-						 		sigma.rho.prior.range=sigma.rho.prior.range,
-						 		sigma.eps.prior.range=sigma.eps.prior.range,
-								mu.ini = mu.ini, mu.ini.range=mu.ini.range, 
-								rho.ini=rho.ini, rho.ini.range=rho.ini.range, 
-								sigma.mu.ini=sigma.mu.ini, sigma.mu.ini.range=sigma.mu.ini.range,
-								sigma.rho.ini=sigma.rho.ini, sigma.rho.ini.range=sigma.rho.ini.range,
-								sigma.eps.ini=sigma.eps.ini, sigma.eps.ini.range=sigma.eps.ini.range,
+								phase=3, ar.order=ar.order,
+								id_phase3 = get.phase3.countries.index(mc$meta$lambda_c[c.index], mc$meta$T_end_c[c.index], ar.order),
 								compression.type=compression.type, buffer.size=buffer.size, auto.conf=auto.conf
-								), class='bayesTFR.mcmc.meta')	
+								), class='bayesTFR.mcmc.meta')
+	bayesTFR.mcmc.meta$nr.countries <- length(bayesTFR.mcmc.meta$id_phase3)
+	# prior ranges, initial values and initial ranges for parameters of this AR order
+	for(par in par.names) {
+		for(suffix in c('prior.range', 'ini', 'ini.range')) {
+			varname <- paste(par, suffix, sep='.')
+			bayesTFR.mcmc.meta[[varname]] <- get(varname)
+		}
+	}
 	store.bayesTFR.meta.object(bayesTFR.mcmc.meta, output.dir)
 	meta <- bayesTFR.mcmc.meta
 	if(meta$nr.countries <= 0) return(NULL)
@@ -79,7 +89,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 	meta$regions <- mc$meta$regions
 	# propagate initial values for all chains if needed
     starting.values <- list()
-    for (var in c('mu.ini', 'rho.ini', 'sigma.mu.ini', 'sigma.rho.ini', 'sigma.eps.ini', 'iter')) {
+    for (var in c(ini.names, 'iter')) {
     	if (length(get(var)) < nr.chains) 
             assign(var, rep(get(var), nr.chains)[1:nr.chains])
         if (var != 'iter') starting.values[[var]] <- get(var)
@@ -165,13 +175,13 @@ mcmc3.ini <- function(chain.id, mcmc.meta, iter=100, thin=1, starting.values=NUL
         				uncertainty = uncertainty,
         				meta = mcmc.meta)), class='bayesTFR.mcmc')
     # country-specific initial values
-    for(varname in c('mu', 'rho')) {
+    cs.names <- sub('\\.c$', '', tfr3.parameter.names.cs(meta = mcmc.meta))
+    for(varname in cs.names) {
     	var <- paste(varname, 'c', sep='.')
     	range.var <- paste(varname,'ini.range', sep='.')
     	mcmc[[var]] <- runif(mcmc.meta$nr.countries, mcmc.meta[[range.var]][1], mcmc.meta[[range.var]][2])
-    	mcmc[[varname]] <- starting.values[[paste(varname,'ini', sep='.')]]
     }
-    for(varname in c('sigma.mu', 'sigma.rho', 'sigma.eps')) {
+    for(varname in tfr3.parameter.names(meta = mcmc.meta)) {
     	mcmc[[varname]] <- starting.values[[paste(varname,'ini', sep='.')]]
     }
     return(mcmc) 

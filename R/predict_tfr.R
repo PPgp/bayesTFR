@@ -38,7 +38,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 	    burnin3 <- burnin
 	
 	if(verbose) {
-		if(has.phase3) cat('\nAR(1) simulated using phase III MCMCs.\n')
+		if(has.phase3) cat('\nPhase III AR model simulated using phase III MCMCs.\n')
 		else cat('\nAR(1) parameters for all countries: mu=', mu, ', rho=', rho, ', sigma=', sigmaAR1, '\n')
 	}
 	if(!is.null(seed)) set.seed(seed)
@@ -290,7 +290,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	mid.years <- as.integer(c(if(suppl.T > 0) rownames(meta$suppl.data$tfr_matrix) else c(), rownames(tfr_matrix_reconstructed)))
 	thin3 <- NA
 	has.phase3 <- use.tfr3
-	mu.c.mean <- rho.c.mean <- meta3 <- mc.meta3.pointer <- mcmc3.list.pointer <- NULL
+	mu.c.mean <- rho.c.mean <- rho2.c.mean <- meta3 <- mc.meta3.pointer <- mcmc3.list.pointer <- rho2 <- NULL
+	ar2.phase3 <- FALSE
 	
 	if(has.phase3) {
 	  mcmc3 <- if(is.null(mcmc3.set)) get.tfr3.mcmc(meta$output.dir) else mcmc3.set
@@ -298,15 +299,23 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		thinning.index <- unique(round(seq(1, total.iter, length=nr_simu)))
 		if(length(thinning.index) < nr_simu) 
 			stop('Length of MCMCs for phase 2 and 3 cannot be matched with these settings. Check arguments burnin, burnin3, nr.traj and thin.')
-		m3.par.values <- get.tfr3.parameter.traces(mcmc3$mcmc.list, par.names=c('mu', 'rho', 'sigma.eps'), 
+		ar2.phase3 <- is.ar2.phase3(mcmc3$meta)
+		m3.par.values <- get.tfr3.parameter.traces(mcmc3$mcmc.list, 
+		                        par.names=c('mu', if(ar2.phase3) c('alpha1', 'alpha2') else 'rho', 'sigma.eps'), 
 								thinning.index=thinning.index, burnin=burnin3)
 		thin3 <- (thinning.index[2]-thinning.index[1])*mcmc3$mcmc.list[[1]]$thin
 		if(dim(m3.par.values)[1] != nr_simu) stop('Mismatch in length of MCMCs for phase 2 and 3.')
+		if(ar2.phase3) { # convert partial autocorrelations into AR coefficients
+		    m3.par.values <- cbind(m3.par.values, rho=m3.par.values[,'alpha1']*(1-m3.par.values[,'alpha2']),
+		                           rho2=m3.par.values[,'alpha2'])
+		}
 		# used for the resulting prediction object
 		mu <- mean(m3.par.values[,'mu'])
 		rho <- mean(m3.par.values[,'rho'])
+		if(ar2.phase3) rho2 <- mean(m3.par.values[,'rho2'])
 		sigmaAR1 <- mean(m3.par.values[,'sigma.eps'])
 		mu.c.mean <- rho.c.mean <- rep(NA, nr_countries)
+		if(ar2.phase3) rho2.c.mean <- rep(NA, nr_countries)
 		meta3 <- mcmc3$meta
 		if (!is.null(mcmc.set$meta$extra))
 		{
@@ -357,8 +366,13 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		if(has.phase3 && is.element(country, meta3$id_phase3)) {
 		  
 			m3.par.values.cs.list[[country]] <- dprep$m3.par.values.cs
+			if(ar2.phase3) # convert partial autocorrelations into AR coefficients (columns are mu, rho1, rho2)
+			    m3.par.values.cs.list[[country]] <- cbind(m3.par.values.cs.list[[country]][,1],
+			                                              m3.par.values.cs.list[[country]][,2]*(1-m3.par.values.cs.list[[country]][,3]),
+			                                              m3.par.values.cs.list[[country]][,3])
 			mu.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,1])
 			rho.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,2])
+			if(ar2.phase3) rho2.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,3])
 		}
 	} # end country prep loop
 	
@@ -383,6 +397,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	fps.end.obs.index <- dim(tfr_matrix_reconstructed)[1] - all.T_end.min + suppl.T + 1
 	first.projection <- rep(1, nr_countries_real)
 	if (!is.null(mcmc.set$meta$ar.phase2) && (mcmc.set$meta$ar.phase2)) f_ps_previous <- matrix(NA, nrow = nr_simu, ncol=nr_countries_real)
+	# for AR(2) in Phase III: TFR in the period preceding the first column of all.f_ps
+	if (ar2.phase3) f_ps_lag <- matrix(NA, nrow = nr_simu, ncol=nr_countries_real)
 	for (icountry in 1:nr_countries_real) {
 		# fill the result array with observed data 
 	  if (uncertainty)
@@ -396,6 +412,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	      all.f_ps[icountry,year,] <- tfr.table[,all.T_end.min+year-1]
 	    if (!is.null(mcmc.set$meta$ar.phase2) && (mcmc.set$meta$ar.phase2))
 	      f_ps_previous[, icountry] <- tfr.table[,all.T_end.min+year-2]
+	    if (ar2.phase3) f_ps_lag[, icountry] <- tfr.table[,all.T_end.min-1]
 	  }
 	  else
 	  {
@@ -406,6 +423,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	    }
 	    if (!is.null(mcmc.set$meta$ar.phase2) && (mcmc.set$meta$ar.phase2))
 	      f_ps_previous[, icountry] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min+last.not.na-2]
+	    if (ar2.phase3) f_ps_lag[, icountry] <- all.tfr.list[[prediction.countries[icountry]]][all.T_end.min-1]
 	  }
 		first.two.na <- which(is.na(all.f_ps[icountry,,1]))[1:2]
 		which.Wsecond[icountry] <- first.two.na[2]
@@ -414,7 +432,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	}
 	
 	W[is.na(W)] <- 0
-	mu.c <- rho.c <- rep(NA, nr_countries)
+	mu.c <- rho.c <- rho2.c <- rep(NA, nr_countries)
 	sigma.epsAR1 <- list()
 	if(length(sigmas_all) < max.nr.project) {
 		sigmas_all <- c(rep(sigmas_all[1], max.nr.project-length(sigmas_all)), sigmas_all)
@@ -462,10 +480,12 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		if(has.phase3) { # set country-spec parameters for phase 3 - time-invariant
 			mu.c[] <- m3.par.values[s,'mu']
 			rho.c[] <- m3.par.values[s,'rho']
+			if(ar2.phase3) rho2.c[] <- m3.par.values[s,'rho2']
 			sigma.epsAR1 <- rep(list(rep(m3.par.values[s,'sigma.eps'], max.nr.project)), nr_countries)
 			for (country in prediction.countries[prediction.countries %in% meta3$id_phase3]){	
 					mu.c[country] <- m3.par.values.cs.list[[country]][s,1]
 					rho.c[country] <- m3.par.values.cs.list[[country]][s,2]
+					if(ar2.phase3) rho2.c[country] <- m3.par.values.cs.list[[country]][s,3]
 			}
 		}
 		is.in.phase3 <- rep(forceAR1, nr_countries_real)
@@ -532,16 +552,19 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		           				               meta$annual.simulation)
 			 					S11[icountry] <- D11 - d11
 			  				} else { # country in Phase III	
-								S11[icountry] <- D11 - (all.tfr[this.T_end-1] - 
-													(mu.c[country] + rho.c[country]*(all.tfr[this.T_end-1]-mu.c[country])))
+			  				    ar.mean <- mu.c[country] + rho.c[country]*(all.tfr[this.T_end-1]-mu.c[country])
+			  				    if(ar2.phase3) ar.mean <- ar.mean + rho2.c[country]*(all.tfr[this.T_end-2]-mu.c[country])
+								S11[icountry] <- D11 - (all.tfr[this.T_end-1] - ar.mean)
 							}
 						}
 						if(is.in.phase3[icountry] && year == which.Wsecond[icountry]) {
 							# if a country with adjustment enters Phase III in second proj. step (in normal case corresponds to year ==3)
 							# then the adjustment needs to be changed, based on observed diff in last proj step and AR(1) decrement
+			  				ar.mean <- mu.c[country] + rho.c[country]*(all.f_ps[icountry,year-2,s]-mu.c[country])
+			  				if(ar2.phase3) ar.mean <- ar.mean + rho2.c[country]*(
+			  				    (if(year > 3) all.f_ps[icountry,year-3,s] else f_ps_lag[s, icountry]) - mu.c[country])
 			  				S11[icountry] <- ( all.f_ps[icountry,year-2,s] - all.f_ps[icountry, year-1,s]) - ( 
-			  							all.f_ps[icountry, year-2,s] - (mu.c[country] + rho.c[country]*( 
-			  									all.f_ps[icountry,year-2,s]-mu.c[country])))
+			  							all.f_ps[icountry, year-2,s] - ar.mean)
 				 		}
 		  			}
 		  			# Simulate projection
@@ -589,7 +612,9 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		                }
 					} else { # Phase III
 						new.tfr <- (mu.c[country] + rho.c[country]*(all.f_ps[icountry,year-1,s] - mu.c[country]) 
-										- W[icountry,year]*S11[icountry])						
+										- W[icountry,year]*S11[icountry])
+						if(ar2.phase3) new.tfr <- new.tfr + rho2.c[country]*(
+						    (if(year > 2) all.f_ps[icountry,year-2,s] else f_ps_lag[s, icountry]) - mu.c[country])
 						if(!use.correlation || is.na(epsilons[country])) {
 							passed <- FALSE
 	 						for(i in 1:50){
@@ -655,7 +680,8 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				nr.projections=nr_project,
 				burnin=burnin, thin=thin,
 				end.year=end.year, use.tfr3=has.phase3, burnin3=burnin3, thin3=thin3,
-				mu=mu, rho=rho, sigmaAR1 = sigmaAR1, mu.c=mu.c.mean, rho.c=rho.c.mean, min.tfr=min.tfr,
+				mu=mu, rho=rho, sigmaAR1 = sigmaAR1, mu.c=mu.c.mean, rho.c=rho.c.mean, 
+				ar.order = if(ar2.phase3) 2 else 1, rho2=rho2, rho2.c=rho2.c.mean, min.tfr=min.tfr,
 				use.correlation=use.correlation, start.year=start.year,
 				present.year.index=present.year.index,
 				present.year.index.all=ltfr_matrix.all),
@@ -771,7 +797,8 @@ getValue <- function(pointer)
 	    else thinning.index <- sample(1:nr.points.cs, nr.points, replace=TRUE)
 	  }
       m3.par.values.cs <- get.tfr3.parameter.traces.cs(getValue(mcmc3.list), country.obj=country.obj,
-	                                                     par.names=c('mu.c', 'rho.c'), burnin=burnin3, thinning.index=thinning.index)
+	                                                     par.names=tfr3.parameter.names.cs(meta = getValue(meta3)), 
+	                                                     burnin=burnin3, thinning.index=thinning.index)
 	}
 			
 	return(list(U.var=U.var, Triangle_c4.var=Triangle_c4.var, theta_si=theta_si, cs.par.values=cs.par.values,
