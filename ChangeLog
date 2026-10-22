@@ -1,3 +1,8 @@
+7.4-7.9002 (2026-10-21)
+-----
+Fixed Phase III sampling for extra countries with uncertainty: it used the initial 
+TFR values instead of the updated TFR estimates.
+
 7.4-7.9001 (2026-09-25)
 -----
 Speed-up of the MCMC (about 3x per iteration) and of projections (up to 6x when 
@@ -9,9 +14,6 @@ Fixed bugs related to outliers in raw data (iso.unbiased with uncertainty):
 misalignment of distortions (eps) for countries with start of Phase II > 1 
 (which could cause an error), only one country kept per year in yearly outliers, 
 and distortions of outliers being overwritten when updating TFR.
-
-Fixed Phase III sampling for extra countries with uncertainty: it used the initial 
-TFR values instead of the updated TFR estimates.
 
 New tests: test.outliers, test.mvn.shortcuts, test.buffer.size, and projections 
 with correlation in test.run.mcmc.simulation.
