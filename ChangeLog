@@ -10,6 +10,9 @@ misalignment of distortions (eps) for countries with start of Phase II > 1
 (which could cause an error), only one country kept per year in yearly outliers, 
 and distortions of outliers being overwritten when updating TFR.
 
+Fixed Phase III sampling for extra countries with uncertainty: it used the initial 
+TFR values instead of the updated TFR estimates.
+
 New tests: test.outliers, test.mvn.shortcuts, test.buffer.size, and projections 
 with correlation in test.run.mcmc.simulation.
 

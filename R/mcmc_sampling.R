@@ -549,6 +549,7 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
  		      one.minus.rho <- 1-mcenv$rho.c
  		      one.minus.rho.sq <- one.minus.rho^2
  		      W <- one.minus.rho.sq/sigma.eps.sq
+ 		      ardata <- mcenv$observations # current TFR estimates (updated in mcmc.update.tfr*)
  		      for(country in 1:nr.countries) {
  		        f.ct <- ardata[[country]][2:Ts[country]]
  		        f.ctm1 <- ardata[[country]][1:(Ts[country]-1)]
