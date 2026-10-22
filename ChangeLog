@@ -1,4 +1,4 @@
-7.4-7.9002 (2026-10-21)
+7.4-7.9003 (2026-10-21)
 -----
 Phase III can be modeled as an AR(2) process: argument ar.order in run.tfr3.mcmc, 
 or item ar.order in phase3.parameter of run.tfr.mcmc (uncertainty=TRUE). 

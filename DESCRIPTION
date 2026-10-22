@@ -1,5 +1,5 @@
 Package: bayesTFR
-Version: 7.4-7.9002
+Version: 7.4-7.9003
 Date: 2026-10-21
 Title: Bayesian Fertility Projection
 Authors@R: c(person(given = "Hana",
