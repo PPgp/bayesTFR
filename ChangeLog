@@ -19,6 +19,13 @@ TFR estimates (previously the initial TFR values were used).
 New tests: test.estimate.ar2.phase3, test.mu.prior.phase3, test.run.ar2.phase3.simulation, and 
 test.run.mcmc.simulation.with.uncertainty with ar.order=2.
 
+The Phase III AR(2) process can be parametrized by persistence rho and momentum beta, 
+f_t - mu = rho (f_{t-1} - mu) + beta (f_{t-1} - f_{t-2}) + eps (argument momentum in run.tfr3.mcmc, 
+or item momentum in phase3.parameter of run.tfr.mcmc). The AR coefficients sum to rho, so the 
+information about mu.c is as in AR(1); beta=0 gives AR(1). In projections the momentum 
+yields a decaying drift. New prior arguments beta.prior.range and sigma.beta.prior.range.
+New tests: test.estimate.momentum.phase3, and the AR(2) simulation tests with momentum=TRUE.
+
 7.4-7.9001 (2026-09-25)
 -----
 Speed-up of the MCMC (about 3x per iteration) and of projections (up to 6x when 

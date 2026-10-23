@@ -2,7 +2,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 						thin=10, replace.output=FALSE,
 						# meta parameters
 						my.tfr.file = NULL, buffer.size=500,
-						use.extra.countries=FALSE, ar.order = 1,
+						use.extra.countries=FALSE, ar.order = 1, momentum = FALSE,
 						mu.prior.range=c(0, 2.1), 
 						# if given, the prior of mu is normal truncated to mu.prior.range, otherwise uniform
 						mu.prior.mean=NULL, mu.prior.sd=NULL,
@@ -14,6 +14,8 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 						alpha1.prior.range=c(0, 1), alpha2.prior.range=c(-1, 1),
 						sigma.alpha1.prior.range=c(1e-5, 0.289),
 						sigma.alpha2.prior.range=c(1e-5, 2*0.289),
+						# AR(2) momentum parameter (used if momentum is TRUE, together with the rho parameters)
+						beta.prior.range=c(0, 1), sigma.beta.prior.range=c(1e-5, 0.289),
 						# starting values (length of 1 or nr.chains)
 						mu.ini = NULL, mu.ini.range=mu.prior.range, 
 						rho.ini=NULL, rho.ini.range=rho.prior.range, 
@@ -24,6 +26,8 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 						alpha2.ini=NULL, alpha2.ini.range=alpha2.prior.range,
 						sigma.alpha1.ini=NULL, sigma.alpha1.ini.range=sigma.alpha1.prior.range,
 						sigma.alpha2.ini=NULL, sigma.alpha2.ini.range=sigma.alpha2.prior.range,
+						beta.ini=NULL, beta.ini.range=beta.prior.range,
+						sigma.beta.ini=NULL, sigma.beta.ini.range=sigma.beta.prior.range,
 					 	seed = NULL, parallel=FALSE, nr.nodes=nr.chains, 
 					 	compression.type='None',
 					 	auto.conf = list(max.loops=5, iter=50000, iter.incr=20000, nr.chains=3, thin=60, burnin=10000),
@@ -36,6 +40,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 	}
 	
 	if(!ar.order %in% c(1, 2)) stop('Argument ar.order must be 1 or 2.')
+	if(momentum) ar.order <- 2 # the momentum model is an AR(2) process
 	if(is.null(mu.prior.mean) != is.null(mu.prior.sd)) stop('Both mu.prior.mean and mu.prior.sd must be given.')
 	mc <- get.tfr.mcmc(sim.dir)
 	output.dir <- file.path(sim.dir, 'phaseIII')
@@ -63,7 +68,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 	
 	# starting values
 	#==============================
-	par.names <- tfr3.parameter.names(meta = list(ar.order = ar.order))
+	par.names <- tfr3.parameter.names(meta = list(ar.order = ar.order, momentum = momentum))
 	ini.names <- paste(par.names, 'ini', sep='.')
 	for(varname in ini.names) {
 		if(is.null(get(varname)))
@@ -73,7 +78,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 	c.index <- 1: (if(use.extra.countries) get.nr.countries(mc$meta) else get.nrest.countries(mc$meta))
 	bayesTFR.mcmc.meta <- structure(list(nr.chains=nr.chains,
 								my.tfr.file=my.tfr.file, output.dir=output.dir,
-								phase=3, ar.order=ar.order,
+								phase=3, ar.order=ar.order, momentum=momentum,
 								id_phase3 = get.phase3.countries.index(mc$meta$lambda_c[c.index], mc$meta$T_end_c[c.index], ar.order),
 								compression.type=compression.type, buffer.size=buffer.size, auto.conf=auto.conf
 								), class='bayesTFR.mcmc.meta')

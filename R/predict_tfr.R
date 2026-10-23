@@ -300,14 +300,15 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		if(length(thinning.index) < nr_simu) 
 			stop('Length of MCMCs for phase 2 and 3 cannot be matched with these settings. Check arguments burnin, burnin3, nr.traj and thin.')
 		ar2.phase3 <- is.ar2.phase3(mcmc3$meta)
+		ar.par.names <- get.ar.par.names.phase3(mcmc3$meta)
 		m3.par.values <- get.tfr3.parameter.traces(mcmc3$mcmc.list, 
-		                        par.names=c('mu', if(ar2.phase3) c('alpha1', 'alpha2') else 'rho', 'sigma.eps'), 
+		                        par.names=c('mu', ar.par.names, 'sigma.eps'), 
 								thinning.index=thinning.index, burnin=burnin3)
 		thin3 <- (thinning.index[2]-thinning.index[1])*mcmc3$mcmc.list[[1]]$thin
 		if(dim(m3.par.values)[1] != nr_simu) stop('Mismatch in length of MCMCs for phase 2 and 3.')
-		if(ar2.phase3) { # convert partial autocorrelations into AR coefficients
-		    m3.par.values <- cbind(m3.par.values, rho=m3.par.values[,'alpha1']*(1-m3.par.values[,'alpha2']),
-		                           rho2=m3.par.values[,'alpha2'])
+		if(ar2.phase3) { # convert AR(2) parameters into AR coefficients
+		    coefs <- get.ar2.coefs.phase3(m3.par.values[,ar.par.names[1]], m3.par.values[,ar.par.names[2]], mcmc3$meta)
+		    m3.par.values <- cbind(m3.par.values[,c('mu', 'sigma.eps'), drop=FALSE], rho=coefs$rho1, rho2=coefs$rho2)
 		}
 		# used for the resulting prediction object
 		mu <- mean(m3.par.values[,'mu'])
@@ -366,10 +367,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		if(has.phase3 && is.element(country, meta3$id_phase3)) {
 		  
 			m3.par.values.cs.list[[country]] <- dprep$m3.par.values.cs
-			if(ar2.phase3) # convert partial autocorrelations into AR coefficients (columns are mu, rho1, rho2)
-			    m3.par.values.cs.list[[country]] <- cbind(m3.par.values.cs.list[[country]][,1],
-			                                              m3.par.values.cs.list[[country]][,2]*(1-m3.par.values.cs.list[[country]][,3]),
-			                                              m3.par.values.cs.list[[country]][,3])
+			if(ar2.phase3) { # convert AR(2) parameters into AR coefficients (columns are mu, rho1, rho2)
+			    coefs <- get.ar2.coefs.phase3(m3.par.values.cs.list[[country]][,2], m3.par.values.cs.list[[country]][,3], meta3)
+			    m3.par.values.cs.list[[country]] <- cbind(m3.par.values.cs.list[[country]][,1], coefs$rho1, coefs$rho2)
+			}
 			mu.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,1])
 			rho.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,2])
 			if(ar2.phase3) rho2.c.mean[country] <- mean(m3.par.values.cs.list[[country]][,3])

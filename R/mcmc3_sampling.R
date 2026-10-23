@@ -68,9 +68,10 @@ one.step.mcmc3.sampling <- function(mcmc)
   }
 
   # Slice sampling for the world-level AR parameters and their standard deviations:
-  # rho for AR(1); partial autocorrelations alpha1 in [0,1) and alpha2 in [-1,1) for AR(2)
-  ar.pars <- if(is.ar2.phase3(meta)) c('alpha1', 'alpha2') else 'rho'
-  ar.pars.low <- if(is.ar2.phase3(meta)) c(0, -1) else 0
+  # rho for AR(1); for AR(2) either partial autocorrelations alpha1 in [0,1) and alpha2 in [-1,1),
+  # or persistence rho in [0,1) and momentum beta in [0,1)
+  ar.pars <- get.ar.par.names.phase3(meta)
+  ar.pars.low <- if(is.ar2.phase3(meta) && !is.momentum.phase3(meta)) c(0, -1) else rep(0, length(ar.pars))
   for(i in seq_along(ar.pars)) {
     par <- ar.pars[i]
     sigma.par <- paste0('sigma.', par)
@@ -153,6 +154,7 @@ mcmc3.update.cs.pars <- function(mcmc) {
     }
     return(list(S.eps=S.eps, STn=STn))
   }
+  if(is.momentum.phase3(mcmc$meta)) return(mcmc3.update.cs.pars.momentum(mcmc))
   # AR(2): f_t - mu = rho1 (f_{t-1} - mu) + rho2 (f_{t-2} - mu) + eps_t,
   # with rho1 = alpha1 (1 - alpha2), rho2 = alpha2; conditioned on the first two observations
   sigma.alpha1.sq <- mcmc$sigma.alpha1^2
@@ -190,6 +192,51 @@ mcmc3.update.cs.pars <- function(mcmc) {
     alpha2 <- mcmc$alpha2.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=-0.999999, high=0.999999)
 
     S.eps <- S.eps + sum((d0 - alpha1*(1 - alpha2)*d1 - alpha2*d2)^2)
+    STn <- STn + Ts[country]-2
+  }
+  return(list(S.eps=S.eps, STn=STn))
+}
+
+mcmc3.update.cs.pars.momentum <- function(mcmc) {
+  # Gibbs sampler for the country-specific Phase III parameters mu.c, rho.c, beta.c of the AR(2) 
+  # process parametrized by persistence rho and momentum beta:
+  # f_t - mu = rho (f_{t-1} - mu) + beta (f_{t-1} - f_{t-2}) + eps_t, conditioned on the first two observations.
+  # As the AR coefficients sum to rho, the information about mu.c is the same as in AR(1).
+  ardata <- mcmc$observations
+  Ts <- mcmc$length_obs
+  sigma.eps.sq <- mcmc$sigma.eps^2
+  sigma.mu.sq.inv <- 1/mcmc$sigma.mu^2
+  mu.over.sigma.sq <- mcmc$mu*sigma.mu.sq.inv
+  sigma.rho.sq.inv <- 1/mcmc$sigma.rho^2
+  rho.over.sigma.sq <- mcmc$rho*sigma.rho.sq.inv
+  sigma.beta.sq.inv <- 1/mcmc$sigma.beta^2
+  beta.over.sigma.sq <- mcmc$beta*sigma.beta.sq.inv
+  S.eps <- STn <- 0
+  for(country in seq_len(mcmc$meta$nr.countries)) {
+    f.ct <- ardata[[country]][3:Ts[country]]
+    f.ctm1 <- ardata[[country]][2:(Ts[country]-1)]
+    v <- f.ctm1 - ardata[[country]][1:(Ts[country]-2)] # velocity, does not depend on mu
+    rho <- mcmc$rho.c[country]
+    beta <- mcmc$beta.c[country]
+    # mu.c: f_t - rho f_{t-1} - beta v_t = (1 - rho) mu + eps_t
+    one.minus.rho <- 1 - rho
+    nomin <- one.minus.rho * sum(f.ct - rho*f.ctm1 - beta*v)/sigma.eps.sq + mu.over.sigma.sq
+    denom <- (Ts[country]-2) * one.minus.rho^2/sigma.eps.sq + sigma.mu.sq.inv
+    mcmc$mu.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0)
+
+    d0 <- f.ct - mcmc$mu.c[country]
+    d1 <- f.ctm1 - mcmc$mu.c[country]
+    # rho.c: d0 - beta v = rho d1 + eps
+    nomin <- sum(d1 * (d0 - beta*v))/sigma.eps.sq + rho.over.sigma.sq
+    denom <- sum(d1^2)/sigma.eps.sq + sigma.rho.sq.inv
+    rho <- mcmc$rho.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0, high=0.999999)
+
+    # beta.c: d0 - rho d1 = beta v + eps
+    nomin <- sum(v * (d0 - rho*d1))/sigma.eps.sq + beta.over.sigma.sq
+    denom <- sum(v^2)/sigma.eps.sq + sigma.beta.sq.inv
+    beta <- mcmc$beta.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0, high=0.999999)
+
+    S.eps <- S.eps + sum((d0 - rho*d1 - beta*v)^2)
     STn <- STn + Ts[country]-2
   }
   return(list(S.eps=S.eps, STn=STn))

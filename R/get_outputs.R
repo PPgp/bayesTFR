@@ -764,15 +764,29 @@ get.ar.order.phase3 <- function(meta = NULL)
 
 is.ar2.phase3 <- function(meta = NULL) return(get.ar.order.phase3(meta) == 2)
 
+is.momentum.phase3 <- function(meta = NULL) return(is.ar2.phase3(meta) && isTRUE(meta$momentum))
+
+get.ar.par.names.phase3 <- function(meta = NULL) {
+    # Names of the AR parameters in Phase III: rho for AR(1); for AR(2) either the partial 
+    # autocorrelations alpha1 and alpha2, or the persistence rho and the momentum beta
+    if(!is.ar2.phase3(meta)) return('rho')
+    if(is.momentum.phase3(meta)) return(c('rho', 'beta'))
+    return(c('alpha1', 'alpha2'))
+}
+
+get.ar2.coefs.phase3 <- function(par1, par2, meta = NULL) {
+    # Convert the AR(2) parameters (as given by get.ar.par.names.phase3) into AR coefficients rho1, rho2
+    if(is.momentum.phase3(meta)) return(list(rho1 = par1 + par2, rho2 = -par2))
+    return(list(rho1 = par1 * (1 - par2), rho2 = par2))
+}
+
 tfr3.parameter.names <- function(meta = NULL) {
-    # For AR(2), the AR parameters are parametrized by the partial autocorrelations alpha1 and alpha2
-    if(is.ar2.phase3(meta))
-        return(c('mu', 'alpha1', 'alpha2', 'sigma.mu', 'sigma.alpha1', 'sigma.alpha2', 'sigma.eps'))
-    return(c('mu', 'rho', 'sigma.mu', 'sigma.rho', 'sigma.eps'))
+    ar.pars <- get.ar.par.names.phase3(meta)
+    return(c('mu', ar.pars, 'sigma.mu', paste0('sigma.', ar.pars), 'sigma.eps'))
 }
 
 tfr3.parameter.names.cs <- function(country.code=NULL, meta = NULL) {
-    pars <- if(is.ar2.phase3(meta)) c('mu', 'alpha1', 'alpha2') else c('mu', 'rho')
+    pars <- c('mu', get.ar.par.names.phase3(meta))
     return(paste(pars, '.c', country.code,sep=''))
 }
 

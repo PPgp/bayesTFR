@@ -253,8 +253,9 @@ get.eps.phase3 <- function(mcmc, country, idx)
   eps <- rep(0, length(idx))
   is.ar <- idx > mcmc$meta$lambda_c[country]
   t <- idx[is.ar]
-  rho1 <- mcmc$alpha1.c[id3] * (1 - mcmc$alpha2.c[id3])
-  eps[is.ar] <- tfr[t + 1] - mu - rho1 * (tfr[t] - mu) - mcmc$alpha2.c[id3] * (tfr[t - 1] - mu)
+  ar.pars <- paste0(get.ar.par.names.phase3(mcmc$meta), '.c')
+  coefs <- get.ar2.coefs.phase3(mcmc[[ar.pars[1]]][id3], mcmc[[ar.pars[2]]][id3], mcmc$meta)
+  eps[is.ar] <- tfr[t + 1] - mu - coefs$rho1 * (tfr[t] - mu) - coefs$rho2 * (tfr[t - 1] - mu)
   return (eps)
 }
 
@@ -263,7 +264,11 @@ get.phase3.ar.par.matrix <- function(mcmc)
   # Matrix of Phase III parameters (mu, rho1, rho2) for all countries; rho2 is 0 for AR(1)
   phase3par <- matrix(nrow = mcmc$meta$nr_countries, ncol=3)
   if (is.ar2.phase3(mcmc$meta))
-    phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, mcmc$alpha1.c * (1 - mcmc$alpha2.c), mcmc$alpha2.c)
+  {
+    ar.pars <- paste0(get.ar.par.names.phase3(mcmc$meta), '.c')
+    coefs <- get.ar2.coefs.phase3(mcmc[[ar.pars[1]]], mcmc[[ar.pars[2]]], mcmc$meta)
+    phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, coefs$rho1, coefs$rho2)
+  }
   else phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, mcmc$rho.c, 0)
   return (phase3par)
 }

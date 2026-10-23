@@ -300,6 +300,7 @@ tfr.mcmc.sampling.extra <- function(mcmc, mcmc.list, countries, posterior.sample
       mcmc3.format[[i]] <- list()
       mcmc3.format[[i]]$meta$phase <- 3
       mcmc3.format[[i]]$meta$ar.order <- mcmc$meta$ar.order
+      mcmc3.format[[i]]$meta$momentum <- mcmc$meta$momentum
       mcmc3.format[[i]]$compression.type <- mcmc.list[[i]]$compression.type
       mcmc3.format[[i]]$meta$compression.type <- mcmc.list[[i]]$meta$compression.type
       mcmc3.format[[i]]$meta$output.dir <- file.path(mcmc.list[[i]]$meta$output.dir, 'phaseIII')
