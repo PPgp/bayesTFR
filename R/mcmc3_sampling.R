@@ -97,8 +97,12 @@ mcmc3.update.mu <- function(mcmc) {
   # Metropolis-Hastings for the world mean mu. The proposal is the full conditional ignoring 
   # the truncation of mu.c at 0, which is corrected for in the acceptance probability.
   # The prior of mu is uniform on mu.prior.range, or, if mu.prior.mean and mu.prior.sd are given, 
-  # normal truncated to mu.prior.range.
+  # normal truncated to mu.prior.range. If mu.fixed is given, mu is not updated.
   meta <- mcmc$meta
+  if(!is.null(meta$mu.fixed)) {
+    mcmc[['mu']] <- meta$mu.fixed
+    return(invisible())
+  }
   nr.countries <- meta$nr.countries
   mu.integral.to.mC <- (mu.rho.integral(mcmc[['mu']], mcmc[['sigma.mu']], low=0))^(-nr.countries)
   if(is.null(meta$mu.prior.sd)) {

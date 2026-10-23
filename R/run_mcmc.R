@@ -151,6 +151,12 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	  meta$mu.prior.mean <- phase3.parameter[['mu.prior.mean']]
 	  meta$mu.prior.sd <- phase3.parameter[['mu.prior.sd']]
 	  if(is.null(meta$mu.prior.mean) != is.null(meta$mu.prior.sd)) stop('Both mu.prior.mean and mu.prior.sd must be given in phase3.parameter.')
+	  # mu fixed to a given value (not estimated)
+	  meta$mu.fixed <- phase3.parameter[['mu.fixed']]
+	  if(!is.null(meta$mu.fixed)) {
+	    if(!is.null(meta$mu.prior.mean)) stop('Items mu.fixed and mu.prior.mean in phase3.parameter cannot be used together.')
+	    if(length(meta$mu.fixed) != 1 || meta$mu.fixed <= 0) stop('mu.fixed in phase3.parameter must be a single positive value.')
+	  }
 	  for (varname in phase3.par.names)
 	  {
 	    prior.range <- paste0(varname, '.prior.range')
@@ -162,6 +168,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	    else
 	      meta[[paste0(varname, '.ini')]] <- get.init.values(meta[[prior.range]])
 	  }
+	  if(!is.null(meta$mu.fixed)) meta$mu.ini <- meta$mu.fixed
 	  store.bayesTFR.meta.object(meta, file.path(output.dir, 'phaseIII'))
 	  if(meta$nr.countries <= 0) run.phase3 <- FALSE else run.phase3 <- TRUE
 	  for (name in names(meta))
@@ -389,6 +396,8 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	  mcmc3.set <- get.tfr3.mcmc(sim.dir)
 	  Eini$meta$ar.order <- mcmc3.set$meta$ar.order
 	  Eini$meta$momentum <- mcmc3.set$meta$momentum
+	  for (par.name in c('mu.prior.mean', 'mu.prior.sd', 'mu.fixed'))
+	    Eini$meta[[par.name]] <- mcmc3.set$meta[[par.name]]
 	  for (par.name in tfr3.parameter.names(meta = mcmc3.set$meta))
 	  {
 	    for (suffix in c('prior.range', 'ini', 'ini.range'))

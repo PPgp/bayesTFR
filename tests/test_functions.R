@@ -1266,6 +1266,24 @@ test.run.ar2.phase3.simulation <- function(wpp.year = 2019, momentum = FALSE) {
     unlink(sim.dir, recursive=TRUE)
 }
 
+test.mu.fixed.phase3 <- function(wpp.year = 2019) {
+    sim.dir <- tempfile()
+    m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, wpp.year = wpp.year)
+    test.name <- 'running Phase III MCMC with fixed mu'
+    start.test(test.name, wpp.year)
+    m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=20, thin=1, nr.chains=2, momentum=TRUE, mu.fixed=1.1)
+    stopifnot(get.tfr3.mcmc(sim.dir)$meta$mu.fixed == 1.1)
+    traces <- get.tfr3.parameter.traces(m3$mcmc.list, burnin=0)
+    stopifnot(all(traces[,'mu'] == 1.1))
+    stopifnot(length(unique(traces[,'rho'])) > 1)
+    pred <- tfr.predict(m, burnin=0, burnin3=5, verbose=FALSE)
+    stopifnot(pred$mu == 1.1)
+    stopifnot(inherits(try(run.tfr3.mcmc(sim.dir=sim.dir, iter=2, mu.fixed=1.1, mu.prior.mean=1, mu.prior.sd=0.1, 
+                                         replace.output=TRUE), silent=TRUE), 'try-error'))
+    test.ok(test.name)
+    unlink(sim.dir, recursive=TRUE)
+}
+
 test.mu.prior.phase3 <- function() {
     # Check the MH update of the Phase III world mean mu against its exact posterior 
     # for the uniform and the truncated normal prior

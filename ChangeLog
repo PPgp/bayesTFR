@@ -26,6 +26,10 @@ information about mu.c is as in AR(1); beta=0 gives AR(1). In projections the mo
 yields a decaying drift. New prior arguments beta.prior.range and sigma.beta.prior.range.
 New tests: test.estimate.momentum.phase3, and the AR(2) simulation tests with momentum=TRUE.
 
+The Phase III world mean mu can be fixed to a given value: argument mu.fixed in run.tfr3.mcmc 
+(or item in phase3.parameter of run.tfr.mcmc). The other Phase III parameters are then estimated 
+conditionally on it. New test test.mu.fixed.phase3.
+
 7.4-7.9001 (2026-09-25)
 -----
 Speed-up of the MCMC (about 3x per iteration) and of projections (up to 6x when 

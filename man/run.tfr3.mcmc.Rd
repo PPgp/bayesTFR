@@ -12,7 +12,7 @@ Runs (or continues running) MCMCs for simulating Phase III total fertility rate,
 run.tfr3.mcmc(sim.dir, nr.chains = 3, iter = 50000, thin = 10, 
     replace.output = FALSE, my.tfr.file = NULL, buffer.size = 500, 
     use.extra.countries = FALSE, ar.order = 1, momentum = FALSE,
-    mu.prior.range = c(0, 2.1), mu.prior.mean = NULL, mu.prior.sd = NULL,
+    mu.prior.range = c(0, 2.1), mu.prior.mean = NULL, mu.prior.sd = NULL, mu.fixed = NULL,
     rho.prior.range = c(0, 1 - .Machine$double.xmin), 
     sigma.mu.prior.range = c(1e-05, 0.318), sigma.rho.prior.range = c(1e-05, 0.289), 
     sigma.eps.prior.range = c(1e-05, 0.5), 
@@ -54,6 +54,7 @@ continue.tfr3.mcmc(sim.dir, iter, chain.ids=NULL,
   \item{momentum}{Logical. If \code{TRUE}, the AR(2) process is parametrized by the persistence \eqn{\rho_c}{rho.c} and the momentum \eqn{\beta_c}{beta.c} instead of the partial autocorrelations, and \code{ar.order} is set to 2. See Details.}
   \item{mu.prior.range, rho.prior.range, sigma.mu.prior.range, sigma.rho.prior.range, sigma.eps.prior.range}{Min and max for the prior (uniform) distribution of these paraemters. \code{rho.prior.range} and \code{sigma.rho.prior.range} are only used if \code{ar.order} is 1 or \code{momentum} is \code{TRUE}.}
   \item{mu.prior.mean, mu.prior.sd}{If given, the prior distribution of the world mean \eqn{\bar{\mu}}{mu} is normal with this mean and standard deviation, truncated to \code{mu.prior.range}. By default, the prior is uniform on \code{mu.prior.range}. Both arguments must be given together.}
+  \item{mu.fixed}{If given, the world mean \eqn{\bar{\mu}}{mu} is fixed to this value and not estimated; the country-specific \eqn{\mu_c}{mu.c} and the other parameters are estimated conditionally on it. This can be used for example to keep \eqn{\bar{\mu}}{mu} at the value estimated by an AR(1) model while estimating the AR(2) or momentum parameters, as \eqn{\bar{\mu}}{mu} is only weakly identified if the persistence is close to 1. It cannot be combined with \code{mu.prior.mean}.}
   \item{alpha1.prior.range, alpha2.prior.range, sigma.alpha1.prior.range, sigma.alpha2.prior.range}{Min and max for the prior (uniform) distribution of the world means and standard deviations of the partial autocorrelations. Only used if \code{ar.order} is 2 and \code{momentum} is \code{FALSE}.}
   \item{beta.prior.range, sigma.beta.prior.range}{Min and max for the prior (uniform) distribution of the world mean and standard deviation of the momentum parameter. Only used if \code{momentum} is \code{TRUE}.}
   \item{mu.ini, rho.ini, sigma.mu.ini, sigma.rho.ini, sigma.eps.ini, alpha1.ini, alpha2.ini, sigma.alpha1.ini, sigma.alpha2.ini, beta.ini, sigma.beta.ini}{Initial value(s) of the parameters. It can be a single value or an array of the size \code{nr.chains}.  By default, if \code{nr.chains} is 1, it is the middle point of the corresponding range. Otherwise, it is uniformly randomly distributed within the range.

@@ -6,6 +6,8 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 						mu.prior.range=c(0, 2.1), 
 						# if given, the prior of mu is normal truncated to mu.prior.range, otherwise uniform
 						mu.prior.mean=NULL, mu.prior.sd=NULL,
+						# if given, mu is fixed to this value and not estimated
+						mu.fixed=NULL,
 						rho.prior.range=c(0,1-.Machine$double.xmin),
 						 sigma.mu.prior.range=c(1e-5,0.318),
 						 sigma.rho.prior.range=c(1e-5,0.289),
@@ -42,6 +44,11 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 	if(!ar.order %in% c(1, 2)) stop('Argument ar.order must be 1 or 2.')
 	if(momentum) ar.order <- 2 # the momentum model is an AR(2) process
 	if(is.null(mu.prior.mean) != is.null(mu.prior.sd)) stop('Both mu.prior.mean and mu.prior.sd must be given.')
+	if(!is.null(mu.fixed)) {
+		if(!is.null(mu.prior.mean)) stop('Arguments mu.fixed and mu.prior.mean cannot be used together.')
+		if(length(mu.fixed) != 1 || mu.fixed <= 0) stop('mu.fixed must be a single positive value.')
+		mu.ini <- mu.fixed
+	}
 	mc <- get.tfr.mcmc(sim.dir)
 	output.dir <- file.path(sim.dir, 'phaseIII')
 	if(file.exists(output.dir)) {
@@ -85,6 +92,7 @@ run.tfr3.mcmc <- function(sim.dir, nr.chains=3, iter=50000,
 	bayesTFR.mcmc.meta$nr.countries <- length(bayesTFR.mcmc.meta$id_phase3)
 	bayesTFR.mcmc.meta$mu.prior.mean <- mu.prior.mean
 	bayesTFR.mcmc.meta$mu.prior.sd <- mu.prior.sd
+	bayesTFR.mcmc.meta$mu.fixed <- mu.fixed
 	# prior ranges, initial values and initial ranges for parameters of this AR order
 	for(par in par.names) {
 		for(suffix in c('prior.range', 'ini', 'ini.range')) {
