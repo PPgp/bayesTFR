@@ -35,8 +35,12 @@ if(!cran) {
 	test.run.ar2.phase3.simulation()
 	test.run.mcmc.simulation.with.uncertainty(ar.order = 2)
 	test.estimate.momentum.phase3()
+	test.estimate.momentum.phase3(L = 2)
+	test.momentum.lag.phase3.errors()
 	test.run.ar2.phase3.simulation(momentum = TRUE)
+	test.run.ar2.phase3.simulation(momentum = TRUE, momentum.lag = 2)
 	test.run.mcmc.simulation.with.uncertainty(momentum = TRUE)
+	test.run.mcmc.simulation.with.uncertainty(momentum = TRUE, momentum.lag = 2)
 	test.mu.fixed.phase3()
 	for (wpp in c(2019, 2024)){
 	    test.run.mcmc.simulation(wpp.year = wpp)

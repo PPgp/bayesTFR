@@ -890,15 +890,15 @@ test.reproduce.simulation <- function() {
     unlink(sim.dir, recursive=TRUE)
 }
 
-test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019, ar.order = 1, momentum = FALSE) {
+test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019, ar.order = 1, momentum = FALSE, momentum.lag = 1) {
     sim.dir <- tempfile()
-    if(momentum) ar.order <- 2
+    if(momentum) ar.order <- momentum.lag + 1
 
     # run MCMC
     test.name <- paste0('running MCMC with uncertainty and AR(', ar.order, ')', if(momentum) ' with momentum' else '', ' in phase III')
     start.test(test.name, wpp.year)
     m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, uncertainty = TRUE, wpp.year = wpp.year,
-                      phase3.parameter = list(ar.order = ar.order, momentum = momentum))
+                      phase3.parameter = list(ar.order = ar.order, momentum = momentum, momentum.lag = momentum.lag))
     stopifnot(m$mcmc.list[[1]]$finished.iter == 5)
     stopifnot(get.total.iterations(m$mcmc.list, 0) == 5)
     stopifnot(bayesTFR:::tfr.set.identical(m, get.tfr.mcmc(sim.dir), include.output.dir=FALSE))
@@ -916,7 +916,8 @@ test.run.mcmc.simulation.with.uncertainty <- function(wpp.year = 2019, ar.order 
     test.name <- 'summary of MCMC with uncertainty'
     start.test(test.name, wpp.year)
     sm <- summary(m, country = "Niger")
-    sm2 <- summary(m, country = "Japan")
+    # a country included in the Phase III estimation (depends on the AR order)
+    sm2 <- summary(m, country = m$meta$regions$country_code[m$meta$id_phase3[1]])
     smg <- summary(m)
     stopifnot(!sm$phase3$estimation)
     stopifnot(sm2$phase3$estimation)
@@ -1182,10 +1183,10 @@ test.estimate.ar2.phase3 <- function() {
     test.ok(test.name)
 }
 
-test.estimate.momentum.phase3 <- function() {
-    # Simulate data from the AR(2) momentum model with known parameters and check that 
-    # the Phase III Gibbs sampler recovers them
-    test.name <- 'recovering parameters of AR(2) with momentum in Phase III'
+test.estimate.momentum.phase3 <- function(L = 1) {
+    # Simulate data from the momentum model with velocity over L years and known parameters 
+    # and check that the Phase III Gibbs sampler recovers them
+    test.name <- paste0('recovering parameters of the momentum model (lag ', L, ') in Phase III')
     start.test(test.name)
     set.seed(321)
     rtn <- function(n, mean, sd, low, high) qnorm(runif(n, pnorm(low, mean, sd), pnorm(high, mean, sd)), mean, sd)
@@ -1194,16 +1195,16 @@ test.estimate.momentum.phase3 <- function() {
     truth <- c(mu=1.8, rho=0.85, beta=0.3, sigma.eps=0.08)
     mu.c <- rtn(C, truth['mu'], 0.25, 0, Inf)
     rho.c <- rtn(C, truth['rho'], 0.05, 0, 1)
-    beta.c <- rtn(C, truth['beta'], 0.1, 0, 1)
+    beta.c <- rtn(C, truth['beta'], 0.15, 0, 1) # wider spread, as beta.c is less identified for longer lags
     obs <- list()
     for(country in 1:C) {
         f <- rep(mu.c[country], Tn + 50)
-        for(t in 3:length(f)) 
-            f[t] <- mu.c[country] + rho.c[country]*(f[t-1] - mu.c[country]) + beta.c[country]*(f[t-1] - f[t-2]) + 
+        for(t in (L+2):length(f)) 
+            f[t] <- mu.c[country] + rho.c[country]*(f[t-1] - mu.c[country]) + beta.c[country]*(f[t-1] - f[t-1-L])/L + 
                         rnorm(1, 0, truth['sigma.eps'])
         obs[[country]] <- f[-(1:50)] # remove burnin
     }
-    meta <- list(nr.countries=C, ar.order=2, momentum=TRUE, mu.prior.range=c(0, 2.1), sigma.mu.prior.range=c(1e-5, 0.318),
+    meta <- list(nr.countries=C, ar.order=L+1, momentum=TRUE, momentum.lag=L, mu.prior.range=c(0, 2.1), sigma.mu.prior.range=c(1e-5, 0.318),
                  rho.prior.range=c(0, 1), beta.prior.range=c(0, 1),
                  sigma.rho.prior.range=c(1e-5, 0.289), sigma.beta.prior.range=c(1e-5, 0.289),
                  sigma.eps.prior.range=c(1e-5, 0.5))
@@ -1222,24 +1223,61 @@ test.estimate.momentum.phase3 <- function() {
     stopifnot(all(abs(post.mean - truth) < c(0.1, 0.05, 0.05, 0.01)))
     stopifnot(cor(beta.c.mean, beta.c) > 0.5)
     # conversion into AR coefficients
-    coefs <- bayesTFR:::get.ar2.coefs.phase3(0.8, 0.2, meta)
-    stopifnot(all.equal(c(coefs$rho1, coefs$rho2), c(1, -0.2)))
+    coefs <- bayesTFR:::get.ar.coefs.phase3(c(0.8, 0.2), meta)
+    stopifnot(all.equal(drop(coefs), c(0.8 + 0.2/L, rep(0, L-1), -0.2/L)))
     test.ok(test.name)
 }
 
-test.run.ar2.phase3.simulation <- function(wpp.year = 2019, momentum = FALSE) {
+test.momentum.lag.phase3.errors <- function() {
+    # Check that the Phase III errors used with uncertainty correspond to the momentum model 
+    # with velocity over L years, including errors with a proposed TFR substituted at different lags
+    test.name <- 'computing Phase III errors of the momentum model with lag 3'
+    start.test(test.name)
+    set.seed(1)
+    L <- 3; p <- L + 1; Tn <- 20; lambda <- 4
+    tfr <- cbind(1.5 + cumsum(rnorm(Tn, 0, 0.05)), 1.8 + cumsum(rnorm(Tn, 0, 0.05)))
+    meta <- list(ar.order=p, momentum=TRUE, momentum.lag=L, tfr_all=tfr, id_phase3=1:2, 
+                 lambda_c=c(lambda, lambda), nr_countries=2)
+    mcmc <- list(meta=meta, mu.c=c(1.2, 1.4), rho.c=c(0.9, 0.95), beta.c=c(0.3, 0.5))
+    expected <- function(x, mu, rho, beta, t) x[t+1] - mu - rho*(x[t] - mu) - beta*(x[t] - x[t-L])/L
+    idx <- lambda:(Tn-1)
+    eps <- bayesTFR:::get.eps.phase3(mcmc, 1, idx)
+    is.ar <- idx >= lambda + L
+    stopifnot(all(eps[!is.ar] == 0))
+    stopifnot(all.equal(eps[is.ar], expected(tfr[,1], 1.2, 0.9, 0.3, idx[is.ar])))
+    par3 <- bayesTFR:::get.phase3.ar.par.matrix(mcmc)
+    stopifnot(ncol(par3) == p + 1)
+    stopifnot(identical(bayesTFR:::get.ar.phase3.countries(mcmc, lambda + L - 1, 1:2), integer(0)))
+    stopifnot(identical(bayesTFR:::get.ar.phase3.countries(mcmc, lambda + L, 1:2), 1:2))
+    year.ind <- 12
+    stopifnot(all.equal(bayesTFR:::get.eps.phase3.year(mcmc, year.ind, par3, 1:2),
+                        c(expected(tfr[,1], 1.2, 0.9, 0.3, year.ind), expected(tfr[,2], 1.4, 0.95, 0.5, year.ind))))
+    # proposed TFR substituted at lags 0, ..., p
+    prop <- c(1.1, 1.3)
+    for(k in 0:p) {
+        tfr.k <- tfr; tfr.k[year.ind + 1 - k, ] <- prop
+        stopifnot(all.equal(bayesTFR:::get.eps.phase3.year(mcmc, year.ind, par3, 1:2, prop, year.ind + 1 - k),
+                            c(expected(tfr.k[,1], 1.2, 0.9, 0.3, year.ind), expected(tfr.k[,2], 1.4, 0.95, 0.5, year.ind))))
+    }
+    test.ok(test.name)
+}
+
+test.run.ar2.phase3.simulation <- function(wpp.year = 2019, momentum = FALSE, momentum.lag = 1) {
     sim.dir <- tempfile()
     m <- run.tfr.mcmc(iter=5, nr.chains=1, output.dir=sim.dir, wpp.year = wpp.year)
     
     ar.pars <- if(momentum) c('rho', 'beta') else c('alpha1', 'alpha2')
-    test.name <- paste0('running Phase III MCMC with AR(2)', if(momentum) ' with momentum' else '')
+    ar.order <- if(momentum) momentum.lag + 1 else 2
+    test.name <- paste0('running Phase III MCMC with AR(', ar.order, ')', if(momentum) ' with momentum' else '')
     start.test(test.name, wpp.year)
-    m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=20, thin=1, nr.chains=2, ar.order=2, momentum=momentum)
+    m3 <- run.tfr3.mcmc(sim.dir=sim.dir, iter=20, thin=1, nr.chains=2, ar.order=2, momentum=momentum, momentum.lag=momentum.lag)
     stopifnot(bayesTFR:::is.momentum.phase3(m3$meta) == momentum)
+    stopifnot(bayesTFR:::get.ar.order.phase3(m3$meta) == ar.order)
     stopifnot(m3$mcmc.list[[1]]$finished.iter == 20)
     stopifnot(bayesTFR:::tfr.set.identical(m3, get.tfr3.mcmc(sim.dir), include.output.dir=FALSE))
-    # countries need at least three Phase III observations
-    stopifnot(all(m$meta$T_end_c[m3$meta$id_phase3] - m$meta$lambda_c[m3$meta$id_phase3] >= 2))
+    # countries need at least ar.order + 1 Phase III observations
+    stopifnot(m3$meta$nr.countries > 0)
+    stopifnot(all(m$meta$T_end_c[m3$meta$id_phase3] - m$meta$lambda_c[m3$meta$id_phase3] >= ar.order))
     stopifnot(m3$meta$nr.countries < sum(m$meta$lambda_c < m$meta$T_end_c))
     traces <- get.tfr3.parameter.traces(m3$mcmc.list, burnin=5)
     stopifnot(all(c(ar.pars, paste0('sigma.', ar.pars)) %in% colnames(traces)))
@@ -1252,12 +1290,13 @@ test.run.ar2.phase3.simulation <- function(wpp.year = 2019, momentum = FALSE) {
     stopifnot(all(paste0(c('mu.c', paste0(ar.pars, '.c')), '_c', country) %in% rownames(s$phase3$results$statistics)))
     test.ok(test.name)
     
-    test.name <- 'running projections with AR(2) in Phase III'
+    test.name <- paste0('running projections with AR(', ar.order, ') in Phase III')
     start.test(test.name, wpp.year)
     pred <- tfr.predict(m, burnin=0, burnin3=5, verbose=FALSE)
     stopifnot(pred$use.tfr3)
-    stopifnot(bayesTFR:::get.ar.order.phase3(pred) == 2)
+    stopifnot(bayesTFR:::get.ar.order.phase3(pred) == ar.order)
     stopifnot(!is.null(pred$rho2))
+    stopifnot(length(pred$ar.coefs) == ar.order, ncol(pred$ar.coefs.c) == ar.order)
     stopifnot(all(pred$quantiles >= 0.5, na.rm=TRUE))
     stopifnot(!any(is.na(pred$quantiles[m3$meta$id_phase3,,])))
     pred <- tfr.predict(m, burnin=0, burnin3=5, use.correlation=TRUE, verbose=FALSE, replace.output=TRUE)

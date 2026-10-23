@@ -241,42 +241,58 @@ get.eps.all.phases <- function(Dlpar, mcmc, country)
 get.eps.phase3 <- function(mcmc, country, idx)
 {
   # Phase III errors for transitions idx -> idx+1 (all idx must be in Phase III).
-  # For AR(2), the first Phase III transition is not modeled (the AR process is conditioned 
-  # on the first two Phase III observations), as well as all transitions of countries 
-  # with less than three Phase III observations. Their errors are set to 0.
+  # For AR(p) with p > 1, the first p-1 Phase III transitions are not modeled (the AR process is 
+  # conditioned on the first p Phase III observations), as well as all transitions of countries 
+  # with less than p+1 Phase III observations. Their errors are set to 0.
   tfr <- mcmc$meta$tfr_all[, country]
   id3 <- which(mcmc$meta$id_phase3 == country)
   if (length(id3) == 0) return (rep(0, length(idx)))
   mu <- mcmc$mu.c[id3]
-  if (!is.ar2.phase3(mcmc$meta)) 
+  if (get.ar.order.phase3(mcmc$meta) == 1) 
     return (tfr[idx + 1] - tfr[idx] * mcmc$rho.c[id3] - (1-mcmc$rho.c[id3]) * mu)
+  p <- get.ar.order.phase3(mcmc$meta)
   eps <- rep(0, length(idx))
-  is.ar <- idx > mcmc$meta$lambda_c[country]
+  is.ar <- idx - p + 1 >= mcmc$meta$lambda_c[country]
   t <- idx[is.ar]
-  ar.pars <- paste0(get.ar.par.names.phase3(mcmc$meta), '.c')
-  coefs <- get.ar2.coefs.phase3(mcmc[[ar.pars[1]]][id3], mcmc[[ar.pars[2]]][id3], mcmc$meta)
-  eps[is.ar] <- tfr[t + 1] - mu - coefs$rho1 * (tfr[t] - mu) - coefs$rho2 * (tfr[t - 1] - mu)
+  coefs <- get.ar.coefs.phase3(sapply(paste0(get.ar.par.names.phase3(mcmc$meta), '.c'), function(par) mcmc[[par]][id3]), 
+                               mcmc$meta)
+  eps[is.ar] <- tfr[t + 1] - mu
+  for (k in 1:p) eps[is.ar] <- eps[is.ar] - coefs[k] * (tfr[t + 1 - k] - mu)
   return (eps)
 }
 
 get.phase3.ar.par.matrix <- function(mcmc)
 {
-  # Matrix of Phase III parameters (mu, rho1, rho2) for all countries; rho2 is 0 for AR(1)
-  phase3par <- matrix(nrow = mcmc$meta$nr_countries, ncol=3)
-  if (is.ar2.phase3(mcmc$meta))
+  # Matrix of Phase III parameters for all countries: mu and the AR coefficients for lags 1, ..., p
+  p <- get.ar.order.phase3(mcmc$meta)
+  phase3par <- matrix(nrow = mcmc$meta$nr_countries, ncol=p+1)
+  if (p > 1)
   {
-    ar.pars <- paste0(get.ar.par.names.phase3(mcmc$meta), '.c')
-    coefs <- get.ar2.coefs.phase3(mcmc[[ar.pars[1]]], mcmc[[ar.pars[2]]], mcmc$meta)
-    phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, coefs$rho1, coefs$rho2)
+    ar.pars <- sapply(paste0(get.ar.par.names.phase3(mcmc$meta), '.c'), function(par) mcmc[[par]])
+    phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, get.ar.coefs.phase3(ar.pars, mcmc$meta))
   }
-  else phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, mcmc$rho.c, 0)
+  else phase3par[mcmc$meta$id_phase3,] <- cbind(mcmc$mu.c, mcmc$rho.c)
   return (phase3par)
 }
 
-get.ar2.phase3.countries <- function(mcmc, year.ind, id_phase3 = mcmc$meta$id_phase3_by_year[[year.ind]])
+get.ar.phase3.countries <- function(mcmc, year.ind, id_phase3 = mcmc$meta$id_phase3_by_year[[year.ind]])
 {
-  # Countries for which the transition year.ind -> year.ind+1 is modeled by the Phase III AR(2) process
-  return (id_phase3[mcmc$meta$lambda_c[id_phase3] < year.ind & id_phase3 %in% mcmc$meta$id_phase3])
+  # Countries for which the transition year.ind -> year.ind+1 is modeled by the Phase III AR(p) process
+  # (p > 1), i.e. countries with at least p Phase III observations up to year.ind
+  p <- get.ar.order.phase3(mcmc$meta)
+  return (id_phase3[mcmc$meta$lambda_c[id_phase3] <= year.ind - p + 1 & id_phase3 %in% mcmc$meta$id_phase3])
+}
+
+get.eps.phase3.year <- function(mcmc, year.ind, phase3par, ids, tfr = NULL, tfr.year = NULL)
+{
+  # Phase III AR(p) errors of the transition year.ind -> year.ind+1 for countries ids.
+  # If tfr is given, it replaces the TFR in year tfr.year.
+  p <- ncol(phase3par) - 1
+  mu <- phase3par[ids, 1]
+  get.tfr <- function(year) if (!is.null(tfr) && year == tfr.year) tfr[ids] else mcmc$meta$tfr_all[year, ids]
+  eps <- get.tfr(year.ind + 1) - mu
+  for (k in 1:p) eps <- eps - phase3par[ids, k + 1] * (get.tfr(year.ind + 1 - k) - mu)
+  return (eps)
 }
 
 get.sd.all.phases <- function(mcmc, country)
@@ -311,13 +327,14 @@ mcmc.update.tfr <- function(country, mcmc)
   eps_tfr_prop <- eps_tfr_prev
   sd_tfr_prop <- sd_tfr_prev
   if (country %in% mcmc$meta$id_phase3) {id3 <- which(mcmc$meta$id_phase3 == country)}
-  ar2.phase3 <- is.ar2.phase3(mcmc$meta)
+  p.ar <- get.ar.order.phase3(mcmc$meta)
   for (year in 1:mcmc$meta$T_end_c[country])
   {
     tmp.years <- max(1, year-1):min(year, mcmc$meta$T_end_c[country] -1)
-    # for AR(2) in Phase III, TFR in year also enters the error of the transition year+1 -> year+2
-    if (ar2.phase3 && year >= mcmc$meta$lambda_c[country] && year < mcmc$meta$T_end_c[country] - 1)
-      tmp.years <- c(tmp.years, year + 1)
+    # for AR(p) in Phase III with p > 1, TFR in year also enters the errors of the transitions 
+    # year+1 -> year+2, ..., year+p-1 -> year+p
+    if (p.ar > 1 && year >= mcmc$meta$lambda_c[country] && year < mcmc$meta$T_end_c[country] - 1)
+      tmp.years <- c(tmp.years, (year + 1):min(year + p.ar - 1, mcmc$meta$T_end_c[country] - 1))
     if (!is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2)
     {
       tmp.extra.year <- max(2, year-1):min(year+1, mcmc$meta$T_end_c[country] -1)
@@ -542,16 +559,14 @@ get.log.lik.year <- function(year.ind, mcmc, Dlpar, phase3par, tfr=NULL, prev=TR
   {
     eps[id_phase2] <- mcmc$eps_Tc[year.ind, id_phase2]
   }
-  if (is.ar2.phase3(mcmc$meta))
+  if (get.ar.order.phase3(mcmc$meta) > 1)
   {
-    # transitions not modeled by AR(2) keep eps = 0, which cancels out in the acceptance ratio
-    id_ar2 <- get.ar2.phase3.countries(mcmc, year.ind, id_phase3)
-    if (length(id_ar2) > 0)
+    # transitions not modeled by AR(p) keep eps = 0, which cancels out in the acceptance ratio
+    id_ar <- get.ar.phase3.countries(mcmc, year.ind, id_phase3)
+    if (length(id_ar) > 0)
     {
-      tfr_minus_1 <- if (!is.null(tfr) && prev_two) tfr else mcmc$meta$tfr_all[year.ind - 1, ]
-      eps[id_ar2] <- tfr_1[id_ar2] - phase3par[id_ar2, 1] - 
-        phase3par[id_ar2, 2] * (tfr_0[id_ar2] - phase3par[id_ar2, 1]) - 
-        phase3par[id_ar2, 3] * (tfr_minus_1[id_ar2] - phase3par[id_ar2, 1])
+      tfr.year <- if (is.null(tfr)) NULL else if (prev_two) year.ind - 1 else if (prev) year.ind else year.ind + 1
+      eps[id_ar] <- get.eps.phase3.year(mcmc, year.ind, phase3par, id_ar, tfr, tfr.year)
     }
   }
   else
@@ -634,7 +649,7 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
   eps.excluded <- get.eps.T.excluded.by.row(mcmc$meta)
   phase3par <- get.phase3.ar.par.matrix(mcmc)
   ar.phase2 <- !is.null(mcmc$meta$ar.phase2) && mcmc$meta$ar.phase2
-  ar2.phase3 <- is.ar2.phase3(mcmc$meta)
+  p.ar <- get.ar.order.phase3(mcmc$meta)
   ## _r represents phases from year -> year + 1
   id_phase1_r <- mcmc$meta$id_phase1_by_year[[1]]
   id_phase3_r <- mcmc$meta$id_phase3_by_year[[1]]
@@ -695,21 +710,37 @@ mcmc.update.tfr.year <- function(mcmc, countries = NULL)
     ## Compute Log likelihood
     ## For outliers keep log likelihood to be frozen to 0 for both 
     ## loglik_orig annd loglik_proposed
-    # TFR in year enters the transition year+1 -> year+2 if Phase II or Phase III is an AR(2) process
-    if ((year < mcmc$meta$T_end - 1) && (ar.phase2 || ar2.phase3))
+    # TFR in year enters the transition year+1 -> year+2 if Phase II is an AR process or Phase III is AR(p) with p > 1
+    if ((year < mcmc$meta$T_end - 1) && (ar.phase2 || p.ar > 1))
     {
       loglik_next <- get.log.lik.year(year + 1, mcmc, Dlpar, phase3par)$log.lik
       loglik_next_prop <- get.log.lik.year(year + 1, mcmc, Dlpar, phase3par, tfr_proposed, prev_two = TRUE)
       if (!ar.phase2)
-      { # only the Phase III AR(2) transitions are relevant
-        not.ar2 <- setdiff(1:nr_countries, get.ar2.phase3.countries(mcmc, year + 1))
-        loglik_next[not.ar2] <- 0.0
-        loglik_next_prop$log.lik[not.ar2] <- 0.0
+      { # only the Phase III AR(p) transitions are relevant
+        not.ar <- setdiff(1:nr_countries, get.ar.phase3.countries(mcmc, year + 1))
+        loglik_next[not.ar] <- 0.0
+        loglik_next_prop$log.lik[not.ar] <- 0.0
       }
       loglik_next[indices_outliers_p1] <- 0.0
       loglik_next_prop$log.lik[indices_outliers_p1] <- 0.0
       loglik_orig <- loglik_orig + loglik_next
       loglik_proposed <- loglik_proposed + loglik_next_prop$log.lik
+    }
+    # for AR(p) in Phase III with p > 2, TFR in year also enters the transitions year+2 -> year+3, ..., year+p-1 -> year+p
+    if (p.ar > 2)
+    {
+      for (k in 3:p.ar)
+      {
+        year.k <- year + k - 1
+        if (year.k >= mcmc$meta$T_end) break
+        id_ar <- setdiff(get.ar.phase3.countries(mcmc, year.k), mcmc$meta$yearly.outliers[[as.character(year.k + 1)]])
+        if (!is.null(countries)) id_ar <- intersect(id_ar, countries)
+        if (length(id_ar) == 0) next
+        loglik_orig[id_ar] <- loglik_orig[id_ar] + 
+          dnorm(get.eps.phase3.year(mcmc, year.k, phase3par, id_ar), mean=0, sd=mcmc$sigma.eps, log=TRUE)
+        loglik_proposed[id_ar] <- loglik_proposed[id_ar] + 
+          dnorm(get.eps.phase3.year(mcmc, year.k, phase3par, id_ar, tfr_proposed, year), mean=0, sd=mcmc$sigma.eps, log=TRUE)
+      }
     }
     if (year < mcmc$meta$T_end)
     {

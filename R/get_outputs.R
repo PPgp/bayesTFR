@@ -764,20 +764,37 @@ get.ar.order.phase3 <- function(meta = NULL)
 
 is.ar2.phase3 <- function(meta = NULL) return(get.ar.order.phase3(meta) == 2)
 
-is.momentum.phase3 <- function(meta = NULL) return(is.ar2.phase3(meta) && isTRUE(meta$momentum))
+is.momentum.phase3 <- function(meta = NULL) return(isTRUE(meta$momentum))
+
+get.momentum.lag.phase3 <- function(meta = NULL)
+    # Number of years over which the velocity is computed in the momentum model
+    return(if(is.null(meta$momentum.lag)) 1 else meta$momentum.lag)
 
 get.ar.par.names.phase3 <- function(meta = NULL) {
-    # Names of the AR parameters in Phase III: rho for AR(1); for AR(2) either the partial 
-    # autocorrelations alpha1 and alpha2, or the persistence rho and the momentum beta
-    if(!is.ar2.phase3(meta)) return('rho')
+    # Names of the AR parameters in Phase III: rho for AR(1); the persistence rho and the momentum beta 
+    # for the momentum model; the partial autocorrelations alpha1 and alpha2 for AR(2)
     if(is.momentum.phase3(meta)) return(c('rho', 'beta'))
-    return(c('alpha1', 'alpha2'))
+    if(is.ar2.phase3(meta)) return(c('alpha1', 'alpha2'))
+    return('rho')
 }
 
-get.ar2.coefs.phase3 <- function(par1, par2, meta = NULL) {
-    # Convert the AR(2) parameters (as given by get.ar.par.names.phase3) into AR coefficients rho1, rho2
-    if(is.momentum.phase3(meta)) return(list(rho1 = par1 + par2, rho2 = -par2))
-    return(list(rho1 = par1 * (1 - par2), rho2 = par2))
+get.ar.coefs.phase3 <- function(pars, meta = NULL) {
+    # Convert the AR parameters (matrix with columns as given by get.ar.par.names.phase3, 
+    # or a vector for a single set of parameters) into a matrix of AR coefficients, 
+    # one column per lag (as many as the AR order).
+    # The momentum model f_t - mu = rho (f_{t-1} - mu) + beta (f_{t-1} - f_{t-1-L})/L + eps 
+    # is an AR(L+1) process with coefficients rho + beta/L at lag 1 and -beta/L at lag L+1.
+    if(is.null(dim(pars))) pars <- matrix(pars, nrow=1)
+    p <- get.ar.order.phase3(meta)
+    if(is.momentum.phase3(meta)) {
+        L <- get.momentum.lag.phase3(meta)
+        coefs <- matrix(0, nrow=nrow(pars), ncol=p)
+        coefs[,1] <- pars[,1] + pars[,2]/L
+        coefs[,p] <- coefs[,p] - pars[,2]/L
+        return(coefs)
+    }
+    if(p == 2) return(cbind(pars[,1] * (1 - pars[,2]), pars[,2]))
+    return(pars[,1,drop=FALSE])
 }
 
 tfr3.parameter.names <- function(meta = NULL) {
@@ -792,7 +809,7 @@ tfr3.parameter.names.cs <- function(country.code=NULL, meta = NULL) {
 
 get.phase3.countries.index <- function(lambda_c, T_end_c, ar.order = 1)
     # Countries with enough Phase III observations to estimate the AR model:
-    # at least two for AR(1), at least three for AR(2)
+    # at least ar.order + 1, i.e. two for AR(1), three for AR(2)
     return(which(T_end_c - lambda_c >= ar.order))
 
 get.total.iterations <- function(mcmc.list, burnin=0) {

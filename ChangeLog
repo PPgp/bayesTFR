@@ -30,6 +30,13 @@ The Phase III world mean mu can be fixed to a given value: argument mu.fixed in 
 (or item in phase3.parameter of run.tfr.mcmc). The other Phase III parameters are then estimated 
 conditionally on it. New test test.mu.fixed.phase3.
 
+The velocity in the momentum model can be computed over several years: argument momentum.lag 
+(L, default 1) in run.tfr3.mcmc (or item in phase3.parameter of run.tfr.mcmc), i.e. 
+f_t - mu = rho (f_{t-1} - mu) + beta (f_{t-1} - f_{t-1-L})/L + eps, an AR(L+1) process. 
+Projections and the estimation with uncertainty handle Phase III AR processes of any order. 
+The prediction object contains the world and country-specific AR coefficients for all lags 
+(ar.coefs, ar.coefs.c). New test test.momentum.lag.phase3.errors; momentum tests run also with L=2.
+
 7.4-7.9001 (2026-09-25)
 -----
 Speed-up of the MCMC (about 3x per iteration) and of projections (up to 6x when 

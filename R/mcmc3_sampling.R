@@ -129,6 +129,7 @@ mcmc3.update.cs.pars <- function(mcmc) {
   mu.over.sigma.sq <- mcmc$mu/sigma.mu.sq
   S.eps <- STn <- 0
 
+  if(is.momentum.phase3(mcmc$meta)) return(mcmc3.update.cs.pars.momentum(mcmc))
   if(!is.ar2.phase3(mcmc$meta)) {
     sigma.rho.sq <- mcmc$sigma.rho^2
     sigma.rho.sq.inv <- 1/sigma.rho.sq
@@ -158,7 +159,6 @@ mcmc3.update.cs.pars <- function(mcmc) {
     }
     return(list(S.eps=S.eps, STn=STn))
   }
-  if(is.momentum.phase3(mcmc$meta)) return(mcmc3.update.cs.pars.momentum(mcmc))
   # AR(2): f_t - mu = rho1 (f_{t-1} - mu) + rho2 (f_{t-2} - mu) + eps_t,
   # with rho1 = alpha1 (1 - alpha2), rho2 = alpha2; conditioned on the first two observations
   sigma.alpha1.sq <- mcmc$sigma.alpha1^2
@@ -202,9 +202,10 @@ mcmc3.update.cs.pars <- function(mcmc) {
 }
 
 mcmc3.update.cs.pars.momentum <- function(mcmc) {
-  # Gibbs sampler for the country-specific Phase III parameters mu.c, rho.c, beta.c of the AR(2) 
+  # Gibbs sampler for the country-specific Phase III parameters mu.c, rho.c, beta.c of the AR(L+1) 
   # process parametrized by persistence rho and momentum beta:
-  # f_t - mu = rho (f_{t-1} - mu) + beta (f_{t-1} - f_{t-2}) + eps_t, conditioned on the first two observations.
+  # f_t - mu = rho (f_{t-1} - mu) + beta (f_{t-1} - f_{t-1-L})/L + eps_t, 
+  # conditioned on the first L+1 observations (L is the momentum lag).
   # As the AR coefficients sum to rho, the information about mu.c is the same as in AR(1).
   ardata <- mcmc$observations
   Ts <- mcmc$length_obs
@@ -215,17 +216,18 @@ mcmc3.update.cs.pars.momentum <- function(mcmc) {
   rho.over.sigma.sq <- mcmc$rho*sigma.rho.sq.inv
   sigma.beta.sq.inv <- 1/mcmc$sigma.beta^2
   beta.over.sigma.sq <- mcmc$beta*sigma.beta.sq.inv
+  L <- get.momentum.lag.phase3(mcmc$meta)
   S.eps <- STn <- 0
   for(country in seq_len(mcmc$meta$nr.countries)) {
-    f.ct <- ardata[[country]][3:Ts[country]]
-    f.ctm1 <- ardata[[country]][2:(Ts[country]-1)]
-    v <- f.ctm1 - ardata[[country]][1:(Ts[country]-2)] # velocity, does not depend on mu
+    f.ct <- ardata[[country]][(L+2):Ts[country]]
+    f.ctm1 <- ardata[[country]][(L+1):(Ts[country]-1)]
+    v <- (f.ctm1 - ardata[[country]][1:(Ts[country]-L-1)])/L # velocity, does not depend on mu
     rho <- mcmc$rho.c[country]
     beta <- mcmc$beta.c[country]
     # mu.c: f_t - rho f_{t-1} - beta v_t = (1 - rho) mu + eps_t
     one.minus.rho <- 1 - rho
     nomin <- one.minus.rho * sum(f.ct - rho*f.ctm1 - beta*v)/sigma.eps.sq + mu.over.sigma.sq
-    denom <- (Ts[country]-2) * one.minus.rho^2/sigma.eps.sq + sigma.mu.sq.inv
+    denom <- (Ts[country]-L-1) * one.minus.rho^2/sigma.eps.sq + sigma.mu.sq.inv
     mcmc$mu.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0)
 
     d0 <- f.ct - mcmc$mu.c[country]
@@ -241,7 +243,7 @@ mcmc3.update.cs.pars.momentum <- function(mcmc) {
     beta <- mcmc$beta.c[country] <- rnorm.trunc(mean=nomin/denom, sd=1/sqrt(denom), low=0, high=0.999999)
 
     S.eps <- S.eps + sum((d0 - rho*d1 - beta*v)^2)
-    STn <- STn + Ts[country]-2
+    STn <- STn + Ts[country]-L-1
   }
   return(list(S.eps=S.eps, STn=STn))
 }
