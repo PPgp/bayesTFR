@@ -204,7 +204,8 @@ mcmc3.update.cs.pars <- function(mcmc) {
 mcmc3.update.cs.pars.momentum <- function(mcmc) {
   # Gibbs sampler for the country-specific Phase III parameters mu.c, rho.c, beta.c of the AR(L+1) 
   # process parametrized by persistence rho and momentum beta:
-  # f_t - mu = rho (f_{t-1} - mu) + beta (f_{t-1} - f_{t-1-L})/L + eps_t, 
+  # f_t - mu = rho (f_{t-1} - mu) + beta (f_{t-1} - f_{t-1-L})/L + eps_t
+  # (or with a weighted velocity if momentum.weights is given), 
   # conditioned on the first L+1 observations (L is the momentum lag).
   # As the AR coefficients sum to rho, the information about mu.c is the same as in AR(1).
   ardata <- mcmc$observations
@@ -217,11 +218,13 @@ mcmc3.update.cs.pars.momentum <- function(mcmc) {
   sigma.beta.sq.inv <- 1/mcmc$sigma.beta^2
   beta.over.sigma.sq <- mcmc$beta*sigma.beta.sq.inv
   L <- get.momentum.lag.phase3(mcmc$meta)
+  weights <- get.momentum.weights.phase3(mcmc$meta)
   S.eps <- STn <- 0
   for(country in seq_len(mcmc$meta$nr.countries)) {
     f.ct <- ardata[[country]][(L+2):Ts[country]]
     f.ctm1 <- ardata[[country]][(L+1):(Ts[country]-1)]
-    v <- (f.ctm1 - ardata[[country]][1:(Ts[country]-L-1)])/L # velocity, does not depend on mu
+    # velocity, does not depend on mu
+    v <- get.momentum.velocity.phase3(ardata[[country]][1:(Ts[country]-1)], L, weights)
     rho <- mcmc$rho.c[country]
     beta <- mcmc$beta.c[country]
     # mu.c: f_t - rho f_{t-1} - beta v_t = (1 - rho) mu + eps_t

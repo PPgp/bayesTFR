@@ -130,12 +130,14 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	  ar.order <- if ('ar.order' %in% names(phase3.parameter)) phase3.parameter[['ar.order']] else 1
 	  momentum <- isTRUE(phase3.parameter[['momentum']])
 	  if(!momentum && !ar.order %in% c(1, 2)) stop('ar.order in phase3.parameter must be 1 or 2.')
-	  momentum.lag <- NULL
+	  momentum.lag <- momentum.weights <- NULL
 	  if(momentum) {
 	    momentum.lag <- if ('momentum.lag' %in% names(phase3.parameter)) phase3.parameter[['momentum.lag']] else 1
 	    if(length(momentum.lag) != 1 || momentum.lag < 1 || momentum.lag != round(momentum.lag)) 
 	      stop('momentum.lag in phase3.parameter must be a positive integer.')
 	    ar.order <- momentum.lag + 1 # the momentum model is an AR(momentum.lag + 1) process
+	    momentum.weights <- check.momentum.weights.phase3(phase3.parameter[['momentum.weights']], momentum.lag, 
+	                                                      'momentum.weights in phase3.parameter')
 	  }
 	  # default prior ranges, consistent with run.tfr3.mcmc
 	  prior.ranges <- list(mu=c(0, 2.1), rho=c(0,1-.Machine$double.xmin), 
@@ -148,6 +150,7 @@ run.tfr.mcmc <- function(nr.chains=3, iter=62000, output.dir=file.path(getwd(), 
 	  meta <- structure(list(nr.chains=nr.chains,
 	                         my.tfr.file=my.tfr.file, output.dir=output.dir,
 	                         phase=3, ar.order=ar.order, momentum=momentum, momentum.lag=momentum.lag,
+	                         momentum.weights=momentum.weights,
 	                         id_phase3 = get.phase3.countries.index(bayesTFR.mcmc.meta$lambda_c[c.index], 
 	                                                                bayesTFR.mcmc.meta$T_end_c[c.index], ar.order),
 	                         compression.type=compression.type, buffer.size=buffer.size, auto.conf=auto.conf
@@ -403,6 +406,7 @@ run.tfr.mcmc.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 	  Eini$meta$ar.order <- mcmc3.set$meta$ar.order
 	  Eini$meta$momentum <- mcmc3.set$meta$momentum
 	  Eini$meta$momentum.lag <- mcmc3.set$meta$momentum.lag
+	  Eini$meta$momentum.weights <- mcmc3.set$meta$momentum.weights
 	  for (par.name in c('mu.prior.mean', 'mu.prior.sd', 'mu.fixed'))
 	    Eini$meta[[par.name]] <- mcmc3.set$meta[[par.name]]
 	  for (par.name in tfr3.parameter.names(meta = mcmc3.set$meta))

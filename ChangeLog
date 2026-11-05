@@ -37,6 +37,11 @@ Projections and the estimation with uncertainty handle Phase III AR processes of
 The prediction object contains the world and country-specific AR coefficients for all lags 
 (ar.coefs, ar.coefs.c). New test test.momentum.lag.phase3.errors; momentum tests run also with L=2.
 
+The velocity in the momentum model can weight the last L yearly changes unequally: argument 
+momentum.weights in run.tfr3.mcmc (or item in phase3.parameter of run.tfr.mcmc), e.g. 
+momentum.lag=2 with momentum.weights=c(0.75, 0.25) lies between L=1 and L=2 with equal weights. 
+The momentum tests run also with weights.
+
 7.4-7.9001 (2026-09-25)
 -----
 Speed-up of the MCMC (about 3x per iteration) and of projections (up to 6x when 

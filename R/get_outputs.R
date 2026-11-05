@@ -770,6 +770,27 @@ get.momentum.lag.phase3 <- function(meta = NULL)
     # Number of years over which the velocity is computed in the momentum model
     return(if(is.null(meta$momentum.lag)) 1 else meta$momentum.lag)
 
+get.momentum.weights.phase3 <- function(meta = NULL)
+    # Weights of the last L yearly changes in the velocity of the momentum model (the most recent first);
+    # NULL means equal weights 1/L, i.e. the velocity is (f_{t-1} - f_{t-1-L})/L
+    return(meta$momentum.weights)
+
+check.momentum.weights.phase3 <- function(weights, L, name = 'momentum.weights') {
+    if(is.null(weights)) return(NULL)
+    if(length(weights) != L || any(!is.finite(weights)) || any(weights < 0) || abs(sum(weights) - 1) > 1e-8)
+        stop(name, ' must be a vector of momentum.lag non-negative values summing to 1.')
+    return(as.numeric(weights))
+}
+
+get.momentum.velocity.phase3 <- function(f, L, weights = NULL) {
+    # Velocity v_t of the momentum model for t = L+1, ..., length(f), computed from f_t, ..., f_{t-L}
+    n <- length(f)
+    if(is.null(weights)) return((f[(L+1):n] - f[1:(n-L)])/L)
+    v <- 0
+    for(k in 1:L) v <- v + weights[k] * (f[(L+2-k):(n+1-k)] - f[(L+1-k):(n-k)])
+    return(v)
+}
+
 get.ar.par.names.phase3 <- function(meta = NULL) {
     # Names of the AR parameters in Phase III: rho for AR(1); the persistence rho and the momentum beta 
     # for the momentum model; the partial autocorrelations alpha1 and alpha2 for AR(2)
@@ -784,10 +805,20 @@ get.ar.coefs.phase3 <- function(pars, meta = NULL) {
     # one column per lag (as many as the AR order).
     # The momentum model f_t - mu = rho (f_{t-1} - mu) + beta (f_{t-1} - f_{t-1-L})/L + eps 
     # is an AR(L+1) process with coefficients rho + beta/L at lag 1 and -beta/L at lag L+1.
+    # With weights w_1, ..., w_L of the last L yearly changes in the velocity, the coefficient 
+    # at lag j is rho [j = 1] + beta (w_j - w_{j-1}), with w_0 = w_{L+1} = 0.
     if(is.null(dim(pars))) pars <- matrix(pars, nrow=1)
     p <- get.ar.order.phase3(meta)
     if(is.momentum.phase3(meta)) {
         L <- get.momentum.lag.phase3(meta)
+        weights <- get.momentum.weights.phase3(meta)
+        if(!is.null(weights)) {
+            w.diff <- diff(c(0, weights, 0))
+            coefs <- pars[,2] %o% w.diff
+            dim(coefs) <- c(nrow(pars), p)
+            coefs[,1] <- coefs[,1] + pars[,1]
+            return(coefs)
+        }
         coefs <- matrix(0, nrow=nrow(pars), ncol=p)
         coefs[,1] <- pars[,1] + pars[,2]/L
         coefs[,p] <- coefs[,p] - pars[,2]/L

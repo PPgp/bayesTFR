@@ -11,7 +11,8 @@ Runs (or continues running) MCMCs for simulating Phase III total fertility rate,
 \usage{
 run.tfr3.mcmc(sim.dir, nr.chains = 3, iter = 50000, thin = 10, 
     replace.output = FALSE, my.tfr.file = NULL, buffer.size = 500, 
-    use.extra.countries = FALSE, ar.order = 1, momentum = FALSE, momentum.lag = 1,
+    use.extra.countries = FALSE, ar.order = 1, momentum = FALSE, momentum.lag = 1, 
+    momentum.weights = NULL,
     mu.prior.range = c(0, 2.1), mu.prior.mean = NULL, mu.prior.sd = NULL, mu.fixed = NULL,
     rho.prior.range = c(0, 1 - .Machine$double.xmin), 
     sigma.mu.prior.range = c(1e-05, 0.318), sigma.rho.prior.range = c(1e-05, 0.289), 
@@ -53,6 +54,7 @@ continue.tfr3.mcmc(sim.dir, iter, chain.ids=NULL,
   \item{ar.order}{Order of the autoregressive process, either 1 (default) or 2. See Details.}
   \item{momentum}{Logical. If \code{TRUE}, the AR(2) process is parametrized by the persistence \eqn{\rho_c}{rho.c} and the momentum \eqn{\beta_c}{beta.c} instead of the partial autocorrelations, and \code{ar.order} is set to \code{momentum.lag} + 1. See Details.}
   \item{momentum.lag}{Number of years (or time periods) \eqn{L} over which the velocity in the momentum model is computed. Only used if \code{momentum} is \code{TRUE}. See Details.}
+  \item{momentum.weights}{Optional vector of \code{momentum.lag} non-negative weights summing to 1, given to the last \eqn{L} changes of TFR (the most recent first) in the velocity of the momentum model. By default (\code{NULL}), the weights are equal (\eqn{1/L}). For example, \code{momentum.lag = 2} with \code{momentum.weights = c(0.75, 0.25)} lies between \eqn{L=1} (weights \code{1}) and \eqn{L=2} with equal weights. Only used if \code{momentum} is \code{TRUE}. See Details.}
   \item{mu.prior.range, rho.prior.range, sigma.mu.prior.range, sigma.rho.prior.range, sigma.eps.prior.range}{Min and max for the prior (uniform) distribution of these paraemters. \code{rho.prior.range} and \code{sigma.rho.prior.range} are only used if \code{ar.order} is 1 or \code{momentum} is \code{TRUE}.}
   \item{mu.prior.mean, mu.prior.sd}{If given, the prior distribution of the world mean \eqn{\bar{\mu}}{mu} is normal with this mean and standard deviation, truncated to \code{mu.prior.range}. By default, the prior is uniform on \code{mu.prior.range}. Both arguments must be given together.}
   \item{mu.fixed}{If given, the world mean \eqn{\bar{\mu}}{mu} is fixed to this value and not estimated; the country-specific \eqn{\mu_c}{mu.c} and the other parameters are estimated conditionally on it. This can be used for example to keep \eqn{\bar{\mu}}{mu} at the value estimated by an AR(1) model while estimating the AR(2) or momentum parameters, as \eqn{\bar{\mu}}{mu} is only weakly identified if the persistence is close to 1. It cannot be combined with \code{mu.prior.mean}.}
@@ -81,7 +83,7 @@ To ensure stationarity, the AR coefficients are parametrized by the partial auto
 
 If \code{momentum = TRUE}, the process is written as
 \deqn{f_{c,t+1} - \mu_c = \rho_c (f_{c,t} - \mu_c) + \beta_c (f_{c,t} - f_{c,t-L})/L + \varepsilon_{c,t},}
-where \eqn{L} is given by \code{momentum.lag}, i.e. the velocity is the average change of TFR over the last \eqn{L} periods. This is an AR(\eqn{L+1}) process with coefficients \eqn{\rho_c + \beta_c/L} at lag 1 and \eqn{-\beta_c/L} at lag \eqn{L+1}; for \eqn{L=1}, \eqn{\rho_{1,c} = \rho_c + \beta_c} and \eqn{\rho_{2,c} = -\beta_c}. The process is conditioned on the first \eqn{L+1} Phase III observations, and thus only countries with at least \eqn{L+2} Phase III observations are included in the estimation. The priors are
+where \eqn{L} is given by \code{momentum.lag}, i.e. the velocity is the average change of TFR over the last \eqn{L} periods. This is an AR(\eqn{L+1}) process with coefficients \eqn{\rho_c + \beta_c/L} at lag 1 and \eqn{-\beta_c/L} at lag \eqn{L+1}; for \eqn{L=1}, \eqn{\rho_{1,c} = \rho_c + \beta_c} and \eqn{\rho_{2,c} = -\beta_c}. If \code{momentum.weights} \eqn{w_1, \dots, w_L} are given, the velocity is the weighted change \eqn{v_{c,t} = \sum_{k=1}^L w_k (f_{c,t-k+1} - f_{c,t-k})}, and the AR coefficient at lag \eqn{j} is \eqn{\rho_c [j=1] + \beta_c (w_j - w_{j-1})} with \eqn{w_0 = w_{L+1} = 0}. The process is conditioned on the first \eqn{L+1} Phase III observations, and thus only countries with at least \eqn{L+2} Phase III observations are included in the estimation. The priors are
 \eqn{\rho_c \sim TN_{[0,1)}(\bar{\rho}, \sigma^2_{\rho})} and \eqn{\beta_c \sim TN_{[0,1)}(\bar{\beta}, \sigma^2_{\beta})}. The persistence \eqn{\rho_c} equals the sum of the AR coefficients and thus plays the same role as \eqn{\rho_c} in AR(1), including the amount of information the data carry about \eqn{\mu_c}. The momentum \eqn{\beta_c} carries a part of the recent velocity of TFR into the next period; in projections, this results in a drift that decays over time. The model reduces to AR(1) for \eqn{\beta_c = 0}. The world-level parameters are called \sQuote{rho}, \sQuote{beta}, \sQuote{sigma.rho} and \sQuote{sigma.beta}, the country-specific parameters \sQuote{rho.c} and \sQuote{beta.c}.
 
 The MCMCs are stored in \code{sim.dir} in a subdirectory called \dQuote{phaseIII}. It has exactly the same structure as phase II MCMCs described in \code{\link{run.tfr.mcmc}}.
