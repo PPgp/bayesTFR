@@ -1,10 +1,11 @@
-7.4-7.9002 (2026-10-21)
+7.4-7.9xxx (2026-11-06)
 -----
+Imputation of missing values can use the mean (in addition to the default median): 
+set in argument impute.stat = c("median", "mean") in tfr.predict.
+
 Fixed Phase III sampling for extra countries with uncertainty: it used the initial 
 TFR values instead of the updated TFR estimates.
 
-7.4-7.9001 (2026-09-25)
------
 Speed-up of the MCMC (about 3x per iteration) and of projections (up to 6x when 
 use.correlation=TRUE), without changing results of seeded runs.
 
@@ -14,9 +15,6 @@ Fixed bugs related to outliers in raw data (iso.unbiased with uncertainty):
 misalignment of distortions (eps) for countries with start of Phase II > 1 
 (which could cause an error), only one country kept per year in yearly outliers, 
 and distortions of outliers being overwritten when updating TFR.
-
-New tests: test.outliers, test.mvn.shortcuts, test.buffer.size, and projections 
-with correlation in test.run.mcmc.simulation.
 
 7.4-7 (2026-09-24)
 -----

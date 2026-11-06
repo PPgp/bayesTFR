@@ -1,7 +1,7 @@
 library(bayesTFR)
 source('test_functions.R')
 
-cran <- TRUE
+cran <- FALSE
 
 wpp <- 2019
 test.load.UNtfr(wpp)

@@ -5,10 +5,11 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 						use.diagnostics=FALSE,
 						use.tfr3=TRUE, burnin3=2000,
 						mu=2.1, rho=0.8859, sigmaAR1=0.1016,
-						min.tfr=0.5, use.correlation=FALSE,
+						min.tfr=0.5, use.correlation=FALSE, impute.stat = c("median", "mean"),
 						save.as.ascii=0, output.dir = NULL, subdir = "predictions", 
 						low.memory=TRUE,
 						seed=NULL, verbose=TRUE, uncertainty=FALSE, ...) {
+	impute.stat <- match.arg(impute.stat)
 	if(!is.null(mcmc.set)) {
 		if (!inherits(mcmc.set, 'bayesTFR.mcmc.set')) {
 			stop('Wrong type of mcmc.set. Must be of type bayesTFR.mcmc.set.')
@@ -54,7 +55,7 @@ tfr.predict <- function(mcmc.set=NULL, end.year=2100,
 	invisible(make.tfr.prediction(mcmc.set, end.year=end.year, replace.output=replace.output,  
 					start.year=start.year, nr.traj=nr.traj, burnin=burnin, thin=thin, use.tfr3=has.phase3, burnin3=burnin3,
 					mu=mu, rho=rho,  sigmaAR1 = sigmaAR1, min.tfr=min.tfr, use.correlation=use.correlation,
-					save.as.ascii=save.as.ascii,
+					impute.stat=impute.stat, save.as.ascii=save.as.ascii,
 					output.dir=output.dir, subdir = subdir, verbose=verbose, uncertainty=uncertainty, ...))			
 }
 
@@ -125,7 +126,9 @@ tfr.predict.extra <- function(sim.dir=file.path(getwd(), 'bayesTFR.output'),
 									nr.traj=pred$nr.traj, burnin=pred$burnin, use.tfr3=use.tfr3, burnin3=pred$burnin3,
 									use.correlation=use.correlation, 
 									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, 
-									min.tfr=pred$min.tfr, countries=countries.idx, save.as.ascii=0, output.dir=prediction.dir,
+									min.tfr=pred$min.tfr, countries=countries.idx, 
+									impute.stat=if(is.null(pred$impute.stat)) "median" else pred$impute.stat,
+									save.as.ascii=0, output.dir=prediction.dir,
 									subdir = subdir, force.creating.thinned.mcmc=TRUE,
 									write.summary.files=FALSE, write.trajectories=TRUE, verbose=verbose, 
 									uncertainty=uncertainty, all.countries.required = all.countries.required)
@@ -171,7 +174,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 								nr.traj = NULL, burnin=0, thin = NULL, 
 								use.tfr3=TRUE, mcmc3.set=NULL, burnin3=0,
 								mu=2.1, rho=0.9057, sigmaAR1 = 0.0922, min.tfr=0.5,
-								use.correlation=FALSE, countries = NULL,
+								use.correlation=FALSE, countries = NULL, impute.stat = "median",
 								adj.factor1=NA, adj.factor2=0, forceAR1=FALSE,
 								boost.first.period.in.phase2=TRUE,
 							    save.as.ascii=0, output.dir = NULL, subdir = "predictions", 
@@ -615,6 +618,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 	if(verbose && interactive()) cat('\n')
 	##############
 	# Impute missing values if any and compute quantiles
+	impute.fun <- switch(impute.stat,
+	                     median = function(x) quantile(x, 0.5, na.rm = TRUE, names = FALSE),
+	                     mean = function(x) mean(x, na.rm = TRUE),
+	                     stop("Argument impute.stat must be either 'median' or 'mean'."))
 	for (icountry in 1:nr_countries_real){
 		country <- prediction.countries[icountry]
 		# Ignore trajectories that go below min.tfr (0.5) 
@@ -625,10 +632,10 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 		# extract the future trajectories (including the present period)
 		f_ps_future <- all.f_ps[icountry,(dim(all.f_ps)[2]-nr_project):dim(all.f_ps)[2],]
 		if (nmissing[[country]] > 0) { # data imputation
-			f_ps_future[1,] <- quantile(f_ps_future[1,], 0.5, na.rm = TRUE) # set all trajectories in the first time period to the median
+			f_ps_future[1,] <- impute.fun(f_ps_future[1,]) # set all trajectories in the first time period to the median (or mean)
 			tfr_matrix_reconstructed[(ltfr_matrix-fps.end.obs.index+2):ltfr_matrix,country] <- apply(
 											all.f_ps[icountry,2:fps.end.obs.index,,drop=FALSE],
-												c(1,2), quantile, 0.5, na.rm = TRUE)
+												c(1,2), impute.fun)
 			if (verbose) 
 				cat('\t', nmissing[[country]], 'data points reconstructed for', country.objects[[country]]$name,'\n')
 		}
@@ -656,7 +663,7 @@ make.tfr.prediction <- function(mcmc.set, start.year=NULL, end.year=2100, replac
 				burnin=burnin, thin=thin,
 				end.year=end.year, use.tfr3=has.phase3, burnin3=burnin3, thin3=thin3,
 				mu=mu, rho=rho, sigmaAR1 = sigmaAR1, mu.c=mu.c.mean, rho.c=rho.c.mean, min.tfr=min.tfr,
-				use.correlation=use.correlation, start.year=start.year,
+				use.correlation=use.correlation, impute.stat=impute.stat, start.year=start.year,
 				present.year.index=present.year.index,
 				present.year.index.all=ltfr_matrix.all),
 				class='bayesTFR.prediction')
@@ -1467,6 +1474,7 @@ tfr.stat.adjust <- function(sim.dir, countries, factor1=2/3, factor2=1/3, forceA
 									nr.traj=NULL, burnin=0, 
 									use.tfr3=pred$use.tfr3, mcmc3.set=m3.set, burnin3=pred$burnin3,
 									mu=pred$mu, rho=pred$rho, sigmaAR1=pred$sigmaAR1, min.tfr=pred$min.tfr,
+									impute.stat=if(is.null(pred$impute.stat)) "median" else pred$impute.stat,
 									countries=countries.idx, adj.factor1=factor1, adj.factor2=factor2,
 									forceAR1=forceAR1, save.as.ascii=0, output.dir=sim.dir, subdir = subdir,
 									write.summary.files=FALSE, is.mcmc.set.thinned=TRUE, 
