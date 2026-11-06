@@ -221,7 +221,7 @@ get.eps.all.phases <- function(Dlpar, mcmc, country)
     dl <- - Dlpar[5]/(1 + exp(- 2*log(9)/Dlpar[1] *(mcmc$meta$tfr_all[id2, country] - Dlpar[1] - Dlpar[2] -Dlpar[3] - Dlpar[4] + 0.5*Dlpar[1]))) + 
       Dlpar[5]/(1 + exp(- 2*log(9)/Dlpar[3] *(mcmc$meta$tfr_all[id2, country] - Dlpar[4] - 0.5*Dlpar[3])))
     dl <- dl * ifelse(mcmc$meta$annual.simulation, 1, 5)
-    dl[mcmc$meta$tfr_all[id2, country] < 1] <- 0
+    dl[mcmc$meta$tfr_all[id2, country] <= 1] <- 0
     dl[dl<0] <- 0
     eps_return[id2] <- mcmc$meta$tfr_all[id2 + 1, country] - mcmc$meta$tfr_all[id2, country] + dl
   }
@@ -535,7 +535,7 @@ get.log.lik.year <- function(year.ind, mcmc, Dlpar, phase3par, tfr=NULL, prev=TR
       Dlpar[id_phase2, 5]/(1 + exp(- 2*log(9)/Dlpar[id_phase2, 3] *
                                      (tfr_0[id_phase2] - Dlpar[id_phase2, 4] - 0.5*Dlpar[id_phase2,3])))
     dl <- dl * ifelse(mcmc$meta$annual.simulation, 1, 5)
-    dl[tfr_0[id_phase2] < 1] <- 0
+    dl[tfr_0[id_phase2] <= 1] <- 0
     dl[dl<0] <- 0
     eps[id_phase2] <- tfr_1[id_phase2] - (tfr_0[id_phase2] - dl)
     if ((year.ind > 1) && !(is.null(mcmc$meta$ar.phase2)) && mcmc$meta$ar.phase2)
@@ -549,7 +549,7 @@ get.log.lik.year <- function(year.ind, mcmc, Dlpar, phase3par, tfr=NULL, prev=TR
         Dlpar[joint_phase2, 5]/(1 + exp(- 2*log(9)/Dlpar[joint_phase2, 3] *
                                        (tfr_minus_1[joint_phase2] - Dlpar[joint_phase2, 4] - 0.5*Dlpar[joint_phase2,3])))
       dl_prev <- dl_prev * ifelse(mcmc$meta$annual.simulation, 1, 5)
-      dl_prev[tfr_minus_1[joint_phase2] < 1] <- 0
+      dl_prev[tfr_minus_1[joint_phase2] <= 1] <- 0
       dl_prev[dl_prev<0] <- 0
       eps_prev <- tfr_0[joint_phase2] - (tfr_minus_1[joint_phase2] - dl_prev)
       eps[joint_phase2] <- eps[joint_phase2] - mcmc$rho.phase2 * eps_prev
