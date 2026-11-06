@@ -478,11 +478,23 @@ test.imputation <- function() {
 	
 	test.name <- 'running projections with imputation'
 	start.test(test.name)
-	pred <- tfr.predict(m, burnin=0, burnin3=3, verbose=FALSE)
+	pred <- tfr.predict(m, burnin=0, burnin3=3, verbose=FALSE, seed = 1)
 	spred <- summary(pred)
 	stopifnot(spred$nr.traj == 5)
+	stopifnot(pred$impute.stat == "median")
 	test.ok(test.name)
-	
+
+	test.name <- 'running projections with mean imputation'
+	start.test(test.name)
+	pred.mean <- tfr.predict(m, burnin=0, burnin3=3, verbose=FALSE, impute.stat = "mean", seed = 1,
+	                         output.dir = file.path(sim.dir, "pred_mean"))
+	stopifnot(pred.mean$impute.stat == "mean")
+	# imputed values differ from the median-imputed ones, observed ones do not
+	isobs <- !is.na(m$meta$tfr_matrix_observed)
+	stopifnot(all.equal(pred$tfr_matrix_reconstructed[isobs], pred.mean$tfr_matrix_reconstructed[isobs]))
+	stopifnot(any(pred$tfr_matrix_reconstructed[!isobs] != pred.mean$tfr_matrix_reconstructed[!isobs], na.rm = TRUE))
+	test.ok(test.name)
+
 	test.name <- 'plotting imputed TFR trajectories'
 	start.test(test.name)
 	filename <- tempfile()

@@ -16,7 +16,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
     nr.traj = NULL, thin = NULL, burnin = 2000,
     use.diagnostics = FALSE, use.tfr3 = TRUE, burnin3 = 2000,
     mu = 2.1, rho = 0.8859, sigmaAR1 = 0.1016, min.tfr = 0.5,
-    use.correlation = FALSE, save.as.ascii = 0, output.dir = NULL, 
+    use.correlation = FALSE, impute.stat = c("median", "mean"), save.as.ascii = 0, output.dir = NULL, 
     subdir = "predictions", low.memory = TRUE, seed = NULL, 
     verbose = TRUE, uncertainty = FALSE, \dots)
 }
@@ -42,6 +42,7 @@ tfr.predict(mcmc.set = NULL, end.year = 2100,
   \item{sigmaAR1}{Standard deviation \eqn{s} of AR(1) distortion terms in short-term projections. If it is \code{NULL} it is estimated from the data. It can be a single value or a vector giving the standard deviations for single projections. If the vector is shorter than the number of projections simulated via the AR(1) process, the last value is repeated for the remaining projections. In case of a single value (default), the standard deviation is kept constant over all AR(1) projections. Only used if \code{use.tfr3} is \code{FALSE}.}
   \item{min.tfr}{Smallest TFR value allowed.}
   \item{use.correlation}{Logical. If \code{TRUE} the model errors are sampled jointly for all countries (Fosdick and Raftery, 2014).}
+  \item{impute.stat}{Statistic used to impute missing values before the present year (see Details). Either \dQuote{median} (default) or \dQuote{mean}.}
   \item{seed}{Seed of the random number generator. If \code{NULL} no seed is set. It can be used to generate reproducible projections.}
   \item{verbose}{Logical switching log messages on and off.}
   \item{uncertainty}{Logical. If the MCMC steps has considered uncertainty of past TFR and \code{uncertainty=TRUE}, starting point of prediction trajectories will be the last estimated trajectories of TFR. Otherwise, it will use last observed TFR as starting point of prediction.}
@@ -52,7 +53,7 @@ The trajectories are generated using a distribution of country-specific decline 
 	
 If Phase III is projected using a BHM (i.e. if \code{use.tfr3} is \code{TRUE}), parameter samples simulated via \code{\link{run.tfr3.mcmc}} are used from which burnin (given by \code{burnin3}) is discarded and the chains are evenly thinned in a way that the total size corresponds to the final size of the Phase II parameter samples. Countries for which there are no simulated country-specific Phase III parameters (e.g. because their TFR is still in Phase II or it is an aggregated region) use samples of the  \dQuote{world} AR(1) parameters.
 
-The projection is run for all missing values before the present year, if any. Medians over the trajectories are used as  imputed values and the trajectories are discarded. The process then continues by projecting the future values where all generated trajectories are kept.
+The projection is run for all missing values before the present year, if any. Medians (or means if \code{impute.stat = "mean"}) over the trajectories are used as imputed values and the trajectories are discarded. The process then continues by projecting the future values where all generated trajectories are kept.
 
 The resulting prediction object is saved into \file{\{output.dir\}/\{subdir\}}. Trajectories for all countries are saved into the same directory in a binary format, one file per country. At the end of the projection, if \code{save.as.ascii} is larger than 0, the function converts the given number of trajectories into a CSV file of a UN-specific format. They are selected by equal spacing (see function \code{\link{convert.tfr.trajectories}} for more details on the conversion). In addition, two summary files are created: one in a user-friendly format, the other using a UN-specific coding of the variants and time (see \code{\link{write.projection.summary}} for more details).
 }
@@ -72,6 +73,7 @@ The resulting prediction object is saved into \file{\{output.dir\}/\{subdir\}}. 
 	\item{mu, rho, sigma_t, sigmaAR1}{Parameters of the AR(1) process. \code{sigma_t} is a vector of actual values of the standard deviation \eqn{s} used for each projection.}
 	\item{ar.order, rho2, rho2.c}{Order of the Phase III AR process. If it is 2, \code{rho} and \code{rho2} are the posterior means of the world-level AR coefficients \eqn{\rho_1}{rho1} and \eqn{\rho_2}{rho2}, and \code{rho.c} and \code{rho2.c} are their country-specific posterior means.}
 	\item{min.tfr}{Input value of minimum threshold for TFR.}
+	\item{impute.stat}{Input value of the statistic used for imputing missing values.}
 	\item{na.index}{Index of trajectories for which at least one country got \code{NA} values.}
 	\item{mcmc.set}{Object of class \code{\link{bayesTFR.mcmc.set}} used for this prediction, i.e. the burned, thinned, and collapsed MCMC chain.}
 	}
